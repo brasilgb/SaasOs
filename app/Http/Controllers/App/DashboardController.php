@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
@@ -50,6 +50,6 @@ class DashboardController extends Controller
         ->orderBy('date', 'desc')
         ->get();
         // $chartequipments = response()->json($cequipments);
-        return Inertia::render('dashboard/index', ['orders' => $orders, 'acount' => $acount, 'chartequipments' => $chartequipments]);
+        return Inertia::render('app/dashboard/index', ['orders' => $orders, 'acount' => $acount, 'chartequipments' => $chartequipments]);
     }
 }

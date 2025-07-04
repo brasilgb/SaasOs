@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\App;
 
 use App\Models\Company;
+use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Other;
@@ -22,7 +23,7 @@ class OtherController extends Controller
         $customers = Customer::get(["id", "name", "cpf", "email"]);
         $orders = Order::get();
         $company = Company::first();
-        return Inertia::render('others/index', ['othersettings' => $othersettings, 'customers' => $customers, 'orders' => $orders, 'company' => $company]);
+        return Inertia::render('app/others/index', ['othersettings' => $othersettings, 'customers' => $customers, 'orders' => $orders, 'company' => $company]);
     }
 
     /**

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\App;
 
 use App\Models\EQModel;
 use App\Http\Controllers\Controller;
@@ -34,7 +34,7 @@ class EQModelController extends Controller
         }
         $models = $query->paginate(12);
         $brands = Brand::get();
-        return Inertia::render('models/index', ['models' => $models, 'brands' => $brands]);
+        return Inertia::render('app/models/index', ['models' => $models, 'brands' => $brands]);
     }
 
     /**

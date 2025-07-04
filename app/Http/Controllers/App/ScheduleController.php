@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\App;
 
 use App\Models\Schedule;
 use App\Http\Controllers\Controller;
@@ -48,7 +48,7 @@ class ScheduleController extends Controller
         } 
         $schedules = $query->with('user')->with('customer')->paginate(12);
         
-        return Inertia::render('schedules/index', [
+        return Inertia::render('app/schedules/index', [
             'schedules' => $schedules,
         ]);
     }
@@ -60,7 +60,7 @@ class ScheduleController extends Controller
     {
         $customers = Customer::get();
         $technicals = User::where('roles', 3)->orWhere('roles', 1)->where('is_active', 1)->get();
-        return Inertia::render('schedules/create-schedule', ['customers' => $customers, 'technicals' => $technicals]);
+        return Inertia::render('app/schedules/create-schedule', ['customers' => $customers, 'technicals' => $technicals]);
     }
 
     /**
@@ -82,7 +82,7 @@ class ScheduleController extends Controller
     {
         $customers = Customer::get();
         $technicals = User::where('roles', 3)->orWhere('roles', 1)->where('is_active', 1)->get();
-        return Inertia::render('schedules/edit-schedule', ['schedule' => $schedule, 'customers' => $customers, 'technicals' => $technicals]);
+        return Inertia::render('app/schedules/edit-schedule', ['schedule' => $schedule, 'customers' => $customers, 'technicals' => $technicals]);
     }
  
     /**

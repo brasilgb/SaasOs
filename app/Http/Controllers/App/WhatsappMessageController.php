@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
 use App\Models\WhatsappMessage;
@@ -21,7 +21,7 @@ class WhatsappMessageController extends Controller
         $query = WhatsappMessage::orderBy("id", "DESC")->first();
         $whatsappmessage = WhatsappMessage::where("id", $query->id)->first();
 
-        return Inertia::render('whatsapp-message/index', ["whatsappmessage" => $whatsappmessage]);
+        return Inertia::render('app/whatsapp-message/index', ["whatsappmessage" => $whatsappmessage]);
     }
 
     public function update(Request $request, WhatsappMessage $whatsappmessage): RedirectResponse

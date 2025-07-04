@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
 use App\Models\Checklist;
@@ -24,7 +24,7 @@ class ReceiptController extends Controller
         $query = Receipt::orderBy("id", "DESC")->first();
         $receipt = Receipt::where("id", $query->id)->first();
 
-        return Inertia::render('receipts/index', ["receipt" => $receipt]);
+        return Inertia::render('app/receipts/index', ["receipt" => $receipt]);
     }
 
 
@@ -43,6 +43,6 @@ class ReceiptController extends Controller
         $receipt = Receipt::first();
         $checklist = Checklist::where('equipment_id', $order->equipment_id)->first('checklist');
 
-        return Inertia::render('receipts/print-receipt', ['order' => $order, 'type' => $tp, 'company' => $company, 'receipt' => $receipt, 'checklist' => $checklist]);
+        return Inertia::render('app/receipts/print-receipt', ['order' => $order, 'type' => $tp, 'company' => $company, 'receipt' => $receipt, 'checklist' => $checklist]);
     }
 }

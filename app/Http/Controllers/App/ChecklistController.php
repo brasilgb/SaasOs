@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\App;
 
 use App\Models\Checklist;
 use App\Http\Controllers\Controller;
@@ -24,7 +24,7 @@ class ChecklistController extends Controller
         }
         $checklists = $query->paginate(12);
         $equipments = Equipment::get();
-        return Inertia::render('checklists/index', ['checklists' => $checklists, 'equipments' => $equipments]);
+        return Inertia::render('app/checklists/index', ['checklists' => $checklists, 'equipments' => $equipments]);
     }
 
     /**

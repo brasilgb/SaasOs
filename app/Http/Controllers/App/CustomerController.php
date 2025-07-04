@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\App;
 
 use App\Models\Customer;
 use App\Http\Controllers\Controller;
@@ -39,7 +39,7 @@ class CustomerController extends Controller
 
         $customers = $query->paginate(12);
         $customerlast = Customer::orderBy('id', 'DESC')->first();
-        return Inertia::render('customers/index', ["customers" => $customers, "customerlast" => $customerlast]);
+        return Inertia::render('app/customers/index', ["customers" => $customers, "customerlast" => $customerlast]);
     }
 
     /**
@@ -47,7 +47,7 @@ class CustomerController extends Controller
      */
     public function create()
     {
-        return Inertia::render('customers/create-customer');
+        return Inertia::render('app/customers/create-customer');
     }
 
     /**
@@ -67,7 +67,7 @@ class CustomerController extends Controller
      */
     public function show(Customer $customer)
     {
-        return Inertia::render('customers/edit-customer', ['customer' => $customer]);
+        return Inertia::render('app/customers/edit-customer', ['customer' => $customer]);
     }
 
     /**

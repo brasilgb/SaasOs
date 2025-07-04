@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\App;
 
 use App\Models\Budget;
 use App\Http\Controllers\Controller;
@@ -57,7 +57,7 @@ public function index(Request $request)
         $brands = Brand::get();
         $models = EQModel::get();
         $services = Service::get();
-        return Inertia::render('budgets/index', ['budgets' => $budgets, 'brands' => $brands, 'models' => $models, 'services' => $services]);
+        return Inertia::render('app/budgets/index', ['budgets' => $budgets, 'brands' => $brands, 'models' => $models, 'services' => $services]);
     }
 
     /**

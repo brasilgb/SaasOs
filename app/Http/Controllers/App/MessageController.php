@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\App;
 
 use App\Models\Message;
 use App\Http\Controllers\Controller;
@@ -35,7 +35,7 @@ class MessageController extends Controller
         }
         $messages = $query->with('sender')->with('recipient')->paginate(12);
 
-        return Inertia::render('messages/index', ['messages' => $messages]);
+        return Inertia::render('app/messages/index', ['messages' => $messages]);
     }
 
     /**
@@ -44,7 +44,7 @@ class MessageController extends Controller
     public function create()
     {
         $users = User::get();
-        return Inertia::render('messages/create-message', ['users' => $users]);
+        return Inertia::render('app/messages/create-message', ['users' => $users]);
     }
 
     /**
@@ -65,7 +65,7 @@ class MessageController extends Controller
     public function show(Message $message)
     {
         $users = User::get();
-        return Inertia::render('messages/edit-message', ['message' => $message, 'users' => $users]);
+        return Inertia::render('app/messages/edit-message', ['message' => $message, 'users' => $users]);
     }
 
     /**

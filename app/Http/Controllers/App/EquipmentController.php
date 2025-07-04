@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\App;
 
 use App\Models\Equipment;
 use App\Http\Controllers\Controller;
@@ -22,7 +22,7 @@ class EquipmentController extends Controller
             $query->where('equipment', 'like', '%' . $search . '%');
         }
         $equipments = $query->paginate(12);
-        return Inertia::render('equipments/index', ['equipments' => $equipments]);
+        return Inertia::render('app/equipments/index', ['equipments' => $equipments]);
     }
 
     /**

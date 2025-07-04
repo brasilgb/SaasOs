@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\App;
 
 use App\Models\Service;
 use App\Http\Controllers\Controller;
@@ -15,7 +15,7 @@ class ServiceController extends Controller
 
     public function getServicos(Request $request)
     {
-        $servicos = Servico::where('equipamento', $request->equipamento)->get();
+        $servicos = Service::where('equipamento', $request->equipamento)->get();
         return response()->json([
             "success" => true,
             "data" => $servicos
@@ -34,7 +34,7 @@ class ServiceController extends Controller
         }
         $services = $query->paginate(12);
         $equipments = Equipment::get();
-        return Inertia::render('services/index', ['services' => $services, 'equipments' => $equipments]);
+        return Inertia::render('app/services/index', ['services' => $services, 'equipments' => $equipments]);
     }
 
     /**

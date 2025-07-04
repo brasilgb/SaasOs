@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\App;
 
+use App\Http\Controllers\Controller;
+use App\Models\Image; // Assuming you have an Image model
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use App\Models\Image; // Assuming you have an Image model
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +19,7 @@ class ImageController extends Controller
 
         $images = Image::where("order_id", $query)->get();
 
-        return Inertia::render('images/index', ['savedimages' => $images, 'orderid' => $query]);
+        return Inertia::render('app/images/index', ['savedimages' => $images, 'orderid' => $query]);
     }
 
     public function store(Request $request): RedirectResponse

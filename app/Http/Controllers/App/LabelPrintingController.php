@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
 use App\Models\Company;
@@ -17,7 +17,7 @@ class LabelPrintingController extends Controller
         }else{
             $labels = ['id' => 0];
         }
-        return Inertia::render('label-printing/index', ['labels' => $labels]);
+        return Inertia::render('app/label-printing/index', ['labels' => $labels]);
     }
 
     

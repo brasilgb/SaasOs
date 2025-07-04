@@ -1,15 +1,14 @@
 <?php
 
-use App\Http\Controllers\BrandController;
-use App\Http\Controllers\BudgetController;
-use App\Http\Controllers\CompanyController;
-use App\Http\Controllers\CustomerController;
-use App\Http\Controllers\EQModelController;
-use App\Http\Controllers\ImageController;
-use App\Http\Controllers\ModelController;
-use App\Http\Controllers\OrderController;
-use App\Http\Controllers\ServiceController;
-use App\Http\Controllers\UserController;
+use App\Http\Controllers\App\BrandController;
+use App\Http\Controllers\App\BudgetController;
+use App\Http\Controllers\App\CompanyController;
+use App\Http\Controllers\App\CustomerController;
+use App\Http\Controllers\App\EQModelController;
+use App\Http\Controllers\App\ImageController;
+use App\Http\Controllers\App\OrderController;
+use App\Http\Controllers\App\ServiceController;
+use App\Http\Controllers\App\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -47,6 +46,3 @@ Route::post('/upload', [ImageController::class, 'upload'])->name('upload');
 Route::post('/loginuser', [UserController::class, 'loginuser'])->name('loginuser');
 Route::get('/logoutuser', [UserController::class, 'logoutuser'])->name('logoutuser');
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');

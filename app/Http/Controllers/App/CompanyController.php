@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
 use App\Models\Company;
@@ -33,7 +33,7 @@ class CompanyController extends Controller
         $query = Company::orderBy("id", "DESC")->first();
         $company = Company::where("id", $query->id)->first();
 
-        return Inertia::render('company/index', ["company" => $company]);
+        return Inertia::render('app/company/index', ["company" => $company]);
     }
 
     /**

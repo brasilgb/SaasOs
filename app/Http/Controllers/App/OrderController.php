@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\App;
 
 use App\Http\Requests\OrderRequest;
 use App\Http\Controllers\Controller;
@@ -78,7 +78,7 @@ class OrderController extends Controller
         $orders = $query->with('equipment')->with('customer')->paginate(11);
         $whats = WhatsappMessage::first();
 
-        return Inertia::render('orders/index', [
+        return Inertia::render('app/orders/index', [
             'orders' => $orders,
             'whats' => $whats,
         ]);
@@ -91,7 +91,7 @@ class OrderController extends Controller
     {
         $equipments = Equipment::get();
         $customers = Customer::get();
-        return Inertia::render('orders/create-order', ['customers' => $customers, 'equipments' => $equipments]);
+        return Inertia::render('app/orders/create-order', ['customers' => $customers, 'equipments' => $equipments]);
     }
 
     /**
@@ -114,7 +114,7 @@ class OrderController extends Controller
         $equipments = Equipment::get();
         $customers = Customer::get();
         $technicals = User::where('roles', 3)->orWhere('roles', 1)->where('is_active', 1)->get();
-        return Inertia::render('orders/edit-order', ['order' => $order, 'customers' => $customers, 'technicals' => $technicals, 'equipments' => $equipments]);
+        return Inertia::render('app/orders/edit-order', ['order' => $order, 'customers' => $customers, 'technicals' => $technicals, 'equipments' => $equipments]);
      }
 
     /**

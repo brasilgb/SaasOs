@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\App;
 
 use App\Models\Brand;
 use App\Http\Controllers\Controller;
@@ -32,7 +32,7 @@ class BrandController extends Controller
             $query->where('brand', 'like', '%' . $search . '%');
         }
         $brands = $query->paginate(12);
-        return Inertia::render('brands/index', ['brands' => $brands]);
+        return Inertia::render('app/brands/index', ['brands' => $brands]);
     }
 
     /**
