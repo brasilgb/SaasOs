@@ -1,0 +1,52 @@
+<?php
+
+use App\Http\Controllers\BrandController;
+use App\Http\Controllers\BudgetController;
+use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\EQModelController;
+use App\Http\Controllers\ImageController;
+use App\Http\Controllers\ModelController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\UserController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register API routes for your application. These
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "api" middleware group. Make something great!
+|
+*/
+
+Route::get('/ordercli/{customer}', [OrderController::class, 'getOrderCli'])->name('ordercli');
+Route::get('/allorder', [OrderController::class, 'allOrder'])->name('allorder');
+Route::get('/order/{order}', [OrderController::class, 'getOrder'])->name('order');
+
+Route::get('/clientes', [CustomerController::class, 'getClientes']);
+
+Route::post('/orcamentos', [BudgetController::class, 'getOrcamentos']);
+
+Route::post('/servicos', [ServiceController::class, 'getServicos']);
+
+Route::get('/marcas', [BrandController::class, 'getMarcas']);
+
+Route::post('/modelos', [EQModelController::class, 'getModelos']);
+
+Route::get('/empresa', [CompanyController::class, 'getEmpresaInfo']);
+
+Route::delete('/deleteimage/{aimage}', [ImageController::class, 'deleteImageOrder'])->name('deleteimage');
+Route::get('/images/{order}', [ImageController::class, 'getImages'])->name('images');
+Route::post('/upload', [ImageController::class, 'upload'])->name('upload');
+
+Route::post('/loginuser', [UserController::class, 'loginuser'])->name('loginuser');
+Route::get('/logoutuser', [UserController::class, 'logoutuser'])->name('logoutuser');
+
+Route::get('/user', function (Request $request) {
+    return $request->user();
+})->middleware('auth:sanctum');
