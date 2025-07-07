@@ -16,15 +16,15 @@ import { statusAgenda } from "@/Utils/dataSelect";
 const breadcrumbs: BreadcrumbItem[] = [
   {
     title: 'Dashboard',
-    href: '/',
+    href: route('app.dashboard'),
   },
   {
     title: 'Agendamentos',
-    href: '/schedules',
+    href: route('app.schedules.index'),
   },
   {
     title: 'Adicionar',
-    href: '/create-schedule',
+    href: '#',
   },
 ];
 
@@ -57,7 +57,7 @@ export default function CreateSchedule({ customers, technicals }: any) {
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
-    post(route('schedules.store'), {
+    post(route('app.schedules.store'), {
       onSuccess: () => reset(),
     });
   }
@@ -87,7 +87,7 @@ export default function CreateSchedule({ customers, technicals }: any) {
         <div>
           <Button variant={'default'} asChild>
             <Link
-              href={route('schedules.index')}
+              href={route('app.schedules.index')}
             >
               <ArrowLeft h-4 w-4 />
               <span>Voltar</span>

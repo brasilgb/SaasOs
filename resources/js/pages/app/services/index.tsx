@@ -24,11 +24,11 @@ import CreateService from './create-service';
 const breadcrumbs: BreadcrumbItem[] = [
   {
     title: 'Dashboard',
-    href: '/',
+    href: route('app.dashboard'),
   },
   {
     title: 'Serviços',
-    href: '/services',
+    href: '#',
   },
 ];
 
@@ -50,7 +50,7 @@ export default function Services({ equipments, services }: any) {
       </div>
       <div className='flex items-center justify-between p-4'>
         <div>
-          <InputSearch placeholder="Buscar serviço" url="register-services.index" />
+          <InputSearch placeholder="Buscar serviço" url="app.register-services.index" />
         </div>
         <div>
           <CreateService equipments={equipments} />
@@ -79,7 +79,7 @@ export default function Services({ equipments, services }: any) {
                     <TableCell>{moment(service.created_at).format("DD/MM/YYYY")}</TableCell>
                     <TableCell className='flex justify-end gap-2'>
                       <EditService service={service} equipments={equipments} />
-                      <ActionDelete title={'este serviço'} url={'register-services.destroy'} param={service.id} />
+                      <ActionDelete title={'este serviço'} url={'app.register-services.destroy'} param={service.id} />
 
                     </TableCell>
                   </TableRow>

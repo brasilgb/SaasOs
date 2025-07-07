@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Tenantable;
 
 class EQModel extends Model
 {
+    use Tenantable;
     protected $table = 'eqmodels';
 
     public function brand(): BelongsTo

@@ -13,11 +13,11 @@ import { Input } from "@/components/ui/input";
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Dashboard',
-        href: '/',
+        href: route('app.dashboard'),
     },
     {
         title: 'Imprimir etiquetas',
-        href: '/watsappmessage',
+        href: "#",
     },
 ];
 
@@ -32,7 +32,7 @@ export default function LabelPrinting({ labels }: any) {
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
-        post(route('label-printing.store'));
+        post(route('app.label-printing.store'));
     }
 
     const handleLabelsTotals = () => {

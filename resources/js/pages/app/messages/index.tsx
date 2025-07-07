@@ -21,18 +21,16 @@ import ActionDelete from '@/components/action-delete';
 import AlertSuccess from '@/components/app-alert-success';
 import { Badge } from '@/components/ui/badge';
 import { AppLoadMessage } from '@/components/app-load-message';
-import { DataTable } from '@/components/data-table';
-import { columns } from './columns';
 import { statusMessageByValue } from '@/Utils/functions';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
     title: 'Dashboard',
-    href: '/',
+    href: route('app.dashboard'),
   },
   {
     title: 'Mensagens',
-    href: '/messages',
+    href: "#",
   },
 ];
 
@@ -54,12 +52,12 @@ export default function Messages({ messages }: any) {
 
       <div className='flex items-center justify-between p-4'>
         <div>
-          <InputSearch placeholder="Buscar mensagem" url="messages.index" />
+          <InputSearch placeholder="Buscar mensagem" url="app.messages.index" />
         </div>
         <div>
           <Button variant={'default'} asChild>
             <Link
-              href={route('messages.create')}
+              href={route('app.messages.create')}
             >
               <Plus className='h-4 w-4' />
               <span>Mensagem</span>
@@ -96,12 +94,12 @@ export default function Messages({ messages }: any) {
                       {message.sender_id !== auth.user.id
                         ? <AppLoadMessage message={message} />
                         : <Button asChild size="icon" className="bg-orange-500 hover:bg-orange-600 text-white">
-                          <Link href={route("messages.edit", message.id)}>
+                          <Link href={route("app.messages.edit", message.id)}>
                             {message.sender_id === auth.user.id ? <Pencil className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                           </Link>
                         </Button>}
 
-                      <ActionDelete title={'esta mensagem'} url={'messages.destroy'} param={message.id} />
+                      <ActionDelete title={'esta mensagem'} url={'app.messages.destroy'} param={message.id} />
 
                     </TableCell>
                   </TableRow>

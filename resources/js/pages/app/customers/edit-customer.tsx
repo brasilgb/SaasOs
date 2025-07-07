@@ -16,15 +16,15 @@ import apios from "@/Utils/connectApi";
 const breadcrumbs: BreadcrumbItem[] = [
   {
     title: 'Dashboard',
-    href: '/',
+    href: route('app.dashboard'),
   },
   {
     title: 'Clientes',
-    href: '/customers',
+    href: route('app.customers.index'),
   },
   {
     title: 'Editar',
-    href: '/customers',
+    href:  '#',
   },
 ];
 
@@ -87,7 +87,7 @@ export default function EditCustomer({ customer }: any) {
         <div>
           <Button variant={'default'} asChild>
             <Link
-              href={route('customers.index')}
+              href={route('app.customers.index')}
             >
               <ArrowLeft h-4 w-4 />
               <span>Voltar</span>

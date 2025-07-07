@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('eqmodels', function (Blueprint $table) {
             $table->unsignedBigInteger('id')->primary()->index();
+            $table->foreignId('tenant_id')->nullable()->constrained('tenants');
             $table->foreignId('brand_id')->nullable()->constrained()->onDelete('cascade');
             $table->string('model');
             $table->timestamps();

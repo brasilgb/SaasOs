@@ -12,11 +12,11 @@ import AlertSuccess from "@/components/app-alert-success";
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Dashboard',
-        href: '/',
+        href: route('app.dashboard'),
     },
     {
         title: 'Impressões de recibos',
-        href: '/receipts',
+        href: '#',
     },
 ];
 
@@ -31,7 +31,7 @@ export default function Receipts({ receipt }: any) {
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
-        patch(route('receipts.update', receipt?.id));
+        patch(route('app.receipts.update', receipt?.id));
     }
 
     return (

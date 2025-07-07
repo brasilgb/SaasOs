@@ -22,7 +22,7 @@ export default function CreateEquipment() {
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
-        post(route('register-equipments.store'), {
+        post(route('app.register-equipments.store'), {
             onSuccess: () => reset(),
         });
 

@@ -25,11 +25,11 @@ import { roleUserByValue } from '@/Utils/functions';
 const breadcrumbs: BreadcrumbItem[] = [
   {
     title: 'Dashboard',
-    href: '/',
+    href: route('app.dashboard'),
   },
   {
     title: 'Usuários',
-    href: '/users',
+    href: '#',
   },
 ];
 
@@ -52,12 +52,12 @@ export default function Users({ users }: any) {
 
       <div className='flex items-center justify-between p-4'>
         <div>
-          <InputSearch placeholder="Buscar usuário" url="users.index" />
+          <InputSearch placeholder="Buscar usuário" url="app.users.index" />
         </div>
         <div>
           <Button variant={'default'} asChild>
             <Link
-              href={route('users.create')}
+              href={route('app.users.create')}
             >
               <Plus className='h-4 w-4' />
               <span>Usuário</span>
@@ -93,12 +93,12 @@ export default function Users({ users }: any) {
                     <TableCell className='flex justify-end gap-2'>
 
                       <Button asChild size="icon" className="bg-orange-500 hover:bg-orange-600 text-white">
-                        <Link href={route("users.edit", user.id)}>
+                        <Link href={route("app.users.edit", user.id)}>
                           <Pencil className="h-4 w-4" />
                         </Link>
                       </Button>
 
-                      <ActionDelete title={'esta mensagem'} url={'users.destroy'} param={user.id} />
+                      <ActionDelete title={'esta mensagem'} url={'app.users.destroy'} param={user.id} />
                     </TableCell>
                   </TableRow>
                 ))

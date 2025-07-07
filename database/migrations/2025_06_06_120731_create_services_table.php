@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('services', function (Blueprint $table) {
             $table->unsignedBigInteger('id')->primary()->index();
+            $table->foreignId('tenant_id')->nullable()->constrained('tenants');
             $table->foreignId('equipment_id')->nullable()->constrained()->onDelete('cascade');
             $table->string('service');
             $table->timestamps();

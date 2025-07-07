@@ -3,8 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Tenantable;
 
 class Other extends Model
 {
-    //
+    use Tenantable;
 }

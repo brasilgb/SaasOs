@@ -19,15 +19,15 @@ import AlertSuccess from "@/components/app-alert-success";
 const breadcrumbs: BreadcrumbItem[] = [
   {
     title: 'Dashboard',
-    href: '/',
+    href: route('app.dashboard'),
   },
   {
     title: 'Usuários',
-    href: '/users',
+    href: route('app.users.index'),
   },
   {
     title: 'Alterar',
-    href: '/users',
+    href: '#',
   },
 ];
 
@@ -48,7 +48,7 @@ export default function CreateUser({ user }: any) {
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
-    patch(route('users.update', user?.id));
+    patch(route('app.users.update', user?.id));
   }
 
   const changeRoles = (selected: any) => {
@@ -75,7 +75,7 @@ export default function CreateUser({ user }: any) {
         <div>
           <Button variant={'default'} asChild>
             <Link
-              href={route('users.index')}
+              href={route('app.users.index')}
             >
               <ArrowLeft h-4 w-4 />
               <span>Voltar</span>

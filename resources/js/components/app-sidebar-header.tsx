@@ -20,7 +20,7 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
             </div>
             <div className="flex items-center gap-2">
                 <Button variant="ghost" size="icon" asChild className="relative">
-                    <Link href={route('messages.index')}>
+                    <Link href={route('app.messages.index')}>
                         <Badge variant="default" className="absolute -top-2 -right-2">{String(notifications)}</Badge>
                         <Bell />
                     </Link>

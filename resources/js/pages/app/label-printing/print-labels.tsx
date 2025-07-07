@@ -65,7 +65,7 @@ export default function PrintLabels({ data }: any) {
             <div className="h-8 bg-white flex items-center">
                 <div className="m-auto">
                     <Link className="flex items-center text-sm font-bold text-sky-500 uppercase"
-                        href={`${app.url}/label-printing`}
+                        href={route('app.label-printing.index')}
                     >
                         <ArrowLeft />
                         <span>Voltar</span>

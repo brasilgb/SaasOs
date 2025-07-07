@@ -24,7 +24,7 @@ export default function EditModel({ brands, model }: any) {
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
-        patch(route('register-models.update', model.id), {
+        patch(route('app.register-models.update', model.id), {
             onSuccess: () => {
                 setOpen(false);
             }

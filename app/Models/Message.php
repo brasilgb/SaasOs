@@ -4,9 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-
+use App\Tenantable;
+    
 class Message extends Model
 {
+    use Tenantable;
     public function sender(): BelongsTo
     {
         return $this->belongsTo(User::class);

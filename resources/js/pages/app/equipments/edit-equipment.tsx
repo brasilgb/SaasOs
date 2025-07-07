@@ -22,7 +22,7 @@ export default function EditEquipment({equipment}:any) {
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
-        patch(route('register-equipments.update', equipment.id));
+        patch(route('app.register-equipments.update', equipment.id));
         setOpen(false);
     }
     return (

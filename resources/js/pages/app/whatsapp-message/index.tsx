@@ -12,11 +12,11 @@ import AlertSuccess from "@/components/app-alert-success";
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Dashboard',
-        href: '/',
+        href: route('app.dashboard'),
     },
     {
         title: 'Mensagens Whatsapp',
-        href: '/watsappmessage',
+        href: '#',
     },
 ];
 

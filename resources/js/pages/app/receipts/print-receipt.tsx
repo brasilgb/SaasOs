@@ -189,7 +189,7 @@ export default function Receipt({ order, company, type, receipt, checklist }: { 
             {/* Botão de Impressão - oculto na impressão */}
             <div className="mb-4 print:hidden flex items-center justify-between absolute w-full">
                 <Button asChild className="gap-2">
-                    <Link href={route('orders.index')} >
+                    <Link href={route('app.orders.index')} >
                         <ArrowLeft className="h-4 w-4" />
                     </Link>
                 </Button>

@@ -4,9 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Tenantable;
 
 class Image extends Model
 {
+    use Tenantable;
     public function order(): BelongsTo
     {
         return $this->belongsTo(order::class);

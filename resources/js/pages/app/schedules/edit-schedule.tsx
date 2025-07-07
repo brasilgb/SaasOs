@@ -16,15 +16,15 @@ import AlertSuccess from "@/components/app-alert-success";
 const breadcrumbs: BreadcrumbItem[] = [
   {
     title: 'Dashboard',
-    href: '/',
+    href: route('app.dashboard'),
   },
   {
     title: 'Agendamentos',
-    href: '/schedules',
+    href: route('app.schedules.index'),
   },
   {
     title: 'Editar',
-    href: '/schedules',
+    href: '#',
   },
 ];
 
@@ -57,7 +57,7 @@ export default function EditSchedule({ customers, schedule, technicals }: any) {
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
-    patch(route('schedules.update', schedule?.id));
+    patch(route('app.schedules.update', schedule?.id));
   }
 
   const changeServiceStatus = (selected: any) => {
@@ -90,7 +90,7 @@ export default function EditSchedule({ customers, schedule, technicals }: any) {
         <div>
           <Button variant={'default'} asChild>
             <Link
-              href={route('schedules.index')}
+              href={route('app.schedules.index')}
             >
               <ArrowLeft h-4 w-4 />
               <span>Voltar</span>

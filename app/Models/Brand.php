@@ -5,10 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Tenantable;
 
 class Brand extends Model
 {
-        public function eqmodels(): HasMany
+    use Tenantable;
+    public function eqmodels(): HasMany
     {
         return $this->hasMany(EQModel::class);
     }
@@ -17,5 +19,4 @@ class Brand extends Model
     {
         return $this->hasMany(Budget::class);
     }
-
 }

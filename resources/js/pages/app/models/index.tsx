@@ -24,11 +24,11 @@ import CreateModel from './create-model';
 const breadcrumbs: BreadcrumbItem[] = [
   {
     title: 'Dashboard',
-    href: '/',
+    href: route('app.dashboard'),
   },
   {
-    title: 'Models',
-    href: '/models',
+    title: 'Modelos',
+    href: '#',
   },
 ];
 
@@ -50,7 +50,7 @@ export default function Models({ models, brands }: any) {
       </div>
       <div className='flex items-center justify-between p-4'>
         <div>
-          <InputSearch placeholder="Buscar modelo" url="register-models.index" />
+          <InputSearch placeholder="Buscar modelo" url="app.register-models.index" />
         </div>
         <div>
           <CreateModel brands={brands} />
@@ -79,7 +79,7 @@ export default function Models({ models, brands }: any) {
                     <TableCell>{moment(model.created_at).format("DD/MM/YYYY")}</TableCell>
                     <TableCell className='flex justify-end gap-2'>
                       <EditModel model={model} brands={brands} />
-                      <ActionDelete title={'este modelo'} url={'register-models.destroy'} param={model.id} />
+                      <ActionDelete title={'este modelo'} url={'app.register-models.destroy'} param={model.id} />
                     </TableCell>
                   </TableRow>
                 ))

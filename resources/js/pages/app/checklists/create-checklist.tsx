@@ -24,7 +24,7 @@ export default function CreateChecklist({ equipments }: any) {
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
-        post(route('register-checklists.store'), {
+        post(route('app.register-checklists.store'), {
             onSuccess: () => {
                 reset()
                 setOpen(false)

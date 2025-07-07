@@ -24,7 +24,7 @@ export default function EditService({ equipments, service }: any) {
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
-        patch(route('register-services.update', service.id), {
+        patch(route('app.register-services.update', service.id), {
             onSuccess: () => {
                 reset()
                 setOpen(false)
@@ -59,7 +59,7 @@ export default function EditService({ equipments, service }: any) {
                     <form onSubmit={handleSubmit} autoComplete="off">
 
                         <div className="col-span-2 grid gap-2">
-                            <Label htmlFor="customer_id">Serviço</Label>
+                            <Label htmlFor="equipment_id">Serviço</Label>
                             <Select
                                 onValueChange={(value) => setData('equipment_id', value)}
                                 defaultValue={`${data.equipment_id}`}

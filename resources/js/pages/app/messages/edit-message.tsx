@@ -16,15 +16,15 @@ import AlertSuccess from "@/components/app-alert-success";
 const breadcrumbs: BreadcrumbItem[] = [
   {
     title: 'Dashboard',
-    href: '/',
+    href: route('app.dashboard'),
   },
   {
     title: 'Mensagens',
-    href: '/messages',
+    href: route('app.messages.index'),
   },
   {
     title: 'Editar',
-    href: '/messages',
+    href: "#",
   },
 ];
 
@@ -46,7 +46,7 @@ export default function EditMessage({ users, message }: any) {
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
-    patch(route('messages.update', message.id));
+    patch(route('app.messages.update', message.id));
   }
 
   const changeMessageRecept = (selected: any) => {
@@ -72,7 +72,7 @@ export default function EditMessage({ users, message }: any) {
         <div>
           <Button variant={'default'} asChild>
             <Link
-              href={route('messages.index')}
+              href={route('app.messages.index')}
             >
               <ArrowLeft h-4 w-4 />
               <span>Voltar</span>

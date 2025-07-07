@@ -24,11 +24,11 @@ import EditBudget from './edit-budget';
 const breadcrumbs: BreadcrumbItem[] = [
   {
     title: 'Dashboard',
-    href: '/',
+    href: route('app.dashboard'),
   },
   {
     title: 'Orçamentos',
-    href: '/budgets',
+    href: route('app.budgets.index'),
   },
 ];
 
@@ -50,7 +50,7 @@ export default function CheckList({ budgets, brands, models, services }: any) {
       </div>
       <div className='flex items-center justify-between p-4'>
         <div>
-          <InputSearch placeholder="Buscar orçamento" url="register-budgets.index" />
+          <InputSearch placeholder="Buscar orçamento" url="app.register-budgets.index" />
         </div>
         <div>
           <CreateBudget brands={brands} models={models} services={services} />
@@ -81,7 +81,7 @@ export default function CheckList({ budgets, brands, models, services }: any) {
                     <TableCell>{moment(budget.created_at).format("DD/MM/YYYY")}</TableCell>
                     <TableCell className='flex justify-end gap-2'>
                     <EditBudget budget={budget} brands={brands} models={models} services={services} />
-                      <ActionDelete title={'este orçamento'} url={'register-budgets.destroy'} param={budget.id} />
+                      <ActionDelete title={'este orçamento'} url={'app.register-budgets.destroy'} param={budget.id} />
                     </TableCell>
                   </TableRow>
                 ))

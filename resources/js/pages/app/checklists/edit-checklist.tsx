@@ -24,7 +24,7 @@ export default function EditChecklist({ equipments, checklist }: any) {
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
-        patch(route('register-checklists.update', checklist.id), {
+        patch(route('app.register-checklists.update', checklist.id), {
             onSuccess: () => {
                 reset()
                 setOpen(false)
@@ -32,7 +32,7 @@ export default function EditChecklist({ equipments, checklist }: any) {
         });
 
     }
-
+    
     const optionsEquipment = equipments.map((equipment: any) => ({
         value: equipment.id,
         label: equipment.equipment,

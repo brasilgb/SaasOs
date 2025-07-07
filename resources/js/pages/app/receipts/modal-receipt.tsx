@@ -8,7 +8,7 @@ export default function ModalReceipt({ orderid }: { orderid: number }) {
     const { get } = useForm();
     const handlePrintReceipt = (e: any, type: string) => {
         e.preventDefault();
-        get(route('receipts.printing', { or: orderid, tp: type }));
+        get(route('app.receipts.printing', { or: orderid, tp: type }));
     }
     return (
         <Dialog>

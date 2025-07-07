@@ -33,6 +33,6 @@ class OtherController extends Controller
     {
         $data = $request->all();
         $other->update($data);
-        return redirect()->route('other-settings.index', ['other' => $other->id])->with('success', 'Configurações alteradas com sucesso');
+        return redirect()->route('app.other-settings.index', ['other' => $other->id])->with('success', 'Configurações alteradas com sucesso');
     }
 }

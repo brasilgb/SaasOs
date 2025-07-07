@@ -22,7 +22,7 @@ export default function EditBrand({brand}:any) {
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
-        patch(route('register-brands.update', brand.id));
+        patch(route('app.register-brands.update', brand.id));
         setOpen(false);
     }
     return (

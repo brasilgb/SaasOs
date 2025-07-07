@@ -4,40 +4,41 @@ import { Link as linkmegb, Calendar, Cog, FilePlus2, Folder, LayoutGrid, Message
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
-        href: '/',
+        href: route('app.dashboard'),
         icon: LayoutGrid,
+        active: 'app.dashboard',
     },
     {
         title: 'Clientes',
-        href: '/customers',
+        href: route('app.customers.index'),
         icon: Users2,
-        active: 'customers.*',
+        active: 'app.customers.*',
     },
     {
         title: 'Ordens de serviço',
-        href: '/orders',
+        href: route('app.orders.index'),
         icon: Wrench,
-        active: 'orders.*',
+        active: 'app.orders.*',
     },
     {
         title: 'Agendamentos',
-        href: '/schedules',
+        href: route('app.schedules.index'),
         icon: Calendar,
-        active: 'schedules.*',
+        active: 'app.schedules.*',
     },
     {
         title: 'Mensagens',
-        href: '/messages',
+        href: route('app.messages.index'),
         icon: MessageSquareMore,
-        active: 'messages.*',
+        active: 'app.messages.*',
     },
 ];
 const mainUserItems: NavItem[] = [
     {
         title: 'Usuários',
-        href: '/users',
+        href: route('app.users.index'),
         icon: UserCog,
-        active: 'users.*',
+        active: 'app.users.*',
     },
 ];
 
@@ -49,45 +50,45 @@ const mainConfItems = [
         items: [
             {
                 title: 'Dados da empresa',
-                url: '/company',
+                url: route('app.company.index'),
                 icon: Building,
-                active: 'company.*',
+                active: 'app.company.*',
             },
             {
                 title: 'Mensagens do Whatsapp',
-                url: '/whatsapp-message',
+                url: route('app.whatsapp-message.index'),
                 icon: MessageCircleCode,
-                active: 'whatsapp-message.*',
+                active: 'app.whatsapp-message.*',
             },
             {
                 title: 'Impressões de recibos',
-                url: '/receipts',
+                url: route('app.receipts.index'),
                 icon: Printer,  
-                active: 'receipts.*',
+                active: 'app.receipts.*',
             },
             {
                 title: 'Impressão de etiquetas',
-                url: '/label-printing',
+                url: route('app.label-printing.index'),
                 icon: Tags, 
-                active: 'label-printing.*',
+                active: 'app.label-printing.*',
             },
             {
                 title: 'Tipo de equipamento',
-                url: '/register-equipments',
+                url: route('app.register-equipments.index'),
                 icon: Monitor,
-                active: 'register-equipments.*',
+                active: 'app.register-equipments.*',
             },
             {
                 title: 'Checklist',
-                url: '/register-checklists',
+                url: route('app.register-checklists.index'),
                 icon: ClipboardList,
-                active: 'register-checklists.*',
+                active: 'app.register-checklists.*',
             },
             {
                 title: 'Outras configurações',
-                url: '/other-settings',
+                url: route('app.other-settings.index'),
                 icon: CogIcon,
-                active: 'other-settings.*',
+                active: 'app.other-settings.*',
             },
         ]
     }
@@ -101,27 +102,27 @@ const mainRegisterItems = [
         items: [
             {
                 title: 'Cadastrar marcas',
-                url: '/register-brands',
+                url: route('app.register-brands.index'),
                 icon: Copyright,
-                active: 'register-brands.*',
+                active: 'app.register-brands.*',
             },
             {
                 title: 'Cadastrar modelos',
-                url: '/register-models',
+                url: route('app.register-models.index'),
                 icon: Sparkles,
-                active: 'register-models.*',
+                active: 'app.register-models.*',
             },
             {
                 title: 'Cadastrar serviços',
-                url: '/register-services',
+                url: route('app.register-services.index'),
                 icon: Wrench,
-                active: 'register-services.*',
+                active: 'app.register-services.*',
             },
             {
                 title: 'Cadastrar orçamentos',
-                url: '/register-budgets',
+                url: route('app.register-budgets.index'),
                 icon: Blocks,
-                active: 'register-budgets.*',
+                active: 'app.register-budgets.*',
             },
         ]
     }

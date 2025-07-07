@@ -26,11 +26,11 @@ import CreateBrand from './create-brand';
 const breadcrumbs: BreadcrumbItem[] = [
   {
     title: 'Dashboard',
-    href: '/',
+    href: route('app.dashboard'),
   },
   {
     title: 'Marcas',
-    href: '/brands',
+    href: "#",
   },
 ];
 

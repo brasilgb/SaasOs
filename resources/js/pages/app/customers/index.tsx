@@ -24,11 +24,11 @@ import AppPagination from '@/components/app-pagination';
 const breadcrumbs: BreadcrumbItem[] = [
   {
     title: 'Dashboard',
-    href: '/',
+    href: route('app.dashboard'),
   },
   {
     title: 'Clientes',
-    href: '/customers',
+    href: "#",
   },
 ];
 
@@ -56,7 +56,7 @@ export default function Customers({ customers }: any) {
         <div>
           <Button variant={'default'} asChild>
             <Link
-              href={route('customers.create')}
+              href={route('app.customers.create')}
             >
               <Plus className='h-4 w-4' />
               <span>Cliente</span>
@@ -98,24 +98,24 @@ export default function Customers({ customers }: any) {
                         </a>
                       </Button>
                       <Button asChild size="icon" className="bg-sky-500 hover:bg-sky-600 text-white">
-                        <Link href={`/schedules?cl=${customer.id}`}>
+                        <Link href={route('app.schedules.index', { cl: customer.id })}>
                           <Calendar className="h-4 w-4" />
                         </Link>
                       </Button>
 
                       <Button asChild size="icon" className="bg-sky-500 hover:bg-sky-600 text-white">
-                        <Link href={`/orders?cl=${customer.id}`}>
+                        <Link href={route('app.orders.index', { cl: customer.id })}>
                           <Wrench className="h-4 w-4" />
                         </Link>
                       </Button>
 
                       <Button asChild size="icon" className="bg-orange-500 hover:bg-orange-600 text-white">
-                        <Link href={route('customers.edit', customer.id)}>
+                        <Link href={route('app.customers.edit', customer.id)}>
                           <Edit />
                         </Link>
                       </Button>
 
-                      <ActionDelete title={'este cliente'} url={'customers.destroy'} param={customer.id} />
+                      <ActionDelete title={'este cliente'} url={'app.customers.destroy'} param={customer.id} />
 
                     </TableCell>
                   </TableRow>

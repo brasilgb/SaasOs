@@ -24,11 +24,11 @@ import EditChecklist from './edit-checklist';
 const breadcrumbs: BreadcrumbItem[] = [
   {
     title: 'Dashboard',
-    href: '/',
+    href: route('app.dashboard'),
   },
   {
     title: 'Checllist',
-    href: '/checklists',
+    href: "#",
   },
 ];
 
@@ -50,7 +50,7 @@ export default function CheckList({ equipments, checklists }: any) {
       </div>
       <div className='flex items-center justify-between p-4'>
         <div>
-          <InputSearch placeholder="Buscar equipamento" url="register-checklists.index" />
+          <InputSearch placeholder="Buscar equipamento" url="app.register-checklists.index" />
         </div>
         <div>
           <CreateChecklist equipments={equipments} />
@@ -79,7 +79,7 @@ export default function CheckList({ equipments, checklists }: any) {
                     <TableCell>{moment(checklist.created_at).format("DD/MM/YYYY")}</TableCell>
                     <TableCell className='flex justify-end gap-2'>
                       <EditChecklist checklist={checklist} equipments={equipments} />
-                      <ActionDelete title={'este checklist'} url={'register-checklists.destroy'} param={checklist.id} />
+                      <ActionDelete title={'este checklist'} url={'app.register-checklists.destroy'} param={checklist.id} />
 
                     </TableCell>
                   </TableRow>

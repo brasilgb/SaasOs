@@ -19,19 +19,19 @@ import moment from "moment";
 const breadcrumbs: BreadcrumbItem[] = [
   {
     title: 'Dashboard',
-    href: '/',
+    href: route('app.dashboard'),
   },
   {
     title: 'Ordens',
-    href: '/orders',
+    href: route('app.orders.index'),
   },
   {
     title: 'Editar',
-    href: '/orders',
+    href: '#',
   },
 ];
 
-export default function EditOrder({ customers, order, technicals, equipments }: any) {
+  export default function EditOrder({ customers, order, technicals, equipments }: any) {
   const { flash, ziggy } = usePage().props as any;
   const { page, oc } = (ziggy as any).query
 
@@ -76,7 +76,7 @@ export default function EditOrder({ customers, order, technicals, equipments }: 
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    patch(route('orders.update', order.id));
+    patch(route('app.orders.update', order.id));
   }
 
   useEffect(() => {
@@ -130,7 +130,7 @@ export default function EditOrder({ customers, order, technicals, equipments }: 
         <div>
           <Button variant={'default'} asChild>
             <Link
-              href={`/orders?page=${page}${oc ? '&oc='+ oc : ''}`}
+              href={route('app.orders.index', { page: page, oc: oc })}
             >
               <ArrowLeft h-4 w-4 />
               <span>Voltar</span>

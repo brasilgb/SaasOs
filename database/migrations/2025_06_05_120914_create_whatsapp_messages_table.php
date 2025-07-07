@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('whatsapp_messages', function (Blueprint $table) {
             $table->unsignedBigInteger('id')->primary()->index();
+            $table->foreignId('tenant_id')->nullable()->constrained('tenants');
             $table->text('generatedbudget')->nullable();
             $table->text('servicecompleted')->nullable();
             $table->timestamps();

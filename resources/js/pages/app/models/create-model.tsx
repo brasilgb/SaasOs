@@ -24,7 +24,7 @@ export default function CreateModel({ brands }: any) {
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
-        post(route('register-models.store'), {
+        post(route('app.register-models.store'), {
             onSuccess: () => {
                 reset()
                 setOpen(false)
@@ -58,7 +58,7 @@ export default function CreateModel({ brands }: any) {
                     <form onSubmit={handleSubmit} autoComplete="off">
 
                         <div className="col-span-2 grid gap-2">
-                            <Label htmlFor="customer_id">Marca</Label>
+                            <Label htmlFor="brand_id">Marca</Label>
                             <Select
                                 onValueChange={(value) => setData('brand_id', value)}
                                 defaultValue={`${data.brand_id}`}

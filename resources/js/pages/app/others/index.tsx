@@ -17,17 +17,16 @@ import { useEffect, useState } from 'react'
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Dashboard',
-        href: '/',
+        href: route('app.dashboard'),
     },
     {
         title: 'Outras configurações',
-        href: '/others',
+        href: '#',
     },
 ];
 
 export default function Others({ othersettings, customers, orders, company }: any) {
-    const [loading, setLoading] = useState<boolean>(false);
-    const [loading1, setLoading1] = useState<boolean>(false);
+
     const [uploading, setUploading] = useState<string>('');
 
     const { flash } = usePage().props as any;
@@ -38,49 +37,13 @@ export default function Others({ othersettings, customers, orders, company }: an
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
-        put(route('other-settings.update', othersettings?.id));
+        put(route('app.other-settings.update', othersettings?.id));
     }
-
-
-    const pushOrders = async () => {
-        setLoading(true);
-        await apios.post('insert-order', {
-            orders: orders
-        })
-            .then((res) => {
-                setUploading(res.data.response.message);
-            })
-            .catch((err) => {
-                console.log(err.message);
-            }).finally(() => setLoading(false));
-    }
-
-    const pushUsers = async () => {
-        setLoading1(true);
-        await apios.post('insert-user', {
-            customers: customers
-        })
-            .then((res) => {
-                setUploading(res.data.response.message);
-            })
-            .catch((err) => {
-                console.log(err.message);
-            }).finally(() => setLoading1(false));
-    }
-
-    useEffect(() => {
-        if (uploading) {
-            setTimeout(() => {
-                setUploading('');
-            }, 3000);
-        }
-    }, [uploading]);
 
     return (
         <AppLayout>
             {flash.message && <AlertSuccess message={flash.message} />}
             <Head title="Outras configurações" />
-
             <div className='flex items-center justify-between h-16 px-4'>
                 <div className='flex items-center gap-2'>
                     <Icon iconNode={Wrench} className='w-8 h-8' />
@@ -106,20 +69,7 @@ export default function Others({ othersettings, customers, orders, company }: an
                 </div>
                 <div className="space-y-6 mt-6">
                     <HeadingSmall title="Dados para área do cliente do site" description="Insere os dados do cliente e de suas ordens de serviço a área do cliente no site da empresa." />
-                    <div className="flex items-center justify-start gap-2">
-                        <Button
-                            onClick={() => pushUsers()}
-                        >
-                            <HardDriveUpload />
-                            {loading1 ? 'Inserindo clientes...' : 'Insere clientes'}
-                        </Button>
-                        <Button
-                            onClick={() => pushOrders()}
-                        >
-                            <HardDriveUpload />
-                            {loading ? 'Inserindo ordens...' : 'Insere ordens'}
-                        </Button>
-                    </div>
+
                     {uploading && <AlertSuccess message={uploading} className='!p-0' />}
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-8">

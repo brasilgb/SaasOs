@@ -17,15 +17,15 @@ import { maskPhone } from "@/Utils/mask";
 const breadcrumbs: BreadcrumbItem[] = [
   {
     title: 'Dashboard',
-    href: '/',
+    href: route('app.dashboard'),
   },
   {
     title: 'Usuários',
-    href: '/users',
+    href: route('app.users.index'),
   },
   {
     title: 'Adicionar',
-    href: '/users',
+    href: '#',
   },
 ];
 
@@ -46,7 +46,7 @@ export default function CreateUser() {
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
-    post(route('users.store'), {
+    post(route('app.users.store'), {
       onSuccess: () => reset(),
     });
   }
@@ -72,7 +72,7 @@ export default function CreateUser() {
         <div>
           <Button variant={'default'} asChild>
             <Link
-              href={route('users.index')}
+              href={route('app. users.index')}
             >
               <ArrowLeft h-4 w-4 />
               <span>Voltar</span>

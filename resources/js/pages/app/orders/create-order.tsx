@@ -17,15 +17,15 @@ import { maskMoney, maskMoneyDot } from "@/Utils/mask";
 const breadcrumbs: BreadcrumbItem[] = [
   {
     title: 'Dashboard',
-    href: '/',
+    href: route('app.dashboard'),
   },
   {
     title: 'Ordens',
-    href: '/orders',
+    href: route('app.orders.index'),
   },
   {
     title: 'Adicionar',
-    href: '/add-order',
+    href: '#',
   },
 ];
 
@@ -59,7 +59,7 @@ export default function CreateOrder({ customers, equipments, orderlast }: any) {
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
-    post(route('orders.store'), {
+    post(route('app.orders.store'), {
       onSuccess: () => reset(),
     });
   }
@@ -96,7 +96,7 @@ export default function CreateOrder({ customers, equipments, orderlast }: any) {
         <div>
           <Button variant={'default'} asChild>
             <Link
-              href={route('orders.index')}
+              href={route('app.orders.index')}
             >
               <ArrowLeft h-4 w-4 />
               <span>Voltar</span>
@@ -112,7 +112,7 @@ export default function CreateOrder({ customers, equipments, orderlast }: any) {
 
           <form onSubmit={handleSubmit} className="space-y-8">
             <div className="grid grid-cols-8 gap-4 mt-4">
-
+    
               <div className="col-span-2 grid gap-2">
                 <Label htmlFor="customer_id">Cliente</Label>
                 <Select

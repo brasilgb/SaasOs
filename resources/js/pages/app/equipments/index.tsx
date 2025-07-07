@@ -24,11 +24,11 @@ import EditEquipment from './edit-equipment';
 const breadcrumbs: BreadcrumbItem[] = [
   {
     title: 'Dashboard',
-    href: '/',
+    href: route('app.dashboard'),
   },
   {
     title: 'Equipamentos',
-    href: '/equipments',
+    href: "#",
   },
 ];
 
@@ -50,7 +50,7 @@ export default function Equipment({ equipments }: any) {
       </div>
       <div className='flex items-center justify-between p-4'>
         <div>
-          <InputSearch placeholder="Buscar equipamento" url="register-equipments.index" />
+          <InputSearch placeholder="Buscar equipamento" url="app.register-equipments.index" />
         </div>
         <div>
           <CreateEquipment />
@@ -77,7 +77,7 @@ export default function Equipment({ equipments }: any) {
                     <TableCell>{moment(equipment.created_at).format("DD/MM/YYYY")}</TableCell>
                     <TableCell className='flex justify-end gap-2'>
                       <EditEquipment equipment={equipment} />
-                      <ActionDelete title={'esta marca'} url={'register-equipments.destroy'} param={equipment.id} />
+                      <ActionDelete title={'esta marca'} url={'app.register-equipments.destroy'} param={equipment.id} />
 
                     </TableCell>
                   </TableRow>

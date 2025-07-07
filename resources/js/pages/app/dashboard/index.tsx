@@ -14,11 +14,11 @@ export default function Dashboard({ orders, acount, chartequipments }: { orders:
             <Head title="Dashboard" />
             <div className='p-4'>
                 <div className="grid md:grid-cols-5 gap-4 rounded-xl">
-                    <KpiDashboard link={route('users.index')} title="Usuários" value={acount?.numuser} icon={<User className='h-10 w-10' />} description="Usários do sistema" />
-                    <KpiDashboard link={route('customers.index')} title="Clientes" value={acount?.numcust} icon={<Users className='h-10 w-10' />} description="Todos os clientes cadastrados" />
-                    <KpiDashboard link={route('orders.index')} title="Ordens" value={acount?.numorde} icon={<Wrench className='h-10 w-10' />} description="Todas as ordens emitidas" />
-                    <KpiDashboard link={route('schedules.index')} title="Agendamentos" value={acount?.numshed} icon={<Calendar className='h-10 w-10' />} description="Todos os agendamentos efetuados" />
-                    <KpiDashboard link={route('messages.index')} title="Mensagens" value={acount?.nummess} icon={<MessageSquareMore className='h-10 w-10' />} description="Mensagens enviadas e recebidas" />
+                    <KpiDashboard link={route('app.users.index')} title="Usuários" value={acount?.numuser} icon={<User className='h-10 w-10' />} description="Usários do sistema" />
+                    <KpiDashboard link={route('app.customers.index')} title="Clientes" value={acount?.numcust} icon={<Users className='h-10 w-10' />} description="Todos os clientes cadastrados" />
+                    <KpiDashboard link={route('app.orders.index')} title="Ordens" value={acount?.numorde} icon={<Wrench className='h-10 w-10' />} description="Todas as ordens emitidas" />
+                    <KpiDashboard link={route('app.schedules.index')} title="Agendamentos" value={acount?.numshed} icon={<Calendar className='h-10 w-10' />} description="Todos os agendamentos efetuados" />
+                    <KpiDashboard link={route('app.messages.index')} title="Mensagens" value={acount?.nummess} icon={<MessageSquareMore className='h-10 w-10' />} description="Mensagens enviadas e recebidas" />
                 </div>
 
                 <div className='mt-4'>
@@ -36,7 +36,7 @@ export default function Dashboard({ orders, acount, chartequipments }: { orders:
                             <div className='py-2 border-t flex flex-wrap gap-2'>
                                 {orders?.agendados.map((age: any) => (
                                     <Button key={age.id} variant={'secondary'} asChild>
-                                        <Link href={route('schedules.edit', age.id)}>
+                                        <Link href={route('app.schedules.edit', age.id)}>
                                             {age.id}
                                         </Link>
                                     </Button>
@@ -48,7 +48,7 @@ export default function Dashboard({ orders, acount, chartequipments }: { orders:
                             <div className='py-2 border-t flex flex-wrap gap-2'>
                                 {orders?.gerados.map((ger: any) => (
                                     <Button key={ger.id} variant={'secondary'} asChild>
-                                        <Link href={route('orders.edit', ger.id)}>
+                                        <Link href={route('app.orders.edit', ger.id)}>
                                             {ger.id}
                                         </Link>
                                     </Button>
@@ -60,7 +60,7 @@ export default function Dashboard({ orders, acount, chartequipments }: { orders:
                             <div className='py-2 border-t flex flex-wrap gap-2'>
                                 {orders?.aprovados.map((apro: any) => (
                                     <Button key={apro.id} variant={'secondary'} asChild>
-                                        <Link href={route('orders.edit', apro.id)}>
+                                        <Link href={route('app.orders.edit', apro.id)}>
                                             {apro.id}
                                         </Link>
                                     </Button>
@@ -72,7 +72,7 @@ export default function Dashboard({ orders, acount, chartequipments }: { orders:
                             <div className='py-2 border-t flex flex-wrap gap-2'>
                                 {orders?.concluidosca.map((conca: any) => (
                                     <Button key={conca.id} variant={'secondary'} asChild>
-                                        <Link href={route('orders.edit', conca.id)}>
+                                        <Link href={route('app.orders.edit', conca.id)}>
                                             {conca.id}
                                         </Link>
                                     </Button>
@@ -84,7 +84,7 @@ export default function Dashboard({ orders, acount, chartequipments }: { orders:
                             <div className='py-2 border-t flex flex-wrap gap-2'>
                                 {orders?.concluidoscn.map((concn: any) => (
                                     <Button key={concn.id} variant={'secondary'} asChild>
-                                        <Link href={route('orders.edit', concn.id)}>
+                                        <Link href={route('app.orders.edit', concn.id)}>
                                             {concn.id}
                                         </Link>
                                     </Button>
@@ -96,7 +96,7 @@ export default function Dashboard({ orders, acount, chartequipments }: { orders:
                             <div className='py-2 border-t flex flex-wrap gap-2'>
                                 {orders?.trintadias.map((ger: any) => (
                                     <Button key={ger.id} variant={'secondary'} asChild>
-                                        <Link href={route('orders.edit', ger.id)}>
+                                        <Link href={route('app.orders.edit', ger.id)}>
                                             {ger.id}
                                         </Link>
                                     </Button>

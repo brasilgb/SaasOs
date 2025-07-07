@@ -26,11 +26,11 @@ import { Badge } from '@/components/ui/badge';
 const breadcrumbs: BreadcrumbItem[] = [
   {
     title: 'Dashboard',
-    href: '/',
+    href: route('app.dashboard'),
   },
   {
     title: 'Ordens',
-    href: '/orders',
+    href: '#',
   },
 ];
 
@@ -53,12 +53,12 @@ export default function Orders({ orders, whats }: any) {
 
       <div className='flex items-center justify-between p-4'>
         <div>
-          <InputSearch placeholder="Buscar ordem" url="orders.index" />
+          <InputSearch placeholder="Buscar ordem" url="app.orders.index" />
         </div>
         <div>
           <Button variant={'default'} asChild>
             <Link
-              href={route('orders.create')}
+              href={route('app.orders.create')}
             >
               <Plus className='h-4 w-4' />
               <span>Ordem</span>
@@ -124,7 +124,7 @@ export default function Orders({ orders, whats }: any) {
                         </Link>
                       </Button>
 
-                      <ActionDelete title={'esta ordem'} url={'orders.destroy'} param={order.id} />
+                      <ActionDelete title={'esta ordem'} url={'app.orders.destroy'} param={order.id} />
                       
                     </TableCell>
                   </TableRow>

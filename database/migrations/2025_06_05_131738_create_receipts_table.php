@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('receipts', function (Blueprint $table) {
             $table->unsignedBigInteger('id')->primary()->index();
+            $table->foreignId('tenant_id')->nullable()->constrained('tenants');
             $table->text('receivingequipment')->nullable(); // Impressão de recibos recebimento de equipamento
             $table->text('equipmentdelivery')->nullable();  // Impressão de recibos entrega equipamento
             $table->text('budgetissuance')->nullable();     // Impressão de recibos emissão de orçamento

@@ -24,14 +24,14 @@ export default function CreateService({ equipments }: any) {
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
-        post(route('register-services.store'), {
+        post(route('app.register-services.store'), {
             onSuccess: () => {
                 reset()
                 setOpen(false)
             },
         });
 
-    }
+    }   
 
     const optionsEquipment = equipments.map((equipment: any) => ({
         value: equipment.id,
@@ -58,13 +58,13 @@ export default function CreateService({ equipments }: any) {
                     <form onSubmit={handleSubmit} autoComplete="off">
 
                         <div className="col-span-2 grid gap-2">
-                            <Label htmlFor="customer_id">Serviço</Label>
+                            <Label htmlFor="equipment_id">Serviço</Label>
                             <Select
                                 onValueChange={(value) => setData('equipment_id', value)}
                                 defaultValue={`${data.equipment_id}`}
                                 value={`${data.equipment_id}`}
                             >
-                                <SelectTrigger className="w-full">
+                                <SelectTrigger className="w-full">  
                                     <SelectValue placeholder="Selecione o equipamento" />
                                 </SelectTrigger>
                                 <SelectContent>

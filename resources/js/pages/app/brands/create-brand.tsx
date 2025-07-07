@@ -22,7 +22,7 @@ export default function CreateBrand() {
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
-        post(route('register-brands.store'), {
+        post(route('app.register-brands.store'), {
             onSuccess: () => reset(),
         });
         

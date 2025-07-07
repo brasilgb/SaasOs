@@ -15,15 +15,15 @@ import { Switch } from "@/components/ui/switch";
 const breadcrumbs: BreadcrumbItem[] = [
   {
     title: 'Dashboard',
-    href: '/',
+    href: route('app.dashboard'),
   },
   {
     title: 'Mensagens',
-    href: '/messages',
+    href: route('app.messages.index'),
   },
   {
     title: 'Adicionar',
-    href: '/messages',
+    href: route('app.messages.create'),
   },
 ];
 
@@ -45,7 +45,7 @@ export default function CreateMessage({ users }: any) {
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
-    post(route('messages.store'), {
+    post(route('app.messages.store'), {
       onSuccess: () => reset(),
     });
   }
@@ -71,7 +71,7 @@ export default function CreateMessage({ users }: any) {
         <div>
           <Button variant={'default'} asChild>
             <Link
-              href={route('messages.index')}
+              href={route('app.messages.index')}
             >
               <ArrowLeft h-4 w-4 />
               <span>Voltar</span>

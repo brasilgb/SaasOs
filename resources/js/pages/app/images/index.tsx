@@ -18,15 +18,15 @@ interface ImageData {
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Dashboard',
-        href: '/',
+        href: route('app.dashboard'),
     },
     {
         title: 'Ordens',
-        href: '/orders',
+        href: route('app.orders.index'),
     },
     {
         title: 'Imagens',
-        href: '/images',
+        href: "#",
     },
 ];
 
@@ -61,12 +61,12 @@ const ImageUpload: React.FC<PageProps> = ({ savedimages, orderid, errors, succes
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-        post(route('images.store'));
+        post(route('app.images.store'));
         setImagePreviews([]);
     };
 
     const handleDeletaImageBanco = (id:any) => {
-        destroy(route("images.destroy", id));
+        destroy(route("app.images.destroy", id));
     }
 
     return (

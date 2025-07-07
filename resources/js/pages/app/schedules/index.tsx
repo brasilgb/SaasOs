@@ -25,11 +25,11 @@ import ActionDelete from '@/components/action-delete';
 const breadcrumbs: BreadcrumbItem[] = [
   {
     title: 'Dashboard',
-    href: '/',
+    href: route('app.dashboard'),
   },
   {
     title: 'Agendamentos',
-    href: '/schedules',
+    href: '#',
   },
 ];
 
@@ -57,7 +57,7 @@ export default function Schedules({ schedules }: any) {
         <div>
           <Button variant={'default'} asChild>
             <Link
-              href={route('schedules.create')}
+              href={route('app.schedules.create')}
             >
               <Plus className='h-4 w-4' />
               <span>Agendamento</span>
@@ -109,7 +109,7 @@ export default function Schedules({ schedules }: any) {
                         </Link>
                       </Button>
 
-                      <ActionDelete title={'este agendamento'} url={'schedules.destroy'} param={schedule.id} />
+                      <ActionDelete title={'este agendamento'} url={'app.schedules.destroy'} param={schedule.id} />
 
 
                     </TableCell>
