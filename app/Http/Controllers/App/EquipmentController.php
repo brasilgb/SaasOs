@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\App;
 
-use App\Models\Equipment;
+use App\Models\App\Equipment;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\EquipmentRequest;
 use Illuminate\Http\RedirectResponse;

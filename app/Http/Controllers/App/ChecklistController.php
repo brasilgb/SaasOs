@@ -1,11 +1,11 @@
 <?php
 
 namespace App\Http\Controllers\App;
-
-use App\Models\Checklist;
+    
+use App\Models\App\Checklist;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ChecklistRequest;
-use App\Models\Equipment;
+use App\Models\App\Equipment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;

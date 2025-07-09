@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\App;
 
-use App\Models\Brand;
+use App\Models\App\Brand;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\BrandRequest;
 use Illuminate\Http\RedirectResponse;

@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers\App;
 
-use App\Models\Customer;
+use App\Models\App\Customer;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CustomerRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
 
 class CustomerController extends Controller

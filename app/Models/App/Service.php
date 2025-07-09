@@ -1,21 +1,21 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Tenantable;
 
-class Brand extends Model
+class Service extends Model
 {
     use Tenantable;
-    public function eqmodels(): HasMany
+    public function equipment(): BelongsTo
     {
-        return $this->hasMany(EQModel::class);
+        return $this->belongsTo(Equipment::class);
     }
 
-    public function bugets(): HasMany
+        public function bugets(): HasMany
     {
         return $this->hasMany(Budget::class);
     }

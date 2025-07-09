@@ -3,12 +3,12 @@
 namespace App\Http\Middleware;
 
 use App\Models\User;
-use App\Models\WhatsappMessage;
-use App\Models\Message;
-use App\Models\Company;
-use App\Models\Other;
-use App\Models\Equipment;
-use App\Models\Customer;
+use App\Models\App\WhatsappMessage;
+use App\Models\App\Message;
+use App\Models\App\Company;
+use App\Models\App\Other;
+use App\Models\App\Equipment;
+use App\Models\App\Customer;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;

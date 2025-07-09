@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\App;
 
-use App\Models\Company;
+use App\Models\App\Company;
 use App\Http\Controllers\Controller;
-use App\Models\Customer;
-use App\Models\Order;
-use App\Models\Other;
+use App\Models\App\Customer;
+use App\Models\App\Order;
+use App\Models\App\Other;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;

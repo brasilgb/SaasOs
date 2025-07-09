@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\App;
 
-use App\Models\EQModel;
+use App\Models\App\EQModel;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\EQModelRequest;
-use App\Models\Brand;
+use App\Models\App\Brand;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;

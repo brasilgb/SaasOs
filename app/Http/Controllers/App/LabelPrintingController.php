@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
-use App\Models\Company;
-use App\Models\Order;
+use App\Models\App\Company;
+use App\Models\App\Order;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 

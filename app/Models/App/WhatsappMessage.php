@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\App;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Tenantable;
 
-class Company extends Model
+class WhatsappMessage extends Model
 {
     use Tenantable;
     protected $guarded = [ 'id' ];

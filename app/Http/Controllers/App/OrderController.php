@@ -4,11 +4,11 @@ namespace App\Http\Controllers\App;
 
 use App\Http\Requests\OrderRequest;
 use App\Http\Controllers\Controller;
-use App\Models\Customer;
-use App\Models\Equipment;
-use App\Models\Order;
+use App\Models\App\Customer;
+use App\Models\App\Equipment;
+use App\Models\App\Order;
 use App\Models\User;
-use App\Models\WhatsappMessage;
+use App\Models\App\WhatsappMessage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;

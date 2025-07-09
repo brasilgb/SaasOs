@@ -3,12 +3,11 @@
 namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
-use App\Models\Customer;
-use App\Models\Message;
-use App\Models\Order;
-use App\Models\Schedule;
+use App\Models\App\Customer;
+use App\Models\App\Message;
+use App\Models\App\Order;
+use App\Models\App\Schedule;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;

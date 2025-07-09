@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\App;
 
-use App\Models\Budget;
+use App\Models\App\Budget;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\BudgetsRequest;
-use App\Models\Brand;
-use App\Models\EQModel;
-use App\Models\Service;
+use App\Models\App\Brand;
+use App\Models\App\EQModel;
+use App\Models\App\Service;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;

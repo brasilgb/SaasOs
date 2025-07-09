@@ -1,5 +1,5 @@
 import { type NavItem } from '@/types';
-import { Link as linkmegb, Calendar, Cog, FilePlus2, Folder, LayoutGrid, MessageSquareMore, PackagePlus, User, UserCog, Users, Users2, Wrench, Building, MessageCircleCode, Printer, Tags, CogIcon, Copyright, Monitor, Sparkles, ClipboardList, Blocks } from 'lucide-react';
+import { Link as linkmegb, Calendar, Cog, LayoutGrid, MessageSquareMore, PackagePlus, UserCog, Users2, Wrench, Building, MessageCircleCode, Printer, Tags, CogIcon, Copyright, Monitor, Sparkles, ClipboardList, Blocks, Building2 } from 'lucide-react';
 
 const mainNavItems: NavItem[] = [
     {
@@ -33,6 +33,7 @@ const mainNavItems: NavItem[] = [
         active: 'app.messages.*',
     },
 ];
+
 const mainUserItems: NavItem[] = [
     {
         title: 'Usuários',
@@ -136,4 +137,37 @@ const footerNavItems: NavItem[] = [
     },
 ];
 
-export { mainNavItems, mainUserItems ,mainConfItems, mainRegisterItems,footerNavItems};
+const mainAdminItems = [
+    {
+        title: 'Dashboard',
+        href: route('admin.dashboard'),
+        icon: LayoutGrid,
+        active: 'admin.dashboard',
+    },
+    {
+        title: 'Empresas',
+        href: route('admin.tenants.index'),
+        icon: Building,
+        active: 'admin.tenants.*',
+    },
+    {
+        title: 'Filiais',
+        href: route('admin.branches.index'),
+        icon: Building2,
+        active: 'admin.branches.*',
+    },
+    {
+        title: 'Usuários',
+        href: route('admin.users.index'),
+        icon: UserCog,
+        active: 'admin.users.*',
+    },
+    {
+        title: 'Configurações',
+        href: route('admin.settings.index'),
+        icon: Cog,
+        active: 'admin.settings.*',
+    },
+];
+
+export { mainNavItems, mainUserItems ,mainConfItems, mainRegisterItems,footerNavItems, mainAdminItems};

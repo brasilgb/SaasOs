@@ -1,27 +1,25 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Tenantable;
 
-class Budget extends Model
+class EQModel extends Model
 {
     use Tenantable;
+    protected $table = 'eqmodels';
+
     public function brand(): BelongsTo
     {
         return $this->belongsTo(Brand::class);
     }
-    
-    public function eqmodel(): BelongsTo
+
+    public function bugets(): HasMany
     {
-        return $this->belongsTo(EQModel::class);
-    }
-    public function service(): BelongsTo
-    {
-        return $this->belongsTo(Service::class);
+        return $this->hasMany(Budget::class);
     }
 
 }

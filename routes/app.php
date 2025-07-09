@@ -20,7 +20,7 @@ use App\Http\Controllers\App\UserController;
 use App\Http\Controllers\App\WhatsappMessageController;
 use Illuminate\Support\Facades\Route;
 
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('customers', CustomerController::class);
     Route::resource('messages', MessageController::class);
     Route::patch('messages/{message}/read', [MessageController::class, 'read'])->name('messages.read');

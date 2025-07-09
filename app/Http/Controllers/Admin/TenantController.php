@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
-use App\Models\Tenant;
+use App\Models\Admin\Tenant;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class TenantController extends Controller
 {
@@ -13,7 +14,7 @@ class TenantController extends Controller
      */
     public function index()
     {
-        //
+        return Inertia::render('admin/tenants/index');
     }
 
     /**

@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\App;
 
-use App\Models\Schedule;
+use App\Models\App\Schedule;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ScheduleRequest;
-use App\Models\Customer;
+use App\Models\App\Customer;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;

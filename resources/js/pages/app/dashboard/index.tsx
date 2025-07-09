@@ -105,9 +105,9 @@ export default function Dashboard({ orders, acount, chartequipments }: { orders:
                         </TabsContent>
                     </Tabs>
                 </div>
-                <div className='mt-4'>
+                {/* <div className='mt-4'>
                     <ChartAreaDashboard chartequipments={chartequipments} />
-                </div>
+                </div> */}
             </div>
         </AppLayout>
     );
