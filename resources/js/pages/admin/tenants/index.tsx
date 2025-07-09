@@ -1,12 +1,16 @@
 import AdminLayout from '@/layouts/admin/admin-layout'
-import { Head } from '@inertiajs/react'
+import { Head, Link } from '@inertiajs/react'
 import { BreadcrumbItem } from '@/types';
-import React from 'react'
-import { Building, PackagePlus } from 'lucide-react'
+import { Building, Building2, Edit, Plus } from 'lucide-react'
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
-import CreateTenant from './create-tenant';
 import InputSearch from '@/components/inputSearch';
+import { Button } from '@/components/ui/button';
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { maskPhone } from '@/Utils/mask';
+import moment from 'moment';
+import ActionDelete from '@/components/action-delete';
+import AppPagination from '@/components/app-pagination';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -15,7 +19,7 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
   {
     title: 'Empresas',
-    href: route('admin.tenants.index'),
+    href: "#",
   },
 ];
 
@@ -37,7 +41,76 @@ export default function TenantsIndex({  tenants }: any) {
           <InputSearch placeholder="Buscar empresa" url="admin.tenants.index" />
         </div>
         <div>
-          <CreateTenant tenants={tenants} />
+          <Button variant="default" asChild>
+            <Link href={route('admin.tenants.create')}>
+            <Plus />
+            Empresa
+            </Link>
+          </Button>
+        </div>
+      </div>
+      
+      <div className='p-4'>
+        <div className='border rounded-lg'>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>#</TableHead>
+                <TableHead>Nome</TableHead>
+                <TableHead>CNPJ</TableHead>
+                <TableHead>E-mail</TableHead>
+                <TableHead>Telefone</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Cadastro</TableHead>
+                <TableHead></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {tenants?.data.length > 0 ?
+                tenants?.data?.map((tenant: any) => (
+                  <TableRow key={tenant.id}>
+                    <TableCell>{tenant.id}</TableCell>
+                    <TableCell>{tenant.company_name}</TableCell>
+                    <TableCell>{tenant.company_cnpj}</TableCell>
+                    <TableCell>{tenant.contact_email}</TableCell>
+                    <TableCell>{maskPhone(tenant.contact_phone)}</TableCell>
+                    <TableCell>{moment(tenant.created_at).format("DD/MM/YYYY")}</TableCell>
+                    <TableCell className='flex justify-end gap-2'>
+
+                      <Button asChild size="icon" className="bg-sky-500 hover:bg-sky-600 text-white">
+                        <Link href={route('app.branches.index', { cl: tenant.id })}>
+                          <Building2 className="h-4 w-4" />
+                        </Link>
+                      </Button>
+
+                      <Button asChild size="icon" className="bg-orange-500 hover:bg-orange-600 text-white">
+                        <Link href={route('app.tenants.edit', tenant.id)}>
+                          <Edit />
+                        </Link>
+                      </Button>
+
+                      <ActionDelete title={'este cliente'} url={'app.tenants.destroy'} param={tenant.id} />
+
+                    </TableCell>
+                  </TableRow>
+                ))
+                : (
+                  <TableRow>
+                    <TableCell colSpan={7} className='h-16 w-full flex items-center justify-center'>
+                      Não há dados a serem mostrados no momento.
+                    </TableCell>
+                  </TableRow>
+                )
+              }
+            </TableBody>
+            <TableFooter>
+              <TableRow>
+                <TableCell colSpan={8}>
+                  <AppPagination data={tenants} />
+                </TableCell>
+              </TableRow>
+            </TableFooter>
+          </Table>
         </div>
       </div>
 

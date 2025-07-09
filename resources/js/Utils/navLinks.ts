@@ -1,5 +1,5 @@
 import { type NavItem } from '@/types';
-import { Link as linkmegb, Calendar, Cog, LayoutGrid, MessageSquareMore, PackagePlus, UserCog, Users2, Wrench, Building, MessageCircleCode, Printer, Tags, CogIcon, Copyright, Monitor, Sparkles, ClipboardList, Blocks, Building2 } from 'lucide-react';
+import { Link as linkmegb, Calendar, Cog, LayoutGrid, MessageSquareMore, PackagePlus, UserCog, Users2, Wrench, Building, MessageCircleCode, Printer, Tags, CogIcon, Copyright, Monitor, Sparkles, ClipboardList, Blocks, Building2, HandCoins } from 'lucide-react';
 
 const mainNavItems: NavItem[] = [
     {
@@ -155,6 +155,12 @@ const mainAdminItems = [
         href: route('admin.branches.index'),
         icon: Building2,
         active: 'admin.branches.*',
+    },
+    {
+        title: 'Planos',
+        href: route('admin.plans.index'),
+        icon: HandCoins,
+        active: 'admin.plans.*',
     },
     {
         title: 'Usuários',

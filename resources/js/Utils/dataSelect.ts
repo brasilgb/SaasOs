@@ -57,9 +57,11 @@ const statusOrcamento = [
     { value: '4', label: "Orçamento Aprovado" },
 ];
 
-const equipamento = [
-    { value: '1', label: "PC" },
-    { value: '2', label: "Mobile" },
+const statusSaas = [
+    { value: '1', label: "Ativo" },
+    { value: '1', label: "Inativo" },
+    { value: '2', label: "Pausado" },
+    { value: '3', label: "Vence em 5D" },
 ];
 
 export {
@@ -72,5 +74,5 @@ export {
     statusAgenda,
     statusMessage,
     statusOrcamento,
-    equipamento
+    statusSaas
 };
