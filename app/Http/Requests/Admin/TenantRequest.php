@@ -22,7 +22,9 @@ class TenantRequest extends FormRequest
     public function rules(): array
     {
         return [
-              ''  
-        ];
+              'name' => 'required',
+              'cnpj' => ($this->getMethod() == 'POST') ? 'required|cpf_ou_cnpj|unique:tenants' : 'required|cpf_ou_cnpj|unique:tenants,cnpj,' . $this->tenant->id,
+            'phone' => 'required'
+            ];
     }
 }

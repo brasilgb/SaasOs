@@ -55,7 +55,7 @@ export default function CreateTenant({ plans }: any) {
     status: '',
     observations: '',
   });
-
+ 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     post(route('admin.tenants.store'), {
@@ -145,7 +145,7 @@ export default function CreateTenant({ plans }: any) {
               <div className="grid gap-2">
                 <Label htmlFor="fantasy_name">Nome fantasia</Label>
                 <Input
-                  type="date"
+                  type="text"
                   id="fantasy_name"
                   value={data.fantasy_name}
                   onChange={(e) => setData('fantasy_name', e.target.value)}
