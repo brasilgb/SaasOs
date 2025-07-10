@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Admin\Tenant;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\TenantRequest;
+use Illuminate\Http\RedirectResponse;
 use App\Models\Admin\Plan;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -31,9 +33,12 @@ class TenantController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(TenantRequest $request): RedirectResponse
     {
-        //
+        $data = $request->all();
+        $request->validated();
+        Tenant::create($data);
+        return redirect()->route('admin.tenants.index')->with('success', 'Empresa cadastrado com sucesso!');
     }
 
     /**
@@ -41,7 +46,7 @@ class TenantController extends Controller
      */
     public function show(Tenant $tenant)
     {
-        //
+        return Inertia::render('admin/tenants/edit-tenant', ['tenant' => $tenant]);
     }
 
     /**
@@ -49,15 +54,18 @@ class TenantController extends Controller
      */
     public function edit(Tenant $tenant)
     {
-        //
+        return redirect()->route('admin.tenants.show', ['tenant' => $tenant->id]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Tenant $tenant)
+    public function update(TenantRequest $request, Tenant $tenant): RedirectResponse
     {
-        //
+        $data = $request->all();
+        $request->validated();
+        $tenant->update($data);
+        return redirect()->route('admin.tenants.show', ['tenant' => $tenant->id])->with('success', 'Empresa atualizada com sucess!');
     }
 
     /**
@@ -65,6 +73,7 @@ class TenantController extends Controller
      */
     public function destroy(Tenant $tenant)
     {
-        //
+        $tenant->delete();
+        return redirect()->route('admin.tenants.index')->width('success', 'Empresa excluída com sucesso!');
     }
 }

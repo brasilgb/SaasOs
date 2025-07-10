@@ -195,6 +195,7 @@ export default function CreateTenant({ plans }: any) {
                   id="contact_whatsapp"
                   value={data.contact_whatsapp}
                   onChange={(e) => setData('contact_whatsapp', e.target.value)}
+                  maxLength={13}
                 />
               </div>
             </div>

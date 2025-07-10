@@ -14,13 +14,13 @@ return new class extends Migration
         Schema::create('plans', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('descricao');
-            $table->string('preco');
-            $table->string('periodo');
-            $table->string('recursos');
-            $table->string('adicionais');
-            $table->string('valor');
+            $table->string('description');
+            $table->string('price');
+            $table->string('period');
+            $table->string('resources');
+            $table->string('aditional');
             $table->string('paiment_method');
+            $table->text('observations');
             $table->timestamps();
         });
     }

@@ -25,8 +25,10 @@ class TenantRequest extends FormRequest
             'company_name' => 'required',
             'company_cnpj' => ($this->getMethod() == 'POST') ? 'required|cpf_ou_cnpj|unique:tenants' : 'required|cpf_ou_cnpj|unique:tenants,company_cnpj,' . $this->tenant->id,
             'contact_email' => 'required',
+            'contact_name' => 'required',
             'contact_phone' => 'required',
             'payment_type' => 'required',
+            'plan_id' => 'required',
             'status' => 'required',
         ];
     }
@@ -37,8 +39,11 @@ class TenantRequest extends FormRequest
             'company_name' => 'nome da empresa',
             'company_cnpj' => 'CNPJ',
             'contact_email' => 'e-mail',
+            'contact_name' => 'nome do contato',
             'contact_phone' => 'telefone',
             'payment_type' => 'tipo de pagamento',
             'status' => 'status',
+            'plan_id' => 'plano',
         ];
+    }
 }
