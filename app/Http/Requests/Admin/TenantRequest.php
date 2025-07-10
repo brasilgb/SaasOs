@@ -13,7 +13,7 @@ class TenantRequest extends FormRequest
     {
         return true;
     }
- 
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -22,9 +22,23 @@ class TenantRequest extends FormRequest
     public function rules(): array
     {
         return [
-              'name' => 'required',
-              'cnpj' => ($this->getMethod() == 'POST') ? 'required|cpf_ou_cnpj|unique:tenants' : 'required|cpf_ou_cnpj|unique:tenants,cnpj,' . $this->tenant->id,
-            'phone' => 'required'
-            ];
+            'company_name' => 'required',
+            'company_cnpj' => ($this->getMethod() == 'POST') ? 'required|cpf_ou_cnpj|unique:tenants' : 'required|cpf_ou_cnpj|unique:tenants,company_cnpj,' . $this->tenant->id,
+            'contact_email' => 'required',
+            'contact_phone' => 'required',
+            'payment_type' => 'required',
+            'status' => 'required',
+        ];
     }
+
+    public function attributes(): array
+    {
+        return [
+            'company_name' => 'nome da empresa',
+            'company_cnpj' => 'CNPJ',
+            'contact_email' => 'e-mail',
+            'contact_phone' => 'telefone',
+            'payment_type' => 'tipo de pagamento',
+            'status' => 'status',
+        ];
 }
