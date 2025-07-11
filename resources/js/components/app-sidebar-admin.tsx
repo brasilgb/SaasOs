@@ -3,7 +3,8 @@ import { NavMain } from '@/components/nav-main';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { Link, usePage } from '@inertiajs/react';
 import AppLogo from './app-logo';
-import { footerNavItems, mainAdminItems, mainConfItems, mainNavItems, mainRegisterItems, mainUserItems } from '@/Utils/navLinks';
+import { footerNavItems, mainAdminItems, mainConfItems, mainNavItems, mainPlansItems, mainRegisterItems, mainUserItems } from '@/Utils/navLinks';
+import NavMainCollapsible from './nav-main-collapsible';
 
 export function AppSidebarAdmin() {
     const { othersetting } = usePage().props as any;
@@ -25,10 +26,10 @@ export function AppSidebarAdmin() {
                 <SidebarGroup>
                     <SidebarGroupLabel>Operações Administrativas</SidebarGroupLabel>
 
-                    <NavMain items={mainAdminItems} />
-                    {/* <div className='my-1'>
-                        <NavMainCollapsible items={mainConfItems} />
-                    </div> */}
+                    <NavMain items={mainAdminItems} /> 
+                    <div className='my-1'>
+                        <NavMainCollapsible items={mainPlansItems} />
+                    </div>
 
                     {/* {othersetting?.budget ?
                         <div className='my-1'>

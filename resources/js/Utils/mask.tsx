@@ -93,4 +93,15 @@ function maskMoneyDot(value: string) {
     }
 }
 
-export { maskCep, maskPhone, maskDate, maskCpfCnpj, maskCnpj, unMask, maskMoney, maskMoneyDot, maskWhatsApp };
+function createSlug(title: string) {
+    if (title) {
+        return title
+            .toLowerCase()
+            .replace(/\s+/g, '-') // Replace spaces with hyphens
+            .replace(/[^\w-]+/g, '') // Remove non-word characters (except hyphens)
+            .replace(/--+/g, '-') // Replace multiple hyphens with a single hyphen
+            .trim(); // Remove leading/trailing whitespace
+    }
+}
+
+export { maskCep, maskPhone, maskDate, maskCpfCnpj, maskCnpj, unMask, maskMoney, maskMoneyDot, maskWhatsApp, createSlug };

@@ -25,6 +25,7 @@ export default function EditBrand({brand}:any) {
         patch(route('app.register-brands.update', brand.id));
         setOpen(false);
     }
+    
     return (
         <div>
             <Dialog open={open} onOpenChange={setOpen}>

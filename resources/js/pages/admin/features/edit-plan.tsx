@@ -1,31 +1,24 @@
 import { Button } from "@/components/ui/button";
-import { createSlug } from "@/Utils/mask";
 import { useForm } from "@inertiajs/react";
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label";
 import { Plus, Save } from 'lucide-react';
-import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useState } from "react";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-export default function CreatePlan() {
+export default function EditFeature({ feature, periods }: any) {
   const [open, setOpen] = useState(false)
 
-  const { data, setData, post, progress, processing, reset, errors } = useForm({
-    name: '',
-    slug: '',
-    description: ''
+  const { data, setData, patch, progress, processing, reset, errors } = useForm({
+    name: periods.name,
+    period_id: periods.period_id,
+    order: periods.order,
   });
-
-  const handleSlug = (slug: any) => {
-    const creSlug: any = createSlug(slug);
-    setData('name', slug);
-    setData('slug', creSlug);
-  };
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    post(route('admin.plans.store'), {
+    patch(route('admin.features.store', feature.id), {
       onSuccess: () => {
         reset()
         setOpen(false)
@@ -38,12 +31,12 @@ export default function CreatePlan() {
       <DialogTrigger asChild>
         <Button className="gap-2">
           <Plus className="h-4 w-4" />
-          Plano
+          Características
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Cadastrar um plano</DialogTitle>
+          <DialogTitle>Cadastrar uma características</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="grid gap-2">
@@ -52,30 +45,37 @@ export default function CreatePlan() {
               type="text"
               id="name"
               value={data.name}
-              onChange={(e) => handleSlug(e.target.value)}
+              onChange={(e) => setData('name', e.target.value)}
             />
             {errors.name && <div className="text-red-500 text-sm">{errors.name}</div>}
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="slug">Slug</Label>
-            <Input
-              type="text"
-              id="slug"
-              value={data.slug}
-              onChange={(e) => setData('slug', e.target.value)}
-            />
-            {errors.slug && <div className="text-red-500 text-sm">{errors.slug}</div>}
+            <Label htmlFor="slug">Período</Label>
+            <Select>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select um período" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Fruits</SelectLabel>
+                  {periods?.data.map((period: any) => (
+                    <SelectItem key={period.id} value={period.id}>{period.name}</SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+            {errors.period_id && <div className="text-red-500 text-sm">{errors.period_id}</div>}
           </div>
 
-          <div className="col-span-2 grid gap-2">
-            <Label htmlFor="description">Descrição</Label>
-            <Textarea
-              id="description"
-              value={data.description}
-              onChange={(e) => setData('description', e.target.value)}
+          <div className="grid gap-2">
+            <Label htmlFor="order">Ordem</Label>
+            <Input
+              type="number"
+              id="order"
+              value={data.order}
+              onChange={(e) => setData('order', e.target.value)}
             />
-            {errors.description && <div className="text-red-500 text-sm">{errors.description}</div>}
           </div>
 
           <DialogFooter className="gap-2">

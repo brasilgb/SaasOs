@@ -4,14 +4,14 @@ namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class PlanRequest extends FormRequest
+class PeriodRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return true;
+        return false;
     }
 
     /**
@@ -22,17 +22,22 @@ class PlanRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'plan_id' => 'required',
             'name' => 'required',
-            'slug' => 'required',
-            'description' => 'required',
+            'interval' => 'required',
+            'interval_count' => 'required',
+            'price' => 'required'
         ];
     }
 
     public function attributes(): array
     {
         return [
+            'plan_id' => 'plano',
             'name' => 'nome',
-            'description' => 'descrição',
+            'interval' => 'intervalo',
+            'interval_count' => 'quantidade intervalo',
+            'price' => 'preço'
         ];
     }
 }

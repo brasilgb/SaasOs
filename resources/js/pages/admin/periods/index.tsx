@@ -1,7 +1,7 @@
 import AdminLayout from '@/layouts/admin/admin-layout'
 import { Head, Link, usePage } from '@inertiajs/react'
 import { BreadcrumbItem } from '@/types';
-import { Edit, HandCoins } from 'lucide-react'
+import { Edit, HandCoins, Palette } from 'lucide-react'
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
 import InputSearch from '@/components/inputSearch';
@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, Table
 import moment from 'moment';
 import ActionDelete from '@/components/action-delete';
 import AppPagination from '@/components/app-pagination';
-import CreatePlan from './create-plan';
+import CreateFeature from './create-feature';
 import AlertSuccess from '@/components/app-alert-success';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -19,7 +19,7 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: route('admin.dashboard'),
     },
     {
-        title: 'Planos',
+        title: 'Períodos',
         href: "#",
     },
 ];
@@ -29,12 +29,12 @@ export default function PlansIndex({ plans }: any) {
 
     return (
         <AdminLayout>
-            <Head title="Planos" />
+            <Head title="Períodos" />
             {flash.message && <AlertSuccess message={flash.message} />}
             <div className='flex items-center justify-between h-16 px-4'>
                 <div className='flex items-center gap-2'>
-                    <Icon iconNode={HandCoins} className='w-8 h-8' />
-                    <h2 className="text-xl font-semibold tracking-tight">Planos</h2>
+                    <Icon iconNode={Palette} className='w-8 h-8' />
+                    <h2 className="text-xl font-semibold tracking-tight">Períodos</h2>
                 </div>
                 <div>
                     <Breadcrumbs breadcrumbs={breadcrumbs} />
@@ -42,10 +42,10 @@ export default function PlansIndex({ plans }: any) {
             </div>
             <div className='flex items-center justify-between p-4'>
                 <div>
-                    <InputSearch placeholder="Buscar plano" url="admin.plans.index" />
+                    <InputSearch placeholder="Buscar período" url="admin.periodo.index" />
                 </div>
                 <div>
-                    <CreatePlan />
+                    <CreateFeature />
                 </div>
             </div>
 
@@ -56,24 +56,24 @@ export default function PlansIndex({ plans }: any) {
                             <TableRow>
                                 <TableHead>#</TableHead>
                                 <TableHead>Nome</TableHead>
-                                <TableHead>Slug</TableHead>
-                                <TableHead>Descrição</TableHead>
+                                <TableHead>Períod</TableHead>
+                                <TableHead>order</TableHead>
                                 <TableHead>Cadastro</TableHead>
                                 <TableHead></TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {plans?.data.length > 0 ?
-                                plans?.data?.map((plan: any) => (
-                                    <TableRow key={plan.id}>
-                                        <TableCell>{plan.id}</TableCell>
-                                        <TableCell>{plan.name}</TableCell>
-                                        <TableCell>{plan.slug}</TableCell>
-                                        <TableCell>{plan.description}</TableCell>
-                                        <TableCell>{moment(plan.created_at).format("DD/MM/YYYY")}</TableCell>
+                            {features?.data.length > 0 ?
+                                features?.data?.map((feature: any) => (
+                                    <TableRow key={feature.id}>
+                                        <TableCell>{feature.id}</TableCell>
+                                        <TableCell>{feature.name}</TableCell>
+                                        <TableCell>{feature.slug}</TableCell>
+                                        <TableCell>{feature.description}</TableCell>
+                                        <TableCell>{moment(feature.created_at).format("DD/MM/YYYY")}</TableCell>
                                         <TableCell className='flex justify-end gap-2'>
-                                            <EditPlan plan={plan} />
-                                            <ActionDelete title={'este plano'} url={'admin.plans.destroy'} param={plan.id} />
+                                            <EditPlan feature={feature} />
+                                            <ActionDelete title={'esta característica'} url={'admin.features.destroy'} param={feature.id} />
                                         </TableCell>
                                     </TableRow>
                                 ))
@@ -89,7 +89,7 @@ export default function PlansIndex({ plans }: any) {
                         <TableFooter>
                             <TableRow>
                                 <TableCell colSpan={7} >
-                                    <AppPagination data={plans} />
+                                    <AppPagination data={features} />
                                 </TableCell>
                             </TableRow>
                         </TableFooter>

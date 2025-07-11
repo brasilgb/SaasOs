@@ -129,14 +129,6 @@ const mainRegisterItems = [
     }
 ];
 
-const footerNavItems: NavItem[] = [
-    {
-        title: 'MEGB',
-        href: 'https://megb.com.br',
-        icon: linkmegb,
-    },
-];
-
 const mainAdminItems = [
     {
         title: 'Dashboard',
@@ -157,12 +149,6 @@ const mainAdminItems = [
         active: 'admin.branches.*',
     },
     {
-        title: 'Planos',
-        href: route('admin.plans.index'),
-        icon: HandCoins,
-        active: 'admin.plans.*',
-    },
-    {
         title: 'Usuários',
         href: route('admin.users.index'),
         icon: UserCog,
@@ -176,4 +162,40 @@ const mainAdminItems = [
     },
 ];
 
-export { mainNavItems, mainUserItems ,mainConfItems, mainRegisterItems,footerNavItems, mainAdminItems};
+const mainPlansItems = [
+    {
+        title: "Planos",
+        url: "#",
+        icon: HandCoins,
+        items: [
+            {
+                title: 'Cadastrar característica',
+                url: route('admin.features.index'),
+                icon: Sparkles,
+                active: 'admin.features.*',
+            },
+            {
+                title: 'Cadastrar períodos',
+                url: route('admin.periods.index'),
+                icon: Sparkles,
+                active: 'admin.periods.*',
+            },
+            {
+                title: 'Cadastrar plano',
+                url: route('admin.plans.index'),
+                icon: Copyright,
+                active: 'admin.plans.*',
+            },
+        ]
+    }
+];
+
+const footerNavItems: NavItem[] = [
+    {
+        title: 'MEGB',
+        href: 'https://megb.com.br',
+        icon: linkmegb,
+    },
+];
+
+export { mainNavItems, mainUserItems ,mainConfItems, mainRegisterItems,footerNavItems, mainAdminItems, mainPlansItems};

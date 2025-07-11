@@ -11,11 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('plans', function (Blueprint $table) {
+        Schema::create('periods', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('plan_id')->nullable()->constrained();
             $table->string('name');
-            $table->string('slug');
-            $table->text('description');
+            $table->string('interval');
+            $table->integer('interval_count');
+            $table->decimal('price'); 
             $table->timestamps();
         });
     }
@@ -25,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('plans');
+        Schema::dropIfExists('periods');
     }
 };

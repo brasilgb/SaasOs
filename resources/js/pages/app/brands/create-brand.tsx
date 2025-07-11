@@ -53,7 +53,6 @@ export default function CreateBrand() {
                                 {errors.brand && <div className="text-red-500 text-sm">{errors.brand}</div>}
                             </div>
                         </div>
-
                         <DialogFooter className="gap-2">
                             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                                 Cancelar
