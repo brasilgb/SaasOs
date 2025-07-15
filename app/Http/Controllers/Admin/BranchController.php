@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Admin\Branch;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Requests\Admin\BranchRequest;
+use App\Models\Admin\Plan;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 
 class BranchController extends Controller
@@ -14,7 +16,8 @@ class BranchController extends Controller
      */
     public function index()
     {
-        return Inertia::render('admin/branches/index');
+        $branches = Branch::paginate(11);
+        return Inertia::render('admin/branches/index', ['branches' => $branches]);
     }
 
     /**
@@ -22,15 +25,19 @@ class BranchController extends Controller
      */
     public function create()
     {
-        //
+        $plans = Plan::get();
+        return Inertia::render('admin/branches/create-branch', ['plans' => $plans]);
     }
-
+ 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(BranchRequest $request): RedirectResponse
     {
-        //
+        $data = $request->all();
+        $request->validated();
+        Branch::create($data);
+        return redirect()->route('admin.branches.index')->with('success', 'Filial cadastrada com sucesso!');
     }
 
     /**
@@ -38,7 +45,7 @@ class BranchController extends Controller
      */
     public function show(Branch $branch)
     {
-        //
+        return Inertia::render('admin/branches/edit-branch', ['branch' => $branch]);
     }
 
     /**
@@ -46,15 +53,18 @@ class BranchController extends Controller
      */
     public function edit(Branch $branch)
     {
-        //
+        return redirect()->route('admin.branches.show', ['branch' => $branch->id]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Branch $branch)
+    public function update(BranchRequest $request, Branch $branch): RedirectResponse
     {
-        //
+        $data = $request->all();
+        $request->validated();
+        $branch->update($data);
+        return redirect()->route('admin.branches.show', ['branch' => $branch->id])->with('success', 'Filial atualizada com sucess!');
     }
 
     /**
@@ -62,6 +72,7 @@ class BranchController extends Controller
      */
     public function destroy(Branch $branch)
     {
-        //
+        $branch->delete();
+        return redirect()->route('admin.branches.index')->width('success', 'Filial excluída com sucesso!');
     }
 }

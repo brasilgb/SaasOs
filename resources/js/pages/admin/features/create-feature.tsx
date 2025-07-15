@@ -31,7 +31,7 @@ export default function CreateFeature({ periods }: any) {
       <DialogTrigger asChild>
         <Button className="gap-2">
           <Plus className="h-4 w-4" />
-          Características
+          Característica
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
@@ -40,7 +40,7 @@ export default function CreateFeature({ periods }: any) {
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="grid gap-2">
-            <Label htmlFor="name">Nome</Label>
+            <Label htmlFor="name">Descrição</Label>
             <Input
               type="text"
               id="name"
@@ -52,15 +52,14 @@ export default function CreateFeature({ periods }: any) {
 
           <div className="grid gap-2">
             <Label htmlFor="slug">Período</Label>
-            <Select>
-              <SelectTrigger className="w-[180px]">
+            <Select onValueChange={(e) => setData('period_id', e)} defaultValue={`${data.period_id}`}>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select um período" />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  <SelectLabel>Fruits</SelectLabel>
-                  {periods?.data.map((period: any) => (
-                    <SelectItem key={period.id} value={period.id}>{period.name}</SelectItem>
+                  {periods?.map((period: any) => (
+                    <SelectItem key={period.id} value={`${period.id}`}>{period.name}</SelectItem>
                   ))}
                 </SelectGroup>
               </SelectContent>

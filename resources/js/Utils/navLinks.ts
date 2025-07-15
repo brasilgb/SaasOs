@@ -169,10 +169,10 @@ const mainPlansItems = [
         icon: HandCoins,
         items: [
             {
-                title: 'Cadastrar característica',
-                url: route('admin.features.index'),
-                icon: Sparkles,
-                active: 'admin.features.*',
+                title: 'Cadastrar plano',
+                url: route('admin.plans.index'),
+                icon: Copyright,
+                active: 'admin.plans.*',
             },
             {
                 title: 'Cadastrar períodos',
@@ -181,10 +181,10 @@ const mainPlansItems = [
                 active: 'admin.periods.*',
             },
             {
-                title: 'Cadastrar plano',
-                url: route('admin.plans.index'),
-                icon: Copyright,
-                active: 'admin.plans.*',
+                title: 'Cadastrar característica',
+                url: route('admin.features.index'),
+                icon: Sparkles,
+                active: 'admin.features.*',
             },
         ]
     }

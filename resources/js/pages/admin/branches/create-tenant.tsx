@@ -19,8 +19,8 @@ const breadcrumbs: BreadcrumbItem[] = [
     href: route('admin.dashboard'),
   },
   {
-    title: 'Empresas',
-    href: route('admin.tenants.index'),
+    title: 'Filiais',
+    href: route('admin.branches.index'),
   },
   {
     title: 'Adicionar',
@@ -28,16 +28,12 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-export default function CreateTenant({ plans }: any) {
-
-  const allPlans = plans.map((plan: any) => ({
-    value: plan.id,
-    label: plan.name,
-  }));
+export default function CreateTenant() {
 
   const { data, setData, post, progress, processing, reset, errors } = useForm({
-    company_cnpj: '',
-    company_name: '',
+    tenant_id: '',
+    branch_cnpj: '',
+    branch_name: '',
     fantasy_name: '',
     contact_name: '',
     contact_email: '',
@@ -54,10 +50,10 @@ export default function CreateTenant({ plans }: any) {
     status: '',
     observations: '',
   });
- 
+
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    post(route('admin.tenants.store'), {
+    post(route('admin.branches.store'), {
       onSuccess: () => reset(),
     });
   }
@@ -76,21 +72,17 @@ export default function CreateTenant({ plans }: any) {
       .catch((error) => console.error(error));
   };
 
-  const changePlan = (selected: any) => {
-    setData('plan_id', selected?.value);
-  };
-
   const changeStatus = (selected: any) => {
     setData('status', selected?.value);
   };
 
   return (
     <AdminLayout>
-      <Head title="Empresas" />
+      <Head title="Filiais" />
       <div className='flex items-center justify-between h-16 px-4'>
         <div className='flex items-center gap-2'>
           <Icon iconNode={Users} className='w-8 h-8' />
-          <h2 className="text-xl font-semibold tracking-tight">Empresas</h2>
+          <h2 className="text-xl font-semibold tracking-tight">Filiais</h2>
         </div>
         <div>
           <Breadcrumbs breadcrumbs={breadcrumbs} />
@@ -101,7 +93,7 @@ export default function CreateTenant({ plans }: any) {
         <div>
           <Button variant={'default'} asChild>
             <Link
-              href={route('admin.tenants.index')}
+              href={route('admin.branches.index')}
             >
               <ArrowLeft h-4 w-4 />
               <span>Voltar</span>
@@ -119,26 +111,26 @@ export default function CreateTenant({ plans }: any) {
             <div className="grid grid-cols-3 gap-4 mt-4">
 
               <div className="grid gap-2">
-                <Label htmlFor="company_name">Razão social</Label>
+                <Label htmlFor="branch_name">Razão social</Label>
                 <Input
                   type="text"
-                  id="company_name"
-                  value={data.company_name}
-                  onChange={(e) => setData('company_name', e.target.value)}
+                  id="branch_name"
+                  value={data.branch_name}
+                  onChange={(e) => setData('branch_name', e.target.value)}
                 />
-                {errors.company_name && <div className="text-red-500 text-sm">{errors.company_name}</div>}
+                {errors.branch_name && <div className="text-red-500 text-sm">{errors.branch_name}</div>}
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="company_cnpj">CPF/CNPJ</Label>
+                <Label htmlFor="branch_cnpj">CPF/CNPJ</Label>
                 <Input
                   type="text"
-                  id="company_cnpj"
-                  value={maskCpfCnpj(data.company_cnpj)}
-                  onChange={(e) => setData('company_cnpj', e.target.value)}
+                  id="branch_cnpj"
+                  value={maskCpfCnpj(data.branch_cnpj)}
+                  onChange={(e) => setData('branch_cnpj', e.target.value)}
                   maxLength={18}
                 />
-                {errors.company_cnpj && <div className="text-red-500 text-sm">{errors.company_cnpj}</div>}
+                {errors.branch_cnpj && <div className="text-red-500 text-sm">{errors.branch_cnpj}</div>}
               </div>
 
               <div className="grid gap-2">
@@ -281,35 +273,6 @@ export default function CreateTenant({ plans }: any) {
             <div className="grid grid-cols-4 gap-4 mt-4">
 
               <div className="col-span-2 grid gap-2">
-                <Label htmlFor="plan_id">Plano</Label>
-                <Select
-                  options={allPlans}
-                  onChange={changePlan}
-                  placeholder="Selecione o plano"
-                  className="shadow-xs p-0 border text-gray-700 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-9"
-                  styles={{
-                    control: (baseStyles, state) => ({
-                      ...baseStyles,
-                      fontSize: '14px',
-                      boxShadow: 'none',
-                      border: 'none',
-                      background: 'transparent',
-                      paddingBottom: '2px',
-                    }),
-                    dropdownIndicator: (base) => ({
-                      ...base,
-
-                    }),
-                    menuList: (base) => ({
-                      ...base,
-                      fontSize: '14px',
-                    }),
-                  }}
-                />
-                <InputError className="mt-2" message={errors.plan_id} />
-              </div>
-
-              <div className="col-span-2 grid gap-2">
                 <Label htmlFor="status">Status</Label>
                 <Select
                   options={statusSaas}
@@ -337,7 +300,6 @@ export default function CreateTenant({ plans }: any) {
                 />
                 <InputError className="mt-2" message={errors.status} />
               </div>
-
             </div>
 
             <div className="grid gap-2">

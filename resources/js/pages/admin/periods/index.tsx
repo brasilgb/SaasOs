@@ -5,13 +5,14 @@ import { Edit, HandCoins, Palette } from 'lucide-react'
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
 import InputSearch from '@/components/inputSearch';
-import EditPlan from './edit-plan';
+import EditPlan from './edit-period';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import moment from 'moment';
 import ActionDelete from '@/components/action-delete';
 import AppPagination from '@/components/app-pagination';
-import CreateFeature from './create-feature';
 import AlertSuccess from '@/components/app-alert-success';
+import CreatePeriod from './create-period';
+import EditPeriod from './edit-period';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -24,7 +25,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function PlansIndex({ plans }: any) {
+export default function PlansIndex({ periods, plans }: any) {
     const { flash } = usePage().props as any;
 
     return (
@@ -45,7 +46,7 @@ export default function PlansIndex({ plans }: any) {
                     <InputSearch placeholder="Buscar período" url="admin.periodo.index" />
                 </div>
                 <div>
-                    <CreateFeature />
+                    <CreatePeriod plans={plans} />
                 </div>
             </div>
 
@@ -56,24 +57,26 @@ export default function PlansIndex({ plans }: any) {
                             <TableRow>
                                 <TableHead>#</TableHead>
                                 <TableHead>Nome</TableHead>
-                                <TableHead>Períod</TableHead>
-                                <TableHead>order</TableHead>
+                                <TableHead>Plano</TableHead>
+                                <TableHead>Intervalo</TableHead>
+                                <TableHead>Preço</TableHead>
                                 <TableHead>Cadastro</TableHead>
                                 <TableHead></TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {features?.data.length > 0 ?
-                                features?.data?.map((feature: any) => (
-                                    <TableRow key={feature.id}>
-                                        <TableCell>{feature.id}</TableCell>
-                                        <TableCell>{feature.name}</TableCell>
-                                        <TableCell>{feature.slug}</TableCell>
-                                        <TableCell>{feature.description}</TableCell>
-                                        <TableCell>{moment(feature.created_at).format("DD/MM/YYYY")}</TableCell>
+                            {periods?.data.length > 0 ?
+                                periods?.data?.map((period: any) => (
+                                    <TableRow key={period.id}>
+                                        <TableCell>{period.id}</TableCell>
+                                        <TableCell>{period.name}</TableCell>
+                                        <TableCell>{period.plan.name}</TableCell>
+                                        <TableCell>{period.interval}</TableCell>
+                                        <TableCell>{period.price}</TableCell>
+                                        <TableCell>{moment(period.created_at).format("DD/MM/YYYY")}</TableCell>
                                         <TableCell className='flex justify-end gap-2'>
-                                            <EditPlan feature={feature} />
-                                            <ActionDelete title={'esta característica'} url={'admin.features.destroy'} param={feature.id} />
+                                            <EditPeriod plans={plans} period={period} />
+                                            <ActionDelete title={'esta característica'} url={'admin.periods.destroy'} param={period.id} />
                                         </TableCell>
                                     </TableRow>
                                 ))
@@ -89,7 +92,7 @@ export default function PlansIndex({ plans }: any) {
                         <TableFooter>
                             <TableRow>
                                 <TableCell colSpan={7} >
-                                    <AppPagination data={features} />
+                                    <AppPagination data={periods} />
                                 </TableCell>
                             </TableRow>
                         </TableFooter>

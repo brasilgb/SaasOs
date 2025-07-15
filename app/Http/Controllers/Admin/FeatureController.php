@@ -25,9 +25,9 @@ class FeatureController extends Controller
             $query->where('name', 'like', '%' . $search . '%');
         }
 
-        $plans = Period::get();
-        $features = $query->paginate(12);
-        return Inertia::render('admin/features/index', ["features" => $features, "plans" => $plans]);
+        $periods = Period::get();
+        $features = $query->with('period')->paginate(12);
+        return Inertia::render('admin/features/index', ["features" => $features, "periods" => $periods]);
     }
  
     /**

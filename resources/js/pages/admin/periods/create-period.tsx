@@ -7,18 +7,20 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { useState } from "react";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-export default function EditFeature({ feature, periods }: any) {
-  const [open, setOpen] = useState(false)
+export default function CreatePeriod({ plans }: any) {
+  const [open, setOpen] = useState(false);
 
-  const { data, setData, patch, progress, processing, reset, errors } = useForm({
-    name: periods.name,
-    period_id: periods.period_id,
-    order: periods.order,
+  const { data, setData, post, progress, processing, reset, errors } = useForm({
+    name: '',
+    plan_id: '',
+    interval: '',
+    interval_count: '',
+    price: '',
   });
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    patch(route('admin.features.store', feature.id), {
+    post(route('admin.periods.store'), {
       onSuccess: () => {
         reset()
         setOpen(false)
@@ -31,14 +33,15 @@ export default function EditFeature({ feature, periods }: any) {
       <DialogTrigger asChild>
         <Button className="gap-2">
           <Plus className="h-4 w-4" />
-          Características
+          Período
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Cadastrar uma características</DialogTitle>
+          <DialogTitle>Cadastrar um período</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-8">
+
           <div className="grid gap-2">
             <Label htmlFor="name">Nome</Label>
             <Input
@@ -50,32 +53,56 @@ export default function EditFeature({ feature, periods }: any) {
             {errors.name && <div className="text-red-500 text-sm">{errors.name}</div>}
           </div>
 
+          <div className="grid grid-cols-2 gap-4 mt-4">
+            <div className="grid gap-2">
+              <Label htmlFor="interval_count">Contagem do intervalo</Label>
+              <Input
+                type="text"
+                id="interval_count"
+                value={data.interval_count}
+                onChange={(e) => setData('interval_count', e.target.value)}
+              />
+              {errors.interval_count && <div className="text-red-500 text-sm">{errors.interval_count}</div>}
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="interval">Intervalo</Label>
+              <Input
+                type="text"
+                id="interval"
+                value={data.interval}
+                onChange={(e) => setData('interval', e.target.value)}
+              />
+              {errors.interval && <div className="text-red-500 text-sm">{errors.interval}</div>}
+            </div>
+          </div>
+
           <div className="grid gap-2">
-            <Label htmlFor="slug">Período</Label>
-            <Select>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select um período" />
+            <Label htmlFor="plan_id">Plano</Label>
+            <Select onValueChange={(e) => setData('plan_id', e)} defaultValue={`${data.plan_id}`}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Selecione um plano" />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  <SelectLabel>Fruits</SelectLabel>
-                  {periods?.data.map((period: any) => (
-                    <SelectItem key={period.id} value={period.id}>{period.name}</SelectItem>
+                  {plans?.map((plan: any) => (
+                    <SelectItem key={plan.id} value={`${plan.id}`}>{plan.name}</SelectItem>
                   ))}
                 </SelectGroup>
               </SelectContent>
             </Select>
-            {errors.period_id && <div className="text-red-500 text-sm">{errors.period_id}</div>}
+            {errors.plan_id && <div className="text-red-500 text-sm">{errors.plan_id}</div>}
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="order">Ordem</Label>
+            <Label htmlFor="price">Preço</Label>
             <Input
-              type="number"
-              id="order"
-              value={data.order}
-              onChange={(e) => setData('order', e.target.value)}
+              type="text"
+              id="price"
+              value={data.price}
+              onChange={(e) => setData('price', e.target.value)}
             />
+            {errors.price && <div className="text-red-500 text-sm">{errors.price}</div>}
           </div>
 
           <DialogFooter className="gap-2">

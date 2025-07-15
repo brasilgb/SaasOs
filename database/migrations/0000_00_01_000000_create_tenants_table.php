@@ -20,7 +20,6 @@ return new class extends Migration
             $table->string('contact_email');
             $table->string('contact_phone');
             $table->string('contact_whatsapp');
-            $table->string('payment_type');
             $table->string('logo', 100)->nullable();
             $table->string('cep', 50)->nullable();
             $table->string('state', 50)->nullable();
@@ -31,7 +30,7 @@ return new class extends Migration
             $table->string('complement', 50)->nullable();
             $table->foreignId('plan_id')->nullable()->constrained();
             $table->boolean('status');
-            $table->text('observations');
+            $table->text('observations')->nullable();
             $table->timestamps();
         });
     }

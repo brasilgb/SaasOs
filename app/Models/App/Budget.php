@@ -19,6 +19,7 @@ class Budget extends Model
     {
         return $this->belongsTo(EQModel::class);
     }
+    
     public function service(): BelongsTo
     {
         return $this->belongsTo(Service::class);

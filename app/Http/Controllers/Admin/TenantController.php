@@ -7,7 +7,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\TenantRequest;
 use Illuminate\Http\RedirectResponse;
 use App\Models\Admin\Plan;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class TenantController extends Controller

@@ -5,7 +5,7 @@ import { Edit, HandCoins, Palette } from 'lucide-react'
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
 import InputSearch from '@/components/inputSearch';
-import EditPlan from './edit-plan';
+import EditPlan from './edit-feature';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import moment from 'moment';
 import ActionDelete from '@/components/action-delete';
@@ -24,7 +24,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function PlansIndex({ features, plans }: any) {
+export default function PlansIndex({ features, periods }: any) {
     const { flash } = usePage().props as any;
 
     return (
@@ -45,7 +45,7 @@ export default function PlansIndex({ features, plans }: any) {
                     <InputSearch placeholder="Buscar característica" url="admin.features.index" />
                 </div>
                 <div>
-                    <CreateFeature />
+                    <CreateFeature periods={periods} />
                 </div>
             </div>
 
@@ -68,11 +68,11 @@ export default function PlansIndex({ features, plans }: any) {
                                     <TableRow key={feature.id}>
                                         <TableCell>{feature.id}</TableCell>
                                         <TableCell>{feature.name}</TableCell>
-                                        <TableCell>{feature.slug}</TableCell>
-                                        <TableCell>{feature.description}</TableCell>
+                                        <TableCell>{feature.period.name}</TableCell>
+                                        <TableCell>{feature.order}</TableCell>
                                         <TableCell>{moment(feature.created_at).format("DD/MM/YYYY")}</TableCell>
                                         <TableCell className='flex justify-end gap-2'>
-                                            <EditPlan feature={feature} />
+                                            <EditPlan feature={feature} periods={periods} />
                                             <ActionDelete title={'esta característica'} url={'admin.features.destroy'} param={feature.id} />
                                         </TableCell>
                                     </TableRow>

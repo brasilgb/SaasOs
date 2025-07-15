@@ -78,18 +78,18 @@ export default function TenantsIndex({  tenants }: any) {
                     <TableCell className='flex justify-end gap-2'>
 
                       <Button asChild size="icon" className="bg-sky-500 hover:bg-sky-600 text-white">
-                        <Link href={route('app.branches.index', { cl: tenant.id })}>
+                        <Link href={route('admin.branches.index', { tn: tenant.id })}>
                           <Building2 className="h-4 w-4" />
                         </Link>
                       </Button>
 
                       <Button asChild size="icon" className="bg-orange-500 hover:bg-orange-600 text-white">
-                        <Link href={route('app.tenants.edit', tenant.id)}>
+                        <Link href={route('admin.tenants.edit', tenant.id)}>
                           <Edit />
                         </Link>
                       </Button>
 
-                      <ActionDelete title={'este cliente'} url={'app.tenants.destroy'} param={tenant.id} />
+                      <ActionDelete title={'esta empresa'} url={'admin.tenants.destroy'} param={tenant.id} />
 
                     </TableCell>
                   </TableRow>

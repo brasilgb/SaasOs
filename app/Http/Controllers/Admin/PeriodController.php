@@ -6,6 +6,7 @@ use App\Models\Admin\Period;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\PeriodRequest;
 use App\Http\Requests\Admin\PlanRequest;
+use App\Models\Admin\Plan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -25,8 +26,9 @@ class PeriodController extends Controller
             $query->where('name', 'like', '%' . $search . '%');
         }
 
-        $periods = $query->paginate(12);
-        return Inertia::render('admin/periods/index', ["periods" => $periods]);
+        $plans = Plan::get();
+        $periods = $query->with('plan')->paginate(12);
+        return Inertia::render('admin/periods/index', ["periods" => $periods, "plans" => $plans]);
     }
 
     /**
@@ -67,7 +69,7 @@ class PeriodController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(PlanRequest $request, Period $period): RedirectResponse
+    public function update(PeriodRequest $request, Period $period): RedirectResponse
     {
         $data = $request->all();
         $request->validated();

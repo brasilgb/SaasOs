@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useForm } from "@inertiajs/react";
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label";
-import { Plus, Save } from 'lucide-react';
+import { Edit, Plus, Save } from 'lucide-react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useState } from "react";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -11,27 +11,23 @@ export default function EditFeature({ feature, periods }: any) {
   const [open, setOpen] = useState(false)
 
   const { data, setData, patch, progress, processing, reset, errors } = useForm({
-    name: periods.name,
-    period_id: periods.period_id,
-    order: periods.order,
+    name: feature.name,
+    period_id: feature.period_id,
+    order: feature.order,
   });
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    patch(route('admin.features.store', feature.id), {
-      onSuccess: () => {
-        reset()
-        setOpen(false)
-      },
+    patch(route('admin.features.update', feature.id), {
+      onSuccess: () => setOpen(false)
     });
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" />
-          Características
+        <Button className="gap-2 bg-orange-500 hover:bg-orange-600 text-white">
+          <Edit className="h-4 w-4" />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
@@ -52,15 +48,15 @@ export default function EditFeature({ feature, periods }: any) {
 
           <div className="grid gap-2">
             <Label htmlFor="slug">Período</Label>
-            <Select>
-              <SelectTrigger className="w-[180px]">
+            <Select onValueChange={(e) => setData('period_id', e)} defaultValue={`${data.period_id}`}>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select um período" />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
                   <SelectLabel>Fruits</SelectLabel>
-                  {periods?.data.map((period: any) => (
-                    <SelectItem key={period.id} value={period.id}>{period.name}</SelectItem>
+                  {periods?.map((period: any) => (
+                    <SelectItem key={period.id} value={`${period.id}`}>{period.name}</SelectItem>
                   ))}
                 </SelectGroup>
               </SelectContent>
