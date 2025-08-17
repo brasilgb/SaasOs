@@ -30,7 +30,7 @@ export default function WhatsappMessage({ whatsappmessage }: any) {
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
-        patch(route('whatsapp-message.update', whatsappmessage?.id));
+        patch(route('app.whatsapp-message.update', whatsappmessage?.id));
     }
 
     return (

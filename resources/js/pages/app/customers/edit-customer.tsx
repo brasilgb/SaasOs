@@ -52,7 +52,7 @@ export default function EditCustomer({ customer }: any) {
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    patch(route('customers.update', customer.id))
+    patch(route('app.customers.update', customer.id))
   }
 
   const getCep = (cep: string) => {

@@ -26,7 +26,6 @@ export default function EditService({ equipments, service }: any) {
         e.preventDefault();
         patch(route('app.register-services.update', service.id), {
             onSuccess: () => {
-                reset()
                 setOpen(false)
             },
         });

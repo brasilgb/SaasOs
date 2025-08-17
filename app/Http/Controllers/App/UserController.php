@@ -48,7 +48,7 @@ class UserController extends Controller
         Model::reguard();
         User::create($data);
         Model::unguard();
-        return redirect()->route('users.index')->with('success', 'Usuário cadastrado com sucesso');
+        return redirect()->route('app.users.index')->with('success', 'Usuário cadastrado com sucesso');
     }
 
     /**
@@ -64,7 +64,7 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        return redirect()->route('users.show', ['user' => $user->id]);
+        return redirect()->route('app.users.show', ['user' => $user->id]);
     }
 
     /**
@@ -78,7 +78,7 @@ class UserController extends Controller
         Model::reguard();
         $user->update($data);
         Model::unguard();
-        return redirect()->route('users.show', ['user' => $user->id])->with('success', 'Usuário editado com sucesso');
+        return redirect()->route('app.users.show', ['user' => $user->id])->with('success', 'Usuário editado com sucesso');
     }
 
     /**
@@ -87,7 +87,7 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         $user->delete();
-        return redirect()->route('users.index')->with('success', 'Usuário excluido com sucesso!');
+        return redirect()->route('app.users.index')->with('success', 'Usuário excluido com sucesso!');
     }
 
     public function loginuser(Request $request)
@@ -104,17 +104,17 @@ class UserController extends Controller
             ], 401);
         }
         $token = $user->createToken($user->name . '-AuthToken')->plainTextToken;
-        
+
         return response()->json([
             'success' => true,
             'access_token' => $token,
             "result" => $user
         ]);
     }
-    
+
     public function logoutuser(){
         Auth::user()->tokens()->delete();
-    
+
         return response()->json([
           "message"=>"logged out"
         ]);

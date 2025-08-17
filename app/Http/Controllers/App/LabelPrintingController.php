@@ -20,7 +20,7 @@ class LabelPrintingController extends Controller
         return Inertia::render('app/label-printing/index', ['labels' => $labels]);
     }
 
-    
+
     /**
      * Store a newly created resource in storage.
      */
@@ -40,6 +40,6 @@ class LabelPrintingController extends Controller
                 'company' => $company->shortname,
             ];
         }
-        return Inertia::render('label-printing/print-labels', ['data' => $data]);
+        return Inertia::render('app/label-printing/print-labels', ['data' => $data]);
     }
 }

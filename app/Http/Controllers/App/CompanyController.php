@@ -11,7 +11,7 @@ use Inertia\Inertia;
 
 class CompanyController extends Controller
 {
-    
+
     public function getEmpresaInfo()
     {
         $empresa = Company::first();
@@ -54,6 +54,6 @@ class CompanyController extends Controller
         Model::reguard();
         $company->update($data);
         Model::unguard();
-        return redirect()->route('company.index')->with('success', 'Dados da company alterados com sucesso!');
+        return redirect()->route('app.company.index')->with('success', 'Dados da filial alterados com sucesso!');
     }
 }

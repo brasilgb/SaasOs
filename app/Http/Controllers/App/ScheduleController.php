@@ -45,9 +45,9 @@ class ScheduleController extends Controller
                 ->orWhereHas('user', function ($query) use ($search) {
                     $query->where('name', 'like', "%$search%");
                 });
-        } 
+        }
         $schedules = $query->with('user')->with('customer')->paginate(12);
-        
+
         return Inertia::render('app/schedules/index', [
             'schedules' => $schedules,
         ]);
@@ -72,7 +72,7 @@ class ScheduleController extends Controller
         $request->validated();
         $data['id'] = Schedule::exists() ? Schedule::latest()->first()->id + 1 : 1;
         Schedule::create($data);
-        return redirect()->route('schedules.index')->with('success', 'Agenda cadastrada com sucesso');
+        return redirect()->route('app.schedules.index')->with('success', 'Agenda cadastrada com sucesso');
     }
 
     /**
@@ -84,13 +84,13 @@ class ScheduleController extends Controller
         $technicals = User::where('roles', 3)->orWhere('roles', 1)->where('is_active', 1)->get();
         return Inertia::render('app/schedules/edit-schedule', ['schedule' => $schedule, 'customers' => $customers, 'technicals' => $technicals]);
     }
- 
+
     /**
      * Show the form for editing the specified resource.
      */
     public function edit(Schedule $schedule)
     {
-        return redirect()->route('schedules.show', ['schedule' => $schedule->id]);
+        return redirect()->route('app.schedules.show', ['schedule' => $schedule->id]);
     }
 
     /**
@@ -101,7 +101,7 @@ class ScheduleController extends Controller
         $data = $request->all();
         $request->validated();
         $schedule->update($data);
-        return redirect()->route('schedules.show', ['schedule' => $schedule->id])->with('success', 'Agenda editada com sucesso');
+        return redirect()->route('app.schedules.show', ['schedule' => $schedule->id])->with('success', 'Agenda editada com sucesso');
     }
 
     /**
@@ -110,6 +110,6 @@ class ScheduleController extends Controller
     public function destroy(Schedule $schedule)
     {
         $schedule->delete();
-        return redirect()->route('schedules.index')->with('success', 'Agenda excluida com sucesso');
+        return redirect()->route('app.schedules.index')->with('success', 'Agenda excluida com sucesso');
     }
 }

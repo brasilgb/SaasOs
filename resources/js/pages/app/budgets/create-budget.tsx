@@ -29,7 +29,7 @@ export default function CreateBudget({ brands, models, services }: any) {
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
-        post(route('register-budgets.store'), {
+        post(route('app.register-budgets.store'), {
             onSuccess: () => {
                 reset()
                 setOpen(false)

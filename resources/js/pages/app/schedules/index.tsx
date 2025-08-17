@@ -19,7 +19,6 @@ import InputSearch from '@/components/inputSearch';
 import AppPagination from '@/components/app-pagination';
 import AlertSuccess from '@/components/app-alert-success';
 import { statusAgendaByValue } from '@/Utils/functions';
-import { statusOrcamento } from '@/Utils/dataSelect';
 import ActionDelete from '@/components/action-delete';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -104,13 +103,12 @@ export default function Schedules({ schedules }: any) {
                       </Button>
 
                       <Button asChild size="icon" className="bg-orange-500 hover:bg-orange-600 text-white">
-                        <Link href={route("schedules.edit", schedule.id)}>
+                        <Link href={route("app.schedules.edit", schedule.id)}>
                           <Pencil className="h-4 w-4" />
                         </Link>
                       </Button>
 
                       <ActionDelete title={'este agendamento'} url={'app.schedules.destroy'} param={schedule.id} />
-
 
                     </TableCell>
                   </TableRow>

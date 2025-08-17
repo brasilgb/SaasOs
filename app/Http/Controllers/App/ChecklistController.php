@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\App;
-    
+
 use App\Models\App\Checklist;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ChecklistRequest;
@@ -44,7 +44,7 @@ class ChecklistController extends Controller
         $request->validated();
         $data['id'] = Checklist::exists() ? Checklist::latest()->first()->id + 1 : 1;
         Checklist::create($data);
-        return redirect()->route('register-checklists.index')->with('success', 'Checklist cadastrado com sucesso');
+        return redirect()->route('app.register-checklists.index')->with('success', 'Checklist cadastrado com sucesso');
     }
 
     /**
@@ -71,7 +71,7 @@ class ChecklistController extends Controller
         $data = $request->all();
         $request->validated();
         $checklist->update($data);
-        return redirect()->route('register-checklists.index')->with('success', 'Checklist editado com sucesso');
+        return redirect()->route('app.register-checklists.index')->with('success', 'Checklist editado com sucesso');
     }
 
     /**
@@ -80,6 +80,6 @@ class ChecklistController extends Controller
     public function destroy(Checklist $checklist): RedirectResponse
     {
         $checklist->delete();
-        return redirect()->route('register-checklists.index')->with('success', 'Checklist excluido com sucesso!');
+        return redirect()->route('app.register-checklists.index')->with('success', 'Checklist excluido com sucesso!');
     }
 }

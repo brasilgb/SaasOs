@@ -45,7 +45,8 @@ class TenantController extends Controller
      */
     public function show(Tenant $tenant)
     {
-        return Inertia::render('admin/tenants/edit-tenant', ['tenant' => $tenant]);
+        $plans = Plan::get();
+        return Inertia::render('admin/tenants/edit-tenant', ['tenant' => $tenant, 'plans' => $plans]);
     }
 
     /**

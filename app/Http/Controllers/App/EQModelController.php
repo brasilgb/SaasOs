@@ -21,7 +21,7 @@ class EQModelController extends Controller
             "data" => $modelos
         ]);
     }
-    
+
     /**
      * Display a listing of the resource.
      */
@@ -54,7 +54,7 @@ class EQModelController extends Controller
         $request->validated();
         $data['id'] = EQModel::exists() ? EQModel::latest()->first()->id + 1 : 1;
         EQModel::create($data);
-        return redirect()->route('register-models.index')->with('success', 'Modelo cadastrado com sucesso');
+        return redirect()->route('app.register-models.index')->with('success', 'Modelo cadastrado com sucesso');
     }
 
     /**
@@ -81,7 +81,7 @@ class EQModelController extends Controller
         $data = $request->all();
         $request->validated();
         $eQModel->update($data);
-        return redirect()->route('register-models.index')->with('success', 'Modelo editado com sucesso');
+        return redirect()->route('app.register-models.index')->with('success', 'Modelo editado com sucesso');
     }
 
     /**
@@ -90,6 +90,6 @@ class EQModelController extends Controller
     public function destroy(EQModel $eQModel)
     {
         $eQModel->delete();
-        return redirect()->route('register-models.index')->with('success', 'Modelo excluido com sucesso!');
+        return redirect()->route('app.register-models.index')->with('success', 'Modelo excluido com sucesso!');
     }
 }

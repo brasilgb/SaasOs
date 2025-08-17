@@ -56,7 +56,7 @@ class MessageController extends Controller
         $request->validated();
         $data['id'] = Message::exists() ? Message::latest()->first()->id + 1 : 1;
         Message::create($data);
-        return redirect()->route('messages.index')->with('success', 'Agenda cadastrada com sucesso');
+        return redirect()->route('app.messages.index')->with('success', 'Agenda cadastrada com sucesso');
     }
 
     /**
@@ -73,7 +73,7 @@ class MessageController extends Controller
      */
     public function edit(Message $message)
     {
-        return redirect()->route('messages.show', ['message' => $message->id]);
+        return redirect()->route('app.messages.show', ['message' => $message->id]);
     }
 
     /**
@@ -84,7 +84,7 @@ class MessageController extends Controller
         $data = $request->all();
         $request->validated();
         $message->update($data);
-        return redirect()->route('messages.show', ['message' => $message->id])->with('success', 'Agenda editada com sucesso');
+        return redirect()->route('app.messages.show', ['message' => $message->id])->with('success', 'Agenda editada com sucesso');
     }
 
     /**
@@ -94,7 +94,7 @@ class MessageController extends Controller
     {
         $data = $request->all();
         $message->update($data);
-        return redirect()->route('messages.index')->with('success', 'Mensagem marcada como lida');
+        return redirect()->route('app.messages.index')->with('success', 'Mensagem marcada como lida');
     }
 
     /**
@@ -103,6 +103,6 @@ class MessageController extends Controller
     public function destroy(Message $message)
     {
         $message->delete();
-        return redirect()->route('messages.index')->with('success', 'Mensagem excluida com sucesso!');
+        return redirect()->route('app.messages.index')->with('success', 'Mensagem excluida com sucesso!');
     }
 }

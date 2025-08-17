@@ -2,8 +2,8 @@ import { Breadcrumbs } from '@/components/breadcrumbs'
 import { Icon } from '@/components/icon';
 import AppLayout from '@/layouts/app-layout'
 import { BreadcrumbItem } from '@/types';
-import { Head, Link, usePage } from '@inertiajs/react'
-import { PackagePlus, Pencil, Plus } from 'lucide-react';
+import { Head, usePage } from '@inertiajs/react'
+import { PackagePlus } from 'lucide-react';
 import moment from 'moment'
 import {
   Table,
@@ -28,7 +28,7 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
   {
     title: 'Orçamentos',
-    href: route('app.budgets.index'),
+    href: '',
   },
 ];
 

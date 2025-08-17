@@ -42,7 +42,7 @@ class BudgetController extends Controller
             ],
         ], 200);
     }
-    
+
     /**
      * Display a listing of the resource.
      */
@@ -77,7 +77,7 @@ public function index(Request $request)
         $request->validated();
         $data['id'] = Budget::exists() ? Budget::latest()->first()->id + 1 : 1;
         Budget::create($data);
-        return redirect()->route('register-budgets.index')->with('success', 'Orçamento cadastrado com sucesso');
+        return redirect()->route('app.register-budgets.index')->with('success', 'Orçamento cadastrado com sucesso');
     }
 
     /**
@@ -104,7 +104,7 @@ public function index(Request $request)
         $data = $request->all();
         $request->validated();
         $budget->update($data);
-        return redirect()->route('register-budgets.index')->with('success', 'Orçamento editado com sucesso');
+        return redirect()->route('app.register-budgets.index')->with('success', 'Orçamento editado com sucesso');
     }
 
     /**
@@ -113,6 +113,6 @@ public function index(Request $request)
     public function destroy(Budget $budget)
     {
         $budget->delete();
-        return redirect()->route('register-budgets.index')->with('success', 'Orçamento excluido com sucesso!');
+        return redirect()->route('app.register-budgets.index')->with('success', 'Orçamento excluido com sucesso!');
     }
 }

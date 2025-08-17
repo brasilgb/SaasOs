@@ -1,13 +1,12 @@
 import { KpiDashboard } from '@/components/kpi-dashboard';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link } from '@inertiajs/react';
-import { Calendar, MessageSquareMore, User, Users, Wrench } from 'lucide-react';
+import { Calendar, Check, MessageSquareMore, User, Users, Wrench } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
-import { ChartAreaDashboard } from '@/components/chart-area-dashboard';
 import { Badge } from '@/components/ui/badge';
 
-export default function Dashboard({ orders, acount, chartequipments }: { orders: any, acount: any, chartequipments: any }) {
+export default function Dashboard({ orders, acount }: { orders: any, acount: any, chartequipments: any }) {
 
     return (
         <AppLayout>
@@ -31,72 +30,77 @@ export default function Dashboard({ orders, acount, chartequipments }: { orders:
                             <TabsTrigger className='px-2' value="cn">Serv. concluídos (CN) <Badge className='text-xs'>{orders?.concluidoscn.length}</Badge></TabsTrigger>
                             <TabsTrigger className='px-2' value="fb">Equip. Entregue há 30 dias <Badge className='text-xs'>{orders?.trintadias.length}</Badge></TabsTrigger>
                         </TabsList>
-                        <TabsContent value="va">
+                        <TabsContent value="va" className='max-h-[315px] overflow-y-auto'>
                             <div className='text-xs font-semibold py-1'>Visitas agendadas pelo número do agendamento</div>
                             <div className='py-2 border-t flex flex-wrap gap-2'>
                                 {orders?.agendados.map((age: any) => (
                                     <Button key={age.id} variant={'secondary'} asChild>
-                                        <Link href={route('app.schedules.edit', age.id)}>
+                                        <Link href={route('app.schedules.index', { "q": age.id, "init": true })}>
                                             {age.id}
                                         </Link>
                                     </Button>
                                 ))}
                             </div>
                         </TabsContent>
-                        <TabsContent value="og">
+                        <TabsContent value="og" className='max-h-[315px] overflow-y-auto'>
                             <div className='text-xs font-semibold py-1'>Orçamentos gerados por número de ordem</div>
                             <div className='py-2 border-t flex flex-wrap gap-2'>
                                 {orders?.gerados.map((ger: any) => (
                                     <Button key={ger.id} variant={'secondary'} asChild>
-                                        <Link href={route('app.orders.edit', ger.id)}>
+                                        <Link href={route('app.orders.index', { "q": ger.id, "init": true })}>
                                             {ger.id}
                                         </Link>
                                     </Button>
                                 ))}
                             </div>
                         </TabsContent>
-                        <TabsContent value="oa">
+                        <TabsContent value="oa" className='max-h-[315px] overflow-y-auto'>
                             <div className='text-xs font-semibold py-1'>Orçamentos aprovados por número de ordem</div>
                             <div className='py-2 border-t flex flex-wrap gap-2'>
                                 {orders?.aprovados.map((apro: any) => (
                                     <Button key={apro.id} variant={'secondary'} asChild>
-                                        <Link href={route('app.orders.edit', apro.id)}>
+                                        <Link href={route('app.orders.index', { "q": apro.id, "init": true })}>
                                             {apro.id}
                                         </Link>
                                     </Button>
                                 ))}
                             </div>
                         </TabsContent>
-                        <TabsContent value="ca">
+                        <TabsContent value="ca" className='max-h-[315px] overflow-y-auto'>
                             <div className='text-xs font-semibold py-1'>Serviços concluídos por número de ordem e clientes avisados</div>
                             <div className='py-2 border-t flex flex-wrap gap-2'>
                                 {orders?.concluidosca.map((conca: any) => (
                                     <Button key={conca.id} variant={'secondary'} asChild>
-                                        <Link href={route('app.orders.edit', conca.id)}>
+                                        <Link href={route('app.orders.index', { "q": conca.id, "init": true })}>
                                             {conca.id}
                                         </Link>
                                     </Button>
                                 ))}
                             </div>
                         </TabsContent>
-                        <TabsContent value="cn">
+                        <TabsContent value="cn" className='max-h-[315px] overflow-y-auto'>
                             <div className='text-xs font-semibold py-1'>Serviços concluídos por número de ordem e clientes não avisados</div>
                             <div className='py-2 border-t flex flex-wrap gap-2'>
                                 {orders?.concluidoscn.map((concn: any) => (
                                     <Button key={concn.id} variant={'secondary'} asChild>
-                                        <Link href={route('app.orders.edit', concn.id)}>
+                                        <Link href={route('app.orders.index', { "q": concn.id, "init": true })}>
                                             {concn.id}
                                         </Link>
                                     </Button>
                                 ))}
                             </div>
                         </TabsContent>
-                        <TabsContent value="fb">
+                        <TabsContent value="fb" className='max-h-[315px] overflow-y-auto'>
                             <div className='text-xs font-semibold py-1'>Serviços a trinta dias para provável feedback</div>
                             <div className='py-2 border-t flex flex-wrap gap-2'>
                                 {orders?.trintadias.map((ger: any) => (
-                                    <Button key={ger.id} variant={'secondary'} asChild>
-                                        <Link href={route('app.orders.edit', ger.id)}>
+                                    <Button
+                                        key={ger.id}
+                                        variant={'secondary'}
+                                        asChild
+                                    >
+                                        <Link href={route('app.orders.index', { "q": ger.id, "init": true, "fd": 1 })} className='relative'>
+                                            {ger.feedback && <Check className='h-4 w-4 absolute -top-1 -right-1' />}
                                             {ger.id}
                                         </Link>
                                     </Button>

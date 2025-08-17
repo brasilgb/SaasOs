@@ -28,6 +28,6 @@ class WhatsappMessageController extends Controller
     {
         $data = $request->all();
         $whatsappmessage->update($data);
-        return redirect()->route('whatsapp-message.index', ['whatsappmessage' => $whatsappmessage->id])->with('success', 'Mensagens do WhatsApp editadas com sucesso');
+        return redirect()->route('app.whatsapp-message.index', ['whatsappmessage' => $whatsappmessage->id])->with('success', 'Mensagens do WhatsApp editadas com sucesso');
     }
 }

@@ -11,7 +11,7 @@ use Inertia\Inertia;
 
 class BrandController extends Controller
 {
-    
+
     public function getMarcas()
     {
         $marcas = Brand::get();
@@ -52,7 +52,7 @@ class BrandController extends Controller
         $request->validated();
         $data['id'] = Brand::exists() ? Brand::latest()->first()->id + 1 : 1;
         Brand::create($data);
-        return redirect()->route('register-brands.index')->with('success', 'Marca cadastrada com sucesso');
+        return redirect()->route('app.register-brands.index')->with('success', 'Marca cadastrada com sucesso');
     }
 
     /**
@@ -79,7 +79,7 @@ class BrandController extends Controller
         $data = $request->all();
         $request->validated();
         $brand->update($data);
-        return redirect()->route('register-brands.index')->with('success', 'Marca editada com sucesso');
+        return redirect()->route('app.register-brands.index')->with('success', 'Marca editada com sucesso');
     }
 
     /**
@@ -88,6 +88,6 @@ class BrandController extends Controller
     public function destroy(Brand $brand)
     {
         $brand->delete();
-        return redirect()->route('register-brands.index')->with('success', 'Marca excluida com sucesso!');
+        return redirect()->route('app.register-brands.index')->with('success', 'Marca excluida com sucesso!');
     }
 }

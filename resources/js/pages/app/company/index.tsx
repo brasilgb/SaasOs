@@ -45,7 +45,7 @@ export default function Company({ company }: any) {
     const handleSubmit = (e: any) => {
         e.preventDefault();
 
-        router.post(route('company.update', company.id), {
+        router.post(route('app.company.update', company.id), {
             _method: "put",
             shortname: data?.shortname,
             companyname: data?.companyname,
@@ -96,7 +96,7 @@ export default function Company({ company }: any) {
 
             <div className='flex items-center justify-between p-4'>
                 <div>
-                  
+
                 </div>
             </div>
 

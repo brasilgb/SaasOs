@@ -33,7 +33,7 @@ class ReceiptController extends Controller
     {
         $data = $request->all();
         $receipt->update($data);
-        return redirect()->route('receipts.index', ['receipts' => $receipt->id])->with('success', 'Recibos editadas com sucesso');
+        return redirect()->route('app.receipts.index', ['receipts' => $receipt->id])->with('success', 'Recibos editadas com sucesso');
     }
 
     public function printing($or, $tp)

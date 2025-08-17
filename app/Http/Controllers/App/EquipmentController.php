@@ -42,7 +42,7 @@ class EquipmentController extends Controller
         $request->validated();
         $data['id'] = Equipment::exists() ? Equipment::latest()->first()->id + 1 : 1;
         Equipment::create($data);
-        return redirect()->route('register-equipments.index')->with('success', 'Equipamento cadastrado com sucesso');
+        return redirect()->route('app.register-equipments.index')->with('success', 'Equipamento cadastrado com sucesso');
     }
 
     /**
@@ -69,7 +69,7 @@ class EquipmentController extends Controller
         $data = $request->all();
         $request->validated();
         $equipment->update($data);
-        return redirect()->route('register-equipments.index')->with('success', 'Marca editada com sucesso');
+        return redirect()->route('app.register-equipments.index')->with('success', 'Marca editada com sucesso');
     }
 
     /**
@@ -78,6 +78,6 @@ class EquipmentController extends Controller
     public function destroy(Equipment $equipment)
     {
         $equipment->delete();
-        return redirect()->route('register-equipments.index')->with('success', 'Marca excluida com sucesso!');
+        return redirect()->route('app.register-equipments.index')->with('success', 'Marca excluida com sucesso!');
     }
 }

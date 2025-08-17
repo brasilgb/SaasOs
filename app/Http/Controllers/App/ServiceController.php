@@ -21,7 +21,7 @@ class ServiceController extends Controller
             "data" => $servicos
         ]);
     }
-    
+
     /**
      * Display a listing of the resource.
      */
@@ -54,7 +54,7 @@ class ServiceController extends Controller
         $request->validated();
         $data['id'] = Service::exists() ? Service::latest()->first()->id + 1 : 1;
         Service::create($data);
-        return redirect()->route('register-services.index')->with('success', 'Serviço cadastrado com sucesso');
+        return redirect()->route('app.register-services.index')->with('success', 'Serviço cadastrado com sucesso');
     }
 
     /**
@@ -81,7 +81,7 @@ class ServiceController extends Controller
         $data = $request->all();
         $request->validated();
         $service->update($data);
-        return redirect()->route('register-services.index')->with('success', 'Serviço editado com sucesso');
+        return redirect()->route('app.register-services.index')->with('success', 'Serviço editado com sucesso');
     }
 
     /**
@@ -90,6 +90,6 @@ class ServiceController extends Controller
     public function destroy(Service $service): RedirectResponse
     {
         $service->delete();
-        return redirect()->route('register-services.index')->with('success', 'Serviço excluido com sucesso!');
+        return redirect()->route('app.register-services.index')->with('success', 'Serviço excluido com sucesso!');
     }
 }

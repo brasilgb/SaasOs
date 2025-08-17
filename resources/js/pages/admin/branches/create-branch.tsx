@@ -3,7 +3,7 @@ import { Icon } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import { BreadcrumbItem } from "@/types";
 import { Head, Link, useForm, usePage } from "@inertiajs/react";
-import { ArrowLeft, Building, Save, Users } from "lucide-react";
+import { ArrowLeft, Building2, Save, Users } from "lucide-react";
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,8 +19,8 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: route('admin.dashboard'),
     },
     {
-        title: 'Empresas',
-        href: route('admin.tenants.index'),
+        title: 'Filiais',
+        href: route('admin.branches.index'),
     },
     {
         title: 'Adicionar',
@@ -28,17 +28,16 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function CreateTenant({ plans }: any) {
-
-    const allPlans = plans.map((plan: any) => ({
-        value: plan.id,
-        label: plan.name,
-    }));
-
-    const { data, setData, post, progress, processing, reset, errors } = useForm({
-        company_cnpj: '',
-        company_name: '',
-        fantasy_name: '',
+export default function CreateBranch({ tenants }: any) {
+const allTenants = tenants.map((tenant: any) => ({
+    value: tenant.id,
+    label: tenant.company_name,
+  }));
+    const { data, setData, post, processing, reset, errors } = useForm({
+        tenant_id: '',
+        branch_cnpj: '',
+        branch_name: '',
+        branch_number: '',
         contact_name: '',
         contact_email: '',
         contact_phone: '',
@@ -50,14 +49,13 @@ export default function CreateTenant({ plans }: any) {
         street: '',
         complement: '',
         number: '',
-        plan_id: '',
         status: '',
-        observations: '',
+        observations: ''
     });
 
     const handleSubmit = async (e: any) => {
         e.preventDefault();
-        post(route('admin.tenants.store'), {
+        post(route('admin.branches.store'), {
             onSuccess: () => reset(),
         });
     }
@@ -76,21 +74,21 @@ export default function CreateTenant({ plans }: any) {
             .catch((error) => console.error(error));
     };
 
-    const changePlan = (selected: any) => {
-        setData('plan_id', selected?.value);
-    };
-
     const changeStatus = (selected: any) => {
         setData('status', selected?.value);
     };
 
+    const changeTenant = (selected: any) => {
+        setData('tenant_id', selected?.value);
+    };
+
     return (
         <AdminLayout>
-            <Head title="Empresas" />
+            <Head title="Filiais" />
             <div className='flex items-center justify-between h-16 px-4'>
                 <div className='flex items-center gap-2'>
-                    <Icon iconNode={Building} className='w-8 h-8' />
-                    <h2 className="text-xl font-semibold tracking-tight">Empresas</h2>
+                    <Icon iconNode={Building2} className='w-8 h-8' />
+                    <h2 className="text-xl font-semibold tracking-tight">Filiais</h2>
                 </div>
                 <div>
                     <Breadcrumbs breadcrumbs={breadcrumbs} />
@@ -101,7 +99,7 @@ export default function CreateTenant({ plans }: any) {
                 <div>
                     <Button variant={'default'} asChild>
                         <Link
-                            href={route('admin.tenants.index')}
+                            href={route('admin.branches.index')}
                         >
                             <ArrowLeft h-4 w-4 />
                             <span>Voltar</span>
@@ -116,39 +114,68 @@ export default function CreateTenant({ plans }: any) {
                 <div className='border rounded-lg p-2'>
 
                     <form onSubmit={handleSubmit} className="space-y-8">
-                        <div className="grid grid-cols-3 gap-4 mt-4">
+                        <div className="grid grid-cols-5 gap-4 mt-4">
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="company_name">Razão social</Label>
-                                <Input
-                                    type="text"
-                                    id="company_name"
-                                    value={data.company_name}
-                                    onChange={(e) => setData('company_name', e.target.value)}
+                            <div className="grid gap-2 col-span-2">
+                                <Label htmlFor="tenant_id">Empresa</Label>
+                                <Select
+                                    options={allTenants}
+                                    onChange={changeTenant}
+                                    placeholder="Selecione a empresa"
+                                    className="shadow-xs p-0 border text-gray-700 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-9"
+                                    styles={{
+                                        control: (baseStyles, state) => ({
+                                            ...baseStyles,
+                                            fontSize: '14px',
+                                            boxShadow: 'none',
+                                            border: 'none',
+                                            background: 'transparent',
+                                            paddingBottom: '2px',
+                                        }),
+                                        dropdownIndicator: (base) => ({
+                                            ...base,
+
+                                        }),
+                                        menuList: (base) => ({
+                                            ...base,
+                                            fontSize: '14px',
+                                        }),
+                                    }}
                                 />
-                                {errors.company_name && <div className="text-red-500 text-sm">{errors.company_name}</div>}
+                                {errors.tenant_id && <div className="text-red-500 text-sm">{errors.tenant_id}</div>}
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="company_cnpj">CPF/CNPJ</Label>
+                                <Label htmlFor="branch_cnpj">CPF/CNPJ</Label>
                                 <Input
                                     type="text"
-                                    id="company_cnpj"
-                                    value={maskCpfCnpj(data.company_cnpj)}
-                                    onChange={(e) => setData('company_cnpj', e.target.value)}
+                                    id="branch_cnpj"
+                                    value={maskCpfCnpj(data.branch_cnpj)}
+                                    onChange={(e) => setData('branch_cnpj', e.target.value)}
                                     maxLength={18}
                                 />
-                                {errors.company_cnpj && <div className="text-red-500 text-sm">{errors.company_cnpj}</div>}
+                                {errors.branch_cnpj && <div className="text-red-500 text-sm">{errors.branch_cnpj}</div>}
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="fantasy_name">Nome fantasia</Label>
+                                <Label htmlFor="branch_name">Nome filial</Label>
                                 <Input
                                     type="text"
-                                    id="fantasy_name"
-                                    value={data.fantasy_name}
-                                    onChange={(e) => setData('fantasy_name', e.target.value)}
+                                    id="branch_name"
+                                    value={data.branch_name}
+                                    onChange={(e) => setData('branch_name', e.target.value)}
                                 />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="branch_number">Nº Filial</Label>
+                                <Input
+                                    type="text"
+                                    id="branch_number"
+                                    value={data.branch_number}
+                                    onChange={(e) => setData('branch_number', e.target.value)}
+                                />
+                                {errors.branch_number && <div className="text-red-500 text-sm">{errors.branch_number}</div>}
                             </div>
                         </div>
 
@@ -281,35 +308,6 @@ export default function CreateTenant({ plans }: any) {
                         <div className="grid grid-cols-4 gap-4 mt-4">
 
                             <div className="col-span-2 grid gap-2">
-                                <Label htmlFor="plan_id">Plano</Label>
-                                <Select
-                                    options={allPlans}
-                                    onChange={changePlan}
-                                    placeholder="Selecione o plano"
-                                    className="shadow-xs p-0 border text-gray-700 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-9"
-                                    styles={{
-                                        control: (baseStyles, state) => ({
-                                            ...baseStyles,
-                                            fontSize: '14px',
-                                            boxShadow: 'none',
-                                            border: 'none',
-                                            background: 'transparent',
-                                            paddingBottom: '2px',
-                                        }),
-                                        dropdownIndicator: (base) => ({
-                                            ...base,
-
-                                        }),
-                                        menuList: (base) => ({
-                                            ...base,
-                                            fontSize: '14px',
-                                        }),
-                                    }}
-                                />
-                                <InputError className="mt-2" message={errors.plan_id} />
-                            </div>
-
-                            <div className="col-span-2 grid gap-2">
                                 <Label htmlFor="status">Status</Label>
                                 <Select
                                     options={statusSaas}
@@ -337,7 +335,6 @@ export default function CreateTenant({ plans }: any) {
                                 />
                                 <InputError className="mt-2" message={errors.status} />
                             </div>
-
                         </div>
 
                         <div className="grid gap-2">

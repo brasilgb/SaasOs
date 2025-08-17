@@ -6,6 +6,7 @@ use App\Models\Admin\Branch;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\BranchRequest;
 use App\Models\Admin\Plan;
+use App\Models\Admin\Tenant;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 
@@ -16,7 +17,7 @@ class BranchController extends Controller
      */
     public function index()
     {
-        $branches = Branch::paginate(11);
+        $branches = Branch::paginate(12);
         return Inertia::render('admin/branches/index', ['branches' => $branches]);
     }
 
@@ -25,10 +26,10 @@ class BranchController extends Controller
      */
     public function create()
     {
-        $plans = Plan::get();
-        return Inertia::render('admin/branches/create-branch', ['plans' => $plans]);
+        $tenants = Tenant::get();
+        return Inertia::render('admin/branches/create-branch', ['tenants' => $tenants]);
     }
- 
+
     /**
      * Store a newly created resource in storage.
      */
