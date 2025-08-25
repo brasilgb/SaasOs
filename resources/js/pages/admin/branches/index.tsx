@@ -1,7 +1,7 @@
 import AdminLayout from '@/layouts/admin/admin-layout'
 import { Head, Link } from '@inertiajs/react'
 import { BreadcrumbItem } from '@/types';
-import { Building, Building2, Edit, Plus } from 'lucide-react'
+import { Building, Edit, Plus } from 'lucide-react'
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
 import InputSearch from '@/components/inputSearch';

@@ -58,10 +58,27 @@ const statusMessageByValue = (value: any) => {
     }
 };
 
+const statusSaasByValue = (value: any) => {
+    switch (value) {
+        case 1:
+            return "Ativo";
+        case 2:
+            return "Inativo";
+        case 3:
+            return "Pausado";
+        case 4:
+            return "Vence em 5D";
+    }
+};
+// { value: '1', label: "Ativo" },
+//     { value: '1', label: "Inativo" },
+//     { value: '2', label: "Pausado" },
+//     { value: '3', label: "Vence em 5D" },
 export {
     statusOrdemByValue,
     statusUserByValue,
     roleUserByValue,
     statusAgendaByValue,
-    statusMessageByValue
+    statusMessageByValue,
+    statusSaasByValue
 };

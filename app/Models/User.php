@@ -6,6 +6,7 @@ namespace App\Models;
 use App\Models\App\Message;
 use App\Models\App\Schedule;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -24,14 +25,13 @@ class User extends Authenticatable
      */
 
     protected $fillable = [
+        'tenant_id',
         'name',
         'email',
         'telephone',
         'whatsapp',
         'roles',
-        'is_root',
         'is_active',
-        'tenant_id',
         'password',
     ];
 
@@ -58,7 +58,6 @@ class User extends Authenticatable
         ];
     }
 
-
     public function schedules(): HasMany
     {
         return $this->hasMany(Schedule::class);
@@ -67,5 +66,10 @@ class User extends Authenticatable
     public function messages(): HasMany
     {
         return $this->hasMany(Message::class);
+    }
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class);
     }
 }

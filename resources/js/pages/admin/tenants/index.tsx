@@ -11,6 +11,7 @@ import { maskPhone } from '@/Utils/mask';
 import moment from 'moment';
 import ActionDelete from '@/components/action-delete';
 import AppPagination from '@/components/app-pagination';
+import { statusSaasByValue } from '@/Utils/functions';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -24,6 +25,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function TenantsIndex({  tenants }: any) {
+
   return (
     <AdminLayout>
       <Head title="Empresas" />
@@ -74,6 +76,7 @@ export default function TenantsIndex({  tenants }: any) {
                     <TableCell>{tenant.company_cnpj}</TableCell>
                     <TableCell>{tenant.contact_email}</TableCell>
                     <TableCell>{maskPhone(tenant.contact_phone)}</TableCell>
+                    <TableCell>{statusSaasByValue(tenant.status)}</TableCell>
                     <TableCell>{moment(tenant.created_at).format("DD/MM/YYYY")}</TableCell>
                     <TableCell className='flex justify-end gap-2'>
 

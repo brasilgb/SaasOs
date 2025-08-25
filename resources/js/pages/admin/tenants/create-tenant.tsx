@@ -32,7 +32,7 @@ export default function CreateTenant({ plans }: any) {
 
     const allPlans = plans.map((plan: any) => ({
         value: plan.id,
-        label: plan.name,
+        label: plan.company_name,
     }));
 
     const { data, setData, post, progress, processing, reset, errors } = useForm({

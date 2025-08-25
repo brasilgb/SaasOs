@@ -5,8 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Admin\Branch;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\BranchRequest;
-use App\Models\Admin\Plan;
-use App\Models\Admin\Tenant;
+use App\Models\Tenant;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 

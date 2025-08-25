@@ -142,12 +142,12 @@ const mainAdminItems = [
         icon: Building,
         active: 'admin.tenants.*',
     },
-    {
-        title: 'Filiais',
-        href: route('admin.branches.index'),
-        icon: Building2,
-        active: 'admin.branches.*',
-    },
+    // {
+    //     title: 'Filiais',
+    //     href: route('admin.branches.index'),
+    //     icon: Building2,
+    //     active: 'admin.branches.*',
+    // },
     {
         title: 'Usuários',
         href: route('admin.users.index'),

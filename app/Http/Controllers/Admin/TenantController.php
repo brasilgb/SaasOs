@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Admin\Tenant;
+use App\Models\Tenant;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\TenantRequest;
 use Illuminate\Http\RedirectResponse;
