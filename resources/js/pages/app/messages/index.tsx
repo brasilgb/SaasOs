@@ -84,7 +84,7 @@ export default function Messages({ messages }: any) {
               {messages?.data.length > 0 ?
                 messages?.data?.map((message: any) => (
                   <TableRow key={message.id}>
-                    <TableCell>{message.id}</TableCell>
+                    <TableCell>{message.message_number}</TableCell>
                     <TableCell>{message.sender.name}</TableCell>
                     <TableCell>{message.recipient.name}</TableCell>
                     <TableCell>{auth.user.id === message.sender_id ? <Badge variant={'secondary'} className='bg-green-500 text-white'>Enviada</Badge> : <Badge variant={'destructive'}>Recebida</Badge>}</TableCell>

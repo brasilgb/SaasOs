@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('whatsapp_messages', function (Blueprint $table) {
-            $table->unsignedBigInteger('id')->primary()->index();
+            $table->id();
             $table->foreignId('tenant_id')->nullable()->constrained('tenants');
             $table->text('generatedbudget')->nullable();
             $table->text('servicecompleted')->nullable();

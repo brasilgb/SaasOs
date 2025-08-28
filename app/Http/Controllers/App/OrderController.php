@@ -119,7 +119,7 @@ class OrderController extends Controller
     {
         $data = $request->all();
         $request->validated();
-        $data['id'] = Order::exists() ? Order::latest()->first()->id + 1 : 1;
+        $data['order_number'] = Order::exists() ? Order::latest()->first()->order_number + 1 : 1;
         Order::create($data);
         return redirect()->route('app.orders.index')->with('success',  'Ordem cadastrada com sucesso');
     }

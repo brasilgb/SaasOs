@@ -12,8 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('equipment', function (Blueprint $table) {
-            $table->unsignedBigInteger('id')->primary()->index();
+            $table->id();
             $table->foreignId('tenant_id')->nullable()->constrained('tenants');
+            $table->integer('equipment_number');
             $table->string('equipment');
             $table->timestamps();
         });

@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Admin\Setting;
 use App\Models\User;
 use App\Models\App\WhatsappMessage;
 use App\Models\App\Message;
@@ -53,6 +54,7 @@ class HandleInertiaRequests extends Middleware
                 'error' => fn () => $request->session()->get('error'),
             ],
             'company' => Company::first(['shortname', 'logo', 'companyname', 'cnpj']),
+            'setting' => Setting::first(['name', 'logo']),
             'whatsapp' => WhatsappMessage::first(),
             'othersetting' => Other::first(['navigation', 'budget']),
             'notifications' => Message::where('status', '0')->count(),

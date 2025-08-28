@@ -73,7 +73,7 @@ export default function Models({ models, brands }: any) {
               {models?.data.length ?
                 models?.data?.map((model: any) => (
                   <TableRow key={model.id}>
-                    <TableCell>{model.id}</TableCell>
+                    <TableCell>{model.model_number}</TableCell>
                     <TableCell className="font-medium">{model.brand.brand}</TableCell>
                     <TableCell className="font-medium">{model.model}</TableCell>
                     <TableCell>{moment(model.created_at).format("DD/MM/YYYY")}</TableCell>

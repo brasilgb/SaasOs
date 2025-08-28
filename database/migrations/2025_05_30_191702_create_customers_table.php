@@ -12,8 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('customers', function (Blueprint $table) {
-            $table->unsignedBigInteger('id')->primary()->index();
+            $table->id();
             $table->foreignId('tenant_id')->nullable()->constrained('tenants');
+            $table->integer('customer_number');
             $table->string('name');
             $table->string('cpf', 50)->nullable();
             $table->date('birth')->nullable();

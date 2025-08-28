@@ -17,7 +17,7 @@ import {
 import { Button } from '@/components/ui/button';
 import InputSearch from '@/components/inputSearch';
 import ActionDelete from '@/components/action-delete';
-import { maskCnpj, maskCpfCnpj, maskPhone } from '@/Utils/mask';
+import { maskPhone } from '@/Utils/mask';
 import AlertSuccess from '@/components/app-alert-success';
 import AppPagination from '@/components/app-pagination';
 
@@ -83,7 +83,7 @@ export default function Customers({ customers }: any) {
               {customers?.data.length > 0 ?
                 customers?.data?.map((customer: any) => (
                   <TableRow key={customer.id}>
-                    <TableCell>{customer.id}</TableCell>
+                    <TableCell>{customer.customer_number}</TableCell>
                     <TableCell>{customer.name}</TableCell>
                     <TableCell>{customer.email}</TableCell>
                     <TableCell>{customer.cpf}</TableCell>

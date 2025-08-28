@@ -52,7 +52,7 @@ class ServiceController extends Controller
     {
         $data = $request->all();
         $request->validated();
-        $data['id'] = Service::exists() ? Service::latest()->first()->id + 1 : 1;
+        $data['service_number'] = Service::exists() ? Service::latest()->first()->service_number + 1 : 1;
         Service::create($data);
         return redirect()->route('app.register-services.index')->with('success', 'Serviço cadastrado com sucesso');
     }

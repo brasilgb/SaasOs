@@ -12,10 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('schedules', function (Blueprint $table) {
-            $table->unsignedBigInteger('id')->primary()->index();
+            $table->id();
             $table->foreignId('tenant_id')->nullable()->constrained('tenants');
             $table->foreignId('customer_id')->nullable()->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
+            $table->integer('schedules_number');
             $table->dateTime('schedules');
             $table->string('service');
             $table->text('details');

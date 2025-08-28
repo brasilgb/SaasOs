@@ -72,7 +72,7 @@ export default function Equipment({ equipments }: any) {
               {equipments?.data.length ?
                 equipments?.data?.map((equipment: any) => (
                   <TableRow key={equipment.id}>
-                    <TableCell>{equipment.id}</TableCell>
+                    <TableCell>{equipment.equipment_number}</TableCell>
                     <TableCell className="font-medium">{equipment.equipment}</TableCell>
                     <TableCell>{moment(equipment.created_at).format("DD/MM/YYYY")}</TableCell>
                     <TableCell className='flex justify-end gap-2'>

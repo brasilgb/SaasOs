@@ -92,9 +92,9 @@ export default function EditTenant({ plans, tenant }: any) {
 
     return (
         <AdminLayout>
+            <div className='flex items-center justify-between h-16 px-4'>
             {flash.message && <AlertSuccess message={flash.message} />}
             <Head title="Empresas" />
-            <div className='flex items-center justify-between h-16 px-4'>
                 <div className='flex items-center gap-2'>
                     <Icon iconNode={Building} className='w-8 h-8' />
                     <h2 className="text-xl font-semibold tracking-tight">Empresas</h2>

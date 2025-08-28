@@ -70,7 +70,7 @@ class ScheduleController extends Controller
     {
         $data = $request->all();
         $request->validated();
-        $data['id'] = Schedule::exists() ? Schedule::latest()->first()->id + 1 : 1;
+        $data['schedules_number'] = Schedule::exists() ? Schedule::latest()->first()->schedules_number + 1 : 1;
         Schedule::create($data);
         return redirect()->route('app.schedules.index')->with('success', 'Agenda cadastrada com sucesso');
     }

@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('receipts', function (Blueprint $table) {
-            $table->unsignedBigInteger('id')->primary()->index();
+            $table->id();
             $table->foreignId('tenant_id')->nullable()->constrained('tenants');
             $table->text('receivingequipment')->nullable(); // Impressão de recibos recebimento de equipamento
             $table->text('equipmentdelivery')->nullable();  // Impressão de recibos entrega equipamento

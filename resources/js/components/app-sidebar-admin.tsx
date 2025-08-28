@@ -2,9 +2,9 @@ import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { Link, usePage } from '@inertiajs/react';
-import AppLogo from './app-logo';
-import { footerNavItems, mainAdminItems, mainConfItems, mainNavItems, mainPlansItems, mainRegisterItems, mainUserItems } from '@/Utils/navLinks';
+import { footerNavItems, mainAdminItems, mainPlansItems } from '@/Utils/navLinks';
 import NavMainCollapsible from './nav-main-collapsible';
+import AdminLogo from './admin-logo';
 
 export function AppSidebarAdmin() {
     const { othersetting } = usePage().props as any;
@@ -16,7 +16,7 @@ export function AppSidebarAdmin() {
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
                             <Link href="/" prefetch>
-                                <AppLogo />
+                                <AdminLogo />
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>

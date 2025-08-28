@@ -72,7 +72,7 @@ export default function CheckList({ equipments, checklists }: any) {
             <TableBody>
               {checklists?.data.length ?
                 checklists?.data?.map((checklist: any) => (
-                  <TableRow key={checklist.id}>
+                  <TableRow key={checklist.checklist_number}>
                     <TableCell>{checklist.id}</TableCell>
                     <TableCell className="font-medium">{checklist.equipment.equipment}</TableCell>
                     <TableCell className="font-medium">{checklist.checklist}</TableCell>

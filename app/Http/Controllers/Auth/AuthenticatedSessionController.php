@@ -32,10 +32,10 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $request->session()->regenerate();
-        if (Auth::user()->tenant_id === null) {
-            return redirect()->intended(route('admin.dashboard', absolute: false));
+        if (Auth::user() && Auth::user()->tenant_id === null) {
+            return redirect()->route('admin.dashboard');
         }
-        return redirect()->intended(route('app.dashboard', absolute: false));
+        return redirect()->route('app.dashboard');
     }
 
     /**

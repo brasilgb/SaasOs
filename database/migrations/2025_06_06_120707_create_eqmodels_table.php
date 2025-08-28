@@ -12,9 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('eqmodels', function (Blueprint $table) {
-            $table->unsignedBigInteger('id')->primary()->index();
+            $table->id();
             $table->foreignId('tenant_id')->nullable()->constrained('tenants');
             $table->foreignId('brand_id')->nullable()->constrained()->onDelete('cascade');
+            $table->integer('model_number');
             $table->string('model');
             $table->timestamps();
         });

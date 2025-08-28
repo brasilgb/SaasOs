@@ -42,7 +42,7 @@ class ChecklistController extends Controller
     {
         $data = $request->all();
         $request->validated();
-        $data['id'] = Checklist::exists() ? Checklist::latest()->first()->id + 1 : 1;
+        $data['checklist_number'] = Checklist::exists() ? Checklist::latest()->first()->checklist_number + 1 : 1;
         Checklist::create($data);
         return redirect()->route('app.register-checklists.index')->with('success', 'Checklist cadastrado com sucesso');
     }

@@ -50,7 +50,7 @@ class BrandController extends Controller
     {
         $data = $request->all();
         $request->validated();
-        $data['id'] = Brand::exists() ? Brand::latest()->first()->id + 1 : 1;
+        $data['brand_number'] = Brand::exists() ? Brand::latest()->first()->brand_number + 1 : 1;
         Brand::create($data);
         return redirect()->route('app.register-brands.index')->with('success', 'Marca cadastrada com sucesso');
     }
@@ -78,6 +78,7 @@ class BrandController extends Controller
     {
         $data = $request->all();
         $request->validated();
+        $data['order_number'] = Brand::exists() ? Brand::latest()->first()->brand_number + 1 : 1;
         $brand->update($data);
         return redirect()->route('app.register-brands.index')->with('success', 'Marca editada com sucesso');
     }

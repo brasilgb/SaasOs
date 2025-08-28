@@ -119,9 +119,9 @@ export default function Orders({ orders, whats, trintadias }: any) {
                             {orders?.data.length > 0 ?
                                 orders?.data?.map((order: any) => (
                                     <TableRow key={order.id}>
-                                        <TableCell>{order.id}</TableCell>
+                                        <TableCell>{order.order_number}</TableCell>
                                         <TableCell className="font-medium">
-                                            <Link className="flex items-center gap-2" href={`/orders?cl=${order.customer_id}`}
+                                            <Link className="flex items-center gap-2" href={route('app.orders.index', { oc: order.customer_id })}
                                                 title={`Ordens do cliente ${order.customer.name}`}>
                                                 <Wrench className="w-4 h-4" />
                                                 <span>{order.customer.name}</span>
@@ -153,7 +153,7 @@ export default function Orders({ orders, whats, trintadias }: any) {
 
                                             <ModalReceipt orderid={order.id} />
                                             <Button asChild size="icon" className="bg-fuchsia-700 hover:bg-fuchsia-700 text-white">
-                                                <Link href={`/images?or=${order.id}`}>
+                                                <Link href={route('app.images.index', { or: order.id})}>
                                                     <ImageUp className="h-4 w-4" />
                                                 </Link>
                                             </Button>

@@ -75,7 +75,7 @@ public function index(Request $request)
     {
         $data = $request->all();
         $request->validated();
-        $data['id'] = Budget::exists() ? Budget::latest()->first()->id + 1 : 1;
+        $data['budgets_number'] = Budget::exists() ? Budget::latest()->first()->budgets_number + 1 : 1;
         Budget::create($data);
         return redirect()->route('app.register-budgets.index')->with('success', 'Orçamento cadastrado com sucesso');
     }

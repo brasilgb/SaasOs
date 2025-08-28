@@ -52,7 +52,7 @@ class EQModelController extends Controller
     {
         $data = $request->all();
         $request->validated();
-        $data['id'] = EQModel::exists() ? EQModel::latest()->first()->id + 1 : 1;
+        $data['model_number'] = EQModel::exists() ? EQModel::latest()->first()->model_number + 1 : 1;
         EQModel::create($data);
         return redirect()->route('app.register-models.index')->with('success', 'Modelo cadastrado com sucesso');
     }

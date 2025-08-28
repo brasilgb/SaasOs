@@ -12,10 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('orders', function (Blueprint $table) {
-            $table->unsignedBigInteger('id')->primary()->index();
+            $table->id();
             $table->foreignId('tenant_id')->nullable()->constrained('tenants');
             $table->foreignId('customer_id')->nullable()->constrained()->onDelete('cascade');
             $table->foreignId('equipment_id')->nullable()->constrained()->onDelete('cascade');
+            $table->integer('order_number');
             $table->string('model', 50)->nullable();
             $table->string('password', 50)->nullable();
             $table->text('defect');

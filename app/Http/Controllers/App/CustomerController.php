@@ -56,7 +56,7 @@ class CustomerController extends Controller
     {
         $data = $request->all();
         $request->validated();
-        $data['id'] = Customer::exists() ? Customer::latest()->first()->id + 1 : 1;
+        $data['customer_number'] = Customer::exists() ? Customer::latest()->first()->customer_number + 1 : 1;
         Customer::create($data);
         return redirect()->route('app.customers.index')->with('success', 'Cliente cadastrado com sucesso!');
     }

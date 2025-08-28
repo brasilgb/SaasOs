@@ -74,7 +74,7 @@ export default function CheckList({ budgets, brands, models, services }: any) {
               {budgets?.data.length ?
                 budgets?.data?.map((budget: any) => (
                   <TableRow key={budget.id}>
-                    <TableCell>{budget.id}</TableCell>
+                    <TableCell>{budget.budget_number}</TableCell>
                     <TableCell className="font-medium">{budget.service.service}</TableCell>
                     <TableCell>{budget.brand.brand}</TableCell>
                     <TableCell>{budget.eqmodel.model}</TableCell>

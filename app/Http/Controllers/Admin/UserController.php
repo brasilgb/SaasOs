@@ -58,7 +58,8 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        return Inertia::render('admin/users/edit-user', ['user' => $user]);
+        $tenants = Tenant::get();
+        return Inertia::render('admin/users/edit-user', ['user' => $user, 'tenants' => $tenants]);
     }
 
     /**

@@ -74,7 +74,7 @@ export default function Brands({ brands }: any) {
               {brands?.data.length ?
                 brands?.data?.map((brand: any) => (
                   <TableRow key={brand.id}>
-                    <TableCell>{brand.id}</TableCell>
+                    <TableCell>{brand.brand_number}</TableCell>
                     <TableCell className="font-medium">{brand.brand}</TableCell>
                     <TableCell>{moment(brand.created_at).format("DD/MM/YYYY")}</TableCell>
                     <TableCell className='flex justify-end gap-2'>

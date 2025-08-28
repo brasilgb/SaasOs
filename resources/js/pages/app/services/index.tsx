@@ -73,7 +73,7 @@ export default function Services({ equipments, services }: any) {
               {services?.data.length ?
                 services?.data?.map((service: any) => (
                   <TableRow key={service.id}>
-                    <TableCell>{service.id}</TableCell>
+                    <TableCell>{service.service_number}</TableCell>
                     <TableCell className="font-medium">{service.equipment.equipment}</TableCell>
                     <TableCell className="font-medium">{service.service}</TableCell>
                     <TableCell>{moment(service.created_at).format("DD/MM/YYYY")}</TableCell>

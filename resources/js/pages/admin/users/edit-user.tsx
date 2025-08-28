@@ -15,6 +15,7 @@ import { rolesUser } from "@/Utils/dataSelect";
 import { useState } from "react";
 import { maskPhone } from "@/Utils/mask";
 import AlertSuccess from "@/components/app-alert-success";
+import AdminLayout from "@/layouts/admin/admin-layout";
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -31,11 +32,17 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-export default function CreateUser({ user }: any) {
+export default function CreateUser({ user, tenants }: any) {
   const [showPassword, setShowPassword] = useState<boolean>(false)
   const { flash, auth } = usePage().props as any;
 
+  const newTenant = tenants?.map((tenant: any) => ({
+    value: tenant.id,
+    label: tenant.company_name,
+  }));
+
   const { data, setData, patch, progress, processing, reset, errors } = useForm({
+    tenant_id: user?.tenant_id,
     name: user?.name,
     email: user?.email,
     telephone: user?.telephone,
@@ -48,17 +55,21 @@ export default function CreateUser({ user }: any) {
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
-    patch(route('app.users.update', user?.id));
+    patch(route('admin.users.update', user?.id));
   }
+
+
+  const defaultRoles = rolesUser?.filter((o: any) => o.value == user?.roles).map((opt: any) => ({ value: opt.label, label: opt.label }));
+  const defaultTenants = newTenant?.filter((o: any) => o.value == user?.tenant_id).map((opt: any) => ({ value: opt.label, label: opt.label }));
 
   const changeRoles = (selected: any) => {
     setData('roles', selected?.value);
   };
-
-  const defaultStatus = rolesUser?.filter((o: any) => o.value == user?.roles).map((opt: any) => ({ value: opt.label, label: opt.label }));
-
+  const changeTenant = (selected: any) => {
+    setData('tenant_id', selected?.value);
+  };
   return (
-    <AppLayout>
+    <AdminLayout>
       <Head title="Usuários" />
       {flash.message && <AlertSuccess message={flash.message} />}
       <div className='flex items-center justify-between h-16 px-4'>
@@ -75,7 +86,7 @@ export default function CreateUser({ user }: any) {
         <div>
           <Button variant={'default'} asChild>
             <Link
-              href={route('app.users.index')}
+              href={route('admin.users.index')}
             >
               <ArrowLeft h-4 w-4 />
               <span>Voltar</span>
@@ -189,13 +200,12 @@ export default function CreateUser({ user }: any) {
 
             <div className="grid grid-cols-2 gap-4 mt-4">
               <div className=" grid gap-2">
-                <Label htmlFor="recipient">Funções do usuário</Label>
+                <Label htmlFor="recipient">Empresa</Label>
                 <Select
-                  menuPosition='fixed'
-                  defaultValue={defaultStatus}
-                  options={rolesUser}
-                  onChange={changeRoles}
-                  placeholder="Selecione o recebedor"
+                  defaultValue={defaultTenants}
+                  options={newTenant}
+                  onChange={changeTenant}
+                  placeholder="Selecione a empresa"
                   className="shadow-xs p-0 border text-gray-700 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-9"
                   styles={{
                     control: (baseStyles, state) => ({
@@ -219,15 +229,45 @@ export default function CreateUser({ user }: any) {
                 <InputError className="mt-2" message={errors.roles} />
               </div>
 
-              <div className="grid gap-2">
-                <Label htmlFor="is_active">Status do usuário</Label>
-                <Switch
-                  id="is_active"
-                  checked={data.is_active}
-                  onCheckedChange={(checked: any) => setData('is_active', checked)}
+              <div className=" grid gap-2">
+                <Label htmlFor="recipient">Funções do usuário</Label>
+                <Select
+                  defaultValue={defaultRoles}
+                  options={rolesUser}
+                  onChange={changeRoles}
+                  placeholder="Selecione a função"
+                  className="shadow-xs p-0 border text-gray-700 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-9"
+                  styles={{
+                    control: (baseStyles, state) => ({
+                      ...baseStyles,
+                      fontSize: '14px',
+                      boxShadow: 'none',
+                      border: 'none',
+                      background: 'transparent',
+                      paddingBottom: '2px',
+                    }),
+                    dropdownIndicator: (base) => ({
+                      ...base,
+
+                    }),
+                    menuList: (base) => ({
+                      ...base,
+                      fontSize: '14px',
+                    }),
+                  }}
                 />
+                <InputError className="mt-2" message={errors.roles} />
               </div>
 
+
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="is_active">Status do usuário</Label>
+              <Switch
+                id="is_active"
+                checked={data.is_active}
+                onCheckedChange={(checked: any) => setData('is_active', checked)}
+              />
             </div>
             <div className="flex justify-end">
               <Button type="submit" disabled={processing}>
@@ -239,6 +279,6 @@ export default function CreateUser({ user }: any) {
 
         </div>
       </div >
-    </AppLayout >
+    </AdminLayout >
   )
 }

@@ -42,7 +42,7 @@ function ReceiptCopy({ order, company, type, receipt, checklist, qrcode }: { ord
                 </div>
                 <div className="flex-none">
                     <p className="text-xs font-bold">O.S</p>
-                    <p className="text-xs font-bold text-blue-600">#{order.id}</p>
+                    <p className="text-xs font-bold text-blue-600">#{order.order_number}</p>
                 </div>
             </div>
 
@@ -201,7 +201,7 @@ export default function Receipt({ order, company, type, receipt, checklist }: { 
             {/* Recibo para Impressão */}
             <div className="bg-white shadow-lg print:shadow-none print:h-screen">
                 {/* Primeira Via */}
-                <ReceiptCopy order={order} company={company} type={type} receipt={receipt} checklist={checklist} qrcode={true} />
+                <ReceiptCopy order={order} company={company} type={type} receipt={receipt} checklist={checklist} qrcode={false} />
 
                 {/* Segunda Via */}
                 <ReceiptCopy order={order} company={company} type={type} receipt={receipt} checklist={checklist} qrcode={false} />

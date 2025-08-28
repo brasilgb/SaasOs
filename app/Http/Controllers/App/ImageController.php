@@ -4,6 +4,7 @@ namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
 use App\Models\App\Image; // Assuming you have an Image model
+use App\Models\App\Order;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Http\RedirectResponse;
@@ -14,10 +15,11 @@ class ImageController extends Controller
     public function index(Request $request)
     {
         $query = $request->get('or');
+        $orderid = Order::where('id', $query)->first()->order_number;
 
         $images = Image::where("order_id", $query)->get();
 
-        return Inertia::render('app/images/index', ['savedimages' => $images, 'orderid' => $query]);
+        return Inertia::render('app/images/index', ['savedimages' => $images, 'orderid' => $orderid]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -40,8 +42,7 @@ class ImageController extends Controller
                     $imageFile->move($storePath, $filename);
                     $image = Image::create([
                         'order_id' => $request->order_id, // If images belong to a product
-                        'filename' => $filename,
-                        'path' => 'storage/orders/' . $request->order_id
+                        'filename' => $filename
                     ]);
                     // dd($image);
                     $uploadedImages[] = $image;

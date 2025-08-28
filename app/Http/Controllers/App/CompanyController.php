@@ -27,8 +27,7 @@ class CompanyController extends Controller
     public function index(Company $company)
     {
         if (Company::get()->isEmpty()) {
-            $data['id'] = '1';
-            Company::create(['id' => '1']);
+            Company::create();
         }
         $query = Company::orderBy("id", "DESC")->first();
         $company = Company::where("id", $query->id)->first();

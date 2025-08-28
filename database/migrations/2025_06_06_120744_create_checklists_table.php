@@ -12,9 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('checklists', function (Blueprint $table) {
-            $table->unsignedBigInteger('id')->primary()->index();
+            $table->id();
             $table->foreignId('tenant_id')->nullable()->constrained('tenants');
             $table->foreignId('equipment_id')->nullable()->constrained()->onDelete('cascade');
+            $table->integer('checklist_number');
             $table->string('checklist');
             $table->timestamps();
         });

@@ -40,7 +40,7 @@ class EquipmentController extends Controller
     {
         $data = $request->all();
         $request->validated();
-        $data['id'] = Equipment::exists() ? Equipment::latest()->first()->id + 1 : 1;
+        $data['equipment_number'] = Equipment::exists() ? Equipment::latest()->first()->equipment_number + 1 : 1;
         Equipment::create($data);
         return redirect()->route('app.register-equipments.index')->with('success', 'Equipamento cadastrado com sucesso');
     }

@@ -24,7 +24,7 @@ interface LoginProps {
 export default function Login({ status, canResetPassword }: LoginProps) {
     const { auth } = usePage().props as any;
     const [showPassword, setShowPassword] = useState(false);
-    
+
     const { data, setData, post, processing, errors, reset } = useForm<Required<LoginForm>>({
         email: '',
         password: '',
@@ -41,7 +41,6 @@ export default function Login({ status, canResetPassword }: LoginProps) {
     return (
         <AuthLayout title="Faça login na sua conta" description="Entre para gerenciar seus usuários e suas ordens de serviço">
             <Head title="Log in" />
-
             <form className="flex flex-col gap-6" onSubmit={submit}>
                 <div className="grid gap-6">
                     <div className="grid gap-2">
@@ -70,19 +69,19 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                             )}
                         </div>
                         <div className='relative'>
-                        <Input
-                            id="password"
-                            type={showPassword ? 'text' : 'password'}
-                            required
-                            tabIndex={2}
-                            autoComplete="current-password"
-                            value={data.password}
-                            onChange={(e) => setData('password', e.target.value)}
-                            placeholder="Senha"
-                        />
-                        <Button type='button' className='absolute right-1 top-0' variant="ghost" size="icon" onClick={() => setShowPassword(!showPassword)}>
-                            {showPassword ? <EyeOffIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
-                        </Button>
+                            <Input
+                                id="password"
+                                type={showPassword ? 'text' : 'password'}
+                                required
+                                tabIndex={2}
+                                autoComplete="current-password"
+                                value={data.password}
+                                onChange={(e) => setData('password', e.target.value)}
+                                placeholder="Senha"
+                            />
+                            <Button type='button' className='absolute right-1 top-0' variant="ghost" size="icon" onClick={() => setShowPassword(!showPassword)}>
+                                {showPassword ? <EyeOffIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
+                            </Button>
                         </div>
                         <InputError message={errors.password} />
                     </div>

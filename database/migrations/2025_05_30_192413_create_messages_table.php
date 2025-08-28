@@ -12,10 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('messages', function (Blueprint $table) {
-            $table->unsignedBigInteger('id')->primary()->index();
+            $table->id();
             $table->foreignId('tenant_id')->nullable()->constrained('tenants');
             $table->bigInteger('sender_id')->nullable()->references('id')->on('users')->onDelete('cascade');
             $table->bigInteger('recipient_id')->nullable()->references('id')->on('users')->onDelete('cascade');
+            $table->text('message_number');
             $table->text('title');
             $table->text('message');
             $table->boolean('status');

@@ -73,7 +73,7 @@ const ImageUpload: React.FC<PageProps> = ({ savedimages, orderid, errors, succes
         <AppLayout>
             {flash.message && <AlertSuccess message={flash.message} />}
             {flash.error && <AlertSuccess message={flash.error} />}
-            <Head title="Ordens" />
+            <Head title="Imagens de Ordens" />
             <div className='flex items-center justify-between h-16 px-4'>
                 <div className='flex items-center gap-2'>
                     <Icon iconNode={Wrench} className='w-8 h-8' />
@@ -132,7 +132,7 @@ const ImageUpload: React.FC<PageProps> = ({ savedimages, orderid, errors, succes
                                         {savedimages.map((img: any) => (
                                             <div key={img.id} className="relative group">
                                                 <img
-                                                    src={`${img.path}/${img.filename}`}
+                                                    src={`/storage/orders/${orderid}/${img.filename}`}
                                                     alt="Preview"
                                                     className="w-full h-32 object-cover rounded shadow-md"
                                                 />
