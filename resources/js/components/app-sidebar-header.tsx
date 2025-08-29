@@ -19,12 +19,12 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                 <SidebarTrigger className="-ml-1" />
             </div>
             <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" asChild className="relative">
+                {/* <Button variant="ghost" size="icon" asChild className="relative">
                     <Link href={route('app.messages.index')}>
                         <Badge variant="default" className="absolute -top-2 -right-2">{String(notifications)}</Badge>
                         <Bell />
                     </Link>
-                </Button>
+                </Button> */}
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="size-10 rounded-full p-1">

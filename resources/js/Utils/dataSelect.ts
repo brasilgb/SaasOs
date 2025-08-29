@@ -59,9 +59,10 @@ const statusOrcamento = [
 
 const statusSaas = [
     { value: '1', label: "Ativo" },
-    { value: '1', label: "Inativo" },
-    { value: '2', label: "Pausado" },
-    { value: '3', label: "Vence em 5D" },
+    { value: '2', label: "Inativo" },
+    { value: '3', label: "Trial" },
+    { value: '5', label: "Pausado" },
+    { value: '6', label: "Vence em 5D" }
 ];
 
 export {

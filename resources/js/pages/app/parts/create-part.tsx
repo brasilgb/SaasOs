@@ -1,0 +1,223 @@
+import { Breadcrumbs } from "@/components/breadcrumbs";
+import { Icon } from "@/components/icon";
+import { Button } from "@/components/ui/button";
+import AppLayout from "@/layouts/app-layout";
+import { BreadcrumbItem } from "@/types";
+import { Head, Link, useForm, usePage } from "@inertiajs/react";
+import { ArrowLeft, MemoryStick, Save, Users } from "lucide-react";
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { maskCep, maskCpfCnpj, maskPhone, unMask } from "@/Utils/mask";
+import { toast } from "sonner";
+import apios from "@/Utils/connectApi";
+import { useEffect } from "react";
+import { Switch } from "@/components/ui/switch";
+
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Dashboard',
+        href: route('app.dashboard'),
+    },
+    {
+        title: 'Peças',
+        href: route('app.parts.index'),
+    },
+    {
+        title: 'Adicionar',
+        href: '#',
+    },
+];
+
+export default function CreatePart() {
+    const { flash } = usePage().props as any;
+    const { data, setData, post, progress, processing, reset, errors } = useForm({
+        part_number: '',
+        name: '',
+        description: '',
+        manufacturer: '',
+        model_compatibility: '',
+        cost_price: '',
+        sale_price: '',
+        stock_quantity: '',
+        minimum_stock_level: '',
+        location: '',
+        is_active: false
+    });
+
+    const handleSubmit = async (e: any) => {
+        e.preventDefault();
+        post(route('app.parts.store'), {
+            onSuccess: () => reset(),
+        });
+    }
+
+    return (
+        <AppLayout>
+            <Head title="Peças" />
+            <div className='flex items-center justify-between h-16 px-4'>
+                <div className='flex items-center gap-2'>
+                    <Icon iconNode={MemoryStick} className='w-8 h-8' />
+                    <h2 className="text-xl font-semibold tracking-tight">Peças</h2>
+                </div>
+                <div>
+                    <Breadcrumbs breadcrumbs={breadcrumbs} />
+                </div>
+            </div>
+
+            <div className='flex items-center justify-between p-4'>
+                <div>
+                    <Button variant={'default'} asChild>
+                        <Link
+                            href={route('app.parts.index')}
+                        >
+                            <ArrowLeft h-4 w-4 />
+                            <span>Voltar</span>
+                        </Link>
+                    </Button>
+                </div>
+                <div>
+                </div>
+            </div>
+
+            <div className='p-4'>
+                <div className='border rounded-lg p-2'>
+
+                    <form onSubmit={handleSubmit} className="space-y-8">
+                        <div className="grid grid-cols-6 gap-4 mt-4">
+
+                            <div className=" grid gap-2">
+                                <Label htmlFor="name">Part Number</Label>
+                                <Input
+                                    type="text"
+                                    id="part_number"
+                                    value={maskCpfCnpj(data.part_number)}
+                                    onChange={(e) => setData('part_number', e.target.value)}
+                                    maxLength={18}
+                                />
+                                {errors.part_number && <div className="text-red-500 text-sm">{errors.part_number}</div>}
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="name">Nome da peça</Label>
+                                <Input
+                                    type="text"
+                                    id="name"
+                                    value={data.name}
+                                    onChange={(e) => setData('name', e.target.value)}
+                                />
+                            </div>
+
+                            <div className="col-span-2 grid gap-2">
+                                <Label htmlFor="description">Descrição</Label>
+                                <Input
+                                    type="text"
+                                    id="description"
+                                    value={data.description}
+                                    onChange={(e) => setData('description', e.target.value)}
+                                />
+                                {errors.description && <div className="text-red-500 text-sm">{errors.description}</div>}
+                            </div>
+
+                            <div className="col-span-2 grid gap-2">
+                                <Label htmlFor="manufacturer">Fabricante</Label>
+                                <Input
+                                    type="text"
+                                    id="manufacturer"
+                                    value={data.manufacturer}
+                                    onChange={(e) => setData('manufacturer', e.target.value)}
+                                />
+                                {errors.manufacturer && <div className="text-red-500 text-sm">{errors.manufacturer}</div>}
+                            </div>
+
+                        </div>
+
+                        <div className="grid grid-cols-6 gap-4 mt-4">
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="model_compatibility">Modelos compatíveis</Label>
+                                <Input
+                                    type="text"
+                                    id="model_compatibility"
+                                    value={maskCep(data.model_compatibility)}
+                                    onChange={(e) => setData('model_compatibility', e.target.value)}
+                                />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="cost_price">Preço de custo</Label>
+                                <Input
+                                    type="text"
+                                    id="cost_price"
+                                    value={data.cost_price}
+                                    onChange={(e) => setData('cost_price', e.target.value)}
+                                />
+                                {errors.cost_price && <div>{errors.cost_price}</div>}
+                            </div>
+
+                            <div className="col-span-2 grid gap-2">
+                                <Label htmlFor="sale_price">Preço de venda</Label>
+                                <Input
+                                    type="text"
+                                    id="sale_price"
+                                    value={data.sale_price}
+                                    onChange={(e) => setData('sale_price', e.target.value)}
+                                />
+                            </div>
+
+                            <div className="col-span-2 grid gap-2">
+                                <Label htmlFor="stock_quantity">Quantidade em estoque</Label>
+                                <Input
+                                    type="text"
+                                    id="stock_quantity"
+                                    value={data.stock_quantity}
+                                    onChange={(e) => setData('stock_quantity', e.target.value)}
+                                />
+                            </div>
+
+                        </div>
+
+                        <div className="grid grid-cols-4 gap-4 mt-4">
+                            <div className="grid gap-2 col-span-2">
+                                <Label htmlFor="minimum_stock_level">Estoque mínimo</Label>
+                                <Input
+                                    type="text"
+                                    id="minimum_stock_level"
+                                    value={data.minimum_stock_level}
+                                    onChange={(e) => setData('minimum_stock_level', e.target.value)}
+                                />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="location">Local de armazenamento</Label>
+                                <Input
+                                    type="text"
+                                    id="location"
+                                    value={data.location}
+                                    onChange={(e) => setData('location', e.target.value)}
+                                />
+                            </div>
+
+                        </div>
+                        
+            <div className="grid gap-2">
+              <Label htmlFor="is_active">Status do usuário</Label>
+              <Switch
+                id="is_active"
+                checked={data.is_active}
+                onCheckedChange={(checked: any) => setData('is_active', checked)}
+              />
+            </div>
+                        <div className="flex justify-end">
+                            <Button type="submit" disabled={processing}>
+                                <Save />
+                                Salvar
+                            </Button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </AppLayout>
+    )
+}

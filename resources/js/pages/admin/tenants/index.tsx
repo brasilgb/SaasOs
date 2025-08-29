@@ -63,7 +63,8 @@ export default function TenantsIndex({  tenants }: any) {
                 <TableHead>E-mail</TableHead>
                 <TableHead>Telefone</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Cadastro</TableHead>
+                <TableHead>Criação</TableHead>
+                <TableHead>Vencimento</TableHead>
                 <TableHead></TableHead>
               </TableRow>
             </TableHeader>
@@ -78,13 +79,14 @@ export default function TenantsIndex({  tenants }: any) {
                     <TableCell>{maskPhone(tenant.contact_phone)}</TableCell>
                     <TableCell>{statusSaasByValue(tenant.status)}</TableCell>
                     <TableCell>{moment(tenant.created_at).format("DD/MM/YYYY")}</TableCell>
+                    <TableCell>{moment(tenant.expiration_date).format("DD/MM/YYYY")}</TableCell>
                     <TableCell className='flex justify-end gap-2'>
 
-                      <Button asChild size="icon" className="bg-sky-500 hover:bg-sky-600 text-white">
+                      {/* <Button asChild size="icon" className="bg-sky-500 hover:bg-sky-600 text-white">
                         <Link href={route('admin.branches.index', { tn: tenant.id })}>
                           <Building2 className="h-4 w-4" />
                         </Link>
-                      </Button>
+                      </Button> */}
 
                       <Button asChild size="icon" className="bg-orange-500 hover:bg-orange-600 text-white">
                         <Link href={route('admin.tenants.edit', tenant.id)}>

@@ -31,6 +31,7 @@ return new class extends Migration
             $table->foreignId('plan_id')->nullable()->constrained();
             $table->boolean('status');
             $table->text('observations')->nullable();
+            $table->date('expiration_date')->nullable();
             $table->timestamps();
         });
     }

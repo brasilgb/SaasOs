@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('branches', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tenant_id')->nullable()->constrained('tenants');
+            $table->foreignId('tenant_id')->constrained()->onDelete('cascade');
             $table->string('branch_cnpj');
             $table->string('branch_name');
             $table->string('branch_number');

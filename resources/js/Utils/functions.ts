@@ -65,15 +65,14 @@ const statusSaasByValue = (value: any) => {
         case 2:
             return "Inativo";
         case 3:
-            return "Pausado";
+            return "Trial";
         case 4:
+            return "Pausado";
+        case 5:
             return "Vence em 5D";
     }
 };
-// { value: '1', label: "Ativo" },
-//     { value: '1', label: "Inativo" },
-//     { value: '2', label: "Pausado" },
-//     { value: '3', label: "Vence em 5D" },
+
 export {
     statusOrdemByValue,
     statusUserByValue,

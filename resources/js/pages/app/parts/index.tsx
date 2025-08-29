@@ -3,7 +3,7 @@ import { Icon } from '@/components/icon';
 import AppLayout from '@/layouts/app-layout'
 import { BreadcrumbItem } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react'
-import { PackagePlus, Pencil, Plus } from 'lucide-react';
+import { MemoryStick, PackagePlus, Pencil, Plus } from 'lucide-react';
 import moment from 'moment'
 import {
   Table,
@@ -14,14 +14,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Button } from '@/components/ui/button';
 import InputSearch from '@/components/inputSearch';
 import AppPagination from '@/components/app-pagination';
 import ActionDelete from '@/components/action-delete';
 import AlertSuccess from '@/components/app-alert-success';
-import CadastraMarca from './create-brand';
-import EditBrand from './edit-brand';
-import CreateBrand from './create-brand';
+import EditBrand from './edit-part';
+import { Button } from '@/components/ui/button';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -29,22 +27,22 @@ const breadcrumbs: BreadcrumbItem[] = [
     href: route('app.dashboard'),
   },
   {
-    title: 'Marcas',
+    title: 'Peças',
     href: "#",
   },
 ];
 
-export default function Brands({ brands }: any) {
+export default function Parts({ parts }: any) {
   const { flash } = usePage().props as any;
 
   return (
     <AppLayout>
-      <Head title="Marcas" />
+      <Head title="Peças" />
       {flash.message && <AlertSuccess message={flash.message} />}
       <div className='flex items-center justify-between h-16 px-4'>
         <div className='flex items-center gap-2'>
-          <Icon iconNode={PackagePlus} className='w-8 h-8' />
-          <h2 className="text-xl font-semibold tracking-tight">Marcas</h2>
+          <Icon iconNode={MemoryStick} className='w-8 h-8' />
+          <h2 className="text-xl font-semibold tracking-tight">Peças</h2>
         </div>
         <div>
           <Breadcrumbs breadcrumbs={breadcrumbs} />
@@ -52,10 +50,17 @@ export default function Brands({ brands }: any) {
       </div>
       <div className='flex items-center justify-between p-4'>
         <div>
-          <InputSearch placeholder="Buscar marca" url="register-brands.index" />
+          <InputSearch placeholder="Buscar marca" url="app.parts.index" />
         </div>
         <div>
-          <CreateBrand />
+          <Button variant={'default'} asChild>
+            <Link
+              href={route('app.parts.create')}
+            >
+              <Plus className='h-4 w-4' />
+              <span>Ordem</span>
+            </Link>
+          </Button>
         </div>
       </div>
 
@@ -71,15 +76,15 @@ export default function Brands({ brands }: any) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {brands?.data.length ?
-                brands?.data?.map((brand: any) => (
+              {parts?.data.length ?
+                parts?.data?.map((brand: any) => (
                   <TableRow key={brand.id}>
                     <TableCell>{brand.brand_number}</TableCell>
                     <TableCell className="font-medium">{brand.brand}</TableCell>
                     <TableCell>{moment(brand.created_at).format("DD/MM/YYYY")}</TableCell>
                     <TableCell className='flex justify-end gap-2'>
                       <EditBrand brand={brand} />
-                      <ActionDelete title={'esta marca'} url={'register-brands.destroy'} param={brand.id} />
+                      <ActionDelete title={'esta marca'} url={'register-parts.destroy'} param={brand.id} />
 
                     </TableCell>
                   </TableRow>
@@ -93,13 +98,13 @@ export default function Brands({ brands }: any) {
                 )
               }
             </TableBody>
-              <TableFooter>
-                <TableRow>
-                  <TableCell colSpan={5}>
-                    <AppPagination data={brands} />
-                  </TableCell>
-                </TableRow>
-              </TableFooter>
+            <TableFooter>
+              <TableRow>
+                <TableCell colSpan={5}>
+                  <AppPagination data={parts} />
+                </TableCell>
+              </TableRow>
+            </TableFooter>
           </Table>
         </div>
       </div>

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('whatsapp_messages', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tenant_id')->nullable()->constrained('tenants');
+            $table->foreignId('tenant_id')->constrained()->onDelete('cascade');
             $table->text('generatedbudget')->nullable();
             $table->text('servicecompleted')->nullable();
             $table->timestamps();
