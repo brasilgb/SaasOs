@@ -58,7 +58,7 @@ export default function Parts({ parts }: any) {
               href={route('app.parts.create')}
             >
               <Plus className='h-4 w-4' />
-              <span>Ordem</span>
+              <span>Peça</span>
             </Link>
           </Button>
         </div>

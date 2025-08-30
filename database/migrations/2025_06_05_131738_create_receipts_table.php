@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('receipts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tenant_id')->constrained()->onDelete('cascade');
+            $table->foreignId('tenant_id')->nullable()->constrained()->onDelete('cascade');
             $table->text('receivingequipment')->nullable(); // Impressão de recibos recebimento de equipamento
             $table->text('equipmentdelivery')->nullable();  // Impressão de recibos entrega equipamento
             $table->text('budgetissuance')->nullable();     // Impressão de recibos emissão de orçamento
