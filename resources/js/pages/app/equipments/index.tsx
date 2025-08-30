@@ -49,10 +49,10 @@ export default function Equipment({ equipments }: any) {
         </div>
       </div>
       <div className='flex items-center justify-between p-4'>
-        <div>
+        <div className='w-full'>
           <InputSearch placeholder="Buscar equipamento" url="app.register-equipments.index" />
         </div>
-        <div>
+        <div className='w-full flex justify-end'>
           <CreateEquipment />
         </div>
       </div>

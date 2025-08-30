@@ -8,7 +8,7 @@ import { ArrowLeft, MemoryStick, Save, Users } from "lucide-react";
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { maskCep, maskCpfCnpj, maskPhone, unMask } from "@/Utils/mask";
+import { maskCep, maskCpfCnpj, maskMoney, maskMoneyDot, maskPhone, unMask } from "@/Utils/mask";
 import { toast } from "sonner";
 import apios from "@/Utils/connectApi";
 import { useEffect } from "react";
@@ -86,7 +86,7 @@ export default function CreatePart() {
                     <form onSubmit={handleSubmit} className="space-y-8">
                         <div className="grid grid-cols-6 gap-4 mt-4">
 
-                            <div className=" grid gap-2">
+                            <div className="grid gap-2">
                                 <Label htmlFor="name">Part Number</Label>
                                 <Input
                                     type="text"
@@ -98,7 +98,7 @@ export default function CreatePart() {
                                 {errors.part_number && <div className="text-red-500 text-sm">{errors.part_number}</div>}
                             </div>
 
-                            <div className="grid gap-2">
+                            <div className="grid gap-2 col-span-2">
                                 <Label htmlFor="name">Nome da peça</Label>
                                 <Input
                                     type="text"
@@ -106,9 +106,10 @@ export default function CreatePart() {
                                     value={data.name}
                                     onChange={(e) => setData('name', e.target.value)}
                                 />
+                                {errors.name && <div className="text-red-500 text-sm">{errors.name}</div>}
                             </div>
 
-                            <div className="col-span-2 grid gap-2">
+                            <div className="col-span-3 grid gap-2">
                                 <Label htmlFor="description">Descrição</Label>
                                 <Input
                                     type="text"
@@ -118,8 +119,9 @@ export default function CreatePart() {
                                 />
                                 {errors.description && <div className="text-red-500 text-sm">{errors.description}</div>}
                             </div>
-
-                            <div className="col-span-2 grid gap-2">
+                        </div>
+                        <div className="grid grid-cols-5 gap-4 mt-4">
+                            <div className="grid gap-2">
                                 <Label htmlFor="manufacturer">Fabricante</Label>
                                 <Input
                                     type="text"
@@ -130,11 +132,7 @@ export default function CreatePart() {
                                 {errors.manufacturer && <div className="text-red-500 text-sm">{errors.manufacturer}</div>}
                             </div>
 
-                        </div>
-
-                        <div className="grid grid-cols-6 gap-4 mt-4">
-
-                            <div className="grid gap-2">
+                            <div className="col-span-2 grid gap-2">
                                 <Label htmlFor="model_compatibility">Modelos compatíveis</Label>
                                 <Input
                                     type="text"
@@ -144,51 +142,7 @@ export default function CreatePart() {
                                 />
                             </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="cost_price">Preço de custo</Label>
-                                <Input
-                                    type="text"
-                                    id="cost_price"
-                                    value={data.cost_price}
-                                    onChange={(e) => setData('cost_price', e.target.value)}
-                                />
-                                {errors.cost_price && <div>{errors.cost_price}</div>}
-                            </div>
-
                             <div className="col-span-2 grid gap-2">
-                                <Label htmlFor="sale_price">Preço de venda</Label>
-                                <Input
-                                    type="text"
-                                    id="sale_price"
-                                    value={data.sale_price}
-                                    onChange={(e) => setData('sale_price', e.target.value)}
-                                />
-                            </div>
-
-                            <div className="col-span-2 grid gap-2">
-                                <Label htmlFor="stock_quantity">Quantidade em estoque</Label>
-                                <Input
-                                    type="text"
-                                    id="stock_quantity"
-                                    value={data.stock_quantity}
-                                    onChange={(e) => setData('stock_quantity', e.target.value)}
-                                />
-                            </div>
-
-                        </div>
-
-                        <div className="grid grid-cols-4 gap-4 mt-4">
-                            <div className="grid gap-2 col-span-2">
-                                <Label htmlFor="minimum_stock_level">Estoque mínimo</Label>
-                                <Input
-                                    type="text"
-                                    id="minimum_stock_level"
-                                    value={data.minimum_stock_level}
-                                    onChange={(e) => setData('minimum_stock_level', e.target.value)}
-                                />
-                            </div>
-
-                            <div className="grid gap-2">
                                 <Label htmlFor="location">Local de armazenamento</Label>
                                 <Input
                                     type="text"
@@ -197,17 +151,62 @@ export default function CreatePart() {
                                     onChange={(e) => setData('location', e.target.value)}
                                 />
                             </div>
-
                         </div>
-                        
-            <div className="grid gap-2">
-              <Label htmlFor="is_active">Status do usuário</Label>
-              <Switch
-                id="is_active"
-                checked={data.is_active}
-                onCheckedChange={(checked: any) => setData('is_active', checked)}
-              />
-            </div>
+                        <div className="grid grid-cols-4 gap-4 mt-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="cost_price">Preço de custo</Label>
+                                <Input
+                                    type="text"
+                                    id="cost_price"
+                                    value={maskMoney(data.cost_price)}
+                                    onChange={(e) => setData('cost_price', e.target.value)}
+                                />
+                                {errors.cost_price && <div className="text-red-500 text-sm">{errors.cost_price}</div>}
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="sale_price">Preço de venda</Label>
+                                <Input
+                                    type="text"
+                                    id="sale_price"
+                                    value={maskMoney(data.sale_price)}
+                                    onChange={(e) => setData('sale_price', e.target.value)}
+                                />
+                                {errors.sale_price && <div className="text-red-500 text-sm">{errors.sale_price}</div>}
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="stock_quantity">Quantidade em estoque</Label>
+                                <Input
+                                    type="number"
+                                    id="stock_quantity"
+                                    value={data.stock_quantity}
+                                    onChange={(e) => setData('stock_quantity', e.target.value)}
+                                />
+                                {errors.stock_quantity && <div className="text-red-500 text-sm">{errors.stock_quantity}</div>}
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="minimum_stock_level">Estoque mínimo</Label>
+                                <Input
+                                    type="number"
+                                    id="minimum_stock_level"
+                                    value={data.minimum_stock_level}
+                                    onChange={(e) => setData('minimum_stock_level', e.target.value)}
+                                />
+                                {errors.minimum_stock_level && <div className="text-red-500 text-sm">{errors.minimum_stock_level}</div>}
+                            </div>
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="is_active">Status da peça</Label>
+                            <Switch
+                                id="is_active"
+                                checked={data.is_active}
+                                onCheckedChange={(checked: any) => setData('is_active', checked)}
+                            />
+                        </div>
+
                         <div className="flex justify-end">
                             <Button type="submit" disabled={processing}>
                                 <Save />

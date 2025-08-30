@@ -51,10 +51,10 @@ export default function Users({ users }: any) {
       </div>
 
       <div className='flex items-center justify-between p-4'>
-        <div>
+        <div className='w-full'>
           <InputSearch placeholder="Buscar usuário" url="app.users.index" />
         </div>
-        <div>
+        <div className='w-full flex justify-end'>
           <Button variant={'default'} asChild>
             <Link
               href={route('app.users.create')}

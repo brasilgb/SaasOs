@@ -49,10 +49,10 @@ export default function CheckList({ budgets, brands, models, services }: any) {
         </div>
       </div>
       <div className='flex items-center justify-between p-4'>
-        <div>
+        <div className='w-full'>
           <InputSearch placeholder="Buscar orçamento" url="app.register-budgets.index" />
         </div>
-        <div>
+        <div className='w-full flex justify-end'>
           <CreateBudget brands={brands} models={models} services={services} />
         </div>
       </div>

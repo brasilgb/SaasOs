@@ -23,8 +23,9 @@ export default function InputSearch({ placeholder, url, date }: SearchProps) {
         <form
             onSubmit={handleSubmit}
         >
-            <div className='relative'>
+            <div className='relative w-full'>
                 <Input
+                className="w-full"
                     name="search"
                     value={data.q}
                     onChange={(e) => setData("q", e.target.value)}

@@ -80,10 +80,10 @@ export default function Orders({ orders, whats, trintadias }: any) {
             </div>
 
             <div className='flex items-center justify-between p-4'>
-                <div>
+                <div className='w-full'>
                     <InputSearch placeholder="Buscar ordem" url="app.orders.index" />
                 </div>
-                <div>
+                <div className='w-full flex justify-end'>
                     <SelectFilter />
                 </div>
                 <div>
@@ -153,7 +153,7 @@ export default function Orders({ orders, whats, trintadias }: any) {
 
                                             <ModalReceipt orderid={order.id} />
                                             <Button asChild size="icon" className="bg-fuchsia-700 hover:bg-fuchsia-700 text-white">
-                                                <Link href={route('app.images.index', { or: order.id})}>
+                                                <Link href={route('app.images.index', { or: order.id })}>
                                                     <ImageUp className="h-4 w-4" />
                                                 </Link>
                                             </Button>

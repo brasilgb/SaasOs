@@ -19,7 +19,7 @@ class OrderRequest extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
-        public function rules(): array
+    public function rules(): array
     {
         return [
             'customer_id' => 'required',
@@ -27,7 +27,7 @@ class OrderRequest extends FormRequest
             'defect' => 'required',
         ];
     }
-    
+
     public function attributes(): array
     {
         return [

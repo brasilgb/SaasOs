@@ -49,10 +49,10 @@ export default function Services({ equipments, services }: any) {
         </div>
       </div>
       <div className='flex items-center justify-between p-4'>
-        <div>
+        <div className='w-full'>
           <InputSearch placeholder="Buscar serviço" url="app.register-services.index" />
         </div>
-        <div>
+        <div className='w-full flex justify-end'>
           <CreateService equipments={equipments} />
         </div>
       </div>

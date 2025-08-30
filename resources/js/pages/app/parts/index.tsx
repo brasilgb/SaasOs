@@ -3,7 +3,7 @@ import { Icon } from '@/components/icon';
 import AppLayout from '@/layouts/app-layout'
 import { BreadcrumbItem } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react'
-import { MemoryStick, PackagePlus, Pencil, Plus } from 'lucide-react';
+import { Edit, MemoryStick, Plus } from 'lucide-react';
 import moment from 'moment'
 import {
   Table,
@@ -18,7 +18,6 @@ import InputSearch from '@/components/inputSearch';
 import AppPagination from '@/components/app-pagination';
 import ActionDelete from '@/components/action-delete';
 import AlertSuccess from '@/components/app-alert-success';
-import EditBrand from './edit-part';
 import { Button } from '@/components/ui/button';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -49,10 +48,10 @@ export default function Parts({ parts }: any) {
         </div>
       </div>
       <div className='flex items-center justify-between p-4'>
-        <div>
-          <InputSearch placeholder="Buscar marca" url="app.parts.index" />
+        <div className='w-full'>
+          <InputSearch placeholder="Buscar peça por nome e part number" url="app.parts.index" />
         </div>
-        <div>
+        <div className='w-full flex justify-end'>
           <Button variant={'default'} asChild>
             <Link
               href={route('app.parts.create')}
@@ -69,22 +68,35 @@ export default function Parts({ parts }: any) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[100px]">#</TableHead>
-                <TableHead>Marca</TableHead>
+                <TableHead className="min-w-max">Part Number</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Fabricante</TableHead>
+                <TableHead>Valor</TableHead>
+                <TableHead>Em estoque</TableHead>
                 <TableHead>Cadastro</TableHead>
                 <TableHead></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {parts?.data.length ?
-                parts?.data?.map((brand: any) => (
-                  <TableRow key={brand.id}>
-                    <TableCell>{brand.brand_number}</TableCell>
-                    <TableCell className="font-medium">{brand.brand}</TableCell>
-                    <TableCell>{moment(brand.created_at).format("DD/MM/YYYY")}</TableCell>
+                parts?.data?.map((part: any) => (
+                  <TableRow key={part.id}>
+                    <TableCell>{part.part_number}</TableCell>
+                    <TableCell className="font-medium">{part.name}</TableCell>
+                    <TableCell>{part.manufacturer}</TableCell>
+                    <TableCell>{part.sale_price}</TableCell>
+                    <TableCell>{part.stock_quantity}</TableCell>
+                    <TableCell>{moment(part.created_at).format("DD/MM/YYYY")}</TableCell>
+                    
                     <TableCell className='flex justify-end gap-2'>
-                      <EditBrand brand={brand} />
-                      <ActionDelete title={'esta marca'} url={'register-parts.destroy'} param={brand.id} />
+                      
+                      <Button asChild size="icon" className="bg-orange-500 hover:bg-orange-600 text-white">
+                        <Link href={route('app.parts.edit', part.id)}>
+                          <Edit />
+                        </Link>
+                      </Button>
+
+                      <ActionDelete title={'esta peça'} url={'app.parts.destroy'} param={part.id} />
 
                     </TableCell>
                   </TableRow>
@@ -100,7 +112,7 @@ export default function Parts({ parts }: any) {
             </TableBody>
             <TableFooter>
               <TableRow>
-                <TableCell colSpan={5}>
+                <TableCell colSpan={8}>
                   <AppPagination data={parts} />
                 </TableCell>
               </TableRow>

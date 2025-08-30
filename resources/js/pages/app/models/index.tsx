@@ -49,10 +49,10 @@ export default function Models({ models, brands }: any) {
         </div>
       </div>
       <div className='flex items-center justify-between p-4'>
-        <div>
+        <div className='w-full'>
           <InputSearch placeholder="Buscar modelo" url="app.register-models.index" />
         </div>
-        <div>
+        <div className='w-full flex justify-end'>
           <CreateModel brands={brands} />
         </div>
       </div>

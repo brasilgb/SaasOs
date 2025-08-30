@@ -49,10 +49,10 @@ export default function CheckList({ equipments, checklists }: any) {
         </div>
       </div>
       <div className='flex items-center justify-between p-4'>
-        <div>
+        <div className='w-full'>
           <InputSearch placeholder="Buscar equipamento" url="app.register-checklists.index" />
         </div>
-        <div>
+        <div className='w-full flex justify-end'>
           <CreateChecklist equipments={equipments} />
         </div>
       </div>

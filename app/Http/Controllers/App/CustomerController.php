@@ -53,7 +53,7 @@ class CustomerController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(CustomerRequest $request): RedirectResponse
-    {
+    { 
         $data = $request->all();
         $request->validated();
         $data['customer_number'] = Customer::exists() ? Customer::latest()->first()->customer_number + 1 : 1;
