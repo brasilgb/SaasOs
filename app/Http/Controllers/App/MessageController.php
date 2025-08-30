@@ -54,6 +54,7 @@ class MessageController extends Controller
     {
         $data = $request->all();
         $request->validated();
+        $data['message_number'] = Message::exists() ? Message::latest()->first()->message_number + 1 : 1;
         Message::create($data);
         return redirect()->route('app.messages.index')->with('success', 'Agenda cadastrada com sucesso');
     }

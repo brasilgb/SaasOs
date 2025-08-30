@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('messages', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tenant_id')->constrained()->onDelete('cascade');
+            $table->foreignId('tenant_id')->nullable()->constrained()->onDelete('cascade');
             $table->bigInteger('sender_id')->nullable()->references('id')->on('users')->onDelete('cascade');
             $table->bigInteger('recipient_id')->nullable()->references('id')->on('users')->onDelete('cascade');
             $table->text('message_number');

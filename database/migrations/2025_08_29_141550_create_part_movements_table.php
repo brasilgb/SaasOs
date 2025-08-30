@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
 
             // Chaves estrangeiras
-            $table->foreignId('tenant_id')->constrained()->onDelete('cascade');
+            $table->foreignId('tenant_id')->nullable()->constrained()->onDelete('cascade');
             $table->foreignId('part_id')->constrained()->onDelete('cascade');
             $table->foreignId('order_id')->nullable()->constrained('orders')->onDelete('set null');
             $table->foreignId('user_id')->constrained()->onDelete('restrict');

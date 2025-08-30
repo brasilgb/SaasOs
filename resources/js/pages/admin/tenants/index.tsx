@@ -110,7 +110,7 @@ export default function TenantsIndex({  tenants }: any) {
             </TableBody>
             <TableFooter>
               <TableRow>
-                <TableCell colSpan={8}>
+                <TableCell colSpan={9}>
                   <AppPagination data={tenants} />
                 </TableCell>
               </TableRow>
