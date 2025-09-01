@@ -81,6 +81,8 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
     setPartsData(data);
     const parts = data.map((part: any) => (` ${part.name}(x${part.quantity})`));
     setData('parts', (parts).toString().trim());
+    const partsTotal = data.reduce((acc: any, item: any) => acc + Number(item.sale_price), 0);
+    setData('parts_value', (partsTotal).toString().trim())
 
   };
 
