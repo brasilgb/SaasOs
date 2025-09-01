@@ -29,7 +29,7 @@ function ReceiptCopy({ order, company, type, receipt, checklist, qrcode }: { ord
                     </span>
                 </div>
                 <div className="flex-1 flex items-center justify-around gap-4 text-xs">
-                    <div className="grid grid-cols-2 w-full">
+                    <div className="grid md:grid-cols-2 w-full">
                         <div className="flex flex-1 flex-col items-center">
                             <span className="font-medium">{company?.companyname}</span>
                             <span className="font-medium">{company?.cnpj}</span>
@@ -49,8 +49,8 @@ function ReceiptCopy({ order, company, type, receipt, checklist, qrcode }: { ord
             {/* Dados do cliente */}
             <div className="mb-1.5">
                 <h2 className="text-xs font-semibold mb-1.5 border-b border-gray-100 p-1 bg-gray-50">Dados do Cliente</h2>
-                <div className="grid grid-cols-2">
-                    <div className="grid grid-cols-1 gap-1 text-xs">
+                <div className="grid md:grid-cols-2">
+                    <div className="grid md:grid-cols-1 gap-1 text-xs">
                         <p>
                             <span className="font-medium">Nome cliente:</span> {order?.customer?.name}
                         </p>
@@ -58,7 +58,7 @@ function ReceiptCopy({ order, company, type, receipt, checklist, qrcode }: { ord
                             <span className="font-medium">Endereço:</span> {order?.customer?.street}, {order?.customer?.number} - {order?.customer?.district}
                         </p>
                     </div>
-                    <div className="grid grid-cols-1 gap-1 text-xs">
+                    <div className="grid md:grid-cols-1 gap-1 text-xs">
                         <p>
                             <span className="font-medium">CPF/CNPJ:</span> {order?.customer?.cpf}
                         </p>
@@ -72,7 +72,7 @@ function ReceiptCopy({ order, company, type, receipt, checklist, qrcode }: { ord
             {/* Dados do equipamento */}
             <div className="mb-1.5">
                 <h2 className="text-xs font-semibold mb-1.5 border-b border-gray-100 p-1 bg-gray-50">Informações do equipamento</h2>
-                <div className="grid grid-cols-3 text-xs">
+                <div className="grid md:grid-cols-3 text-xs">
                     <p>
                         <span className="font-medium">Equipamento:</span> {order?.equipment?.equipment}
                     </p>

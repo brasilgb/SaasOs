@@ -128,7 +128,7 @@ const ImageUpload: React.FC<PageProps> = ({ savedimages, orderid, errors, succes
                             {savedimages.length > 0 && (
                                 <div className="mb-4">
                                     <h3 className="text-lg font-semibold mb-2">Imagens disponíveis no banco:</h3>
-                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                    <div className="grid md:grid-cols-2 md:md:grid-cols-3 lg:md:grid-cols-4 gap-4">
                                         {savedimages.map((img: any) => (
                                             <div key={img.id} className="relative group">
                                                 <img
@@ -152,7 +152,7 @@ const ImageUpload: React.FC<PageProps> = ({ savedimages, orderid, errors, succes
                             {imagePreviews.length > 0 && (
                                 <div className="mb-4">
                                     <h3 className="text-lg font-semibold mb-2">Pré-visualização:</h3>
-                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                    <div className="grid md:grid-cols-2 md:md:grid-cols-3 lg:md:grid-cols-4 gap-4">
                                         {imagePreviews.map((image) => (
                                             <div key={image.id} className="relative group">
                                                 <img

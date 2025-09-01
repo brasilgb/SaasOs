@@ -58,7 +58,7 @@ export default function WhatsappMessage({ whatsappmessage }: any) {
                     <form onSubmit={handleSubmit} className="space-y-8">
                         <div className="grid gap-4 mt-4">
 
-                            <div className="col-span-2 grid gap-2">
+                            <div className="md:col-span-2 grid gap-2">
                                 <Label htmlFor="generatedbudget">Orçamento gerado</Label>
                                 <Textarea
                                     id="generatedbudget"
@@ -67,7 +67,7 @@ export default function WhatsappMessage({ whatsappmessage }: any) {
                                 />
                             </div>
 
-                            <div className="col-span-2 grid gap-2">
+                            <div className="md:col-span-2 grid gap-2">
                                 <Label htmlFor="servicecompleted">Serviço concluído</Label>
                                 <Textarea
                                     id="servicecompleted"

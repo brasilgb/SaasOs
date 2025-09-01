@@ -16,48 +16,15 @@ use Inertia\Inertia;
 class PartController extends Controller
 {
 
-        public function registerPartEntry(array $data)
+    public function getPartsForPartNumber(Request $request)
     {
-        DB::beginTransaction();
-
-        try {
-            // 1. Tentar encontrar a peça pelo número, ou criar se não existir
-            $part = Part::firstOrCreate(
-                [
-                    'tenant_id' => Auth::user()->tenant_id,
-                    'part_number' => $data['part_number'],
-                ],
-                [
-                    'name' => $data['name'],
-                    'cost_price' => $data['cost_price'],
-                    'sale_price' => $data['sale_price'],
-                    'stock_quantity' => 0, // Começa com 0, será incrementado abaixo
-                ]
-            );
-
-            // 2. Incrementar a quantidade em estoque na tabela 'parts'
-            // O `update` com `increment` é seguro em concorrência
-            $part->increment('stock_quantity', $data['quantity']);
-
-            // 3. Registrar o movimento de entrada
-            PartMovement::create([
-                'tenant_id' => Auth::user()->tenant_id,
-                'part_id' => $part->id,
-                'movement_type' => 'entrada',
-                'quantity' => $data['quantity'],
-                'reason' => 'Compra de Fornecedor',
-                'user_id' => Auth::id(),
-            ]);
-
-            DB::commit();
-
-            return ['success' => true, 'message' => 'Entrada de peças registrada com sucesso.'];
-        } catch (\Exception $e) {
-            DB::rollback();
-
-            return ['success' => false, 'message' => 'Erro ao registrar a entrada: ' . $e->getMessage()];
-        }
+        $parts = Part::where('part_number', $request->part_number)->first();
+        return response()->json([
+            "success" => true,
+            "parts" => $parts
+        ]);
     }
+
 
     /**
      * Display a listing of the resource.

@@ -89,9 +89,9 @@ export default function CreateUser({ user }: any) {
       <div className='p-4'>
         <div className='border rounded-lg p-2'>
           <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="grid grid-cols-6 gap-4 mt-4">
+            <div className="grid md:grid-cols-6 gap-4 mt-4">
 
-              <div className="grid gap-2 col-span-2">
+              <div className="grid gap-2 md:col-span-2">
                 <Label htmlFor="name">Nome</Label>
                 <Input
                   value={data.name}
@@ -102,7 +102,7 @@ export default function CreateUser({ user }: any) {
                 {errors.name && <div className="text-red-500 text-sm">{errors.name}</div>}
               </div>
 
-              <div className="grid gap-2 col-span-2">
+              <div className="grid gap-2 md:col-span-2">
                 <Label htmlFor="email">E-mail</Label>
                 <Input
                   id="email"
@@ -137,7 +137,7 @@ export default function CreateUser({ user }: any) {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mt-4">
+            <div className="grid md:grid-cols-2 gap-4 mt-4">
 
               <div className="grid gap-2">
                 <Label htmlFor="password">Password</Label>
@@ -187,7 +187,7 @@ export default function CreateUser({ user }: any) {
 
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mt-4">
+            <div className="grid md:grid-cols-2 gap-4 mt-4">
               <div className=" grid gap-2">
                 <Label htmlFor="recipient">Funções do usuário</Label>
                 <Select

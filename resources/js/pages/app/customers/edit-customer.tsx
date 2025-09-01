@@ -102,7 +102,7 @@ export default function EditCustomer({ customer }: any) {
         <div className='border rounded-lg p-2'>
 
           <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="grid grid-cols-6 gap-4 mt-4">
+            <div className="grid md:grid-cols-6 gap-4 mt-4">
 
               <div className=" grid gap-2">
                 <Label htmlFor="name">CPF/CNPJ</Label>
@@ -126,7 +126,7 @@ export default function EditCustomer({ customer }: any) {
                 />
               </div>
 
-              <div className="col-span-2 grid gap-2">
+              <div className="md:col-span-2 grid gap-2">
                 <Label htmlFor="name">Name</Label>
                 <Input
                   type="text"
@@ -137,7 +137,7 @@ export default function EditCustomer({ customer }: any) {
                 {errors.name && <div className="text-red-500 text-sm">{errors.name}</div>}
               </div>
 
-              <div className="col-span-2 grid gap-2">
+              <div className="md:col-span-2 grid gap-2">
                 <Label htmlFor="email">E-mail</Label>
                 <Input
                   type="text"
@@ -150,7 +150,7 @@ export default function EditCustomer({ customer }: any) {
 
             </div>
 
-            <div className="grid grid-cols-6 gap-4 mt-4">
+            <div className="grid md:grid-cols-6 gap-4 mt-4">
 
               <div className="grid gap-2">
                 <Label htmlFor="cep">CEP</Label>
@@ -175,7 +175,7 @@ export default function EditCustomer({ customer }: any) {
                 {errors.state && <div>{errors.state}</div>}
               </div>
 
-              <div className="col-span-2 grid gap-2">
+              <div className="md:col-span-2 grid gap-2">
                 <Label htmlFor="city">Cidade</Label>
                 <Input
                   type="text"
@@ -185,7 +185,7 @@ export default function EditCustomer({ customer }: any) {
                 />
               </div>
 
-              <div className="col-span-2 grid gap-2">
+              <div className="md:col-span-2 grid gap-2">
                 <Label htmlFor="district">Bairro</Label>
                 <Input
                   type="text"
@@ -197,8 +197,8 @@ export default function EditCustomer({ customer }: any) {
 
             </div>
 
-            <div className="grid grid-cols-4 gap-4 mt-4">
-              <div className="grid gap-2 col-span-2">
+            <div className="grid md:grid-cols-4 gap-4 mt-4">
+              <div className="grid gap-2 md:col-span-2">
                 <Label htmlFor="street">Endereço</Label>
                 <Input
                   type="text"
@@ -229,7 +229,7 @@ export default function EditCustomer({ customer }: any) {
               </div>
             </div>
 
-            <div className="grid grid-cols-5 gap-4 mt-4">
+            <div className="grid md:grid-cols-5 gap-4 mt-4">
               <div className="grid gap-2">
                 <Label htmlFor="phone">Telefone</Label>
                 <Input
@@ -252,7 +252,7 @@ export default function EditCustomer({ customer }: any) {
                 />
               </div>
 
-              <div className="grid gap-2 col-span-2">
+              <div className="grid gap-2 md:col-span-2">
                 <Label htmlFor="contactname">Contato</Label>
                 <Input
                   type="text"

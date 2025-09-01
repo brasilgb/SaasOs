@@ -109,7 +109,7 @@ export default function Company({ company }: any) {
                         />
                     </div>
                     <form onSubmit={handleSubmit} className="space-y-8">
-                        <div className="grid grid-cols-6 gap-4 mt-4">
+                        <div className="grid md:grid-cols-6 gap-4 mt-4">
 
                             <div className="grid gap-2">
                                 <Label htmlFor="logo">Logotipo</Label>
@@ -121,7 +121,7 @@ export default function Company({ company }: any) {
                                 {errors.logo && <div className="text-red-500 text-sm">{errors.logo}</div>}
                             </div>
 
-                            <div className="col-span-2 grid gap-2">
+                            <div className="md:col-span-2 grid gap-2">
                                 <Label htmlFor="name">CPF/CNPJ</Label>
                                 <Input
                                     type="text"
@@ -143,7 +143,7 @@ export default function Company({ company }: any) {
                                 />
                             </div>
 
-                            <div className="col-span-2 grid gap-2">
+                            <div className="md:col-span-2 grid gap-2">
                                 <Label htmlFor="companyname">Razão social</Label>
                                 <Input
                                     type="text"
@@ -156,7 +156,7 @@ export default function Company({ company }: any) {
 
                         </div>
 
-                        <div className="grid grid-cols-6 gap-4 mt-4">
+                        <div className="grid md:grid-cols-6 gap-4 mt-4">
 
                             <div className="grid gap-2">
                                 <Label htmlFor="cep">CEP</Label>
@@ -181,7 +181,7 @@ export default function Company({ company }: any) {
                                 {errors.state && <div>{errors.state}</div>}
                             </div>
 
-                            <div className="col-span-2 grid gap-2">
+                            <div className="md:col-span-2 grid gap-2">
                                 <Label htmlFor="city">Cidade</Label>
                                 <Input
                                     type="text"
@@ -191,7 +191,7 @@ export default function Company({ company }: any) {
                                 />
                             </div>
 
-                            <div className="col-span-2 grid gap-2">
+                            <div className="md:col-span-2 grid gap-2">
                                 <Label htmlFor="district">Bairro</Label>
                                 <Input
                                     type="text"
@@ -203,8 +203,8 @@ export default function Company({ company }: any) {
 
                         </div>
 
-                        <div className="grid grid-cols-4 gap-4 mt-4">
-                            <div className="col-span-2 grid gap-2">
+                        <div className="grid md:grid-cols-4 gap-4 mt-4">
+                            <div className="md:col-span-2 grid gap-2">
                                 <Label htmlFor="street">Logradouro</Label>
                                 <Input
                                     type="text"
@@ -235,7 +235,7 @@ export default function Company({ company }: any) {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-6 gap-4 mt-4">
+                        <div className="grid md:grid-cols-6 gap-4 mt-4">
                             <div className="grid gap-2">
                                 <Label htmlFor="telephone">Telefone</Label>
                                 <Input
@@ -258,7 +258,7 @@ export default function Company({ company }: any) {
                                 />
                             </div>
 
-                            <div className="grid gap-2 col-span-2">
+                            <div className="grid gap-2 md:col-span-2">
                                 <Label htmlFor="site">Site</Label>
                                 <Input
                                     type="text"
@@ -268,7 +268,7 @@ export default function Company({ company }: any) {
                                 />
                             </div>
 
-                            <div className="grid gap-2 col-span-2">
+                            <div className="grid gap-2 md:col-span-2">
                                 <Label htmlFor="email">E-mail</Label>
                                 <Input
                                     type="text"

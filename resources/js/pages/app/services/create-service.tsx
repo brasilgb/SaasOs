@@ -57,7 +57,7 @@ export default function CreateService({ equipments }: any) {
                     </DialogHeader>
                     <form onSubmit={handleSubmit} autoComplete="off">
 
-                        <div className="col-span-2 grid gap-2">
+                        <div className="md:col-span-2 grid gap-2">
                             <Label htmlFor="equipment_id">Serviço</Label>
                             <Select
                                 onValueChange={(value) => setData('equipment_id', value)}

@@ -116,7 +116,7 @@ export default function CreateTenant({ plans }: any) {
                 <div className='border rounded-lg p-2'>
 
                     <form onSubmit={handleSubmit} className="space-y-8">
-                        <div className="grid grid-cols-3 gap-4 mt-4">
+                        <div className="grid md:grid-cols-3 gap-4 mt-4">
 
                             <div className="grid gap-2">
                                 <Label htmlFor="company_name">Razão social</Label>
@@ -152,8 +152,8 @@ export default function CreateTenant({ plans }: any) {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-6 gap-4 mt-4">
-                            <div className="col-span-2 grid gap-2">
+                        <div className="grid md:grid-cols-6 gap-4 mt-4">
+                            <div className="md:col-span-2 grid gap-2">
                                 <Label htmlFor="contact_name">Nome do contato</Label>
                                 <Input
                                     type="text"
@@ -164,7 +164,7 @@ export default function CreateTenant({ plans }: any) {
                                 {errors.contact_name && <div className="text-red-500 text-sm">{errors.contact_name}</div>}
                             </div>
 
-                            <div className="col-span-2 grid gap-2">
+                            <div className="md:col-span-2 grid gap-2">
                                 <Label htmlFor="contact_email">E-mail</Label>
                                 <Input
                                     type="text"
@@ -199,7 +199,7 @@ export default function CreateTenant({ plans }: any) {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-6 gap-4 mt-4">
+                        <div className="grid md:grid-cols-6 gap-4 mt-4">
 
                             <div className="grid gap-2">
                                 <Label htmlFor="cep">CEP</Label>
@@ -224,7 +224,7 @@ export default function CreateTenant({ plans }: any) {
                                 {errors.state && <div>{errors.state}</div>}
                             </div>
 
-                            <div className="col-span-2 grid gap-2">
+                            <div className="md:col-span-2 grid gap-2">
                                 <Label htmlFor="city">Cidade</Label>
                                 <Input
                                     type="text"
@@ -234,7 +234,7 @@ export default function CreateTenant({ plans }: any) {
                                 />
                             </div>
 
-                            <div className="col-span-2 grid gap-2">
+                            <div className="md:col-span-2 grid gap-2">
                                 <Label htmlFor="district">Bairro</Label>
                                 <Input
                                     type="text"
@@ -246,8 +246,8 @@ export default function CreateTenant({ plans }: any) {
 
                         </div>
 
-                        <div className="grid grid-cols-4 gap-4 mt-4">
-                            <div className="grid gap-2 col-span-2">
+                        <div className="grid md:grid-cols-4 gap-4 mt-4">
+                            <div className="grid gap-2 md:col-span-2">
                                 <Label htmlFor="street">Endereço</Label>
                                 <Input
                                     type="text"
@@ -278,9 +278,9 @@ export default function CreateTenant({ plans }: any) {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-4 gap-4 mt-4">
+                        <div className="grid md:grid-cols-4 gap-4 mt-4">
 
-                            <div className="col-span-2 grid gap-2">
+                            <div className="md:col-span-2 grid gap-2">
                                 <Label htmlFor="plan_id">Plano</Label>
                                 <Select
                                     options={allPlans}
@@ -309,7 +309,7 @@ export default function CreateTenant({ plans }: any) {
                                 <InputError className="mt-2" message={errors.plan_id} />
                             </div>
 
-                            <div className="col-span-2 grid gap-2">
+                            <div className="md:col-span-2 grid gap-2">
                                 <Label htmlFor="status">Status</Label>
                                 <Select
                                     options={statusSaas}

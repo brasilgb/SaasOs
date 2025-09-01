@@ -105,7 +105,7 @@ export default function EditSchedule({ customers, schedule, technicals }: any) {
         <div className='border rounded-lg p-2'>
 
           <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="grid grid-cols-2 gap-4 mt-4">
+            <div className="grid md:grid-cols-2 gap-4 mt-4">
 
               <div className=" grid gap-2">
                 <Label htmlFor="customer_id">Cliente</Label>
@@ -149,7 +149,7 @@ export default function EditSchedule({ customers, schedule, technicals }: any) {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mt-4">
+            <div className="grid md:grid-cols-2 gap-4 mt-4">
               <div className="grid gap-2">
                 <Label htmlFor="service">Serviços Requisitados</Label>
                 <Textarea
@@ -172,7 +172,7 @@ export default function EditSchedule({ customers, schedule, technicals }: any) {
 
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mt-4">
+            <div className="grid md:grid-cols-2 gap-4 mt-4">
 
               <div className="grid gap-2">
                 <Label htmlFor="service_status">Técnico responsável</Label>

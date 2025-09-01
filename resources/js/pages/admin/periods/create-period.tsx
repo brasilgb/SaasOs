@@ -53,7 +53,7 @@ export default function CreatePeriod({ plans }: any) {
             {errors.name && <div className="text-red-500 text-sm">{errors.name}</div>}
           </div>
 
-          <div className="grid grid-cols-2 gap-4 mt-4">
+          <div className="grid md:grid-cols-2 gap-4 mt-4">
             <div className="grid gap-2">
               <Label htmlFor="interval_count">Contagem do intervalo</Label>
               <Input

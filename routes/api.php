@@ -7,6 +7,7 @@ use App\Http\Controllers\App\CustomerController;
 use App\Http\Controllers\App\EQModelController;
 use App\Http\Controllers\App\ImageController;
 use App\Http\Controllers\App\OrderController;
+use App\Http\Controllers\App\PartController;
 use App\Http\Controllers\App\ServiceController;
 use App\Http\Controllers\App\UserController;
 use Illuminate\Http\Request;
@@ -45,4 +46,5 @@ Route::post('/upload', [ImageController::class, 'upload'])->name('upload');
 
 Route::post('/loginuser', [UserController::class, 'loginuser'])->name('loginuser');
 Route::get('/logoutuser', [UserController::class, 'logoutuser'])->name('logoutuser');
+Route::get('/getparts/{part_number}', [PartController::class, 'getPartsForPartNumber'])->name('getparts');
 

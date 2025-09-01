@@ -68,7 +68,7 @@ export default function CreatePlan() {
             {errors.slug && <div className="text-red-500 text-sm">{errors.slug}</div>}
           </div>
 
-          <div className="col-span-2 grid gap-2">
+          <div className="md:col-span-2 grid gap-2">
             <Label htmlFor="description">Descrição</Label>
             <Textarea
               id="description"

@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\App\Customer;
 use App\Models\App\Equipment;
 use App\Models\App\Order;
+use App\Models\App\Part;
 use App\Models\User;
 use App\Models\App\WhatsappMessage;
 use Illuminate\Http\RedirectResponse;
@@ -131,8 +132,9 @@ class OrderController extends Controller
     {
         $equipments = Equipment::get();
         $customers = Customer::get();
+        $parts = Part::get();
         $technicals = User::where('roles', 3)->orWhere('roles', 1)->where('is_active', 1)->get();
-        return Inertia::render('app/orders/edit-order', ['order' => $order, 'customers' => $customers, 'technicals' => $technicals, 'equipments' => $equipments]);
+        return Inertia::render('app/orders/edit-order', ['order' => $order, 'customers' => $customers, 'technicals' => $technicals, 'equipments' => $equipments, 'parts' => $parts]);
     }
 
     /**

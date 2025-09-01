@@ -57,7 +57,7 @@ export default function CreateModel({ brands }: any) {
                     </DialogHeader>
                     <form onSubmit={handleSubmit} autoComplete="off">
 
-                        <div className="col-span-2 grid gap-2">
+                        <div className="md:col-span-2 grid gap-2">
                             <Label htmlFor="brand_id">Marca</Label>
                             <Select
                                 onValueChange={(value) => setData('brand_id', value)}

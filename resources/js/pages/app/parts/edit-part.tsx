@@ -79,7 +79,7 @@ export default function EditPart({ parts }: any) {
             <div className='p-4'>
                 <div className='border rounded-lg p-2'>
                     <form onSubmit={handleSubmit} className="space-y-8">
-                        <div className="grid grid-cols-6 gap-4 mt-4">
+                        <div className="grid md:grid-cols-6 gap-4 mt-4">
 
                             <div className="grid gap-2">
                                 <Label htmlFor="name">Part Number</Label>
@@ -88,12 +88,12 @@ export default function EditPart({ parts }: any) {
                                     id="part_number"
                                     value={maskCpfCnpj(data.part_number)}
                                     onChange={(e) => setData('part_number', e.target.value)}
-                                    maxLength={18}
+                                    readOnly
                                 />
                                 {errors.part_number && <div className="text-red-500 text-sm">{errors.part_number}</div>}
                             </div>
 
-                            <div className="grid gap-2 col-span-2">
+                            <div className="grid gap-2 md:col-span-2">
                                 <Label htmlFor="name">Nome da peça</Label>
                                 <Input
                                     type="text"
@@ -104,7 +104,7 @@ export default function EditPart({ parts }: any) {
                                 {errors.name && <div className="text-red-500 text-sm">{errors.name}</div>}
                             </div>
 
-                            <div className="col-span-3 grid gap-2">
+                            <div className="md:col-span-3 grid gap-2">
                                 <Label htmlFor="description">Descrição</Label>
                                 <Input
                                     type="text"
@@ -115,7 +115,7 @@ export default function EditPart({ parts }: any) {
                                 {errors.description && <div className="text-red-500 text-sm">{errors.description}</div>}
                             </div>
                         </div>
-                        <div className="grid grid-cols-5 gap-4 mt-4">
+                        <div className="grid md:grid-cols-5 gap-4 mt-4">
                             <div className="grid gap-2">
                                 <Label htmlFor="manufacturer">Fabricante</Label>
                                 <Input
@@ -127,7 +127,7 @@ export default function EditPart({ parts }: any) {
                                 {errors.manufacturer && <div className="text-red-500 text-sm">{errors.manufacturer}</div>}
                             </div>
 
-                            <div className="col-span-2 grid gap-2">
+                            <div className="md:col-span-2 grid gap-2">
                                 <Label htmlFor="model_compatibility">Modelos compatíveis</Label>
                                 <Input
                                     type="text"
@@ -137,7 +137,7 @@ export default function EditPart({ parts }: any) {
                                 />
                             </div>
 
-                            <div className="col-span-2 grid gap-2">
+                            <div className="md:col-span-2 grid gap-2">
                                 <Label htmlFor="location">Local de armazenamento</Label>
                                 <Input
                                     type="text"
@@ -147,7 +147,7 @@ export default function EditPart({ parts }: any) {
                                 />
                             </div>
                         </div>
-                        <div className="grid grid-cols-4 gap-4 mt-4">
+                        <div className="grid md:grid-cols-4 gap-4 mt-4">
                             <div className="grid gap-2">
                                 <Label htmlFor="cost_price">Preço de custo</Label>
                                 <Input
@@ -177,6 +177,7 @@ export default function EditPart({ parts }: any) {
                                     id="stock_quantity"
                                     value={data.stock_quantity}
                                     onChange={(e) => setData('stock_quantity', e.target.value)}
+                                    disabled
                                 />
                                 {errors.stock_quantity && <div className="text-red-500 text-sm">{errors.stock_quantity}</div>}
                             </div>

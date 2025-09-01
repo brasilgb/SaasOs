@@ -64,7 +64,7 @@ export default function CreateOrder({ customers, equipments, orderlast }: any) {
     });
   }
   useEffect(() => {
-    setData('budget_value', maskMoneyDot(data.budget_value));
+    setData('budget_value', (data.budget_value).replace(',', '.'));
   },[data.budget_value]);
 
   const changeCustomer = (selected: any) => {
@@ -111,9 +111,9 @@ export default function CreateOrder({ customers, equipments, orderlast }: any) {
         <div className='border rounded-lg p-2'>
 
           <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="grid grid-cols-8 gap-4 mt-4">
+            <div className="grid md:grid-cols-8 gap-4 mt-4">
     
-              <div className="col-span-2 grid gap-2">
+              <div className="md:col-span-2 grid gap-2">
                 <Label htmlFor="customer_id">Cliente</Label>
                 <Select
                   options={optionsCustomer}
@@ -142,7 +142,7 @@ export default function CreateOrder({ customers, equipments, orderlast }: any) {
                 <InputError className="mt-2" message={errors.customer_id} />
               </div>
 
-              <div className="col-span-2 grid gap-2">
+              <div className="md:col-span-2 grid gap-2">
                 <Label htmlFor="equipment">Equipamento</Label>
                 <Select
                   menuPosition='fixed'
@@ -172,7 +172,7 @@ export default function CreateOrder({ customers, equipments, orderlast }: any) {
                 {errors.equipment_id && <div className="text-red-500 text-sm">{errors.equipment_id}</div>}
               </div>
 
-              <div className="col-span-2 grid gap-2">
+              <div className="md:col-span-2 grid gap-2">
                 <Label htmlFor="model">Modelo</Label>
                 <Input
                   type="text"
@@ -206,7 +206,7 @@ export default function CreateOrder({ customers, equipments, orderlast }: any) {
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-4 mt-4">
+            <div className="grid md:grid-cols-3 gap-4 mt-4">
 
               <div className="grid gap-2">
                 <Label htmlFor="defect">Defeito relatado</Label>
@@ -238,8 +238,8 @@ export default function CreateOrder({ customers, equipments, orderlast }: any) {
               </div>
             </div>
 
-            <div className="grid grid-cols-4 gap-4 mt-4">
-              <div className="grid gap-2 col-span-2">
+            <div className="grid md:grid-cols-4 gap-4 mt-4">
+              <div className="grid gap-2 md:col-span-2">
                 <Label htmlFor="budget_description">Descrição pré-orcamento</Label>
                 <Textarea
                   id="budget_description"

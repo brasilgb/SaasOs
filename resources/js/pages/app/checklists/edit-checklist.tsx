@@ -57,7 +57,7 @@ export default function EditChecklist({ equipments, checklist }: any) {
                     </DialogHeader>
                     <form onSubmit={handleSubmit} autoComplete="off">
 
-                        <div className="col-span-2 grid gap-2">
+                        <div className="md:col-span-2 grid gap-2">
                             <Label htmlFor="customer_id">Equipamento</Label>
                             <Select
                                 onValueChange={(value) => setData('equipment_id', value)}
