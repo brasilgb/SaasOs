@@ -1,20 +1,23 @@
+<?php
 // app/Services/InventoryService.php
 
 namespace App\Services;
 
-use App\Models\Part;
-use App\Models\PartMovement;
+use App\Models\App\Part;
+use App\Models\App\PartMovement;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Number;
 
 class InventoryService
 {
     public function removePartsFromStock(array $partsData, $orderId)
     {
         DB::beginTransaction();
-
         try {
             foreach ($partsData as $partItem) {
+                dd($partItem['id']);
+
                 $part = Part::find($partItem['id']);
 
                 if (!$part || $part->stock_quantity < $partItem['quantity']) {

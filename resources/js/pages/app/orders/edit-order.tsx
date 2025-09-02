@@ -75,15 +75,15 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
     service_status: order?.service_status,
     delivery_forecast: order?.delivery_forecast, // previsao de entrega
     observations: order?.observations,
+    partsid: parts.map((part: any) => (` ${part.id}`)),
   });
 
   const handleModalSubmit = (data: any) => {
     setPartsData(data);
     const parts = data.map((part: any) => (` ${part.name}(x${part.quantity})`));
     setData('parts', (parts).toString().trim());
-    const partsTotal = data.reduce((acc: any, item: any) => acc + Number(item.sale_price), 0);
-    setData('parts_value', (partsTotal).toString().trim())
-
+    const partsTotal = data.reduce((acc: any, item: any) => acc + Number(item.sale_price * item.quantity), 0);
+    setData('parts_value', partsTotal.toFixed(2));
   };
 
   const handleSubmit = async (e: any) => {

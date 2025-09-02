@@ -9,6 +9,7 @@ use App\Models\App\Equipment;
 use App\Models\App\Order;
 use App\Models\App\Part;
 use App\Models\User;
+use App\Services\InventoryService;
 use App\Models\App\WhatsappMessage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Carbon;
@@ -17,6 +18,13 @@ use Inertia\Inertia;
 
 class OrderController extends Controller
 {
+
+    protected $inventoryService;
+
+    public function __construct(InventoryService $inventoryService)
+    {
+        $this->inventoryService = $inventoryService;
+    }
 
     // Display and linting order for id
     public function allOrder()
@@ -151,8 +159,11 @@ class OrderController extends Controller
     public function update(OrderRequest $request, Order $order): RedirectResponse
     {
         $data = $request->all();
+
         $request->validated();
-        // $data['delivery_date'] = $data['service_status'] === 8 ? date(now()) : '';
+        $arrayParts = $data['partsid'];
+
+        $this->inventoryService->removePartsFromStock($arrayParts, $order->id);
         $order->update($data);
         return redirect()->route('app.orders.show', ['order' => $order->id])->with('success', 'Ordem atualizada com sucesso');
     }
