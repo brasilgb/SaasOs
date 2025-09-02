@@ -85,7 +85,7 @@ export default function Parts({ parts }: any) {
                     <TableCell className="font-medium">{part.name}</TableCell>
                     <TableCell>{part.manufacturer}</TableCell>
                     <TableCell>{part.sale_price}</TableCell>
-                    <TableCell>{part.stock_quantity}</TableCell>
+                    <TableCell>{part.quantity}</TableCell>
                     <TableCell>{moment(part.created_at).format("DD/MM/YYYY")}</TableCell>
                     
                     <TableCell className='flex justify-end gap-2'>

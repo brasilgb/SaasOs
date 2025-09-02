@@ -86,7 +86,7 @@ export default function Orders({ orders, whats, trintadias }: any) {
                 <div className='w-full flex justify-end'>
                     <SelectFilter />
                 </div>
-                <div>
+                <div className='w-full flex justify-end'>
                     <Button variant={'default'} asChild>
                         <Link
                             href={route('app.orders.create')}
@@ -164,7 +164,7 @@ export default function Orders({ orders, whats, trintadias }: any) {
                                                 </Link>
                                             </Button>
 
-                                            <ActionDelete title={'esta ordem'} url={'orders.destroy'} param={order.id} />
+                                            <ActionDelete title={'esta ordem'} url={'app.orders.destroy'} param={order.id} />
 
                                         </TableCell>
                                     </TableRow>

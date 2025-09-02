@@ -28,7 +28,7 @@ class PartRequest extends FormRequest
             'manufacturer' => 'required',
             'cost_price' => 'required',
             'sale_price' => 'required',
-            'stock_quantity' => 'required',
+            'quantity' => 'required',
             'minimum_stock_level' => 'required'
         ];
     }
@@ -42,7 +42,7 @@ class PartRequest extends FormRequest
             'manufacturer' => 'Fabricante',
             'cost_price' => 'Preço de custo',
             'sale_price' => 'Preço de venda',
-            'stock_quantity' => 'Quantidade em estoque',
+            'quantity' => 'Quantidade em estoque',
             'minimum_stock_level' => 'Quantidade mínima em estoque',
         ];
     }

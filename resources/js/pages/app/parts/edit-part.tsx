@@ -36,7 +36,7 @@ export default function EditPart({ parts }: any) {
         model_compatibility: parts?.model_compatibility,
         cost_price: parts?.cost_price,
         sale_price: parts?.sale_price,
-        stock_quantity: parts?.stock_quantity,
+        quantity: parts?.quantity,
         minimum_stock_level: parts?.minimum_stock_level,
         location: parts?.location,
         is_active: parts?.is_active
@@ -171,15 +171,15 @@ export default function EditPart({ parts }: any) {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="stock_quantity">Quantidade em estoque</Label>
+                                <Label htmlFor="quantity">Quantidade em estoque</Label>
                                 <Input
                                     type="number"
-                                    id="stock_quantity"
-                                    value={data.stock_quantity}
-                                    onChange={(e) => setData('stock_quantity', e.target.value)}
+                                    id="quantity"
+                                    value={data.quantity}
+                                    onChange={(e) => setData('quantity', e.target.value)}
                                     disabled
                                 />
-                                {errors.stock_quantity && <div className="text-red-500 text-sm">{errors.stock_quantity}</div>}
+                                {errors.quantity && <div className="text-red-500 text-sm">{errors.quantity}</div>}
                             </div>
 
                             <div className="grid gap-2">

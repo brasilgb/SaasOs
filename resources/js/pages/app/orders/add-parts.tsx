@@ -84,7 +84,7 @@ export default function AddPartsModal({ onSubmit, parts }: any) {
                 <DialogTrigger asChild>
                     <Button className="gap-2">
                         <MemoryStickIcon className="h-4 w-4" />
-                        Inserir Peças
+                        Peças
                     </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[600px]">

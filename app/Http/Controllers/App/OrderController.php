@@ -142,7 +142,9 @@ class OrderController extends Controller
         $customers = Customer::get();
         $parts = Part::get();
         $technicals = User::where('roles', 3)->orWhere('roles', 1)->where('is_active', 1)->get();
-        return Inertia::render('app/orders/edit-order', ['order' => $order, 'customers' => $customers, 'technicals' => $technicals, 'equipments' => $equipments, 'parts' => $parts]);
+        $orderparts = $order->parts()->get();
+
+        return Inertia::render('app/orders/edit-order', ['order' => $order, 'orderparts' => $orderparts, 'customers' => $customers, 'technicals' => $technicals, 'equipments' => $equipments, 'parts' => $parts]);
     }
 
     /**
@@ -159,12 +161,41 @@ class OrderController extends Controller
     public function update(OrderRequest $request, Order $order): RedirectResponse
     {
         $data = $request->all();
-
         $request->validated();
-        $arrayParts = $data['partsid'];
+        $order->update([
+            "customer_id" => $data['customer_id'],
+            "equipment_id" => $data['equipment_id'], // equipamento
+            "model" => $data['model'],
+            "password" => $data['password'],
+            "defect" => $data['defect'],
+            "state_conservation" => $data['state_conservation'], //estado de conservação
+            "accessories" => $data['accessories'],
+            "budget_description" => $data['budget_description'], // descrição do orçamento
+            "budget_value" => $data['budget_value'], // valor do orçamento
+            "services_performed" => $data['services_performed'], // servicos executados
+            "parts" => $data['parts'],
+            "parts_value" => $data['parts_value'],
+            "service_value" => $data['service_value'],
+            "service_cost" => $data['service_cost'], // custo
+            "delivery_date" => $data['delivery_date'], // $data de entrega
+            "responsible_technician" => $data['responsible_technician'],
+            "service_status" => $data['service_status'],
+            "delivery_forecast" => $data['delivery_forecast'], // previsao de entrega
+            "observations" => $data['observations'],
+        ]);
 
-        $this->inventoryService->removePartsFromStock($arrayParts, $order->id);
-        $order->update($data);
+        if (isset($data['allparts'])) {
+            $partsToAttach = [];
+            // dd($data['allparts']);
+            foreach ($data['allparts'] as $part) {
+                $partsToAttach[$part['id']] = ['quantity' => $part['quantity']];
+            }
+            // 2. Vincula as peças à Ordem de Serviço usando a tabela pivô
+            $order->parts()->attach($partsToAttach);
+
+            $this->inventoryService->removePartsFromStock($data['allparts'], $order->id);
+        }
+
         return redirect()->route('app.orders.show', ['order' => $order->id])->with('success', 'Ordem atualizada com sucesso');
     }
 
@@ -176,4 +207,6 @@ class OrderController extends Controller
         $order->delete();
         return redirect()->route('app.orders.index')->with('success', 'Ordem excluída com sucesso');
     }
+
+    
 }

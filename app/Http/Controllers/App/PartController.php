@@ -67,7 +67,7 @@ class PartController extends Controller
                     'model_compatibility' => $data['model_compatibility'],
                     'cost_price' => str_replace(',', '.', $data['cost_price']),
                     'sale_price' => str_replace(',', '.', $data['sale_price']),
-                    'stock_quantity' => 0, // Começa com 0, será incrementado abaixo
+                    'quantity' => 0, // Começa com 0, será incrementado abaixo
                     'minimum_stock_level' => $data['minimum_stock_level'],
                     'location' => $data['location'],
                     'is_active' => $data['is_active'],
@@ -76,13 +76,13 @@ class PartController extends Controller
 
             // 2. Incrementar a quantidade em estoque na tabela 'parts'
             // O `update` com `increment` é seguro em concorrência
-            $part->increment('stock_quantity', $data['stock_quantity']);
+            $part->increment('quantity', $data['quantity']);
 
             // 3. Registrar o movimento de entrada
             PartMovement::create([
                 'part_id' => $part->id,
                 'movement_type' => 'entrada',
-                'quantity' => $data['stock_quantity'],
+                'quantity' => $data['quantity'],
                 'reason' => 'Compra de Fornecedor',
                 'user_id' => Auth::id(),
             ]);

@@ -50,3 +50,4 @@ Route::get('receipts/{or}/{tp}', [ReceiptController::class, 'printing'])->name('
 
 Route::resource('label-printing', LabelPrintingController::class);
 Route::resource('/parts', PartController::class);
+Route::post('/orders/remove-part', [OrderController::class, 'removePart'])->name('orders.removePart');

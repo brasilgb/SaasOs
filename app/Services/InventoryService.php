@@ -7,7 +7,6 @@ use App\Models\App\Part;
 use App\Models\App\PartMovement;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Number;
 
 class InventoryService
 {
@@ -15,17 +14,16 @@ class InventoryService
     {
         DB::beginTransaction();
         try {
+            // dd($partsData);
             foreach ($partsData as $partItem) {
-                dd($partItem['id']);
-
                 $part = Part::find($partItem['id']);
 
-                if (!$part || $part->stock_quantity < $partItem['quantity']) {
+                if (!$part || $part->quantity < $partItem['quantity']) {
                     throw new \Exception("Estoque insuficiente para a peça: " . $part->name);
                 }
 
                 // 1. Decrementa a quantidade na tabela `parts`
-                $part->decrement('stock_quantity', $partItem['quantity']);
+                $part->decrement('quantity', $partItem['quantity']);
 
                 // 2. Registra o movimento de saída na tabela `part_movements`
                 PartMovement::create([

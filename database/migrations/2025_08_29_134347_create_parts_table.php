@@ -21,7 +21,7 @@ return new class extends Migration
             $table->text('model_compatibility')->nullable(); // Ou use json('model_compatibility')
             $table->decimal('cost_price', 10, 2);
             $table->decimal('sale_price', 10, 2);
-            $table->unsignedInteger('stock_quantity')->default(0);
+            $table->unsignedInteger('quantity')->default(0);
             $table->unsignedInteger('minimum_stock_level')->default(0);
             $table->string('location')->nullable();
             $table->boolean('is_active')->default(true);

@@ -40,7 +40,7 @@ export default function CreatePart() {
         model_compatibility: '',
         cost_price: '',
         sale_price: '',
-        stock_quantity: '',
+        quantity: '',
         minimum_stock_level: '',
         location: '',
         is_active: false
@@ -69,7 +69,7 @@ export default function CreatePart() {
                 setData((data) => ({ ...data, model_compatibility: parts.model_compatibility }));
                 setData((data) => ({ ...data, cost_price: parts.cost_price }));
                 setData((data) => ({ ...data, sale_price: parts.sale_price }));
-                setData((data) => ({ ...data, stock_quantity: '0' }));
+                setData((data) => ({ ...data, quantity: '0' }));
                 setData((data) => ({ ...data, minimum_stock_level: parts.minimum_stock_level }));
                 setData((data) => ({ ...data, location: parts.location }));
                 setData((data) => ({ ...data, is_active: parts.is_active }));
@@ -80,7 +80,7 @@ export default function CreatePart() {
                     'description',
                     'manufacturer',
                     'model_compatibility',
-                    'stock_quantity',
+                    'quantity',
                     'minimum_stock_level',
                     'location',
                     'is_active'
@@ -227,14 +227,14 @@ export default function CreatePart() {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="stock_quantity">Quantidade em estoque</Label>
+                                <Label htmlFor="quantity">Quantidade em estoque</Label>
                                 <Input
                                     type="number"
-                                    id="stock_quantity"
-                                    value={data.stock_quantity}
-                                    onChange={(e) => setData('stock_quantity', e.target.value)}
+                                    id="quantity"
+                                    value={data.quantity}
+                                    onChange={(e) => setData('quantity', e.target.value)}
                                 />
-                                {errors.stock_quantity && <div className="text-red-500 text-sm">{errors.stock_quantity}</div>}
+                                {errors.quantity && <div className="text-red-500 text-sm">{errors.quantity}</div>}
                             </div>
 
                             <div className="grid gap-2">

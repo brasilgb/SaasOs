@@ -1,7 +1,7 @@
 import { KpiDashboard } from '@/components/kpi-dashboard';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link } from '@inertiajs/react';
-import { Calendar, Check, MessageSquareMore, User, Users, Wrench } from 'lucide-react';
+import { Calendar, Check, MemoryStickIcon, MessageSquareMore, User, Users, Wrench } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,12 +12,13 @@ export default function Dashboard({ orders, acount }: { orders: any, acount: any
         <AppLayout>
             <Head title="Dashboard" />
             <div className='p-4'>
-                <div className="grid md:md:grid-cols-5 gap-4 rounded-xl">
+                <div className="grid md:md:grid-cols-6 gap-4 rounded-xl">
                     <KpiDashboard link={route('app.users.index')} title="Usuários" value={acount?.numuser} icon={<User className='h-10 w-10' />} description="Usários do sistema" />
                     <KpiDashboard link={route('app.customers.index')} title="Clientes" value={acount?.numcust} icon={<Users className='h-10 w-10' />} description="Todos os clientes cadastrados" />
                     <KpiDashboard link={route('app.orders.index')} title="Ordens" value={acount?.numorde} icon={<Wrench className='h-10 w-10' />} description="Todas as ordens emitidas" />
                     <KpiDashboard link={route('app.schedules.index')} title="Agendamentos" value={acount?.numshed} icon={<Calendar className='h-10 w-10' />} description="Todos os agendamentos efetuados" />
                     <KpiDashboard link={route('app.messages.index')} title="Mensagens" value={acount?.nummess} icon={<MessageSquareMore className='h-10 w-10' />} description="Mensagens enviadas e recebidas" />
+                    <KpiDashboard link={route('app.parts.index')} title="Peças" value={acount?.numparts} icon={<MemoryStickIcon className='h-10 w-10' />} description="Peças cadastradas" />
                 </div>
 
                 <div className='mt-4'>

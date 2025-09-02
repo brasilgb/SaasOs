@@ -7,6 +7,7 @@ use App\Models\App\Customer;
 use App\Models\App\Message;
 use App\Models\App\Order;
 use App\Models\App\Schedule;
+use App\Models\App\Part;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -28,6 +29,7 @@ class DashboardController extends Controller
             'numorde' => count(Order::get()),
             'numshed' => count(Schedule::get()),
             'nummess' => count(Message::get()),
+            'numparts' => count(Part::get()),
         ];
         $orders = [
             'agendados' => Schedule::where('status', 1)->get('id'),

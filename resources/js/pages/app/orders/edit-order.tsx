@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import AppLayout from "@/layouts/app-layout";
 import { BreadcrumbItem } from "@/types";
 import { Head, Link, useForm, usePage } from "@inertiajs/react";
-import { ArrowLeft, Save, Wrench } from "lucide-react";
+import { ArrowLeft, Save, Wrench, X } from "lucide-react";
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,6 +16,9 @@ import { useEffect, useState } from "react";
 import { maskMoney, maskMoneyDot } from "@/Utils/mask";
 import moment from "moment";
 import AddPartsModal from "./add-parts";
+import Orders from ".";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -32,7 +35,7 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-export default function EditOrder({ customers, order, technicals, equipments, parts }: any) {
+export default function EditOrder({ customers, order, technicals, equipments, parts, orderparts }: any) {
   const { flash, ziggy } = usePage().props as any;
   const { page, oc } = (ziggy as any).query
 
@@ -63,7 +66,6 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
     accessories: order?.accessories,
     budget_description: order?.budget_description, // descrição do orçamento
     budget_value: order?.budget_value, // valor do orçamento
-
     services_performed: order.services_performed, // servicos executados
     parts: order.parts,
     parts_value: order.parts_value,
@@ -71,11 +73,10 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
     service_cost: order.service_cost, // custo
     delivery_date: order.delivery_date, // data de entrega
     responsible_technician: order.responsible_technician,
-
     service_status: order?.service_status,
     delivery_forecast: order?.delivery_forecast, // previsao de entrega
     observations: order?.observations,
-    partsid: parts.map((part: any) => (` ${part.id}`)),
+    allparts: '',
   });
 
   const handleModalSubmit = (data: any) => {
@@ -84,6 +85,7 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
     setData('parts', (parts).toString().trim());
     const partsTotal = data.reduce((acc: any, item: any) => acc + Number(item.sale_price * item.quantity), 0);
     setData('parts_value', partsTotal.toFixed(2));
+    setData('allparts', data);
   };
 
   const handleSubmit = async (e: any) => {
@@ -123,6 +125,10 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
   const defaultEquipament = optionsEquipment?.filter((o: any) => o.value == order?.equipment_id).map((opt: any) => ({ value: opt.value, label: opt.label }));
   const statusDefault = statusServico?.filter((o: any) => o.value == order?.service_status).map((opt: any) => ({ value: opt.value, label: opt.label }));
   const defaultTechnical = optionsTechnical?.filter((o: any) => o.value == order?.responsible_technician).map((opt: any) => ({ value: opt.value, label: opt.label }));
+
+  const handledeletePartsOrder = (id: number) => {
+    console.log(id);
+  }
 
   return (
     <AppLayout>
@@ -308,9 +314,24 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
                 />
               </div>
             </div>
-
+            {orderparts?.length > 0 &&
+              <Card className="p-4 mb-4">
+                <CardTitle className="border-b pb-2">Peças adicionadas</CardTitle>
+                <CardContent className="flex items-center justify-start gap-4">
+                  {orderparts.map((part: any) => (
+                    <div key={part.id} className="flex items-center gap-2">
+                      <Badge variant={'secondary'} className="text-sm gap-2">
+                        <span>{part.name}(x{part.quantity}) - {part.sale_price} = {maskMoney((parseFloat(part.sale_price) * parseInt(part.quantity)).toFixed(2))}</span>
+                        <Button type="button" variant={'destructive'} size={'icon'} onClick={() => { handledeletePartsOrder(part.id) }} >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </Badge>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            }
             <div className="grid md:grid-cols-5 gap-4 mt-4">
-
               <div className="grid gap-2 md:col-span-2">
                 <Label htmlFor="parts">Peças adicionadas</Label>
                 <Input
