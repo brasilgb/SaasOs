@@ -14,6 +14,7 @@ use App\Models\App\WhatsappMessage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class OrderController extends Controller
@@ -208,5 +209,47 @@ class OrderController extends Controller
         return redirect()->route('app.orders.index')->with('success', 'Ordem excluída com sucesso');
     }
 
-    
+    public function removePart(Request $request)
+    {
+
+        $validatedData = $request->validate([
+            'order_id' => 'required|integer|exists:orders,id',
+            'part_id' => 'required|integer|exists:parts,id',
+        ]);
+
+        $order = Order::find($validatedData['order_id']);
+
+        // Encontra o registro na tabela pivô para obter a quantidade
+        $pivotRecord = $order->parts()->where('part_id', $validatedData['part_id'])->first();
+
+        if (!$pivotRecord) {
+            return back()->with('error', 'Esta peça não está vinculada a esta ordem de serviço.');
+        }
+
+        $partId = $pivotRecord->id; // ID da peça
+        $quantity = $pivotRecord->pivot->quantity; // Quantidade na tabela pivô
+
+        // Inicia a transação
+        DB::beginTransaction();
+
+        try {
+            // 1. Desvincula a peça da Ordem de Serviço na tabela pivô
+            $order->parts()->detach($partId);
+            
+            // 2. Chama o serviço para dar entrada no estoque
+            $this->inventoryService->addPartsToStock([
+                ['id' => $partId, 'quantity' => $quantity]
+            ], $order->id);
+
+            // Se tudo deu certo, comita a transação
+            DB::commit();
+
+            return redirect()->route('app.orders.show', $order)->with('success', 'Peça removida e estoque devolvido com sucesso.');
+        } catch (\Exception $e) {
+            // Se algo falhou, reverte tudo
+            DB::rollback();
+
+            return back()->with('error', 'Erro ao remover a peça: ' . $e->getMessage());
+        }
+    }
 }

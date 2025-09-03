@@ -16,7 +16,6 @@ import { useEffect, useState } from "react";
 import { maskMoney, maskMoneyDot } from "@/Utils/mask";
 import moment from "moment";
 import AddPartsModal from "./add-parts";
-import Orders from ".";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
@@ -56,7 +55,7 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
     label: equipment.equipment,
   }));
 
-  const { data, setData, patch, progress, processing, reset, errors } = useForm({
+  const { data, post, setData, patch, progress, processing, reset, errors } = useForm({
     customer_id: order?.customer_id,
     equipment_id: order?.equipment_id, // equipamento
     model: order?.model,
@@ -81,10 +80,10 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
 
   const handleModalSubmit = (data: any) => {
     setPartsData(data);
-    const parts = data.map((part: any) => (` ${part.name}(x${part.quantity})`));
-    setData('parts', (parts).toString().trim());
-    const partsTotal = data.reduce((acc: any, item: any) => acc + Number(item.sale_price * item.quantity), 0);
-    setData('parts_value', partsTotal.toFixed(2));
+    // const parts = data.map((part: any) => (` ${part.name}(x${part.quantity})`));
+    // setData('parts', (parts).toString().trim());
+    // const partsTotal = data.reduce((acc: any, item: any) => acc + Number(item.sale_price * item.quantity), 0);
+    // setData('parts_value', partsTotal.toFixed(2));
     setData('allparts', data);
   };
 
@@ -102,7 +101,6 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
     if (data.service_status == 8) {
       setData((data: any) => ({ ...data, delivery_date: moment().format('YYYY-MM-DD HH:mm:ss') }));
     }
-
   }, [data.parts_value, data.service_value, data.budget_value, data.delivery_date, data.service_status]);
 
   const changeCustomer = (selected: any) => {
@@ -126,8 +124,10 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
   const statusDefault = statusServico?.filter((o: any) => o.value == order?.service_status).map((opt: any) => ({ value: opt.value, label: opt.label }));
   const defaultTechnical = optionsTechnical?.filter((o: any) => o.value == order?.responsible_technician).map((opt: any) => ({ value: opt.value, label: opt.label }));
 
-  const handledeletePartsOrder = (id: number) => {
-    console.log(id);
+  const handlePartsDelete = (id: number) => {
+    // route('app.orders.removePart')} method="post" data={{ order_id: order.id, part_id: part.id }}
+    post(route('app.orders.removePart'), { order_id: order.id, part_id: id } as any);
+
   }
 
   return (
@@ -263,7 +263,6 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
             </div>
 
             <div className="grid md:grid-cols-3 gap-4 mt-4">
-
               <div className="grid gap-2">
                 <Label htmlFor="defect">Defeito relatado</Label>
                 <Textarea
@@ -322,8 +321,10 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
                     <div key={part.id} className="flex items-center gap-2">
                       <Badge variant={'secondary'} className="text-sm gap-2">
                         <span>{part.name}(x{part.quantity}) - {part.sale_price} = {maskMoney((parseFloat(part.sale_price) * parseInt(part.quantity)).toFixed(2))}</span>
-                        <Button type="button" variant={'destructive'} size={'icon'} onClick={() => { handledeletePartsOrder(part.id) }} >
-                          <X className="h-4 w-4" />
+                        <Button variant={'destructive'} asChild>
+                          <Link href={''} onClick={() => handlePartsDelete(part.id)}>
+                            <X />
+                          </Link>
                         </Button>
                       </Badge>
                     </div>
@@ -371,7 +372,6 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
                   onChange={(e) => setData('service_cost', e.target.value)}
                 />
               </div>
-
             </div>
 
             <div className="grid md:grid-cols-2 gap-4 mt-4">

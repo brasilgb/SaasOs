@@ -10,6 +10,42 @@ use Illuminate\Support\Facades\Auth;
 
 class InventoryService
 {
+
+    public function addPartsToStock(array $partsData, $orderId = null)
+    {
+        DB::beginTransaction();
+
+        try {
+            foreach ($partsData as $partItem) {
+                $part = Part::find($partItem['id']);
+
+                if (!$part) {
+                    throw new \Exception("A peça com o ID " . $partItem['id'] . " não foi encontrada.");
+                }
+
+                // 1. Incrementa a quantidade na tabela `parts`
+                $part->increment('quantity', $partItem['quantity']);
+
+                // 2. Registra o movimento de entrada na tabela `part_movements`
+                PartMovement::create([
+                    'tenant_id' => Auth::user()->tenant_id,
+                    'part_id' => $part->id,
+                    'movement_type' => 'entrada',
+                    'quantity' => $partItem['quantity'],
+                    'reason' => 'Devolução da Ordem de Serviço #' . $orderId,
+                    'order_id' => $orderId,
+                    'user_id' => Auth::id(),
+                ]);
+            }
+
+            DB::commit();
+            return true;
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+    }
+
     public function removePartsFromStock(array $partsData, $orderId)
     {
         DB::beginTransaction();
