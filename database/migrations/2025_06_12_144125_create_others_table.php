@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('tenant_id')->nullable()->constrained()->onDelete('cascade');
             $table->boolean('navigation')->default(false);
             $table->boolean('budget')->default(false);
+            $table->boolean('enableparts')->default(false);
             $table->timestamps();
         });
     }

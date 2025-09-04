@@ -3,16 +3,14 @@ import AppearanceTabs from '@/components/appearance-tabs'
 import { Breadcrumbs } from '@/components/breadcrumbs'
 import HeadingSmall from '@/components/heading-small'
 import { Icon } from '@/components/icon'
-import InputSearch from '@/components/inputSearch'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import AppLayout from '@/layouts/app-layout'
 import { BreadcrumbItem } from '@/types'
-import apios from '@/Utils/connectApi'
 import { maskCpfCnpj } from '@/Utils/mask'
 import { Head, useForm, usePage } from '@inertiajs/react'
-import { HardDriveUpload, Save, Wrench } from 'lucide-react';
-import { useEffect, useState } from 'react'
+import { Save, Wrench } from 'lucide-react';
+import { useState } from 'react'
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -25,7 +23,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Others({ othersettings, customers, orders, company }: any) {
+export default function Others({ othersettings, company }: any) {
 
     const [uploading, setUploading] = useState<string>('');
 
@@ -33,6 +31,7 @@ export default function Others({ othersettings, customers, orders, company }: an
     const { data, setData, put, processing } = useForm({
         navigation: othersettings?.navigation,
         budget: othersettings?.budget,
+        enableparts: othersettings?.enableparts,
     });
 
     const handleSubmit = (e: any) => {
@@ -90,6 +89,16 @@ export default function Others({ othersettings, customers, orders, company }: an
                                 id="budget"
                                 checked={data.budget}
                                 onCheckedChange={(checked: any) => setData('budget', checked)}
+                            />
+                        </div>
+                    </div>
+                    <div className="space-y-6 mt-6">
+                        <HeadingSmall title="Habilitar cadastro e utilização de estoque de peças e/ou produtos " description="Habilita a opções de cadastro e a utilização de inserção de peças e/ou produtos nas ordens de serviço. Padrão inserção manual do nome e valor." />
+                        <div className="grid gap-2">
+                            <Switch
+                                id="enableparts"
+                                checked={data.enableparts}
+                                onCheckedChange={(checked: any) => setData('enableparts', checked)}
                             />
                         </div>
                     </div>

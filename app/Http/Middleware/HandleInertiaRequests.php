@@ -56,7 +56,7 @@ class HandleInertiaRequests extends Middleware
             'company' => Company::first(['shortname', 'logo', 'companyname', 'cnpj']),
             'setting' => Setting::first(['name', 'logo']),
             'whatsapp' => WhatsappMessage::first(),
-            'othersetting' => Other::first(['navigation', 'budget']),
+            'othersetting' => Other::first(),
             'notifications' => Message::where('status', '0')->count(),
             'equipments' => Equipment::get(),
             'customers' => Customer::get(),

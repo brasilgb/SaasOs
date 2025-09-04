@@ -7,36 +7,46 @@ const mainNavItems: NavItem[] = [
         href: route('app.dashboard'),
         icon: LayoutGrid,
         active: 'app.dashboard',
+        enabled: 'dashboard'
     },
     {
         title: 'Clientes',
         href: route('app.customers.index'),
         icon: Users2,
         active: 'app.customers.*',
+        enabled: 'customers'
+        
     },
     {
         title: 'Ordens de serviço',
         href: route('app.orders.index'),
         icon: Wrench,
         active: 'app.orders.*',
+        enabled: 'orders'
+        
     },
     {
         title: 'Agendamentos',
         href: route('app.schedules.index'),
         icon: Calendar,
         active: 'app.schedules.*',
+        enabled: 'schedules'
+        
     },
     {
         title: 'Mensagens',
         href: route('app.messages.index'),
         icon: MessageSquareMore,
         active: 'app.messages.*',
+        enabled: 'messages'
+        
     },
     {
-        title: 'Peças',
+        title: 'Peças/Produtos',
         href: route('app.parts.index'),
         icon: MemoryStick,
         active: 'app.parts.*',
+        enabled: 'parts'
     },
 ];
 

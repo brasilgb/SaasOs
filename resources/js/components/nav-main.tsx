@@ -3,11 +3,15 @@ import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 
 export function NavMain({ items = [] }: { items: NavItem[] }) {
-    const page = usePage();
+    const { othersetting } = usePage().props as any;
+    const disableParts = !othersetting?.enableparts ? 'parts' : '';
+    
     return (
             <SidebarMenu>
                 {items.map((item) => (
-                    <SidebarMenuItem key={item.title}>
+                    item.enabled !== disableParts &&
+                    (
+                        <SidebarMenuItem key={item.title}>
                         <SidebarMenuButton  
                             asChild isActive={route().current(item.active ?? '')}
                             tooltip={{ children: item.title }}
@@ -18,6 +22,7 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
+                    )
                 ))}
             </SidebarMenu>
     );

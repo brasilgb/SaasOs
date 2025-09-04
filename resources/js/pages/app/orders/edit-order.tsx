@@ -35,7 +35,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function EditOrder({ customers, order, technicals, equipments, parts, orderparts }: any) {
-  const { flash, ziggy } = usePage().props as any;
+  const { flash, ziggy, othersetting } = usePage().props as any;
   const { page, oc } = (ziggy as any).query
 
   const [partsData, setPartsData] = useState<any>([]);
@@ -79,11 +79,10 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
   });
 
   const handleModalSubmit = (data: any) => {
-    setPartsData(data);
     // const parts = data.map((part: any) => (` ${part.name}(x${part.quantity})`));
     // setData('parts', (parts).toString().trim());
-    // const partsTotal = data.reduce((acc: any, item: any) => acc + Number(item.sale_price * item.quantity), 0);
-    // setData('parts_value', partsTotal.toFixed(2));
+    const partsTotal = data.reduce((acc: any, item: any) => acc + Number(item.sale_price * item.quantity), 0);
+    setData('parts_value', partsTotal.toFixed(2));
     setData('allparts', data);
   };
 
@@ -127,7 +126,6 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
   const handlePartsDelete = (id: number) => {
     // route('app.orders.removePart')} method="post" data={{ order_id: order.id, part_id: part.id }}
     post(route('app.orders.removePart'), { order_id: order.id, part_id: id } as any);
-
   }
 
   return (
@@ -156,7 +154,8 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
           </Button>
         </div>
         <div>
-          <AddPartsModal onSubmit={handleModalSubmit} parts={parts} />
+          {othersetting.enableparts &&
+            <AddPartsModal onSubmit={handleModalSubmit} parts={parts} />}
         </div>
       </div>
 
@@ -313,7 +312,7 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
                 />
               </div>
             </div>
-            {orderparts?.length > 0 &&
+            {orderparts?.length > 0 && othersetting?.enableparts > 0 &&
               <Card className="p-4 mb-4">
                 <CardTitle className="border-b pb-2">Peças adicionadas</CardTitle>
                 <CardContent className="flex items-center justify-start gap-4">
@@ -332,26 +331,42 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
                 </CardContent>
               </Card>
             }
-            <div className="grid md:grid-cols-5 gap-4 mt-4">
-              <div className="grid gap-2 md:col-span-2">
-                <Label htmlFor="parts">Peças adicionadas</Label>
-                <Input
-                  type="text"
-                  id="parts"
-                  value={data.parts}
-                  onChange={(e) => setData('parts', e.target.value)}
-                />
-              </div>
+            <div className={`grid ${othersetting?.enableparts ? 'md:grid-cols-3' : 'md:grid-cols-5'} gap-4 mt-4`}>
 
-              <div className="grid gap-2">
-                <Label htmlFor="parts_value">Valor das peças</Label>
-                <Input
-                  type="text"
-                  id="parts_value"
-                  value={maskMoney(data.parts_value.toString())}
-                  onChange={(e) => setData('parts_value', e.target.value)}
-                />
-              </div>
+              {!othersetting?.enableparts &&
+                <>
+                  <div className="grid gap-2 md:col-span-2">
+                    <Label htmlFor="parts">Peças adicionadas</Label>
+                    <Input
+                      type="text"
+                      id="parts"
+                      value={data.parts}
+                      onChange={(e) => setData('parts', e.target.value)}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="parts_value">Valor das peças</Label>
+                    <Input
+                      type="text"
+                      id="parts_value"
+                      value={maskMoney(data.parts_value.toString())}
+                      onChange={(e) => setData('parts_value', e.target.value)}
+                    />
+                  </div>
+                </>
+              }
+
+              {othersetting?.enableparts &&
+                <div className="grid gap-2">
+                  <Label htmlFor="parts_value">Valor das peças</Label>
+                  <Input
+                    type="text"
+                    id="parts_value"
+                    value={maskMoney(data.parts_value)}
+                    onChange={(e) => setData('parts_value', e.target.value)}
+                  />
+                </div>
+              }
 
               <div className="grid gap-2">
                 <Label htmlFor="service_value">Valor do serviço</Label>

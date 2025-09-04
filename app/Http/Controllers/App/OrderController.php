@@ -211,7 +211,7 @@ class OrderController extends Controller
 
     public function removePart(Request $request)
     {
-
+        dd($request->all());
         $validatedData = $request->validate([
             'order_id' => 'required|integer|exists:orders,id',
             'part_id' => 'required|integer|exists:parts,id',
@@ -235,7 +235,7 @@ class OrderController extends Controller
         try {
             // 1. Desvincula a peça da Ordem de Serviço na tabela pivô
             $order->parts()->detach($partId);
-            
+
             // 2. Chama o serviço para dar entrada no estoque
             $this->inventoryService->addPartsToStock([
                 ['id' => $partId, 'quantity' => $quantity]
