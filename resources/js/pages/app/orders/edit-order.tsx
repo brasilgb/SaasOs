@@ -3,7 +3,7 @@ import { Icon } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/layouts/app-layout";
 import { BreadcrumbItem } from "@/types";
-import { Head, Link, useForm, usePage } from "@inertiajs/react";
+import { Head, Link, router, useForm, usePage } from "@inertiajs/react";
 import { ArrowLeft, Save, Wrench, X } from "lucide-react";
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label";
@@ -18,6 +18,7 @@ import moment from "moment";
 import AddPartsModal from "./add-parts";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { get } from "react-hook-form";
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -37,8 +38,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function EditOrder({ customers, order, technicals, equipments, parts, orderparts }: any) {
   const { flash, ziggy, othersetting } = usePage().props as any;
   const { page, oc } = (ziggy as any).query
-
   const [partsData, setPartsData] = useState<any>([]);
+
+console.log(order);
+
 
   const optionsCustomer = customers.map((customer: any) => ({
     value: customer.id,
@@ -79,16 +82,18 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
   });
 
   const handleModalSubmit = (data: any) => {
+    setPartsData(data);
     // const parts = data.map((part: any) => (` ${part.name}(x${part.quantity})`));
     // setData('parts', (parts).toString().trim());
     const partsTotal = data.reduce((acc: any, item: any) => acc + Number(item.sale_price * item.quantity), 0);
     setData('parts_value', partsTotal.toFixed(2));
     setData('allparts', data);
   };
-
+  
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     patch(route('app.orders.update', order.id));
+    setPartsData([]);
   }
 
   useEffect(() => {
@@ -123,11 +128,30 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
   const statusDefault = statusServico?.filter((o: any) => o.value == order?.service_status).map((opt: any) => ({ value: opt.value, label: opt.label }));
   const defaultTechnical = optionsTechnical?.filter((o: any) => o.value == order?.responsible_technician).map((opt: any) => ({ value: opt.value, label: opt.label }));
 
-  const handlePartsDelete = (id: number) => {
-    // route('app.orders.removePart')} method="post" data={{ order_id: order.id, part_id: part.id }}
-    post(route('app.orders.removePart'), { order_id: order.id, part_id: id } as any);
+  const handleRemovePartsOrder = (e: any, id: number) => {
+    e.preventDefault();
+    post(route('app.orders.removePart',
+      { order_id: order.id, part_id: id }
+    ))
+    const valueParts = orderparts.reduce((acc: any, item: any) => acc + Number(item.sale_price * item.quantity), 0);
+    // const calcTotal = 
+    setData((data: any) => ({ ...data, parts_value: valueParts.toFixed(2) }));
+    setData((data: any) => ({ ...data, service_cost: '0.00' }));
+    setData((data: any) => ({ ...data, allparts: [] }));
+    setPartsData([]);
   }
 
+  const handleRemovePart = (partId: any) => {
+    const filteredParts = partsData.filter((part: any) => part.id !== partId)
+    setPartsData(filteredParts);
+    console.log(filteredParts);
+    
+    const valueParts = filteredParts.reduce((acc: any, item: any) => acc + Number(item.sale_price * item.quantity), 0);
+    
+    setData((data: any) => ({ ...data, parts_value: valueParts.toFixed(2) }));
+    setPartsData([]);
+  };
+  
   return (
     <AppLayout>
       {flash.message && <AlertSuccess message={flash.message} />}
@@ -312,6 +336,7 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
                 />
               </div>
             </div>
+
             {orderparts?.length > 0 && othersetting?.enableparts > 0 &&
               <Card className="p-4 mb-4">
                 <CardTitle className="border-b pb-2">Peças adicionadas</CardTitle>
@@ -320,10 +345,8 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
                     <div key={part.id} className="flex items-center gap-2">
                       <Badge variant={'secondary'} className="text-sm gap-2">
                         <span>{part.name}(x{part.quantity}) - {part.sale_price} = {maskMoney((parseFloat(part.sale_price) * parseInt(part.quantity)).toFixed(2))}</span>
-                        <Button variant={'destructive'} asChild>
-                          <Link href={''} onClick={() => handlePartsDelete(part.id)}>
-                            <X />
-                          </Link>
+                        <Button type="button" variant={'destructive'} onClick={(e) => handleRemovePartsOrder(e, part.id)} >
+                          <X />
                         </Button>
                       </Badge>
                     </div>
@@ -331,6 +354,25 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
                 </CardContent>
               </Card>
             }
+
+            {partsData?.length > 0 && !orderparts?.length &&
+              <Card className="p-4 mb-4">
+                <CardTitle className="border-b pb-2">Peças adicionadas</CardTitle>
+                <CardContent className="flex items-center justify-start gap-4">
+                  {partsData.map((part: any) => (
+                    <div key={part.id} className="flex items-center gap-2">
+                      <Badge variant={'secondary'} className="text-sm gap-2">
+                        <span>{part.name}(x{part.quantity}) - {part.sale_price} = {maskMoney((parseFloat(part.sale_price) * parseInt(part.quantity)).toFixed(2))}</span>
+                        <Button type="button" variant={'destructive'} onClick={() => handleRemovePart(part.id)} >
+                          <X />
+                        </Button>
+                      </Badge>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            }
+
             <div className={`grid ${othersetting?.enableparts ? 'md:grid-cols-3' : 'md:grid-cols-5'} gap-4 mt-4`}>
 
               {!othersetting?.enableparts &&
@@ -356,7 +398,7 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
                 </>
               }
 
-              {othersetting?.enableparts &&
+              {othersetting?.enableparts > 0 &&
                 <div className="grid gap-2">
                   <Label htmlFor="parts_value">Valor das peças</Label>
                   <Input
@@ -364,6 +406,7 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
                     id="parts_value"
                     value={maskMoney(data.parts_value)}
                     onChange={(e) => setData('parts_value', e.target.value)}
+                    required
                   />
                 </div>
               }
@@ -373,7 +416,7 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
                 <Input
                   type="text"
                   id="service_value"
-                  value={maskMoney(data.service_value.toString())}
+                  value={maskMoney(data.service_value)}
                   onChange={(e) => setData('service_value', e.target.value)}
                 />
               </div>
@@ -383,7 +426,7 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
                 <Input
                   type="text"
                   id="service_cost"
-                  value={maskMoney(data.service_cost.toString())}
+                  value={maskMoney(data.service_cost)}
                   onChange={(e) => setData('service_cost', e.target.value)}
                 />
               </div>

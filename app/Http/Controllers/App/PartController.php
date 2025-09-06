@@ -35,7 +35,7 @@ class PartController extends Controller
         $query = Part::orderBy('id', 'DESC');
         if ($search) {
             $query->where('name', 'like', '%' . $search . '%')
-            ->orWhere('part_number', 'like', '%' . $search . '%');
+                ->orWhere('part_number', 'like', '%' . $search . '%');
         }
         $parts = $query->paginate(12);
         return Inertia::render('app/parts/index', ['parts' => $parts]);
@@ -57,36 +57,26 @@ class PartController extends Controller
         $data = $request->all();
         $request->validated();
         $part = Part::firstOrCreate(
-                [
-                    'part_number' => $data['part_number'],
-                ],
-                [
-                    'name' => $data['name'],
-                    'description' => $data['description'],
-                    'manufacturer' => $data['manufacturer'],
-                    'model_compatibility' => $data['model_compatibility'],
-                    'cost_price' => str_replace(',', '.', $data['cost_price']),
-                    'sale_price' => str_replace(',', '.', $data['sale_price']),
-                    'quantity' => 0, // Começa com 0, será incrementado abaixo
-                    'minimum_stock_level' => $data['minimum_stock_level'],
-                    'location' => $data['location'],
-                    'is_active' => $data['is_active'],
-                ]
-            );
+            [
+                'part_number' => $data['part_number'],
+            ],
+            [
+                'name' => $data['name'],
+                'description' => $data['description'],
+                'manufacturer' => $data['manufacturer'],
+                'model_compatibility' => $data['model_compatibility'],
+                'cost_price' => str_replace(',', '.', $data['cost_price']),
+                'sale_price' => str_replace(',', '.', $data['sale_price']),
+                'quantity' => 0, // Começa com 0, será incrementado abaixo
+                'minimum_stock_level' => $data['minimum_stock_level'],
+                'location' => $data['location'],
+                'is_active' => $data['is_active'],
+            ]
+        );
+        // O `update` com `increment` é seguro em concorrência
+        $part->increment('quantity', $data['quantity']);
 
-            // 2. Incrementar a quantidade em estoque na tabela 'parts'
-            // O `update` com `increment` é seguro em concorrência
-            $part->increment('quantity', $data['quantity']);
-
-            // 3. Registrar o movimento de entrada
-            PartMovement::create([
-                'part_id' => $part->id,
-                'movement_type' => 'entrada',
-                'quantity' => $data['quantity'],
-                'reason' => 'Compra de Fornecedor',
-                'user_id' => Auth::id(),
-            ]);
-        // Part::create($data);
+        Part::create($data);
         return redirect()->route('app.parts.index')->with('success', 'Peça cadastrada com sucesso!');
     }
 
@@ -95,7 +85,7 @@ class PartController extends Controller
      */
     public function show(Part $part)
     {
-         return Inertia::render('app/parts/edit-part', ['parts' => $part]);
+        return Inertia::render('app/parts/edit-part', ['parts' => $part]);
     }
 
     /**
