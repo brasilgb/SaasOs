@@ -1,8 +1,7 @@
 import { KpiDashboard } from '@/components/kpi-dashboard'
 import AdminLayout from '@/layouts/admin/admin-layout'
 import { Head } from '@inertiajs/react'
-import { Building, User, Users } from 'lucide-react'
-import React from 'react'
+import { Building, User } from 'lucide-react'
 
 export default function Dashboard({ metrics }: any) {
 
