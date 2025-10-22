@@ -14,16 +14,14 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tenant_id')->nullable()->constrained()->onDelete('cascade');
-            $table->integer('user_number')->nullable();
+            $table->foreignId('tenant_id')->nullable()->constrained();
             $table->string('name');
             $table->string('email')->unique();
             $table->string('telephone')->nullable();
             $table->string('whatsapp')->nullable();
             $table->string('password');
-            $table->tinyInteger('roles')->default(1); // 1-Administrador, 2-Usuário, 3-Técnico
-            $table->boolean('is_root')->default(0);
-            $table->boolean('is_active')->default(1);
+            $table->tinyInteger('roles')->nullable();
+            $table->tinyInteger('status')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
@@ -55,12 +53,12 @@ return new class extends Migration
         Schema::dropIfExists('sessions');
     }
 
-    
+
     // public function schedules(): HasMany
     // {
     //     return $this->hasMany(Schedule::class);
     // }
-    
+
     // public function senders(): HasMany
     // {
     //     return $this->hasMany(Message::class);
@@ -70,5 +68,5 @@ return new class extends Migration
     // {
     //     return $this->hasMany(Message::class);
     // }
-    
+
 };

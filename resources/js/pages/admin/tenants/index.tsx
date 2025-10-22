@@ -73,8 +73,8 @@ export default function TenantsIndex({  tenants }: any) {
                 tenants?.data?.map((tenant: any) => (
                   <TableRow key={tenant.id}>
                     <TableCell>{tenant.id}</TableCell>
-                    <TableCell>{tenant.company_name}</TableCell>
-                    <TableCell>{tenant.company_cnpj}</TableCell>
+                    <TableCell>{tenant.name}</TableCell>
+                    <TableCell>{tenant.cnpj}</TableCell>
                     <TableCell>{tenant.contact_email}</TableCell>
                     <TableCell>{maskPhone(tenant.contact_phone)}</TableCell>
                     <TableCell>{statusSaasByValue(tenant.status)}</TableCell>

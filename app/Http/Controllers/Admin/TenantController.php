@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\TenantRequest;
 use Illuminate\Http\RedirectResponse;
 use App\Models\Admin\Plan;
+use Carbon\Carbon;
 use Inertia\Inertia;
 
 class TenantController extends Controller
@@ -36,6 +37,21 @@ class TenantController extends Controller
     {
         $data = $request->all();
         $request->validated();
+        // Adiciona a data de expiração com base no plano
+        if (isset($data['plan'])) {
+            $days = match ((int) $data['plan']) {
+                1 => 30,  // Exemplo: plano com id 1 tem 30 dias
+                2 => 30,  // Exemplo: plano com id 1 tem 30 dias
+                3 => 90,  // Exemplo: plano com id 2 tem 90 dias
+                4 => 180, // Exemplo: plano com id 3 tem 180 dias
+                default => null,
+            };
+
+            if ($days) {
+                $data['expiration_date'] = Carbon::now()->addDays($days);
+            }
+        }
+
         Tenant::create($data);
         return redirect()->route('admin.tenants.index')->with('success', 'Empresa cadastrado com sucesso!');
     }
@@ -62,8 +78,20 @@ class TenantController extends Controller
      */
     public function update(TenantRequest $request, Tenant $tenant): RedirectResponse
     {
-        $data = $request->all();
-        $request->validated();
+        $data = $request->validated();
+        if (isset($data['plan'])) {
+            $days = match ((int) $data['plan']) {
+                1 => 30,  // Exemplo: plano com id 1 tem 30 dias
+                2 => 30,  // Exemplo: plano com id 1 tem 30 dias
+                3 => 90,  // Exemplo: plano com id 2 tem 90 dias
+                4 => 180, // Exemplo: plano com id 3 tem 180 dias
+                default => null,
+            };
+
+            if ($days) {
+                $data['expiration_date'] = Carbon::now()->addDays($days);
+            }
+        }
         $tenant->update($data);
         return redirect()->route('admin.tenants.show', ['tenant' => $tenant->id])->with('success', 'Empresa atualizada com sucess!');
     }
@@ -74,6 +102,6 @@ class TenantController extends Controller
     public function destroy(Tenant $tenant)
     {
         $tenant->delete();
-        return redirect()->route('admin.tenants.index')->width('success', 'Empresa excluída com sucesso!');
+        return redirect()->route('admin.tenants.index')->with('success', 'Empresa excluída com sucesso!');
     }
 }

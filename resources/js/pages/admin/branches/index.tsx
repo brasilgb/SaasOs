@@ -70,8 +70,8 @@ export default function BranchesIndex({ branches }: any) {
                 branches?.data?.map((branche: any) => (
                   <TableRow key={branche.id}>
                     <TableCell>{branche.id}</TableCell>
-                    <TableCell>{branche.company_name}</TableCell>
-                    <TableCell>{branche.company_cnpj}</TableCell>
+                    <TableCell>{branche.name}</TableCell>
+                    <TableCell>{branche.cnpj}</TableCell>
                     <TableCell>{branche.contact_email}</TableCell>
                     <TableCell>{maskPhone(branche.contact_phone)}</TableCell>
                     <TableCell>{moment(branche.created_at).format("DD/MM/YYYY")}</TableCell>

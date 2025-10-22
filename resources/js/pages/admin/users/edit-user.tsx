@@ -38,7 +38,7 @@ export default function CreateUser({ user, tenants }: any) {
 
   const newTenant = tenants?.map((tenant: any) => ({
     value: tenant.id,
-    label: tenant.company_name,
+    label: tenant.name,
   }));
 
   const { data, setData, patch, progress, processing, reset, errors } = useForm({

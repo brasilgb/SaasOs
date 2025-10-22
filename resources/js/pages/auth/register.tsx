@@ -8,8 +8,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth-layout';
+import { maskCnpj } from '@/Utils/mask';
 
 type RegisterForm = {
+    cnpj: string;
+    company: string;
     name: string;
     email: string;
     password: string;
@@ -17,13 +20,10 @@ type RegisterForm = {
 };
 
 export default function Register() {
-    const { auth } = usePage().props as any;
-
-    if (auth?.userexists) {
-        return router.get(route('dashboard'));
-    }
 
     const { data, setData, post, processing, errors, reset } = useForm<Required<RegisterForm>>({
+        cnpj: '',
+        company: '',
         name: '',
         email: '',
         password: '',
@@ -42,14 +42,44 @@ export default function Register() {
             <Head title="Criar uma conta" />
             <form className="flex flex-col gap-6" onSubmit={submit}>
                 <div className="grid gap-6">
+
+                    <div className="grid gap-2">
+                        <Label htmlFor="company">Razão social</Label>
+                        <Input
+                            id="company"
+                            type="text"
+                            autoFocus
+                            tabIndex={1}
+                            autoComplete="company"
+                            value={data.company}
+                            onChange={(e) => setData('company', e.target.value)}
+                            disabled={processing}
+                            placeholder="Razão social"
+                        />
+                        <InputError message={errors.company} className="mt-2" />
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label htmlFor="cnpj">CNPJ</Label>
+                        <Input
+                            id="cnpj"
+                            type="text"
+                            tabIndex={2}
+                            autoComplete="cnpj"
+                            value={maskCnpj(data.cnpj)}
+                            onChange={(e) => setData('cnpj', e.target.value)}
+                            disabled={processing}
+                            placeholder="CNPJ"
+                        />
+                        <InputError message={errors.cnpj} className="mt-2" />
+                    </div>
+
                     <div className="grid gap-2">
                         <Label htmlFor="name">Nome</Label>
                         <Input
                             id="name"
                             type="text"
-                            required
-                            autoFocus
-                            tabIndex={1}
+                            tabIndex={3}
                             autoComplete="name"
                             value={data.name}
                             onChange={(e) => setData('name', e.target.value)}
@@ -64,8 +94,7 @@ export default function Register() {
                         <Input
                             id="email"
                             type="email"
-                            required
-                            tabIndex={2}
+                            tabIndex={4}
                             autoComplete="email"
                             value={data.email}
                             onChange={(e) => setData('email', e.target.value)}
@@ -80,8 +109,7 @@ export default function Register() {
                         <Input
                             id="password"
                             type="password"
-                            required
-                            tabIndex={3}
+                            tabIndex={5}
                             autoComplete="new-password"
                             value={data.password}
                             onChange={(e) => setData('password', e.target.value)}
@@ -96,8 +124,7 @@ export default function Register() {
                         <Input
                             id="password_confirmation"
                             type="password"
-                            required
-                            tabIndex={4}
+                            tabIndex={6}
                             autoComplete="new-password"
                             value={data.password_confirmation}
                             onChange={(e) => setData('password_confirmation', e.target.value)}

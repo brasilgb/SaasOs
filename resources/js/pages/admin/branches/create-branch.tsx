@@ -31,7 +31,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function CreateBranch({ tenants }: any) {
 const allTenants = tenants.map((tenant: any) => ({
     value: tenant.id,
-    label: tenant.company_name,
+    label: tenant.name,
   }));
     const { data, setData, post, processing, reset, errors } = useForm({
         tenant_id: '',

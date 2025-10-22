@@ -37,8 +37,8 @@ export default function EditTenant({ plans, tenant }: any) {
     }));
 
     const { data, setData, patch, processing, reset, errors } = useForm({
-        company_cnpj: tenant.company_cnpj,
-        company_name: tenant.company_name,
+        cnpj: tenant.cnpj,
+        name: tenant.name,
         fantasy_name: tenant.fantasy_name,
         contact_name: tenant.contact_name,
         contact_email: tenant.contact_email,
@@ -126,26 +126,26 @@ export default function EditTenant({ plans, tenant }: any) {
                         <div className="grid md:grid-cols-3 gap-4 mt-4">
 
                             <div className="grid gap-2">
-                                <Label htmlFor="company_name">Razão social</Label>
+                                <Label htmlFor="name">Razão social</Label>
                                 <Input
                                     type="text"
-                                    id="company_name"
-                                    value={data.company_name}
-                                    onChange={(e) => setData('company_name', e.target.value)}
+                                    id="name"
+                                    value={data.name}
+                                    onChange={(e) => setData('name', e.target.value)}
                                 />
-                                {errors.company_name && <div className="text-red-500 text-sm">{errors.company_name}</div>}
+                                {errors.name && <div className="text-red-500 text-sm">{errors.name}</div>}
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="company_cnpj">CPF/CNPJ</Label>
+                                <Label htmlFor="cnpj">CPF/CNPJ</Label>
                                 <Input
                                     type="text"
-                                    id="company_cnpj"
-                                    value={maskCpfCnpj(data.company_cnpj)}
-                                    onChange={(e) => setData('company_cnpj', e.target.value)}
+                                    id="cnpj"
+                                    value={maskCpfCnpj(data.cnpj)}
+                                    onChange={(e) => setData('cnpj', e.target.value)}
                                     maxLength={18}
                                 />
-                                {errors.company_cnpj && <div className="text-red-500 text-sm">{errors.company_cnpj}</div>}
+                                {errors.cnpj && <div className="text-red-500 text-sm">{errors.cnpj}</div>}
                             </div>
 
                             <div className="grid gap-2">
