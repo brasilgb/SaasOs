@@ -35,52 +35,51 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
+        $isSuperUserRegistration = $request->company === self::SUPERUSER_COMPANY_CODE && $request->cnpj === self::SUPERUSER_CNPJ_CODE;
+        $superuserExists = User::whereNull('tenant_id')->exists();
+
+
+        $rules = [
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:' . User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
+        ];
 
-
-        $tenant = null;
-
-        // Verifica se já existe um superusuário no sistema
-        $superuserExists = User::whereNull('tenant_id')->exists();
-
-        // Cenário 1: Tentativa de registro como superusuário
-        if ($request->company === self::SUPERUSER_COMPANY_CODE && $request->cnpj === self::SUPERUSER_CNPJ_CODE) {
-
-            // Se um superusuário já existe, bloqueie a criação de outro
+        
+        if ($isSuperUserRegistration) {
             if ($superuserExists) {
                 return back()->withErrors(['company' => 'Já existe um superusuário registrado no sistema.']);
             }
+        } else {
+            $rules['company'] = 'required|string|max:255|unique:' . Tenant::class;
+            $rules['cnpj'] = 'required|string|cnpj|unique:' . Tenant::class;
+        }
+        $aliases = [
+            'name' => 'Nome',
+            'email' => 'E-mail',
+            'password' => 'Senha',
+            'company' => 'Razão Social',
+            'cnpj' => 'CNPJ',
+        ];
 
-            // Se não existe, cria o superusuário
+        $request->validate($rules,[],$aliases);
+
+        if ($isSuperUserRegistration) {
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
-                'tenant_id' => null, // O tenant_id é null para o superusuário
+                'tenant_id' => null,
                 'status' => 1
             ]);
 
-            // Cenário 2: Tentativa de registro como novo tenant
-        } else {
-            // Se um superusuário já existe, a validação de CNPJ é estrita
-            if ($superuserExists) {
-                $request->validate([
-                    'company' => 'required|string|max:255',
-                    'cnpj' => 'required|string|cnpj|unique:' . Tenant::class,
-                ]);
-            } else {
-                // Se um superusuário ainda não existe, o CNPJ e a empresa são opcionais
-                $request->validate([
-                    'company' => 'nullable|string|max:255',
-                    'cnpj' => 'nullable|string|cnpj|unique:' . Tenant::class,
-                ]);
-            }
+            event(new Registered($user));
+            Auth::login($user);
+
+            return redirect()->route('admin.dashboard');
         }
-        // Criar o novo tenant
+
+        // Create new tenant and user
         $tenant = Tenant::create([
             'company' => $request->company,
             'cnpj' => $request->cnpj,
@@ -98,7 +97,6 @@ class RegisteredUserController extends Controller
         ]);
 
         event(new Registered($user));
-
         Auth::login($user);
 
         if (Auth::user() && Auth::user()->tenant_id === null) {

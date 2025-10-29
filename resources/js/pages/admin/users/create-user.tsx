@@ -45,7 +45,7 @@ export default function CreateUser({ tenants }: any) {
     telephone: '',
     whatsapp: '',
     roles: '',
-    is_active: false,
+    status: false,
     password: '',
     password_confirmation: '',
   });
@@ -256,11 +256,11 @@ export default function CreateUser({ tenants }: any) {
 
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="is_active">Status do usuário</Label>
+              <Label htmlFor="status">Status do usuário</Label>
               <Switch
-                id="is_active"
-                checked={data.is_active}
-                onCheckedChange={(checked: any) => setData('is_active', checked)}
+                id="status"
+                checked={data.status}
+                onCheckedChange={(checked: any) => setData('status', checked)}
               />
             </div>
             <div className="flex justify-end">

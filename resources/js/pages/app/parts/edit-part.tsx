@@ -39,7 +39,7 @@ export default function EditPart({ parts }: any) {
         quantity: parts?.quantity,
         minimum_stock_level: parts?.minimum_stock_level,
         location: parts?.location,
-        is_active: parts?.is_active
+        status: parts?.status
     });
 
     const handleSubmit = (e: any) => {
@@ -195,11 +195,11 @@ export default function EditPart({ parts }: any) {
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="is_active">Status da peça</Label>
+                            <Label htmlFor="status">Status da peça</Label>
                             <Switch
-                                id="is_active"
-                                checked={data.is_active}
-                                onCheckedChange={(checked: any) => setData('is_active', checked)}
+                                id="status"
+                                checked={data.status}
+                                onCheckedChange={(checked: any) => setData('status', checked)}
                             />
                         </div>
 

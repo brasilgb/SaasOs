@@ -70,7 +70,7 @@ class PartController extends Controller
                 'quantity' => 0, // Começa com 0, será incrementado abaixo
                 'minimum_stock_level' => $data['minimum_stock_level'],
                 'location' => $data['location'],
-                'is_active' => $data['is_active'],
+                'status' => $data['status'],
             ]
         );
         // O `update` com `increment` é seguro em concorrência

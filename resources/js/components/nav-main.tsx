@@ -5,7 +5,6 @@ import { Link, usePage } from '@inertiajs/react';
 export function NavMain({ items = [] }: { items: NavItem[] }) {
     const { othersetting } = usePage().props as any;
     const disableParts = !othersetting?.enableparts ? 'parts' : '';
-    
     return (
             <SidebarMenu>
                 {items.map((item) => (

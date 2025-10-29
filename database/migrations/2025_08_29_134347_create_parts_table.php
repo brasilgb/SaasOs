@@ -24,7 +24,7 @@ return new class extends Migration
             $table->unsignedInteger('quantity')->default(0);
             $table->unsignedInteger('minimum_stock_level')->default(0);
             $table->string('location')->nullable();
-            $table->boolean('is_active')->default(true);
+            $table->boolean('status')->default(true);
             $table->timestamps();
         });
     }

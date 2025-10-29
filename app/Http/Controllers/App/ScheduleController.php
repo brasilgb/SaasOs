@@ -59,7 +59,7 @@ class ScheduleController extends Controller
     public function create()
     {
         $customers = Customer::get();
-        $technicals = User::where('roles', 3)->orWhere('roles', 1)->where('is_active', 1)->get();
+        $technicals = User::where('roles', 3)->orWhere('roles', 1)->where('status', 1)->get();
         return Inertia::render('app/schedules/create-schedule', ['customers' => $customers, 'technicals' => $technicals]);
     }
 
@@ -81,7 +81,7 @@ class ScheduleController extends Controller
     public function show(Schedule $schedule)
     {
         $customers = Customer::get();
-        $technicals = User::where('roles', 3)->orWhere('roles', 1)->where('is_active', 1)->get();
+        $technicals = User::where('roles', 3)->orWhere('roles', 1)->where('status', 1)->get();
         return Inertia::render('app/schedules/edit-schedule', ['schedule' => $schedule, 'customers' => $customers, 'technicals' => $technicals]);
     }
 

@@ -60,7 +60,7 @@ class HandleInertiaRequests extends Middleware
             'notifications' => Message::where('status', '0')->count(),
             'equipments' => Equipment::get(),
             'customers' => Customer::get(),
-            'technicals' => User::where('roles', 3)->orWhere('roles', 1)->where('is_active', 1)->get(),
+            'technicals' => User::where('roles', 3)->orWhere('roles', 1)->where('status', 1)->get(),
             'name' => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [

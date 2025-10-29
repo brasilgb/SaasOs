@@ -43,7 +43,7 @@ export default function CreatePart() {
         quantity: '',
         minimum_stock_level: '',
         location: '',
-        is_active: false
+        status: false
     });
 
     const handleSubmit = async (e: any) => {
@@ -72,7 +72,7 @@ export default function CreatePart() {
                 setData((data) => ({ ...data, quantity: '0' }));
                 setData((data) => ({ ...data, minimum_stock_level: parts.minimum_stock_level }));
                 setData((data) => ({ ...data, location: parts.location }));
-                setData((data) => ({ ...data, is_active: parts.is_active }));
+                setData((data) => ({ ...data, status: parts.status }));
             } else {
                 setDisableInput(false)
                 reset(
@@ -83,7 +83,7 @@ export default function CreatePart() {
                     'quantity',
                     'minimum_stock_level',
                     'location',
-                    'is_active'
+                    'status'
                 )
                 setData((data) => ({ ...data, cost_price: '0' }));
                 setData((data) => ({ ...data, sale_price: '0' }));
@@ -251,11 +251,11 @@ export default function CreatePart() {
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="is_active">Status da peça</Label>
+                            <Label htmlFor="status">Status da peça</Label>
                             <Switch
-                                id="is_active"
-                                checked={data.is_active}
-                                onCheckedChange={(checked: any) => setData('is_active', checked)}
+                                id="status"
+                                checked={data.status}
+                                onCheckedChange={(checked: any) => setData('status', checked)}
                             />
                         </div>
 

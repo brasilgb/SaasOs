@@ -30,9 +30,9 @@ class User extends Authenticatable
         'email',
         'telephone',
         'whatsapp',
-        'roles',
-        'is_active',
         'password',
+        'roles',
+        'status'
     ];
 
     /**
