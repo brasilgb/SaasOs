@@ -29,9 +29,6 @@ export function Hero() {
                 <ArrowRight className="h-5 w-5" />
               </Link>
             </Button>
-            <Button size="lg" variant="outline" className="w-full sm:w-auto text-base px-8 bg-transparent">
-              Ver demonstração
-            </Button>
           </div>
 
           <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">

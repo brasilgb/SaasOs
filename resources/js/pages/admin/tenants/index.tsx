@@ -58,7 +58,8 @@ export default function TenantsIndex({  tenants }: any) {
             <TableHeader>
               <TableRow>
                 <TableHead>#</TableHead>
-                <TableHead>Nome</TableHead>
+                <TableHead>Contato</TableHead>
+                <TableHead>Razão Social</TableHead>
                 <TableHead>CNPJ</TableHead>
                 <TableHead>E-mail</TableHead>
                 <TableHead>Telefone</TableHead>
@@ -74,9 +75,10 @@ export default function TenantsIndex({  tenants }: any) {
                   <TableRow key={tenant.id}>
                     <TableCell>{tenant.id}</TableCell>
                     <TableCell>{tenant.name}</TableCell>
+                    <TableCell>{tenant.company}</TableCell>
                     <TableCell>{tenant.cnpj}</TableCell>
-                    <TableCell>{tenant.contact_email}</TableCell>
-                    <TableCell>{maskPhone(tenant.contact_phone)}</TableCell>
+                    <TableCell>{tenant.email}</TableCell>
+                    <TableCell>{maskPhone(tenant.phone)}</TableCell>
                     <TableCell>{statusSaasByValue(tenant.status)}</TableCell>
                     <TableCell>{moment(tenant.created_at).format("DD/MM/YYYY")}</TableCell>
                     <TableCell>{moment(tenant.expiration_date).format("DD/MM/YYYY")}</TableCell>
@@ -101,7 +103,7 @@ export default function TenantsIndex({  tenants }: any) {
                 ))
                 : (
                   <TableRow>
-                    <TableCell colSpan={7} className='h-16 w-full flex items-center justify-center'>
+                    <TableCell colSpan={10} className='h-16 w-full flex items-center justify-center'>
                       Não há dados a serem mostrados no momento.
                     </TableCell>
                   </TableRow>
@@ -110,7 +112,7 @@ export default function TenantsIndex({  tenants }: any) {
             </TableBody>
             <TableFooter>
               <TableRow>
-                <TableCell colSpan={9}>
+                <TableCell colSpan={10}>
                   <AppPagination data={tenants} />
                 </TableCell>
               </TableRow>

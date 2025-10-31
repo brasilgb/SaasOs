@@ -33,7 +33,7 @@ export default function AuthSimpleLayout({ children, title, description }: Props
                 </div>
             </div>
             <div className="hidden lg:flex flex-1 relative bg-gradient-to-br from-primary/60 to-primary/90 dark:from-primary/20 dark:to-primary/5">
-                <div className="absolute inset-0  bg-[url(/auth-images.png)] bg-cover bg-center bg-no-repeat" />
+                <div className="absolute inset-0  bg-[url(/auth-images.png)] bg-fixed bg-cover bg-center bg-no-repeat" />
                 <div className="absolute inset-0 flex flex-col items-center justify-between">
                     <div className="text-center space-y-4 bg-foreground/50 dark:bg-background/50 w-full p-8">
                         <h2 className="text-3xl font-bold text-white drop-shadow-lg">Gestão de ordens de serviço, clientes e agendamentos</h2>

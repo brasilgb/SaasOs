@@ -18,7 +18,6 @@ import moment from "moment";
 import AddPartsModal from "./add-parts";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { get } from "react-hook-form";
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -37,11 +36,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function EditOrder({ customers, order, technicals, equipments, parts, orderparts }: any) {
   const { flash, ziggy, othersetting } = usePage().props as any;
+    const disableParts = !othersetting?.enableparts ? 'parts' : '';
   const { page, oc } = (ziggy as any).query
   const [partsData, setPartsData] = useState<any>([]);
-
-console.log(order);
-
 
   const optionsCustomer = customers.map((customer: any) => ({
     value: customer.id,
@@ -144,7 +141,6 @@ console.log(order);
   const handleRemovePart = (partId: any) => {
     const filteredParts = partsData.filter((part: any) => part.id !== partId)
     setPartsData(filteredParts);
-    console.log(filteredParts);
     
     const valueParts = filteredParts.reduce((acc: any, item: any) => acc + Number(item.sale_price * item.quantity), 0);
     
@@ -178,7 +174,7 @@ console.log(order);
           </Button>
         </div>
         <div>
-          {othersetting.enableparts &&
+          {!disableParts &&
             <AddPartsModal onSubmit={handleModalSubmit} parts={parts} />}
         </div>
       </div>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\App\Company;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
@@ -42,10 +43,12 @@ class RegisteredUserController extends Controller
         $rules = [
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:' . User::class,
+            'phone' => 'required|string|max:255',
+            'whatsapp' => 'required|string|max:255',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ];
 
-        
+
         if ($isSuperUserRegistration) {
             if ($superuserExists) {
                 return back()->withErrors(['company' => 'Já existe um superusuário registrado no sistema.']);
@@ -62,7 +65,7 @@ class RegisteredUserController extends Controller
             'cnpj' => 'CNPJ',
         ];
 
-        $request->validate($rules,[],$aliases);
+        $request->validate($rules, [], $aliases);
 
         if ($isSuperUserRegistration) {
             $user = User::create([
@@ -81,12 +84,19 @@ class RegisteredUserController extends Controller
 
         // Create new tenant and user
         $tenant = Tenant::create([
+            'name' => $request->name,
             'company' => $request->company,
             'cnpj' => $request->cnpj,
             'email' => $request->email,
+            'phone' => $request->phone,
+            'whatsapp' => $request->whatsapp,
             'status' => 1,
             'plan' => 1
         ]);
+
+        if (!$tenant || !$tenant->id) {
+            return back()->withErrors(['tenant' => 'Failed to create tenant.']);
+        }
 
         $user = User::create([
             'name' => $request->name,
@@ -96,8 +106,18 @@ class RegisteredUserController extends Controller
             'status' => 1
         ]);
 
+        Company::create([
+            'tenant_id' => $tenant->id,
+            'companyname' => $request->company,
+            'cnpj' => $request->cnpj,
+            'telephone' => $request->phone,
+            'whatsapp' => $request->whatsapp,
+            'email' => $request->email
+        ]);
+
         event(new Registered($user));
         Auth::login($user);
+
 
         if (Auth::user() && Auth::user()->tenant_id === null) {
             return redirect()->route('admin.dashboard');

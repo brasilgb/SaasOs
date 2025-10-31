@@ -1,9 +1,11 @@
 import { Button } from "@/components/ui/button"
-import { Link } from "@inertiajs/react"
+import { Link, usePage } from "@inertiajs/react"
 import { Menu, Wrench, X } from "lucide-react"
 import { useState } from "react"
 
 export function Header() {
+  const { auth } = usePage().props as any;
+
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   const handleMenuToggle = () => {
@@ -45,11 +47,13 @@ export function Header() {
 
         <div className="flex items-center gap-4">
           <Button variant="ghost" className="hidden md:inline-flex">
-            <Link href={route('app.dashboard')}>Entrar</Link>
+            <Link href={route('app.dashboard')}>{auth?.user ? auth?.user?.name : 'Entrar'}</Link>
           </Button>
-          <Button variant="default">
-            <Link href={route('register')}>Começar Grátis</Link>
-          </Button>
+          {!auth?.user &&
+            <Button variant="default">
+              <Link href={route('register')}>Começar Grátis</Link>
+            </Button>
+          }
           {/* botao menu mobile */}
           <Button
             variant="ghost"

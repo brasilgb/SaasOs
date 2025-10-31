@@ -64,7 +64,7 @@ function maskCnpj(value: string) {
     }
 }
 
-function unMask(value: string) {
+function unMask(value: any) {
     if (value) {
         value = value.replace(/\D/g, "");
         return value;

@@ -136,7 +136,7 @@ class OrderController extends Controller
         $customers = Customer::get();
         $parts = Part::get();
         $technicals = User::where('roles', 3)->orWhere('roles', 1)->where('status', 1)->get();
-        $orderparts = $order->parts()->pivot()->get();
+        $orderparts = $parts->isEmpty() ? [] : $order->parts()->pivot()->get();
 
         return Inertia::render('app/orders/edit-order', ['order' => $order, 'orderparts' => $orderparts, 'customers' => $customers, 'technicals' => $technicals, 'equipments' => $equipments, 'parts' => $parts]);
     }

@@ -33,7 +33,7 @@ const features = [
   {
     icon: Package,
     title: "Controle de Estoque",
-    description: "Gestão de peças e produtos com alertas de estoque mínimo e histórico de movimentações.",
+    description: "Gestão de peças e produtos com alertas de estoque mínimo e ajuste de estoque.",
   },
   {
     icon: MessageSquare,
@@ -68,7 +68,7 @@ const features = [
   {
     icon: Tag,
     title: "Etiquetas Inteligentes",
-    description: "Imprima etiquetas com QR code para identificação rápida de equipamentos.",
+    description: "Imprima etiquetas para identificação rápida de equipamentos.",
   },
   {
     icon: Settings,

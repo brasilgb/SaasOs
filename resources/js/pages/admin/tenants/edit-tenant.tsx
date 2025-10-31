@@ -37,13 +37,12 @@ export default function EditTenant({ plans, tenant }: any) {
     }));
 
     const { data, setData, patch, processing, reset, errors } = useForm({
-        cnpj: tenant.cnpj,
         name: tenant.name,
-        fantasy_name: tenant.fantasy_name,
-        contact_name: tenant.contact_name,
-        contact_email: tenant.contact_email,
-        contact_phone: tenant.contact_phone,
-        contact_whatsapp: tenant.contact_whatsapp,
+        company: tenant.company,
+        cnpj: tenant.cnpj,
+        email: tenant.email,
+        phone: tenant.phone,
+        whatsapp: tenant.whatsapp,
         cep: tenant.cep,
         state: tenant.state,
         city: tenant.city,
@@ -93,8 +92,8 @@ export default function EditTenant({ plans, tenant }: any) {
     return (
         <AdminLayout>
             <div className='flex items-center justify-between h-16 px-4'>
-            {flash.message && <AlertSuccess message={flash.message} />}
-            <Head title="Empresas" />
+                {flash.message && <AlertSuccess message={flash.message} />}
+                <Head title="Empresas" />
                 <div className='flex items-center gap-2'>
                     <Icon iconNode={Building} className='w-8 h-8' />
                     <h2 className="text-xl font-semibold tracking-tight">Empresas</h2>
@@ -126,14 +125,14 @@ export default function EditTenant({ plans, tenant }: any) {
                         <div className="grid md:grid-cols-3 gap-4 mt-4">
 
                             <div className="grid gap-2">
-                                <Label htmlFor="name">Razão social</Label>
+                                <Label htmlFor="company">Razão social</Label>
                                 <Input
                                     type="text"
-                                    id="name"
-                                    value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
+                                    id="company"
+                                    value={data.company}
+                                    onChange={(e) => setData('company', e.target.value)}
                                 />
-                                {errors.name && <div className="text-red-500 text-sm">{errors.name}</div>}
+                                {errors.company && <div className="text-red-500 text-sm">{errors.company}</div>}
                             </div>
 
                             <div className="grid gap-2">
@@ -147,60 +146,50 @@ export default function EditTenant({ plans, tenant }: any) {
                                 />
                                 {errors.cnpj && <div className="text-red-500 text-sm">{errors.cnpj}</div>}
                             </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="fantasy_name">Nome fantasia</Label>
-                                <Input
-                                    type="text"
-                                    id="fantasy_name"
-                                    value={data.fantasy_name}
-                                    onChange={(e) => setData('fantasy_name', e.target.value)}
-                                />
-                            </div>
                         </div>
 
                         <div className="grid md:grid-cols-6 gap-4 mt-4">
                             <div className="md:col-span-2 grid gap-2">
-                                <Label htmlFor="contact_name">Nome do contato</Label>
+                                <Label htmlFor="name">Nome do contato</Label>
                                 <Input
                                     type="text"
-                                    id="contact_name"
-                                    value={data.contact_name}
-                                    onChange={(e) => setData('contact_name', e.target.value)}
+                                    id="name"
+                                    value={data.name}
+                                    onChange={(e) => setData('name', e.target.value)}
                                 />
-                                {errors.contact_name && <div className="text-red-500 text-sm">{errors.contact_name}</div>}
+                                {errors.name && <div className="text-red-500 text-sm">{errors.name}</div>}
                             </div>
 
                             <div className="md:col-span-2 grid gap-2">
-                                <Label htmlFor="contact_email">E-mail</Label>
+                                <Label htmlFor="email">E-mail</Label>
                                 <Input
                                     type="text"
-                                    id="contact_email"
-                                    value={data.contact_email}
-                                    onChange={(e) => setData('contact_email', e.target.value)}
+                                    id="email"
+                                    value={data.email}
+                                    onChange={(e) => setData('email', e.target.value)}
                                 />
-                                {errors.contact_email && <div className="text-red-500 text-sm">{errors.contact_email}</div>}
+                                {errors.email && <div className="text-red-500 text-sm">{errors.email}</div>}
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="contact_phone">Telefone</Label>
+                                <Label htmlFor="phone">Telefone</Label>
                                 <Input
                                     type="text"
-                                    id="contact_phone"
-                                    value={maskPhone(data.contact_phone)}
-                                    onChange={(e) => setData('contact_phone', e.target.value)}
+                                    id="phone"
+                                    value={maskPhone(data.phone)}
+                                    onChange={(e) => setData('phone', e.target.value)}
                                     maxLength={15}
                                 />
-                                {errors.contact_phone && <div className="text-red-500 text-sm">{errors.contact_phone}</div>}
+                                {errors.phone && <div className="text-red-500 text-sm">{errors.phone}</div>}
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="contact_whatsapp">Whatsapp</Label>
+                                <Label htmlFor="whatsapp">Whatsapp</Label>
                                 <Input
                                     type="text"
-                                    id="contact_whatsapp"
-                                    value={data.contact_whatsapp}
-                                    onChange={(e) => setData('contact_whatsapp', e.target.value)}
+                                    id="whatsapp"
+                                    value={data.whatsapp}
+                                    onChange={(e) => setData('whatsapp', e.target.value)}
                                     maxLength={13}
                                 />
                             </div>

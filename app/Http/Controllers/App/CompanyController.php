@@ -4,6 +4,7 @@ namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
 use App\Models\App\Company;
+use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -52,6 +53,7 @@ class CompanyController extends Controller
         $data['logo'] = $request->hasfile('logo') ? $fileName : $company->logo;
         Model::reguard();
         $company->update($data);
+        
         Model::unguard();
         return redirect()->route('app.company.index')->with('success', 'Dados da filial alterados com sucesso!');
     }

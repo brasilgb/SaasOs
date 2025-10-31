@@ -8,13 +8,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth-layout';
-import { maskCnpj } from '@/Utils/mask';
+import { maskCnpj, maskPhone, unMask } from '@/Utils/mask';
 
 type RegisterForm = {
     cnpj: string;
     company: string;
     name: string;
     email: string;
+    phone: string;
+    whatsapp: string;
     password: string;
     password_confirmation: string;
 };
@@ -26,12 +28,16 @@ export default function Register() {
         company: '',
         name: '',
         email: '',
+        phone: '',
+        whatsapp: '',
         password: '',
         password_confirmation: '',
     });
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
+        setData((data: any) => ({ ...data, cnpj: unMask(data.cnpj) }));
+        setData((data: any) => ({ ...data, phone: unMask(data.phone) }));
         post(route('register'), {
             onFinish: () => reset('password', 'password_confirmation'),
         });
@@ -69,13 +75,12 @@ export default function Register() {
                             value={maskCnpj(data.cnpj)}
                             onChange={(e) => setData('cnpj', e.target.value)}
                             disabled={processing}
-                            placeholder="CNPJ"
                         />
                         <InputError message={errors.cnpj} className="mt-2" />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="name">Nome</Label>
+                        <Label htmlFor="name">Nome completo</Label>
                         <Input
                             id="name"
                             type="text"
@@ -84,7 +89,6 @@ export default function Register() {
                             value={data.name}
                             onChange={(e) => setData('name', e.target.value)}
                             disabled={processing}
-                            placeholder="Nome completo"
                         />
                         <InputError message={errors.name} className="mt-2" />
                     </div>
@@ -99,9 +103,37 @@ export default function Register() {
                             value={data.email}
                             onChange={(e) => setData('email', e.target.value)}
                             disabled={processing}
-                            placeholder="email@example.com"
                         />
                         <InputError message={errors.email} />
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label htmlFor="phone">Telefone</Label>
+                        <Input
+                            id="phone"
+                            type="phone"
+                            tabIndex={4}
+                            autoComplete="phone"
+                            value={maskPhone(data.phone)}
+                            onChange={(e) => setData('phone', e.target.value)}
+                            disabled={processing}
+                            maxLength={15}
+                        />
+                        <InputError message={errors.phone} />
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label htmlFor="whatsapp">Whatsapp</Label>
+                        <Input
+                            id="whatsapp"
+                            type="whatsapp"
+                            tabIndex={4}
+                            autoComplete="whatsapp"
+                            value={data.whatsapp}
+                            onChange={(e) => setData('whatsapp', e.target.value)}
+                            disabled={processing}
+                        />
+                        <InputError message={errors.whatsapp} />
                     </div>
 
                     <div className="grid gap-2">
