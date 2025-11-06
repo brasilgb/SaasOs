@@ -5,7 +5,7 @@ import { Check } from "lucide-react"
 const plans = [
   {
     name: "Mensal",
-    price: "R$ 149",
+    price: "R$ 49,00",
     period: "/mês",
     description: "Pagamento mensal com flexibilidade total",
     features: [
@@ -19,7 +19,7 @@ const plans = [
   },
   {
     name: "Trimestral",
-    price: "R$ 399",
+    price: "R$ 132,30",
     period: "/trimestre",
     description: "Economize 10% no plano trimestral",
     popular: true,
@@ -35,7 +35,7 @@ const plans = [
   },
   {
     name: "Semestral",
-    price: "R$ 749",
+    price: "R$ 246,96",
     period: "/semestre",
     description: "Melhor custo-benefício com 16% de economia",
     features: [
