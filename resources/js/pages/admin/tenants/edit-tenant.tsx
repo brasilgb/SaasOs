@@ -37,20 +37,19 @@ export default function EditTenant({ plans, tenant }: any) {
     }));
 
     const { data, setData, patch, processing, reset, errors } = useForm({
-        name: tenant.name,
         company: tenant.company,
         cnpj: tenant.cnpj,
         email: tenant.email,
         phone: tenant.phone,
         whatsapp: tenant.whatsapp,
-        cep: tenant.cep,
+        zip_code: tenant.zip_code,
         state: tenant.state,
         city: tenant.city,
         district: tenant.district,
         street: tenant.street,
         complement: tenant.complement,
         number: tenant.number,
-        plan_id: tenant.plan_id,
+        plan: tenant.plan,
         status: tenant.status,
         observations: tenant.observations,
     });
@@ -62,8 +61,8 @@ export default function EditTenant({ plans, tenant }: any) {
         });
     }
 
-    const getCep = (cep: string) => {
-        const cleanCep = unMask(cep);
+    const getCep = (zip_code: string) => {
+        const cleanCep = unMask(zip_code);
         fetch(`https://viacep.com.br/ws/${cleanCep}/json/`)
             .then((response) => response.json())
             .then((result) => {
@@ -77,22 +76,20 @@ export default function EditTenant({ plans, tenant }: any) {
     };
 
     const changePlan = (selected: any) => {
-        setData('plan_id', selected?.value);
+        setData('plan', selected?.value);
     };
 
     const changeStatus = (selected: any) => {
         setData('status', selected?.value);
     };
 
-    const defaultPlan = allPlans?.filter((o: any) => o.value == tenant?.plan_id).map((opt: any) => ({ value: opt.value, label: opt.label }));
+    const defaultPlan = allPlans?.filter((o: any) => o.value == tenant?.plan).map((opt: any) => ({ value: opt.value, label: opt.label }));
     const defaultStatusSaas = statusSaas?.filter((o: any) => o.value == tenant?.status).map((opt: any) => ({ value: opt.value, label: opt.label }));
-
-
 
     return (
         <AdminLayout>
-            <div className='flex items-center justify-between h-16 px-4'>
                 {flash.message && <AlertSuccess message={flash.message} />}
+            <div className='flex items-center justify-between h-16 px-4'>
                 <Head title="Empresas" />
                 <div className='flex items-center gap-2'>
                     <Icon iconNode={Building} className='w-8 h-8' />
@@ -122,9 +119,9 @@ export default function EditTenant({ plans, tenant }: any) {
                 <div className='border rounded-lg p-2'>
 
                     <form onSubmit={handleSubmit} className="space-y-8">
-                        <div className="grid md:grid-cols-3 gap-4 mt-4">
+                        <div className="grid md:grid-cols-7 gap-4 mt-4">
 
-                            <div className="grid gap-2">
+                            <div className="md:col-span-2 grid gap-2">
                                 <Label htmlFor="company">Razão social</Label>
                                 <Input
                                     type="text"
@@ -145,19 +142,6 @@ export default function EditTenant({ plans, tenant }: any) {
                                     maxLength={18}
                                 />
                                 {errors.cnpj && <div className="text-red-500 text-sm">{errors.cnpj}</div>}
-                            </div>
-                        </div>
-
-                        <div className="grid md:grid-cols-6 gap-4 mt-4">
-                            <div className="md:col-span-2 grid gap-2">
-                                <Label htmlFor="name">Nome do contato</Label>
-                                <Input
-                                    type="text"
-                                    id="name"
-                                    value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
-                                />
-                                {errors.name && <div className="text-red-500 text-sm">{errors.name}</div>}
                             </div>
 
                             <div className="md:col-span-2 grid gap-2">
@@ -198,12 +182,12 @@ export default function EditTenant({ plans, tenant }: any) {
                         <div className="grid md:grid-cols-6 gap-4 mt-4">
 
                             <div className="grid gap-2">
-                                <Label htmlFor="cep">CEP</Label>
+                                <Label htmlFor="zip_code">CEP</Label>
                                 <Input
                                     type="text"
-                                    id="cep"
-                                    value={maskCep(data.cep)}
-                                    onChange={(e) => setData('cep', e.target.value)}
+                                    id="zip_code"
+                                    value={maskCep(data.zip_code)}
+                                    onChange={(e) => setData('zip_code', e.target.value)}
                                     onBlur={(e) => getCep(e.target.value)}
                                     maxLength={9}
                                 />
@@ -277,7 +261,7 @@ export default function EditTenant({ plans, tenant }: any) {
                         <div className="grid md:grid-cols-4 gap-4 mt-4">
 
                             <div className="md:col-span-2 grid gap-2">
-                                <Label htmlFor="plan_id">Plano</Label>
+                                <Label htmlFor="plan">Plano</Label>
                                 <Select
                                     defaultValue={defaultPlan}
                                     options={allPlans}
@@ -303,7 +287,7 @@ export default function EditTenant({ plans, tenant }: any) {
                                         }),
                                     }}
                                 />
-                                <InputError className="mt-2" message={errors.plan_id} />
+                                <InputError className="mt-2" message={errors.plan} />
                             </div>
 
                             <div className="md:col-span-2 grid gap-2">

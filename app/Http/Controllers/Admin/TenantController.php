@@ -17,7 +17,7 @@ class TenantController extends Controller
      */
     public function index()
     {
-        $tenants = Tenant::paginate(11);
+        $tenants = Tenant::with('user')->with('plan')->paginate(11);
         return Inertia::render('admin/tenants/index', ['tenants' => $tenants]);
     }
 
@@ -36,14 +36,14 @@ class TenantController extends Controller
     public function store(TenantRequest $request): RedirectResponse
     {
         $data = $request->all();
+
         $request->validated();
         // Adiciona a data de expiração com base no plano
         if (isset($data['plan'])) {
             $days = match ((int) $data['plan']) {
                 1 => 30,  // Exemplo: plano com id 1 tem 30 dias
-                2 => 30,  // Exemplo: plano com id 1 tem 30 dias
-                3 => 90,  // Exemplo: plano com id 2 tem 90 dias
-                4 => 180, // Exemplo: plano com id 3 tem 180 dias
+                3 => 90,  // Exemplo: plano com id 2 tem 90 dias ou 3 meses
+                4 => 180, // Exemplo: plano com id 3 tem 180 dias ou 6 meses
                 default => null,
             };
 
@@ -82,9 +82,8 @@ class TenantController extends Controller
         if (isset($data['plan'])) {
             $days = match ((int) $data['plan']) {
                 1 => 30,  // Exemplo: plano com id 1 tem 30 dias
-                2 => 30,  // Exemplo: plano com id 1 tem 30 dias
-                3 => 90,  // Exemplo: plano com id 2 tem 90 dias
-                4 => 180, // Exemplo: plano com id 3 tem 180 dias
+                3 => 90,  // Exemplo: plano com id 2 tem 90 dias ou 3 meses
+                4 => 180, // Exemplo: plano com id 3 tem 180 dias ou 6 meses
                 default => null,
             };
 

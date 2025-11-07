@@ -127,7 +127,7 @@ export default function EditCustomer({ customer }: any) {
               </div>
 
               <div className="md:col-span-2 grid gap-2">
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="name">Nome</Label>
                 <Input
                   type="text"
                   id="name"

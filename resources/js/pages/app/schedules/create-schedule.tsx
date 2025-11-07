@@ -170,7 +170,7 @@ export default function CreateSchedule({ customers, technicals }: any) {
             <div className="grid md:grid-cols-2 gap-4 mt-4">
 
               <div className="grid gap-2">
-                <Label htmlFor="service_status">Técnico responsável</Label>
+                <Label htmlFor="user_id">Técnico responsável</Label>
                 <Select
                   menuPosition='fixed'
                   // defaultValue={defaultTechnical}
@@ -197,10 +197,11 @@ export default function CreateSchedule({ customers, technicals }: any) {
                     }),
                   }}
                 />
+                {errors.user_id && <div className="text-red-500 text-sm">{errors.user_id}</div>}
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="service_status">Status do agendamento</Label>
+                <Label htmlFor="status">Status do agendamento</Label>
                 <Select
                   menuPosition='fixed'
                   options={statusAgenda}
@@ -226,6 +227,7 @@ export default function CreateSchedule({ customers, technicals }: any) {
                     }),
                   }}
                 />
+                {errors.status && <div className="text-red-500 text-sm">{errors.status}</div>}
               </div>
 
             </div>

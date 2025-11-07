@@ -29,7 +29,7 @@ export default function Company({ company }: any) {
         companyname: company?.companyname,
         cnpj: company?.cnpj,
         logo: null,
-        cep: company?.cep,
+        zip_code: company?.zip_code,
         state: company?.state,
         city: company?.city,
         district: company?.district,
@@ -51,7 +51,7 @@ export default function Company({ company }: any) {
             companyname: data?.companyname,
             cnpj: data?.cnpj,
             logo: data?.logo,
-            cep: data?.cep,
+            zip_code: data?.zip_code,
             state: data?.state,
             city: data?.city,
             district: data?.district,
@@ -66,8 +66,8 @@ export default function Company({ company }: any) {
         })
     }
 
-    const getCep = (cep: string) => {
-        const cleanCep = unMask(cep);
+    const getCep = (zip_code: string) => {
+        const cleanCep = unMask(zip_code);
         fetch(`https://viacep.com.br/ws/${cleanCep}/json/`)
             .then((response) => response.json())
             .then((result) => {
@@ -159,12 +159,12 @@ export default function Company({ company }: any) {
                         <div className="grid md:grid-cols-6 gap-4 mt-4">
 
                             <div className="grid gap-2">
-                                <Label htmlFor="cep">CEP</Label>
+                                <Label htmlFor="zip_code">CEP</Label>
                                 <Input
                                     type="text"
-                                    id="cep"
-                                    value={maskCep(data.cep)}
-                                    onChange={(e) => setData('cep', e.target.value)}
+                                    id="zip_code"
+                                    value={maskCep(data.zip_code)}
+                                    onChange={(e) => setData('zip_code', e.target.value)}
                                     onBlur={(e) => getCep(e.target.value)}
                                     maxLength={9}
                                 />

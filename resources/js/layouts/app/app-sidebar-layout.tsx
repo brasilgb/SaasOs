@@ -11,14 +11,14 @@ export default function AppSidebarLayout({ children }: PropsWithChildren) {
     const { othersetting } = usePage().props as any;
 
     return (
-        <AppShell variant={`${othersetting?.navigation ? "sidebar" : "header"}`}>
-            {othersetting?.navigation ? <AppSidebar /> : <AppHeader /> }
+        <AppShell variant={`${othersetting?.navigation ? "header" : "sidebar"}`}>
+            {othersetting?.navigation ? <AppHeader /> : <AppSidebar />}
 
-            <AppContent variant={`${othersetting?.navigation ? "sidebar" : "header"}`}>
-                {othersetting?.navigation ? <AppSidebarHeader /> : ''}
+            <AppContent variant={`${othersetting?.navigation ? "header" : "sidebar"}`}>
+                {othersetting?.navigation ? '' : <AppSidebarHeader />}
                 {children}
             </AppContent>
-               {othersetting?.navigation ? '' : <AppFooter />}
+            {othersetting?.navigation ? <AppFooter /> : ''}
         </AppShell>
     );
 }

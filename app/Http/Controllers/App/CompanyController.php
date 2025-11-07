@@ -53,8 +53,11 @@ class CompanyController extends Controller
         $data['logo'] = $request->hasfile('logo') ? $fileName : $company->logo;
         Model::reguard();
         $company->update($data);
-        
+
+        $tenant = Tenant::where('id', $company->tenant_id)->first();
+        $tenant->update($data);
         Model::unguard();
+
         return redirect()->route('app.company.index')->with('success', 'Dados da filial alterados com sucesso!');
     }
 }

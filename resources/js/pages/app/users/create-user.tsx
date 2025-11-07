@@ -72,7 +72,7 @@ export default function CreateUser() {
         <div>
           <Button variant={'default'} asChild>
             <Link
-              href={route('app. users.index')}
+              href={route('app.users.index')}
             >
               <ArrowLeft h-4 w-4 />
               <span>Voltar</span>

@@ -36,6 +36,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function Users({ users }: any) {
   const { flash, auth } = usePage().props as any;
+console.log(auth?.user?.tenant_id);
 
   return (
     <AdminLayout>
@@ -88,11 +89,11 @@ export default function Users({ users }: any) {
                 users?.data?.map((user: any) => (
                   <TableRow key={user.id}>
                     <TableCell>{user.id}</TableCell>
-                    <TableCell className="font-medium">{user?.tenant?.name}</TableCell>
+                    <TableCell className="font-medium">{user?.tenant?.company}</TableCell>
                     <TableCell className="font-medium">{user.name}</TableCell>
                     <TableCell className="font-medium">{user.telephone}</TableCell>
                     <TableCell className="font-medium">{user.email}</TableCell>
-                    <TableCell>{roleUserByValue(user.roles)}</TableCell>
+                    <TableCell>{user?.tenant_id === null ? <Badge variant={'destructive'}>Root System</Badge>: <Badge variant={'default'}>{roleUserByValue(user.roles)}</Badge>}</TableCell>
                     <TableCell>{user.status ? <Badge variant={'default'}>Ativo</Badge> : <Badge variant={'destructive'}>Inativo</Badge>}</TableCell>
                     <TableCell>{moment(user.created_at).format("DD/MM/YYYY")}</TableCell>
                     <TableCell className='flex justify-end gap-2'>

@@ -19,9 +19,6 @@ class DashboardController extends Controller
     {
         $endDate = Carbon::now()->subDays(30)->endOfDay();
         $startDate = Carbon::now()->subDays(32)->startOfDay();
-        // $ordensDeServico = Order::where('service_status', 8)
-        //     ->whereBetween('delivery_date', [$startDate, $endDate])
-        //     ->get();
 
         $acount = [
             'numuser' => count(User::get()),

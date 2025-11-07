@@ -55,9 +55,9 @@ export default function Others({ othersettings, company }: any) {
 
             <div className='p-4'>
                 <div className="space-y-6 mb-6">
-                    <HeadingSmall 
-                    title="Licença de uso" 
-                    description={`Este software é licenciado para a empresa ${company?.companyname}, CNPJ: ${maskCpfCnpj(company?.cnpj)}. Localizada na ${company?.street}, ${company?.number}, ${company?.district}, ${company?.city} - ${company?.state}.`} 
+                    <HeadingSmall
+                        title="Licença de uso"
+                        description={`Este software é licenciado para a empresa ${company?.companyname}, CNPJ: ${maskCpfCnpj(company?.cnpj)}. Localizada na ${company?.street}, ${company?.number}, ${company?.district}, ${company?.city} - ${company?.state}.`}
                     />
 
                 </div>
@@ -73,7 +73,7 @@ export default function Others({ othersettings, company }: any) {
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-8">
                     <div className="space-y-6 mt-6">
-                        <HeadingSmall title="Configuração de navegação" description="Altere entre o menu de navegação no topo e a barra de navegação lateral Sidebar." />
+                        <HeadingSmall title="Configuração de navegação" description="Altere entre o menu de navegação lateral Sidebar e a barra de navegação no topo." />
                         <div className="grid gap-2">
                             <Switch
                                 id="navigation"
@@ -83,7 +83,7 @@ export default function Others({ othersettings, company }: any) {
                         </div>
                     </div>
                     <div className="space-y-6 mt-6">
-                        <HeadingSmall title="Habilitar pré-orçamento Tablet" description="Habilita as opções no cadastro para o uso dos orçamentos pré-gerados no auto atendimento no tablet." />
+                        <HeadingSmall title="Habilitar pré-orçamento Tablet" description="Habilita as opções no cadastro para o uso dos orçamentos pré-gerados no auto atendimento no app do tablet." />
                         <div className="grid gap-2">
                             <Switch
                                 id="budget"

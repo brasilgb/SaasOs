@@ -38,7 +38,7 @@ export default function CreateUser({ user, tenants }: any) {
 
   const newTenant = tenants?.map((tenant: any) => ({
     value: tenant.id,
-    label: tenant.name,
+    label: tenant.company,
   }));
 
   const { data, setData, patch, progress, processing, reset, errors } = useForm({
@@ -65,9 +65,11 @@ export default function CreateUser({ user, tenants }: any) {
   const changeRoles = (selected: any) => {
     setData('roles', selected?.value);
   };
+
   const changeTenant = (selected: any) => {
     setData('tenant_id', selected?.value);
   };
+
   return (
     <AdminLayout>
       <Head title="Usuários" />
@@ -226,7 +228,7 @@ export default function CreateUser({ user, tenants }: any) {
                     }),
                   }}
                 />
-                <InputError className="mt-2" message={errors.roles} />
+                <InputError className="mt-2" message={errors.tenant_id} />
               </div>
 
               <div className=" grid gap-2">

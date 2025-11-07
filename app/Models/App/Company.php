@@ -8,5 +8,6 @@ use App\Tenantable;
 class Company extends Model
 {
     use Tenantable;
-    protected $guarded = [ 'id' ];
+
+    protected $guarded = [ '_method', 'id' ];
 }

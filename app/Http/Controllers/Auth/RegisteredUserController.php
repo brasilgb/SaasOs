@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
+use Carbon\Carbon;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -47,7 +48,6 @@ class RegisteredUserController extends Controller
             'whatsapp' => 'required|string|max:255',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ];
-
 
         if ($isSuperUserRegistration) {
             if ($superuserExists) {
@@ -91,7 +91,8 @@ class RegisteredUserController extends Controller
             'phone' => $request->phone,
             'whatsapp' => $request->whatsapp,
             'status' => 1,
-            'plan' => 1
+            'plan' => 1,
+            'expiration_date' => Carbon::now()->addDays(30)
         ]);
 
         if (!$tenant || !$tenant->id) {
@@ -103,6 +104,8 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'tenant_id' => $tenant->id,
+            'telephone' => $request->phone,
+            'whatsapp' => $request->whatsapp,
             'status' => 1
         ]);
 
