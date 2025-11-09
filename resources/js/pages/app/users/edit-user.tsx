@@ -36,6 +36,7 @@ export default function CreateUser({ user }: any) {
   const { flash, auth } = usePage().props as any;
 
   const { data, setData, patch, progress, processing, reset, errors } = useForm({
+    tenant_id: auth.user.tenant_id,
     name: user?.name,
     email: user?.email,
     telephone: user?.telephone,
@@ -189,8 +190,9 @@ export default function CreateUser({ user }: any) {
 
             <div className="grid md:grid-cols-2 gap-4 mt-4">
               <div className=" grid gap-2">
-                <Label htmlFor="recipient">Funções do usuário</Label>
+                <Label htmlFor="recipient">Funções do usuário {data.roles}</Label>
                 <Select
+                  isDisabled={data.roles === 9 ? true : false}
                   menuPosition='fixed'
                   defaultValue={defaultStatus}
                   options={rolesUser}
@@ -222,6 +224,7 @@ export default function CreateUser({ user }: any) {
               <div className="grid gap-2">
                 <Label htmlFor="status">Status do usuário</Label>
                 <Switch
+                  disabled={data.roles === 9 ? true : false}
                   id="status"
                   checked={data.status}
                   onCheckedChange={(checked: any) => setData('status', checked)}

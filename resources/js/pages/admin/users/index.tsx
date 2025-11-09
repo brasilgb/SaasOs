@@ -93,7 +93,7 @@ console.log(auth?.user?.tenant_id);
                     <TableCell className="font-medium">{user.name}</TableCell>
                     <TableCell className="font-medium">{user.telephone}</TableCell>
                     <TableCell className="font-medium">{user.email}</TableCell>
-                    <TableCell>{user?.tenant_id === null ? <Badge variant={'destructive'}>Root System</Badge>: <Badge variant={'default'}>{roleUserByValue(user.roles)}</Badge>}</TableCell>
+                    <TableCell>{user?.roles === null ? <Badge variant={'destructive'}>Root System</Badge> : <Badge variant={'default'}>{roleUserByValue(user.roles)}</Badge>}</TableCell>
                     <TableCell>{user.status ? <Badge variant={'default'}>Ativo</Badge> : <Badge variant={'destructive'}>Inativo</Badge>}</TableCell>
                     <TableCell>{moment(user.created_at).format("DD/MM/YYYY")}</TableCell>
                     <TableCell className='flex justify-end gap-2'>

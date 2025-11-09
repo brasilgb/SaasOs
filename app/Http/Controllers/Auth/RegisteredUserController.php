@@ -106,7 +106,8 @@ class RegisteredUserController extends Controller
             'tenant_id' => $tenant->id,
             'telephone' => $request->phone,
             'whatsapp' => $request->whatsapp,
-            'status' => 1
+            'status' => 1,
+            'roles' => 9
         ]);
 
         Company::create([

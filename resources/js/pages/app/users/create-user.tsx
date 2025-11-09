@@ -34,6 +34,7 @@ export default function CreateUser() {
   const { flash, auth } = usePage().props as any;
 
   const { data, setData, post, progress, processing, reset, errors } = useForm({
+    tenant_id: auth.user.tenant_id,
     name: '',
     email: '',
     telephone: '',
@@ -46,6 +47,8 @@ export default function CreateUser() {
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
+    console.log(data);
+    
     post(route('app.users.store'), {
       onSuccess: () => reset(),
     });

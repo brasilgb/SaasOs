@@ -65,8 +65,8 @@ class PartController extends Controller
                 'description' => $data['description'],
                 'manufacturer' => $data['manufacturer'],
                 'model_compatibility' => $data['model_compatibility'],
-                'cost_price' => str_replace(',', '.', $data['cost_price']),
-                'sale_price' => str_replace(',', '.', $data['sale_price']),
+                'cost_price' => $data['cost_price'],
+                'sale_price' => $data['sale_price'],
                 'quantity' => 0, // Começa com 0, será incrementado abaixo
                 'minimum_stock_level' => $data['minimum_stock_level'],
                 'location' => $data['location'],
@@ -76,7 +76,6 @@ class PartController extends Controller
         // O `update` com `increment` é seguro em concorrência
         $part->increment('quantity', $data['quantity']);
 
-        Part::create($data);
         return redirect()->route('app.parts.index')->with('success', 'Peça cadastrada com sucesso!');
     }
 

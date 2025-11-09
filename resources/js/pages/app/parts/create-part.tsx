@@ -48,6 +48,8 @@ export default function CreatePart() {
 
     const handleSubmit = async (e: any) => {
         e.preventDefault();
+        console.log(data);
+        
         post(route('app.parts.store'), {
             onSuccess: () => reset(),
         });
@@ -94,6 +96,11 @@ export default function CreatePart() {
 
         }
     }
+
+    useEffect(() => {
+        setData((data: any) => ({ ...data, cost_price: unMask(data.cost_price) }));
+        setData((data: any) => ({ ...data, sale_price: unMask(data.sale_price) }));
+    }, [data.cost_price, data.sale_price])
 
     return (
         <AppLayout>

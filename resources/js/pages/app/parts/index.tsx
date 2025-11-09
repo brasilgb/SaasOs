@@ -19,6 +19,7 @@ import AppPagination from '@/components/app-pagination';
 import ActionDelete from '@/components/action-delete';
 import AlertSuccess from '@/components/app-alert-success';
 import { Button } from '@/components/ui/button';
+import { maskMoney } from '@/Utils/mask';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -84,7 +85,7 @@ export default function Parts({ parts }: any) {
                     <TableCell>{part.part_number}</TableCell>
                     <TableCell className="font-medium">{part.name}</TableCell>
                     <TableCell>{part.manufacturer}</TableCell>
-                    <TableCell>{part.sale_price}</TableCell>
+                    <TableCell>{maskMoney(part.sale_price)}</TableCell>
                     <TableCell>{part.quantity}</TableCell>
                     <TableCell>{moment(part.created_at).format("DD/MM/YYYY")}</TableCell>
                     

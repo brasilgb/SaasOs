@@ -86,7 +86,7 @@ export default function Schedules({ schedules }: any) {
                   <TableRow key={schedule.id}>
                     <TableCell>{schedule.schedule_number}</TableCell>
                     <TableCell>{schedule.customer.name}</TableCell>
-                    <TableCell>{moment(schedule.schedules).format("DD/MM/YYYY")}</TableCell>
+                    <TableCell>{moment(schedule.schedules).format("DD/MM/YYYY HH:mm")}</TableCell>
                     <TableCell>{schedule.service}</TableCell>
                     <TableCell>{statusAgendaByValue(schedule.status)}</TableCell>
                     <TableCell>{schedule.user.name}</TableCell>
