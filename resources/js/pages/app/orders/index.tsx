@@ -23,6 +23,7 @@ import AppPagination from '@/components/app-pagination';
 import InputSearch from '@/components/inputSearch';
 import SelectFilter from '@/components/SelectFilter';
 import { Switch } from '@/components/ui/switch';
+import { maskPhone } from '@/Utils/mask';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -35,7 +36,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Orders({ orders, whats, trintadias }: any) {
+export default function Orders({ orders, whats, feedback }: any) {
     const { flash, ziggy } = usePage().props as any;
     const { cl, init } = (ziggy as any).query
 
@@ -62,7 +63,7 @@ export default function Orders({ orders, whats, trintadias }: any) {
 
     const handleFeedbackCheck = (value: number, id: number) => {
         const newValue = value === 1 ? 0 : 1;
-        router.get(route('orders.feedback', { "feedback": newValue, "orderid": id }))
+        router.get(route('app.orders.feedback', { "feedback": newValue, "orderid": id }))
     }
 
     return (
@@ -127,14 +128,14 @@ export default function Orders({ orders, whats, trintadias }: any) {
                                                 <span>{order.customer.name}</span>
                                             </Link>
                                         </TableCell>
-                                        <TableCell className="font-medium">{order.customer.phone}</TableCell>
+                                        <TableCell className="font-medium">{maskPhone(order.customer.phone)}</TableCell>
                                         <TableCell>{moment(order.created_at).format("DD/MM/YYYY")}</TableCell>
                                         <TableCell>{order.equipment.equipment}</TableCell>
                                         <TableCell>{order.model}</TableCell>
                                         <TableCell>{<span className={`px-3 py-1 rounded-full font-medium ${stylesOrderStatus(order.service_status)}`}>{statusOrdemByValue(order.service_status)}</span>}</TableCell>
                                         <TableCell>{order.delivery_date ? moment(order.delivery_date).format("DD/MM/YYYY") : ''}</TableCell>
                                         <TableCell>
-                                            {trintadias.filter((or: any) => or.id === order.id).length > 0 && (
+                                            {feedback.filter((or: any) => or.id === order.id).length > 0 && (
                                                 <Switch
                                                     checked={order.feedback}
                                                     onCheckedChange={() => handleFeedbackCheck(order.feedback, order.id)}

@@ -17,8 +17,8 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $endDate = Carbon::now()->subDays(30)->endOfDay();
-        $startDate = Carbon::now()->subDays(32)->startOfDay();
+        $startDate = Carbon::now()->subDays(7)->startOfDay();
+        $endDate = Carbon::now()->subDays(4)->endOfDay();
 
         $acount = [
             'numuser' => count(User::get()),
@@ -34,7 +34,8 @@ class DashboardController extends Controller
             'aprovados'  => Order::where('service_status', 4)->get('id'),
             'concluidosca' => Order::where('service_status', 6)->get('id'),
             'concluidoscn' => Order::where('service_status', 7)->get('id'),
-            'trintadias' => Order::where('service_status', 8)
+            
+            'feedback' => Order::where('service_status', 8)
                 ->whereBetween('delivery_date', [$startDate, $endDate])
                 ->get('id')
         ];

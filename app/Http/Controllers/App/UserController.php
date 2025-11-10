@@ -45,7 +45,7 @@ class UserController extends Controller
         $request->validated();
         $data['password'] = Hash::make($request->password);
         Model::reguard();
-        $data['user_number'] = User::exists() ? User::latest()->first()->user_number + 1 : 1;
+        $data['users_number'] = User::exists() ? User::latest()->first()->users_number + 1 : 1;
         User::create($data);
         Model::unguard();
         return redirect()->route('app.users.index')->with('success', 'Usuário cadastrado com sucesso');

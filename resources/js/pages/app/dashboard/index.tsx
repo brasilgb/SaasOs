@@ -33,7 +33,7 @@ export default function Dashboard({ orders, acount }: { orders: any, acount: any
                             <TabsTrigger className='px-2' value="oa">Orçam. aprovados <Badge className='text-xs'>{orders?.aprovados.length}</Badge></TabsTrigger>
                             <TabsTrigger className='px-2' value="ca">Serv. concluídos (CA) <Badge className='text-xs'>{orders?.concluidosca.length}</Badge></TabsTrigger>
                             <TabsTrigger className='px-2' value="cn">Serv. concluídos (CN) <Badge className='text-xs'>{orders?.concluidoscn.length}</Badge></TabsTrigger>
-                            <TabsTrigger className='px-2' value="fb">Equip. Entregue há 30 dias <Badge className='text-xs'>{orders?.trintadias.length}</Badge></TabsTrigger>
+                            <TabsTrigger className='px-2' value="fb">Equip. Entregue há 7 dias<Badge className='text-xs'>{orders?.feedback.length}</Badge></TabsTrigger>
                         </TabsList>
                         <TabsContent value="va" className='max-h-[315px] overflow-y-auto'>
                             <div className='text-xs font-semibold py-1'>Visitas agendadas pelo número do agendamento</div>
@@ -96,9 +96,9 @@ export default function Dashboard({ orders, acount }: { orders: any, acount: any
                             </div>
                         </TabsContent>
                         <TabsContent value="fb" className='max-h-[315px] overflow-y-auto'>
-                            <div className='text-xs font-semibold py-1'>Serviços a trinta dias para provável feedback</div>
+                            <div className='text-xs font-semibold py-1'>Serviços a sete dias para provável feedback</div>
                             <div className='py-2 border-t flex flex-wrap gap-2'>
-                                {orders?.trintadias.map((ger: any) => (
+                                {orders?.feedback.map((ger: any) => (
                                     <Button
                                         key={ger.id}
                                         variant={'secondary'}

@@ -2,14 +2,14 @@
 
 namespace App\Models\App;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class OrderPart extends Model
+class OrderPart extends Pivot
 {
-    
-    public function orders(): HasMany
-    {
-        return $this->hasMany(Order::class);
-    }
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'order_parts';
 }

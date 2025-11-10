@@ -64,44 +64,39 @@ class OrderController extends Controller
     {
         $status = $request->get('status');
         $search = $request->get('q');
-        $customer = $request->get('oc');
-
-        $endDate = Carbon::now()->subDays(25)->endOfDay();
-        $startDate = Carbon::now()->subDays(30)->startOfDay();
-        $allfeedback = Order::where('service_status', 8)
-            ->whereBetween('delivery_date', [$startDate, $endDate])
-            ->get('id');
+        $customer = $request->get('cl');
 
         $query = Order::orderBy('id', 'DESC');
+
         if ($status) {
-            if ($status > 10) {
-                $query->where('service_status', 8)
-                    ->whereBetween('delivery_date', [$startDate, $endDate])
-                    ->get('id');
-            } else {
-                $query->where('service_status', $status);
-            }
+            $query->where('service_status', $status);
         }
+
         if ($customer) {
             $query->where('customer_id', $customer);
         }
+
         if ($search) {
-            $query = Order::where(function ($query) use ($search) {
-                $query->where('id', 'like', '%' . $search . '%');
-            })
-                ->orWhereHas('customer', function ($query) use ($search) {
-                    $query->where('name', 'like', "%$search%")
-                        ->orWhere('cpf', 'like', '%' . $search . '%');
-                });
+            $query->where(function ($q) use ($search) {
+                $q->where('id', 'like', '%' . $search . '%')
+                    ->orWhereHas('customer', function ($subQuery) use ($search) {
+                        $subQuery->where('name', 'like', "%$search%")
+                            ->orWhere('cpf', 'like', '%' . $search . '%');
+                    });
+            });
         }
-        $orders = $query->with('equipment')->with('customer')->paginate(11);
+
+        $orders = $query->with('equipment', 'customer')->paginate(11);
         $whats = WhatsappMessage::first();
-        $trintadias = $allfeedback;
+
+        $feedbackOrders = Order::where('service_status', 8)
+            ->whereBetween('delivery_date', [Carbon::now()->subDays(30), Carbon::now()])
+            ->get('id');
 
         return Inertia::render('app/orders/index', [
             'orders' => $orders,
             'whats' => $whats,
-            'trintadias' => $trintadias
+            'feedback' => $feedbackOrders
         ]);
     }
 
@@ -136,7 +131,7 @@ class OrderController extends Controller
         $customers = Customer::get();
         $parts = Part::get();
         $technicals = User::where('roles', 3)->orWhere('roles', 1)->where('status', 1)->get();
-        $orderparts = $parts->isEmpty() ? [] : $order->parts()->pivot()->get();
+        $orderparts = $order->orderParts;
 
         return Inertia::render('app/orders/edit-order', ['order' => $order, 'orderparts' => $orderparts, 'customers' => $customers, 'technicals' => $technicals, 'equipments' => $equipments, 'parts' => $parts]);
     }
@@ -179,12 +174,12 @@ class OrderController extends Controller
         ]);
 
         if (isset($data['allparts'])) {
-            $partsToAttach = [];
+            $partsToSync = [];
             foreach ($data['allparts'] as $part) {
-                $partsToAttach[$part['id']] = ['quantity' => $part['quantity']];
+                $partsToSync[$part['id']] = ['quantity' => $part['quantity']];
             }
-            // 2. Vincula as peças à Ordem de Serviço usando a tabela pivô
-            $order->parts()->attach($partsToAttach);
+            // 2. Sincroniza as peças à Ordem de Serviço usando a tabela pivô
+            $order->orderParts()->sync($partsToSync);
         }
 
         return redirect()->route('app.orders.show', ['order' => $order->id])->with('success', 'Ordem atualizada com sucesso');
@@ -196,7 +191,7 @@ class OrderController extends Controller
     public function destroy(Order $order)
     {
         $order->delete();
-        $order->parts()->detach();
+        $order->orderParts()->detach();
         return redirect()->route('app.orders.index')->with('success', 'Ordem excluída com sucesso');
     }
 
@@ -209,18 +204,20 @@ class OrderController extends Controller
 
         $order = Order::find($validatedData['order_id']);
 
-        // Encontra o registro na tabela pivô para obter a quantidade
-        $pivotRecord = $order->parts()->where('part_id', $validatedData['part_id'])->first();
-
-        if (!$pivotRecord) {
-            return back()->with('error', 'Esta peça não está vinculada a esta ordem de serviço.');
-        }
-
-        $partId = $pivotRecord->id; // ID da peça
-
         // 1. Desvincula a peça da Ordem de Serviço na tabela pivô
-        $order->parts()->detach($partId);
+        $order->orderParts()->detach($validatedData['part_id']);
 
         return redirect()->route('app.orders.show', $order)->with('success', 'Peça removida e estoque devolvido com sucesso.');
+    }
+
+    
+    public function getFeedback(Request $request)
+    {
+        $feedback = $request->get('feedback');
+        $orderid = $request->get('orderid');
+        Order::where('id', $orderid)->update(['feedback' => $feedback]);
+        response()->json([
+            "success" => true
+        ]);
     }
 }

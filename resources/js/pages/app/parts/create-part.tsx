@@ -48,8 +48,6 @@ export default function CreatePart() {
 
     const handleSubmit = async (e: any) => {
         e.preventDefault();
-        console.log(data);
-        
         post(route('app.parts.store'), {
             onSuccess: () => reset(),
         });

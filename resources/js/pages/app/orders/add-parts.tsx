@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { MemoryStickIcon, Plus, Save, Trash2, WrenchIcon } from "lucide-react"
+import { MemoryStickIcon, Trash2, WrenchIcon } from "lucide-react"
 import { useForm } from "@inertiajs/react"
 import Select from 'react-select';
 import { maskMoney } from "@/Utils/mask"
@@ -134,8 +134,8 @@ export default function AddPartsModal({ onSubmit, parts }: any) {
                                         onChange={(e) => handleQuantityChange(part.id, e.target.value)}
                                         className="w-20 mx-2 text-sm"
                                     />
-                                    <div className="text-sm w-4">{part.sale_price}</div>
-                                    <div className="text-sm w-4">{maskMoney((part.sale_price * part.quantity).toFixed(2))}</div>
+                                    <div className="text-sm w-4">{maskMoney(part.sale_price)}</div>
+                                    <div className="text-sm w-4">{maskMoney(String(Number(part.sale_price) * Number(part.quantity)))}</div>
                                     <Button variant={'destructive'} onClick={() => handleRemovePart(part.id)} className="btn btn-danger btn-sm">
                                         <Trash2 className="h-4 w-4" />
                                     </Button>

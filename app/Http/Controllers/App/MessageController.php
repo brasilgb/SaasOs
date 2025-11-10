@@ -43,7 +43,8 @@ class MessageController extends Controller
      */
     public function create()
     {
-        $users = User::get();
+        $logged = auth()->user();
+        $users = User::where('id', '!=', $logged->id)->get();
         return Inertia::render('app/messages/create-message', ['users' => $users]);
     }
 

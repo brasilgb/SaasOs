@@ -28,9 +28,10 @@ class Order extends Model
         return $this->hasMany(Image::class);
     }
 
-    public function parts(): BelongsToMany
+    public function orderParts(): BelongsToMany
     {
         return $this->belongsToMany(Part::class, 'order_parts')
+            ->using(OrderPart::class)
             ->withPivot('quantity');
     }
 }

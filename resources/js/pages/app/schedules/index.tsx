@@ -84,7 +84,7 @@ export default function Schedules({ schedules }: any) {
               {schedules?.data.length > 0 ?
                 schedules?.data?.map((schedule: any) => (
                   <TableRow key={schedule.id}>
-                    <TableCell>{schedule.schedule_number}</TableCell>
+                    <TableCell>{schedule.schedules_number}</TableCell>
                     <TableCell>{schedule.customer.name}</TableCell>
                     <TableCell>{moment(schedule.schedules).format("DD/MM/YYYY HH:mm")}</TableCell>
                     <TableCell>{schedule.service}</TableCell>

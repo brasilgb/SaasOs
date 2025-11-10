@@ -35,10 +35,14 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function EditOrder({ customers, order, technicals, equipments, parts, orderparts }: any) {
+  console.log(orderparts);
+
   const { flash, ziggy, othersetting } = usePage().props as any;
     const disableParts = !othersetting?.enableparts ? 'parts' : '';
   const { page, oc } = (ziggy as any).query
   const [partsData, setPartsData] = useState<any>([]);
+
+
 
   const optionsCustomer = customers.map((customer: any) => ({
     value: customer.id,
@@ -80,10 +84,8 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
 
   const handleModalSubmit = (data: any) => {
     setPartsData(data);
-    // const parts = data.map((part: any) => (` ${part.name}(x${part.quantity})`));
-    // setData('parts', (parts).toString().trim());
     const partsTotal = data.reduce((acc: any, item: any) => acc + Number(item.sale_price * item.quantity), 0);
-    setData('parts_value', partsTotal.toFixed(2));
+    setData('parts_value', String(partsTotal));
     setData('allparts', data);
   };
   
@@ -340,7 +342,7 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
                   {orderparts.map((part: any) => (
                     <div key={part.id} className="flex items-center gap-2">
                       <Badge variant={'secondary'} className="text-sm gap-2">
-                        <span>{part.name}(x{part.quantity}) - {part.sale_price} = {maskMoney((parseFloat(part.sale_price) * parseInt(part.quantity)).toFixed(2))}</span>
+                        <span>{part.name}(x{part.pivot.quantity}) - {maskMoney(String(Number(part.sale_price)))} = {maskMoney(String(Number(part.sale_price) * Number(part.pivot.quantity)))}</span>
                         <Button type="button" variant={'destructive'} onClick={(e) => handleRemovePartsOrder(e, part.id)} >
                           <X />
                         </Button>
@@ -351,14 +353,14 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
               </Card>
             }
 
-            {partsData?.length > 0 && !orderparts?.length &&
+            {partsData?.length > 0 &&
               <Card className="p-4 mb-4">
                 <CardTitle className="border-b pb-2">Peças adicionadas</CardTitle>
                 <CardContent className="flex items-center justify-start gap-4">
                   {partsData.map((part: any) => (
                     <div key={part.id} className="flex items-center gap-2">
                       <Badge variant={'secondary'} className="text-sm gap-2">
-                        <span>{part.name}(x{part.quantity}) - {part.sale_price} = {maskMoney((parseFloat(part.sale_price) * parseInt(part.quantity)).toFixed(2))}</span>
+                        <span>{part.name}(x{part.quantity}) - {maskMoney(String(Number(part.sale_price)))} = {maskMoney(String(Number(part.sale_price) * Number(part.quantity)))}</span>
                         <Button type="button" variant={'destructive'} onClick={() => handleRemovePart(part.id)} >
                           <X />
                         </Button>

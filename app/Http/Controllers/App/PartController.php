@@ -56,25 +56,38 @@ class PartController extends Controller
     {
         $data = $request->all();
         $request->validated();
-        $part = Part::firstOrCreate(
-            [
-                'part_number' => $data['part_number'],
-            ],
-            [
-                'name' => $data['name'],
-                'description' => $data['description'],
-                'manufacturer' => $data['manufacturer'],
-                'model_compatibility' => $data['model_compatibility'],
-                'cost_price' => $data['cost_price'],
-                'sale_price' => $data['sale_price'],
-                'quantity' => 0, // Começa com 0, será incrementado abaixo
-                'minimum_stock_level' => $data['minimum_stock_level'],
-                'location' => $data['location'],
-                'status' => $data['status'],
-            ]
-        );
-        // O `update` com `increment` é seguro em concorrência
-        $part->increment('quantity', $data['quantity']);
+
+        DB::transaction(function () use ($data) {
+            $part = Part::firstOrCreate(
+                [
+                    'part_number' => $data['part_number'],
+                ],
+                [
+                    'name' => $data['name'],
+                    'description' => $data['description'],
+                    'manufacturer' => $data['manufacturer'],
+                    'model_compatibility' => $data['model_compatibility'],
+                    'cost_price' => $data['cost_price'],
+                    'sale_price' => $data['sale_price'],
+                    'quantity' => 0, // Começa com 0, será incrementado abaixo
+                    'minimum_stock_level' => $data['minimum_stock_level'],
+                    'location' => $data['location'],
+                    'status' => $data['status'],
+                ]
+            );
+
+            // O `update` com `increment` é seguro em concorrência
+            $part->increment('quantity', $data['quantity']);
+
+            // Registrar o movimento de entrada
+            PartMovement::create([
+                'part_id' => $part->id,
+                'user_id' => Auth::id(),
+                'movement_type' => 'entrada',
+                'quantity' => $data['quantity'],
+                'reason' => 'Cadastro inicial',
+            ]);
+        });
 
         return redirect()->route('app.parts.index')->with('success', 'Peça cadastrada com sucesso!');
     }
@@ -102,7 +115,25 @@ class PartController extends Controller
     {
         $data = $request->all();
         $request->validated();
-        $part->update($data);
+
+        DB::transaction(function () use ($part, $data) {
+            $oldQuantity = $part->quantity;
+            $part->update($data);
+            $newQuantity = $part->quantity;
+
+            $quantityDiff = $newQuantity - $oldQuantity;
+
+            if ($quantityDiff != 0) {
+                PartMovement::create([
+                    'part_id' => $part->id,
+                    'user_id' => Auth::id(),
+                    'movement_type' => $quantityDiff > 0 ? 'entrada' : 'saida',
+                    'quantity' => abs($quantityDiff),
+                    'reason' => 'Ajuste de estoque',
+                ]);
+            }
+        });
+
         return redirect()->route('app.parts.show', ['part' => $part->id])->with('success', 'Peça alterada com sucesso!');
     }
 
@@ -111,7 +142,18 @@ class PartController extends Controller
      */
     public function destroy(Part $part)
     {
-        $part->delete();
+        DB::transaction(function () use ($part) {
+            PartMovement::create([
+                'part_id' => $part->id,
+                'user_id' => Auth::id(),
+                'movement_type' => 'saida',
+                'quantity' => $part->quantity,
+                'reason' => 'Exclusão de peça',
+            ]);
+
+            $part->delete();
+        });
+
         return redirect()->route('app.parts.index')->with('success', 'Peça excluida com sucesso!');
     }
 }

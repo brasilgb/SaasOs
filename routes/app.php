@@ -25,6 +25,7 @@ Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 Route::resource('customers', CustomerController::class);
 Route::resource('messages', MessageController::class);
 Route::patch('messages/{message}/read', [MessageController::class, 'read'])->name('messages.read');
+Route::get('orders/feedback', [OrderController::class, 'getFeedback'])->name('orders.feedback');
 Route::resource('orders', OrderController::class);
 Route::resource('schedules', ScheduleController::class);
 Route::resource('services', ServiceController::class);

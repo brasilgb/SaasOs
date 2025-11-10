@@ -21,6 +21,7 @@ import ActionDelete from '@/components/action-delete';
 import AlertSuccess from '@/components/app-alert-success';
 import { Badge } from '@/components/ui/badge';
 import { roleUserByValue } from '@/Utils/functions';
+import { maskPhone } from '@/Utils/mask';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -84,9 +85,9 @@ export default function Users({ users }: any) {
               {users?.data.length > 0 ?
                 users?.data?.map((user: any) => (
                   <TableRow key={user.id}>
-                    <TableCell>{user.user_number}</TableCell>
+                    <TableCell>{user.users_number}</TableCell>
                     <TableCell className="font-medium">{user.name}</TableCell>
-                    <TableCell className="font-medium">{user.telephone}</TableCell>
+                    <TableCell className="font-medium">{maskPhone(user.telephone)}</TableCell>
                     <TableCell>{roleUserByValue(user.roles)}</TableCell>
                     <TableCell>{user.status ? <Badge variant={'default'}>Ativo</Badge> : <Badge variant={'destructive'}>Inativo</Badge>}</TableCell>
                     <TableCell>{moment(user.created_at).format("DD/MM/YYYY")}</TableCell>

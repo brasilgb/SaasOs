@@ -36,7 +36,6 @@ class TenantController extends Controller
     public function store(TenantRequest $request): RedirectResponse
     {
         $data = $request->all();
-
         $request->validated();
         // Adiciona a data de expiração com base no plano
         if (isset($data['plan'])) {
@@ -78,7 +77,9 @@ class TenantController extends Controller
      */
     public function update(TenantRequest $request, Tenant $tenant): RedirectResponse
     {
-        $data = $request->validated();
+        $data = $request->all();
+        $request->validated();
+        
         if (isset($data['plan'])) {
             $days = match ((int) $data['plan']) {
                 1 => 30,  // Exemplo: plano com id 1 tem 30 dias

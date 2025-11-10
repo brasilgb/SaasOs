@@ -37,6 +37,7 @@ export default function CreateTenant({ plans }: any) {
 
     const { data, setData, post, progress, processing, reset, errors } = useForm({
         cnpj: '',
+        name: '',
         company: '',
         email: '',
         phone: '',
@@ -114,7 +115,7 @@ export default function CreateTenant({ plans }: any) {
                 <div className='border rounded-lg p-2'>
 
                     <form onSubmit={handleSubmit} className="space-y-8">
-                        <div className="grid md:grid-cols-7 gap-4 mt-4">
+                        <div className="grid md:grid-cols-9 gap-4 mt-4">
 
                             <div className="md:col-span-2 grid gap-2">
                                 <Label htmlFor="company">Razão social</Label>
@@ -148,6 +149,17 @@ export default function CreateTenant({ plans }: any) {
                                     onChange={(e) => setData('email', e.target.value)}
                                 />
                                 {errors.email && <div className="text-red-500 text-sm">{errors.email}</div>}
+                            </div>
+
+                            <div className="md:col-span-2 grid gap-2">
+                                <Label htmlFor="name">Contato</Label>
+                                <Input
+                                    type="text"
+                                    id="name"
+                                    value={data.name}
+                                    onChange={(e) => setData('name', e.target.value)}
+                                />
+                                {errors.name && <div className="text-red-500 text-sm">{errors.name}</div>}
                             </div>
 
                             <div className="grid gap-2">

@@ -13,6 +13,7 @@ class Part extends Model
     public function orders(): BelongsToMany
     {
         return $this->belongsToMany(Order::class, 'order_parts')
+                    ->using(OrderPart::class)
                     ->withPivot('quantity');
     }
     
