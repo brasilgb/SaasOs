@@ -9,12 +9,10 @@ use App\Models\App\Equipment;
 use App\Models\App\Order;
 use App\Models\App\Part;
 use App\Models\User;
-use App\Services\InventoryService;
 use App\Models\App\WhatsappMessage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class OrderController extends Controller
@@ -203,14 +201,14 @@ class OrderController extends Controller
         ]);
 
         $order = Order::find($validatedData['order_id']);
-
         // 1. Desvincula a peça da Ordem de Serviço na tabela pivô
         $order->orderParts()->detach($validatedData['part_id']);
-
+        $order->update(['parts_value' => 0, 'service_value' => 0, 'service_cost' => 0]);
+        $order->orderParts()->detach();
         return redirect()->route('app.orders.show', $order)->with('success', 'Peça removida e estoque devolvido com sucesso.');
     }
 
-    
+
     public function getFeedback(Request $request)
     {
         $feedback = $request->get('feedback');

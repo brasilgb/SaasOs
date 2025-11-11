@@ -132,9 +132,9 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
     post(route('app.orders.removePart',
       { order_id: order.id, part_id: id }
     ))
-    const valueParts = orderparts.reduce((acc: any, item: any) => acc + Number(item.sale_price * item.quantity), 0);
     // const calcTotal = 
-    setData((data: any) => ({ ...data, parts_value: valueParts.toFixed(2) }));
+    setData((data: any) => ({ ...data, parts_value: '0.00' }));
+    setData((data: any) => ({ ...data, service_value: '0.00' }));
     setData((data: any) => ({ ...data, service_cost: '0.00' }));
     setData((data: any) => ({ ...data, allparts: [] }));
     setPartsData([]);
@@ -337,7 +337,7 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
 
             {orderparts?.length > 0 && othersetting?.enableparts > 0 &&
               <Card className="p-4 mb-4">
-                <CardTitle className="border-b pb-2">Peças adicionadas</CardTitle>
+                <CardTitle className="border-b pb-2">Peças adicionadas A</CardTitle>
                 <CardContent className="flex items-center justify-start gap-4">
                   {orderparts.map((part: any) => (
                     <div key={part.id} className="flex items-center gap-2">
@@ -355,7 +355,7 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
 
             {partsData?.length > 0 &&
               <Card className="p-4 mb-4">
-                <CardTitle className="border-b pb-2">Peças adicionadas</CardTitle>
+                <CardTitle className="border-b pb-2">Peças adicionadas B</CardTitle>
                 <CardContent className="flex items-center justify-start gap-4">
                   {partsData.map((part: any) => (
                     <div key={part.id} className="flex items-center gap-2">
