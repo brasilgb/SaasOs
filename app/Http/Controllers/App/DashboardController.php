@@ -48,7 +48,9 @@ class DashboardController extends Controller
         ->groupBy('date')
         ->orderBy('date', 'desc')
         ->get();
+        $parts = Part::get();
+        $customers = Customer::get();
         // $chartequipments = response()->json($cequipments);
-        return Inertia::render('app/dashboard/index', ['orders' => $orders, 'acount' => $acount, 'chartequipments' => $chartequipments]);
+        return Inertia::render('app/dashboard/index', ['orders' => $orders, 'acount' => $acount, 'chartequipments' => $chartequipments, 'parts' => $parts, 'customers' => $customers]);
     }
 }

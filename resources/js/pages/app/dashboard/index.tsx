@@ -5,8 +5,11 @@ import { Calendar, Check, MemoryStickIcon, MessageSquareMore, User, Users, Wrenc
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardDescription } from '@/components/ui/card';
+import SalesProducts from '@/components/sales-products';
+import { ChartAreaDashboard } from '@/components/chart-area-dashboard';
 
-export default function Dashboard({ orders, acount }: { orders: any, acount: any, chartequipments: any }) {
+export default function Dashboard({ orders, acount, chartequipments, parts, customers }: { orders: any, acount: any, chartequipments: any, parts: any, customers: any}) {
     const { othersetting } = usePage().props as any;
     const disableParts = !othersetting?.enableparts ? 'parts' : '';
 
@@ -14,7 +17,7 @@ export default function Dashboard({ orders, acount }: { orders: any, acount: any
         <AppLayout>
             <Head title="Dashboard" />
             <div className='p-4'>
-                <div className={`grid md:grid-cols-${!disableParts ? '6' : '5'} gap-4 rounded-xl`}>
+                <div className={`grid ${!disableParts ? 'md:grid-cols-7' : 'md:grid-cols-6'} gap-4 rounded-xl`}>
                     <KpiDashboard link={route('app.users.index')} title="Usuários" value={acount?.numuser} icon={<User className='h-10 w-10' />} description="Usários do sistema" />
                     <KpiDashboard link={route('app.customers.index')} title="Clientes" value={acount?.numcust} icon={<Users className='h-10 w-10' />} description="Todos os clientes cadastrados" />
                     <KpiDashboard link={route('app.orders.index')} title="Ordens" value={acount?.numorde} icon={<Wrench className='h-10 w-10' />} description="Todas as ordens emitidas" />
@@ -23,6 +26,12 @@ export default function Dashboard({ orders, acount }: { orders: any, acount: any
                     {!disableParts && 
                     <KpiDashboard link={route('app.parts.index')} title="Peças" value={acount?.numparts} icon={<MemoryStickIcon className='h-10 w-10' />} description="Peças cadastradas" />
                     }
+                    <Card className='flex items-center justify-center'>
+                        <CardDescription>
+                            Venda de Peças/Produtos
+                        </CardDescription>
+                        <SalesProducts parts={parts} customers={customers} />
+                    </Card>
                 </div>
 
                 <div className='mt-4'>
@@ -114,9 +123,9 @@ export default function Dashboard({ orders, acount }: { orders: any, acount: any
                         </TabsContent>
                     </Tabs>
                 </div>
-                {/* <div className='mt-4'>
+                <div className='mt-4'>
                     <ChartAreaDashboard chartequipments={chartequipments} />
-                </div> */}
+                </div>
             </div>
         </AppLayout>
     );

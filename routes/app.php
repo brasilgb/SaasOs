@@ -15,6 +15,7 @@ use App\Http\Controllers\App\DashboardController;
 use App\Http\Controllers\App\MessageController;
 use App\Http\Controllers\App\OrderController;
 use App\Http\Controllers\App\PartController;
+use App\Http\Controllers\App\SaleController;
 use App\Http\Controllers\App\ScheduleController;
 use App\Http\Controllers\App\ServiceController;
 use App\Http\Controllers\App\UserController;
@@ -52,3 +53,4 @@ Route::get('receipts/{or}/{tp}', [ReceiptController::class, 'printing'])->name('
 Route::resource('label-printing', LabelPrintingController::class);
 Route::resource('/parts', PartController::class);
 Route::post('/orders/remove-part', [OrderController::class, 'removePart'])->name('orders.removePart');
+Route::resource('/sales', SaleController::class);
