@@ -3,64 +3,55 @@
 namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
+use App\Models\App\Part;
+use App\Models\App\Sale;
+use App\Models\App\SaleItem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SaleController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        // Operações de vendas de produtos
-        
-    }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
+        $request->validate([
+            'customer_id' => 'nullable|exists:customers,id',
+            'total_amount' => 'required|numeric',
+            'parts' => 'required|array',
+            'parts.*.part_id' => 'required|exists:parts,id',
+            'parts.*.quantity' => 'required|integer|min:1',
+        ]);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
+        try {
+            DB::beginTransaction();
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
+            $sale = Sale::create([
+                'customer_id' => $request->customer_id,
+                'total_amount' => $request->total_amount,
+            ]);
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+            foreach ($request->parts as $partData) {
+                $part = Part::find($partData['part_id']);
+
+                SaleItem::create([
+                    'sale_id' => $sale->id,
+                    'part_id' => $partData['part_id'],
+                    'quantity' => $partData['quantity'],
+                    'unit_price' => $part->sale_price, // Get price from DB
+                ]);
+
+                // Adjust stock
+                $part->quantity -= $partData['quantity'];
+                $part->save();
+            }
+
+            DB::commit();
+
+            return redirect()->route('app.dashboard')->with('success', 'Venda realizada com sucesso!');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Erro ao realizar a venda: ' . $e->getMessage());
+        }
     }
 }

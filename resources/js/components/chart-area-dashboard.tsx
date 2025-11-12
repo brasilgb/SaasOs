@@ -77,10 +77,10 @@ export function ChartAreaDashboard({ chartequipments }: any) {
   return (
     <Card className="@container/card">
       <CardHeader>
-        <CardTitle>Total de equipamentos recebidos</CardTitle>
+        <CardTitle>Equipamentos recebidos</CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/card:block">
-            Total de equipamentos recebidos para os últimos 3 meses
+            Total de equipamentos recebidos
           </span>
           <span className="@[540px]/card:hidden">Últimos 3 meses</span>
         </CardDescription>
@@ -92,8 +92,8 @@ export function ChartAreaDashboard({ chartequipments }: any) {
             variant="outline"
             className="hidden *:data-[slot=toggle-group-item]:!px-4 @[767px]/card:flex"
           >
-            <ToggleGroupItem value="90d">Últimos 3 meses</ToggleGroupItem>
             <ToggleGroupItem value="30d">Últimos 30 dias</ToggleGroupItem>
+            <ToggleGroupItem value="90d">Últimos 3 meses</ToggleGroupItem>
             <ToggleGroupItem value="7d">Últimos 7 dias</ToggleGroupItem>
           </ToggleGroup>
           <Select value={timeRange} onValueChange={setTimeRange}>
@@ -105,11 +105,11 @@ export function ChartAreaDashboard({ chartequipments }: any) {
               <SelectValue placeholder="Últimos 3 meses" />
             </SelectTrigger>
             <SelectContent className="rounded-xl">
-              <SelectItem value="90d" className="rounded-lg">
-                Últimos 3 meses
-              </SelectItem>
               <SelectItem value="30d" className="rounded-lg">
                 Últimos 30 dias
+              </SelectItem>
+              <SelectItem value="90d" className="rounded-lg">
+                Últimos 3 meses
               </SelectItem>
               <SelectItem value="7d" className="rounded-lg">
                 Últimos 7 dias

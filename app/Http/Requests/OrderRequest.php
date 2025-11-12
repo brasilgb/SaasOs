@@ -22,7 +22,7 @@ class OrderRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'customer_id' => 'required',
+            'customer_id' => 'nullable',
             'equipment_id' => 'required',
             'defect' => 'required',
         ];

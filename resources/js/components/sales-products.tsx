@@ -13,15 +13,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Select from 'react-select';
 import { useForm } from '@inertiajs/react';
-import { ShoppingCartIcon } from 'lucide-react';
+import { ShoppingCartIcon, Trash2 } from 'lucide-react'; // Adicionado Trash2 para remover item
 import { maskMoney } from '@/Utils/mask';
 
 interface Part {
     id: number;
     name: string;
-    quantity: number;
-    sale_price: any;
+    quantity: number; // This is the stock quantity
+    sale_price: number;
     customer_id: any;
+}
+
+interface CartItem extends Part {
+    cartItemId: string; // Unique ID for item in cart
+    selected_quantity: number;
 }
 
 interface SalesProductsProps {
@@ -33,10 +38,14 @@ export function SalesProducts({ parts, customers}: SalesProductsProps) {
     const [selectedPart, setSelectedPart] = useState<Part | null>(null);
     const [open, setOpen] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
+    const [cartItems, setCartItems] = useState<CartItem[]>([]); // New state for cart items
+
     const { data, setData, post, processing, errors, reset } = useForm({
-        part_id: '',
         customer_id: '',
-        quantity: 1,
+        part_id: '', // Keep part_id for selecting a part to add to cart
+        quantity: 1, // Quantity for the currently selected part
+        parts: [] as { part_id: number; quantity: number }[], // This will be populated from cartItems
+        total_amount: 0,
     });
 
     const optionsParts = parts.map((part: any) => ({
@@ -48,40 +57,97 @@ export function SalesProducts({ parts, customers}: SalesProductsProps) {
         label: customer.name,
     }));
 
+    useEffect(() => {
+        const total = cartItems.reduce((sum, item) => sum + (Number(item.sale_price) * item.selected_quantity), 0);
+        setData(prevData => ({
+            ...prevData,
+            parts: cartItems.map(item => ({ part_id: item.id, quantity: item.selected_quantity })),
+            total_amount: total,
+        }));
+    }, [cartItems]);
+
+    const addToCart = () => {
+        if (selectedPart && data.quantity > 0 && data.quantity <= selectedPart.quantity) {
+            const existingItemIndex = cartItems.findIndex(item => item.id === selectedPart.id);
+
+            if (existingItemIndex > -1) {
+                // Update quantity if item already in cart
+                const updatedCart = cartItems.map((item, index) =>
+                    index === existingItemIndex
+                        ? { ...item, selected_quantity: item.selected_quantity + data.quantity }
+                        : item
+                );
+                setCartItems(updatedCart);
+            } else {
+                // Add new item to cart
+                const newItem: CartItem = {
+                    ...selectedPart,
+                    cartItemId: Date.now().toString(), // Unique ID for cart item
+                    selected_quantity: data.quantity,
+                };
+                setCartItems(prevItems => [...prevItems, newItem]);
+            }
+            // Reset selected part and quantity after adding to cart
+            setSelectedPart(null);
+            setData(prevData => ({ ...prevData, part_id: '', quantity: 1 }));
+        } else if (data.quantity > selectedPart?.quantity) {
+            alert('Quantidade em estoque insuficiente.');
+        }
+    };
+
+    const removeFromCart = (cartItemId: string) => {
+        setCartItems(prevItems => prevItems.filter(item => item.cartItemId !== cartItemId));
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post(route('app.sales.store'), {
+        if (cartItems.length === 0) {
+            alert('Adicione itens ao carrinho antes de finalizar a venda.');
+            return;
+        }
+
+        post(route('app.sales.store'), { // A função post aqui espera 2 argumentos
+            // O segundo argumento é um objeto que pode conter os dados e as opções da visita
+            data: {
+                customer_id: data.customer_id,
+                parts: cartItems.map(item => ({ part_id: item.id, quantity: item.selected_quantity })),
+                total_amount: cartTotal,
+            },
             onSuccess: () => {
                 setSuccessMessage('Venda efetuada com sucesso!');
                 reset();
                 setSelectedPart(null);
+                setCartItems([]); // Clear cart after successful sale
                 setTimeout(() => {
                     setSuccessMessage('');
                 }, 3000);
             },
-        });
+        } as any);
     };
 
     const changeParts = (selected: any) => {
         setData('part_id', selected?.value);
         const part = parts.find((part: any) => part.id === selected?.value);
         setSelectedPart(part || null);
+        setData('quantity', 1); // Reset quantity when part changes
     };
 
     const changeCustomers = (selected: any) => {
         setData('customer_id', selected?.value);
     };
 
-
     const handleClose = () => {
         setOpen(false);
         setSuccessMessage('');
         reset();
         setSelectedPart(null);
+        setCartItems([]); // Clear cart on dialog close
     };
 
     const selectedOptionParts = optionsParts.find(option => option.value === data.part_id) || null;
     const selectedOptionCustomers = optionsCustomers.find(option => option.value === data.customer_id) || null;
+
+    const cartTotal = cartItems.reduce((sum, item) => sum + (Number(item.sale_price) * item.selected_quantity), 0);
 
     return (
         <Dialog open={open} onOpenChange={(isOpen) => {
@@ -105,7 +171,7 @@ export function SalesProducts({ parts, customers}: SalesProductsProps) {
                     {successMessage && <p className="text-green-500 mb-4 text-center">{successMessage}</p>}
                     <div className="grid gap-4 py-4">
                         <div className="items-center gap-4">
-                            <Label htmlFor="part_id" className="text-right mb-1">
+                            <Label htmlFor="customer_id" className="text-right mb-1">
                                 Clientes
                             </Label>
                             <Select
@@ -192,21 +258,49 @@ export function SalesProducts({ parts, customers}: SalesProductsProps) {
                                 <p className="col-span-4 text-red-500 text-xs text-right">{errors.quantity}</p>
                             )}
                         </div>
-                    </div>
-                    <div className='flex items-center justify-between'>
-                        <div className='flex items-center justify-start gap-4'>
-                            <div className='text-sm'>Valor unitário: <span className='font-semibold text-blue-400'>R$ {maskMoney(selectedPart?.sale_price)}</span></div>
-                            <div className='text-sm'>Total: <span className='font-semibold text-blue-400'>R$ {maskMoney(String(data?.quantity * Number(selectedPart?.sale_price)))}</span></div>
+                        <div className='flex items-center justify-between'>
+                            <div className='flex items-center justify-start gap-4'>
+                                <div className='text-sm'>Valor unitário: <span className='font-semibold text-blue-400'>R$ {maskMoney(String(selectedPart?.sale_price))}</span></div>
+                                <div className='text-sm'>Total: <span className='font-semibold text-blue-400'>R$ {maskMoney(String(data?.quantity * Number(selectedPart?.sale_price)))}</span></div>
+                            </div>
+                            <Button type="button" onClick={addToCart} disabled={!selectedPart || data.quantity <= 0 || data.quantity > selectedPart.quantity}>
+                                Adicionar ao Carrinho
+                            </Button>
                         </div>
-                        <DialogFooter>
-                            <Button type="button" variant="outline" onClick={handleClose}>
-                                Fechar
-                            </Button>
-                            <Button type="submit" disabled={processing}>
-                                {processing ? 'Vendendo...' : 'Vender'}
-                            </Button>
-                        </DialogFooter>
                     </div>
+
+                    {cartItems.length > 0 && (
+                        <div className="mt-4 border-t pt-4">
+                            <h3 className="text-lg font-semibold mb-2">Itens no Carrinho</h3>
+                            {errors.parts && (
+                                <p className="col-span-4 text-red-500 text-xs text-right">{errors.parts}</p>
+                            )}
+                            {cartItems.map(item => (
+                                <div key={item.cartItemId} className="flex justify-between items-center mb-2">
+                                    <span>{item.name} (x{item.selected_quantity}) - R$ {maskMoney(String(Number(item.sale_price) * item.selected_quantity))}</span>
+                                    <Button variant="destructive" size="sm" onClick={() => removeFromCart(item.cartItemId)}>
+                                        <Trash2 size={16} />
+                                    </Button>
+                                </div>
+                            ))}
+                            <div className="flex justify-between items-center font-bold mt-4">
+                                <span>Total do Carrinho:</span>
+                                <span>R$ {maskMoney(String(cartTotal))}</span>
+                            </div>
+                            {errors.total_amount && (
+                                <p className="col-span-4 text-red-500 text-xs text-right">{errors.total_amount}</p>
+                            )}
+                        </div>
+                    )}
+
+                    <DialogFooter className="mt-4">
+                        <Button type="button" variant="outline" onClick={handleClose}>
+                            Fechar
+                        </Button>
+                        <Button type="submit" disabled={processing || cartItems.length === 0}>
+                            {processing ? 'Vendendo...' : 'Finalizar Venda'}
+                        </Button>
+                    </DialogFooter>
                 </form>
             </DialogContent>
         </Dialog>
