@@ -24,6 +24,7 @@ import InputSearch from '@/components/inputSearch';
 import SelectFilter from '@/components/SelectFilter';
 import { Switch } from '@/components/ui/switch';
 import { maskPhone } from '@/Utils/mask';
+import { statusServico } from '@/Utils/dataSelect';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -82,10 +83,10 @@ export default function Orders({ orders, whats, feedback }: any) {
 
             <div className='flex items-center justify-between p-4'>
                 <div className='w-full'>
-                    <InputSearch placeholder="Buscar ordem" url="app.orders.index" />
+                    <InputSearch placeholder="Buscar ordem por número, nome do cliente ou cpf/cnpj" url="app.orders.index" />
                 </div>
                 <div className='w-full flex justify-end'>
-                    <SelectFilter />
+                    <SelectFilter dataStatus={statusServico} url="app.orders.index" />
                 </div>
                 <div className='w-full flex justify-end'>
                     <Button variant={'default'} asChild>

@@ -12,6 +12,7 @@ import { maskCep, maskCpfCnpj, maskPhone, unMask } from "@/Utils/mask";
 import { Alert } from "@/components/ui/alert";
 import AlertSuccess from "@/components/app-alert-success";
 import apios from "@/Utils/connectApi";
+import { useEffect } from "react";
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -68,6 +69,10 @@ export default function EditCustomer({ customer }: any) {
       })
       .catch((error) => console.error(error));
   };
+
+    useEffect(() => {
+      setData((data) => ({ ...data, cpf: unMask(data.cpf) }));
+    }, [data.cpf]);
 
   return (
     <AppLayout>

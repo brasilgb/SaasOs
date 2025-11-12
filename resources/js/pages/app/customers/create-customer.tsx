@@ -70,6 +70,10 @@ export default function CreateCustomer({ customerlast }: any) {
       .catch((error) => console.error(error));
   };
 
+  useEffect(() => {
+    setData((data) => ({ ...data, cpf: unMask(data.cpf) }));
+  }, [data.cpf]);
+
   return (
     <AppLayout>
       <Head title="Clientes" />

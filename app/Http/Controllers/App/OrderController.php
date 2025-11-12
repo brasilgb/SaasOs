@@ -88,7 +88,7 @@ class OrderController extends Controller
         $whats = WhatsappMessage::first();
 
         $feedbackOrders = Order::where('service_status', 8)
-            ->whereBetween('delivery_date', [Carbon::now()->subDays(30), Carbon::now()])
+            ->whereBetween('delivery_date', [Carbon::now()->subDays(7), Carbon::now()])
             ->get('id');
 
         return Inertia::render('app/orders/index', [

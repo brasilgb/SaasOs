@@ -25,12 +25,11 @@ class MessageController extends Controller
             $query->whereDate('messages', $sdate);
         }
         if ($search) {
-            $query = Message::where(function ($query) use ($search) {
-                $query->where('id', 'like', "%$search%")
-                ->orWhere('service', 'like', "%$search%");
-            })
-            ->orWhereHas('user', function ($query) use ($search) {
-                $query->where('name', 'like', "%$search%");
+            $query->where(function ($q) use ($search) {
+                $q->where('id', 'like', '%' . $search . '%')
+                    ->orWhereHas('recipient', function ($subQuery) use ($search) {
+                        $subQuery->where('name', 'like', "%$search%");
+                    });
             });
         }
         $messages = $query->with('sender')->with('recipient')->paginate(12);

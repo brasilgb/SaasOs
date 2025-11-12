@@ -18,35 +18,30 @@ class ScheduleController extends Controller
      */
     public function index(Request $request)
     {
+        $status = $request->get('status');
         $search = $request->get('q');
         $sdate = $request->get('dt');
-        $status = $request->get('st');
-        $clid = $request->get('cl');
 
         $query = Schedule::orderBy('id', 'DESC');
+        
+        if ($status) {
+            $query->where('status', $status);
+        }
 
         if ($sdate) {
             $query->whereDate('schedules', $sdate);
         }
-        if ($status) {
-            $query->where('status', 'like', "%$status%");
-        }
-        if ($clid) {
-            $query->where('customer_id', 'like', "%$clid%");
-        }
+
         if ($search) {
-            $query = Schedule::where(function ($query) use ($search) {
-                $query->where('id', 'like', "%$search%")
-                    ->orWhere('service', 'like', "%$search%");
-            })
-                ->orWhereHas('customer', function ($query) use ($search) {
-                    $query->where('name', 'like', "%$search%");
-                })
-                ->orWhereHas('user', function ($query) use ($search) {
-                    $query->where('name', 'like', "%$search%");
-                });
+            $query->where(function ($q) use ($search) {
+                $q->where('id', 'like', '%' . $search . '%')
+                    ->orWhereHas('customer', function ($subQuery) use ($search) {
+                        $subQuery->where('name', 'like', "%$search%")
+                            ->orWhere('cpf', 'like', '%' . $search . '%');
+                    });
+            });
         }
-        $schedules = $query->with('user')->with('customer')->paginate(12);
+        $schedules = $query->with('user','customer')->paginate(12);
 
         return Inertia::render('app/schedules/index', [
             'schedules' => $schedules,

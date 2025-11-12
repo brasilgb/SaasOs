@@ -119,5 +119,4 @@ class UserController extends Controller
           "message"=>"logged out"
         ]);
     }
-
 }

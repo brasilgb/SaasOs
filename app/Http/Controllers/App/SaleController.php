@@ -8,9 +8,18 @@ use App\Models\App\Sale;
 use App\Models\App\SaleItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class SaleController extends Controller
 {
+
+    public function index()
+    {
+        
+        $sales = Sale::with('customer')->with('items')->paginate(10);
+        return Inertia::render('app/sales/index', ['sales' => $sales]);
+    }
+
     public function store(Request $request)
     {
 
@@ -26,6 +35,7 @@ class SaleController extends Controller
             DB::beginTransaction();
 
             $sale = Sale::create([
+                'sales_number' => Sale::exists() ? Sale::latest()->first()->sales_number + 1 : 1,
                 'customer_id' => $request->customer_id,
                 'total_amount' => $request->total_amount,
             ]);
@@ -48,10 +58,35 @@ class SaleController extends Controller
             DB::commit();
 
             return redirect()->route('app.dashboard')->with('success', 'Venda realizada com sucesso!');
-
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Erro ao realizar a venda: ' . $e->getMessage());
+        }
+    }
+
+    public function destroy(Sale $sale)
+    {
+        try {
+            DB::beginTransaction();
+
+            // Itera sobre os itens da venda para retornar as peças ao estoque
+            foreach ($sale->items as $item) {
+                $part = Part::find($item->part_id);
+                if ($part) {
+                    // Incrementa a quantidade da peça de volta ao estoque
+                    $part->increment('quantity', $item->quantity);
+                }
+            }
+
+            // Exclui a venda (os itens da venda serão excluídos em cascata se configurado no banco de dados)
+            $sale->delete();
+
+            DB::commit();
+
+            return redirect()->route('app.sales.index')->with('success', 'Venda excluída e estoque estornado com sucesso!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Erro ao excluir a venda: ' . $e->getMessage());
         }
     }
 }

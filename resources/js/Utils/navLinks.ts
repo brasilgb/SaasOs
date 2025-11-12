@@ -1,5 +1,5 @@
 import { type NavItem } from '@/types';
-import { Link as linkmegb, Calendar, Cog, LayoutGrid, MessageSquareMore, PackagePlus, UserCog, Users2, Wrench, Building, MessageCircleCode, Printer, Tags, CogIcon, Copyright, Monitor, Sparkles, ClipboardList, Blocks, Building2, HandCoins, MemoryStick } from 'lucide-react';
+import { Link as linkmegb, Calendar, Cog, LayoutGrid, MessageSquareMore, PackagePlus, UserCog, Users2, Wrench, Building, MessageCircleCode, Printer, Tags, CogIcon, Copyright, Monitor, Sparkles, ClipboardList, Blocks, Building2, HandCoins, MemoryStick, ShoppingCartIcon, FileTextIcon } from 'lucide-react';
 
 const mainNavItems: NavItem[] = [
     {
@@ -47,6 +47,20 @@ const mainNavItems: NavItem[] = [
         icon: MemoryStick,
         active: 'app.parts.*',
         enabled: 'parts'
+    },
+    {
+        title: 'Vendas',
+        href: route('app.sales.index'),
+        icon: ShoppingCartIcon,
+        active: 'app.sales.*',
+        enabled: 'sales'
+    },
+    {
+        title: 'Relatórios',
+        href: route('app.reports.index'),
+        icon: FileTextIcon,
+        active: 'app.reports.*',
+        enabled: 'reports'
     },
 ];
 

@@ -17,7 +17,7 @@ import {
 import { Button } from '@/components/ui/button';
 import InputSearch from '@/components/inputSearch';
 import ActionDelete from '@/components/action-delete';
-import { maskPhone } from '@/Utils/mask';
+import { maskCpfCnpj, maskPhone } from '@/Utils/mask';
 import AlertSuccess from '@/components/app-alert-success';
 import AppPagination from '@/components/app-pagination';
 
@@ -51,7 +51,7 @@ export default function Customers({ customers }: any) {
 
       <div className='flex items-center justify-between p-4'>
         <div className='w-full'>
-          <InputSearch placeholder="Buscar cliente" url="customers.index" />
+          <InputSearch placeholder="Pesquisar cliente por nome ou cpf/cnpj" url="app.customers.index" cpfCnpj />
         </div>
         <div className='w-full flex justify-end'>
           <Button variant={'default'} asChild>
@@ -86,7 +86,7 @@ export default function Customers({ customers }: any) {
                     <TableCell>{customer.customer_number}</TableCell>
                     <TableCell>{customer.name}</TableCell>
                     <TableCell>{customer.email}</TableCell>
-                    <TableCell>{customer.cpf}</TableCell>
+                    <TableCell>{maskCpfCnpj(customer.cpf)}</TableCell>
                     <TableCell>{maskPhone(customer.phone)}</TableCell>
                     <TableCell>{moment(customer.created_at).format("DD/MM/YYYY")}</TableCell>
                     <TableCell className='flex justify-end gap-2'>

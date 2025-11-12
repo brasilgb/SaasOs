@@ -52,7 +52,7 @@ export default function Messages({ messages }: any) {
 
       <div className='flex items-center justify-between p-4'>
         <div className='w-full'>
-          <InputSearch placeholder="Buscar mensagem" url="app.messages.index" />
+          <InputSearch placeholder="Buscar po número da mensagem nome do destinatário" url="app.messages.index" />
         </div>
         <div className='w-full flex justify-end'>
           <Button variant={'default'} asChild>
@@ -72,8 +72,8 @@ export default function Messages({ messages }: any) {
             <TableHeader>
               <TableRow>
                 <TableHead>#</TableHead>
-                <TableHead>Operador</TableHead>
-                <TableHead>Usuário</TableHead>
+                <TableHead>Remetente</TableHead>
+                <TableHead>Destinatário</TableHead>
                 <TableHead>Operação</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Data</TableHead>
