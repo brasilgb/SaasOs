@@ -15,7 +15,7 @@ class Brand extends Model
         return $this->hasMany(EQModel::class);
     }
 
-    public function bugets(): HasMany
+    public function budgets(): HasMany
     {
         return $this->hasMany(Budget::class);
     }

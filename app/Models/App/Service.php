@@ -15,7 +15,7 @@ class Service extends Model
         return $this->belongsTo(Equipment::class);
     }
 
-        public function bugets(): HasMany
+    public function bugets(): HasMany
     {
         return $this->hasMany(Budget::class);
     }

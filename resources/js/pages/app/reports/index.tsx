@@ -9,6 +9,7 @@ import { Head, router } from "@inertiajs/react";
 import { FileTextIcon, Search } from "lucide-react";
 import moment from "moment";
 import { useState } from "react";
+import OrderReport from "./order-report";
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -56,7 +57,8 @@ export default function Sales({ sales }: any) {
             <CardContent>
               <DatePicker dateRange={dateRange} setDateRange={setDateRange} />
             </CardContent>
-          <CardContent className="flex flex-grow items-start justify-start gap-4">
+          <CardContent className="flex flex-wrap items-start justify-start gap-4">
+            <OrderReport dateRange={dateRange} />
               <Button variant={'default'} onClick={handleReportCustomer}>
                 Relatório de clientes
               </Button>
