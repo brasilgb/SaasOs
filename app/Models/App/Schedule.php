@@ -10,6 +10,7 @@ use App\Tenantable;
 class Schedule extends Model
 {
     use Tenantable;
+    
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);

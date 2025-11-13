@@ -11,7 +11,7 @@ interface DateRange {
   to?: Date;
 }
 
-export default function OrderReport({ dateRange }: { dateRange?: DateRange }) {
+export default function OrdersReport({ dateRange }: { dateRange?: DateRange }) {
   const [loading, setLoading] = useState(false);
 
   async function handleGeneratePDF() {
@@ -19,7 +19,7 @@ export default function OrderReport({ dateRange }: { dateRange?: DateRange }) {
     setLoading(true);
 
     router.post(
-      route("app.reports.index"),
+      route("app.reports.store"),
       {
         type: "orders",
         from: moment(dateRange.from).format("YYYY-MM-DD"),
@@ -62,7 +62,7 @@ export default function OrderReport({ dateRange }: { dateRange?: DateRange }) {
         ) : (
           <>
             <FileText className="mr-2 size-4" />
-            Ordens
+            Ordens de serviço
           </>
         )}
       </Button>

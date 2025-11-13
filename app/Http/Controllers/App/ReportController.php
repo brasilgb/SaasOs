@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\App\Customer;
 use App\Models\App\Order;
 use App\Models\App\Sale;
+use App\Models\App\Schedule;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -32,14 +33,20 @@ class ReportController extends Controller
                     ->get();
                 break;
 
-            case 'sales':
-                $data = Sale::with('customer')
+            case 'customers':
+                $data = Customer::whereBetween('created_at', [$from, $to])->get();
+                break;
+
+            case 'schedules':
+                $data = Schedule::with(['customer', 'user'])
                     ->whereBetween('created_at', [$from, $to])
                     ->get();
                 break;
 
-            case 'customers':
-                $data = Customer::whereBetween('created_at', [$from, $to])->get();
+            case 'sales':
+                $data = Sale::with('customer')
+                    ->whereBetween('created_at', [$from, $to])
+                    ->get();
                 break;
 
             default:

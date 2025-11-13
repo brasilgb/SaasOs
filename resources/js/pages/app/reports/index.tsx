@@ -1,15 +1,17 @@
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { DatePicker } from "@/components/date-picker";
 import { Icon } from "@/components/icon";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import AppLayout from "@/layouts/app-layout";
 import { BreadcrumbItem } from "@/types";
-import { Head, router } from "@inertiajs/react";
-import { FileTextIcon, Search } from "lucide-react";
+import { Head } from "@inertiajs/react";
+import { FileTextIcon } from "lucide-react";
 import moment from "moment";
 import { useState } from "react";
-import OrderReport from "./order-report";
+import CustomersReport from "./customers-report";
+import OrdersReport from "./orders-report";
+import SchedulesReport from "./schedules-report";
+import SalesReport from "./sales-report";
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -17,7 +19,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     href: route('app.dashboard'),
   },
   {
-    title: 'Vendas',
+    title: 'Relatórios',
     href: '#',
   },
 ];
@@ -42,7 +44,7 @@ export default function Sales({ sales }: any) {
       <div className='flex items-center justify-between h-16 px-4'>
         <div className='flex items-center gap-2'>
           <Icon iconNode={FileTextIcon} className='w-8 h-8' />
-          <h2 className="text-xl font-semibold tracking-tight">Vendas</h2>
+          <h2 className="text-xl font-semibold tracking-tight">Relatórios</h2>
         </div>
         <div>
           <Breadcrumbs breadcrumbs={breadcrumbs} />
@@ -54,26 +56,14 @@ export default function Sales({ sales }: any) {
           <CardHeader>
             <CardTitle>Selecione um intervalo de datas e um módulo para gerar o relatório.</CardTitle>
           </CardHeader>
-            <CardContent>
-              <DatePicker dateRange={dateRange} setDateRange={setDateRange} />
-            </CardContent>
+          <CardContent>
+            <DatePicker dateRange={dateRange} setDateRange={setDateRange} />
+          </CardContent>
           <CardContent className="flex flex-wrap items-start justify-start gap-4">
-            <OrderReport dateRange={dateRange} />
-              <Button variant={'default'} onClick={handleReportCustomer}>
-                Relatório de clientes
-              </Button>
-              <Button variant={'default'} onClick={handleReportCustomer}>
-                Relatório de ordens
-              </Button>
-              <Button variant={'default'} onClick={handleReportCustomer}>
-                Relatório de agendamentos
-              </Button>
-              <Button variant={'default'} onClick={handleReportCustomer}>
-                Relatório de vendas
-              </Button>
-              <Button variant={'default'} onClick={handleReportCustomer}>
-                Relatório de peças/produtos
-              </Button>
+            <OrdersReport dateRange={dateRange} />
+            <CustomersReport dateRange={dateRange} />
+            <SchedulesReport dateRange={dateRange} />
+            <SalesReport dateRange={dateRange} />
           </CardContent>
 
         </Card>

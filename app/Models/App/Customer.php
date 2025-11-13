@@ -10,7 +10,7 @@ use App\Tenantable;
 class Customer extends Model
 {
     use Tenantable, HasFactory;
-    
+
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
@@ -19,5 +19,10 @@ class Customer extends Model
     public function sales(): HasMany
     {
         return $this->hasMany(Sale::class);
+    }
+
+    public function schedules(): HasMany
+    {
+        return $this->hasMany(Schedule::class);
     }
 }

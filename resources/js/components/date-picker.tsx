@@ -80,7 +80,7 @@ export function DatePicker({ dateRange, setDateRange }: DatePickerProps) {
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 w-60">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <div className="relative">
