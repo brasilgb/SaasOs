@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Tenantable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Equipment extends Model
 {
-    use Tenantable;
+    use Tenantable, HasFactory;
     public function checklists(): HasMany
     {
         return $this->hasMany(Checklist::class);

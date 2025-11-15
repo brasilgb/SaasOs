@@ -25,7 +25,7 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
   {
     title: 'Editar',
-    href:  '#',
+    href: '#',
   },
 ];
 
@@ -70,9 +70,9 @@ export default function EditCustomer({ customer }: any) {
       .catch((error) => console.error(error));
   };
 
-    useEffect(() => {
-      setData((data) => ({ ...data, cpf: unMask(data.cpf) }));
-    }, [data.cpf]);
+  useEffect(() => {
+    setData((data) => ({ ...data, cpf: unMask(data.cpf) }));
+  }, [data.cpf]);
 
   return (
     <AppLayout>
@@ -240,7 +240,7 @@ export default function EditCustomer({ customer }: any) {
                 <Input
                   type="text"
                   id="phone"
-                  value={maskPhone(data.phone)}
+                  value={maskPhone(unMask(data.phone))}
                   onChange={(e) => setData('phone', e.target.value)}
                   maxLength={15}
                 />
@@ -272,7 +272,7 @@ export default function EditCustomer({ customer }: any) {
                 <Input
                   type="text"
                   id="contactphone"
-                  value={maskPhone(data.contactphone)}
+                  value={maskPhone(unMask(data.contactphone))}
                   onChange={(e) => setData('contactphone', e.target.value)}
                   maxLength={15}
                 />

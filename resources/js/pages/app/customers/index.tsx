@@ -17,7 +17,7 @@ import {
 import { Button } from '@/components/ui/button';
 import InputSearch from '@/components/inputSearch';
 import ActionDelete from '@/components/action-delete';
-import { maskCpfCnpj, maskPhone } from '@/Utils/mask';
+import { maskCpfCnpj, maskPhone, unMask } from '@/Utils/mask';
 import AlertSuccess from '@/components/app-alert-success';
 import AppPagination from '@/components/app-pagination';
 
@@ -87,7 +87,7 @@ export default function Customers({ customers }: any) {
                     <TableCell>{customer.name}</TableCell>
                     <TableCell>{customer.email}</TableCell>
                     <TableCell>{maskCpfCnpj(customer.cpf)}</TableCell>
-                    <TableCell>{maskPhone(customer.phone)}</TableCell>
+                    <TableCell>{maskPhone(unMask(customer.phone))}</TableCell>
                     <TableCell>{moment(customer.created_at).format("DD/MM/YYYY")}</TableCell>
                     <TableCell className='flex justify-end gap-2'>
                       <Button asChild size="icon" className="bg-green-500 hover:bg-green-500 text-white">

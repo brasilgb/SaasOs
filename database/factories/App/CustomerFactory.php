@@ -12,28 +12,46 @@ class CustomerFactory extends Factory
     protected $model = Customer::class;
     public function definition()
     {
+        // Para usar o CPF, é comum ter um provider customizado para o Faker.
+        // Ex: https://github.com/faker-br/faker-br
+        // Se já estiver configurado globalmente (ex: em AppServiceProvider), pode remover a linha abaixo.
         $faker = FakerFactory::create('pt_BR');
+
         return [
-            "tenant_id" => Tenant::factory(),
-            "customer_number" => Customer::exists() ? Customer::latest()->first()->customer_number + 1 : 1,
-            'name' => $this->faker->name,
+            "tenant_id" => 1,
+            "customer_number" => 1,
+            'name' => $faker->name,
             "cpf" => $faker->cpf(),
-            "birth" => $this->faker->date('Y-m-d'),
-            'email' => $this->faker->unique()->safeEmail,
+            "birth" => $faker->date('Y-m-d'),
+            'email' => $faker->unique()->safeEmail,
             "cep" => $faker->postcode(),
-            "state" => $this->faker->state,
-            "city" => $this->faker->city,
-            "district" => $faker->bairro(),
-            "street" => $this->faker->street,
-            "complement" => $this->faker->sentence,
-            "number" => $this->faker->buildingNumber,
-            'phone' => $this->faker->phoneNumber,
-            "contactname" => $this->faker->name,
-            "whatsapp" => $this->faker->phoneNumber,
-            "contactphone" => $this->faker->phoneNumber,
-            "observations" => $this->faker->sentence,
-            "created_at",
-            "updated_at",
+            "state" => $faker->state,
+            "city" => $faker->city,
+            "district" => $faker->citySuffix,
+            "street" => $faker->streetName,
+            "complement" => 'Casa',
+            "number" => $faker->buildingNumber,
+            'phone' => $faker->phoneNumber,
+            "contactname" => $faker->name,
+            "whatsapp" => $faker->phoneNumber,
+            "contactphone" => $faker->phoneNumber,
+            "observations" => $faker->sentence
         ];
+    }
+
+    /**
+     * Configura a factory para um tenant específico, garantindo que
+     * o customer_number seja sequencial para aquele tenant.
+     *
+     * @param int $tenantId
+     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     */
+    public function forTenant(int $tenantId)
+    {
+        return $this->state(function (array $attributes) use ($tenantId) {
+            $maxCustomerNumber = Customer::where('tenant_id', $tenantId)->max('customer_number') ?? 0;
+
+            return ['tenant_id' => $tenantId, 'customer_number' => $maxCustomerNumber + 1];
+        });
     }
 }

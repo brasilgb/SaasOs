@@ -8,10 +8,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Tenantable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Order extends Model
 {
-    use Tenantable;
+    use Tenantable, HasFactory;
     protected $guarded = ['allparts'];
 
     public function customer(): BelongsTo
