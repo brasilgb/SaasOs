@@ -24,14 +24,6 @@ class OrderFactory extends Factory
         // A instância do faker da factory ($this->faker) já está disponível.
         // Se precisar do locale pt_BR, configure-o globalmente no AppServiceProvider.
         return [
-            // Cria um Customer e associa o tenant_id da Ordem ao tenant_id do Cliente.
-            // Isso garante a consistência dos dados.
-            "customer_id" => Customer::inRandomOrder()->value('id'),//id aleatorio,
-            "tenant_id" => function (array $attributes) {
-                return Customer::find($attributes['customer_id'])->tenant_id;
-            },
-            "equipment_id" => Equipment::inRandomOrder()->value('id'), //id aleatorio
-            "order_number" => 1, // Este valor será sobrescrito pelo estado 'forTenant'
             "model" => $this->faker->randomElement(['Notebook Dell', 'PC Gamer', 'Macbook Pro', 'Celular Samsung']),
             "password" => $this->faker->optional()->password(6, 10),
             "defect" => $this->faker->sentence(4),

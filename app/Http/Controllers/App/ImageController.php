@@ -63,13 +63,13 @@ class ImageController extends Controller
         $image->delete();
         return redirect()->back()->with('success', 'Imagem excluida com sucesso!');
     }
-    
+
     // Delete image for id
     public function deleteImageOrder(Image $image, $aimage)
     {
         $imgorder = Image::where('id', $aimage)->first();
-        
-        $storePath = public_path('storage'. DIRECTORY_SEPARATOR .'orders' . DIRECTORY_SEPARATOR . $imgorder->order_id);
+
+        $storePath = public_path('storage' . DIRECTORY_SEPARATOR . 'orders' . DIRECTORY_SEPARATOR . $imgorder->order_id);
         if (file_exists($storePath . DIRECTORY_SEPARATOR . $imgorder->filename)) {
             unlink($storePath . DIRECTORY_SEPARATOR . $imgorder->filename);
         }
@@ -85,6 +85,7 @@ class ImageController extends Controller
         $image = base64_decode($request->filename);
         //  dd($image);   
         // $image = $request->file('imagem');
+        // dd($request->all());
         $storePath = public_path('storage/orders/' . $request->order_id);
         if (!file_exists($storePath)) {
             mkdir($storePath, 0777, true);
@@ -93,7 +94,8 @@ class ImageController extends Controller
         File::put('storage/orders/' . $request->order_id . '/' . $filename,  $image);
         Image::create([
             'order_id' => $request->order_id,
-            'filename' => $filename
+            'filename' => $filename,
+            'tenant_id' => $request->tenant_id
         ]);
         return [
             "success" => true,
@@ -109,5 +111,4 @@ class ImageController extends Controller
             "result" => $images
         ];
     }
-    
 }

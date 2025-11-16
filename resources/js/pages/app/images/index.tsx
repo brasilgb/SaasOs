@@ -69,6 +69,8 @@ const ImageUpload: React.FC<PageProps> = ({ savedimages, orderid, errors, succes
         destroy(route("app.images.destroy", id));
     }
 
+    console.log(savedimages);
+    
     return (
         <AppLayout>
             {flash.message && <AlertSuccess message={flash.message} />}

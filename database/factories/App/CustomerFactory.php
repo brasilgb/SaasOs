@@ -18,8 +18,6 @@ class CustomerFactory extends Factory
         $faker = FakerFactory::create('pt_BR');
 
         return [
-            "tenant_id" => 1,
-            "customer_number" => 1,
             'name' => $faker->name,
             "cpf" => $faker->cpf(),
             "birth" => $faker->date('Y-m-d'),
