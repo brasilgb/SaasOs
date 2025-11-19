@@ -20,6 +20,7 @@ import ActionDelete from '@/components/action-delete';
 import AlertSuccess from '@/components/app-alert-success';
 import { Button } from '@/components/ui/button';
 import { maskMoney } from '@/Utils/mask';
+import { Badge } from '@/components/ui/badge';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -34,6 +35,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function Parts({ parts }: any) {
   const { flash } = usePage().props as any;
+  console.log(parts.data);
 
   return (
     <AppLayout>
@@ -73,7 +75,8 @@ export default function Parts({ parts }: any) {
                 <TableHead>Name</TableHead>
                 <TableHead>Fabricante</TableHead>
                 <TableHead>Valor</TableHead>
-                <TableHead>Em estoque</TableHead>
+                <TableHead>Est. mínimo</TableHead>
+                <TableHead>Estoque</TableHead>
                 <TableHead>Cadastro</TableHead>
                 <TableHead></TableHead>
               </TableRow>
@@ -86,11 +89,19 @@ export default function Parts({ parts }: any) {
                     <TableCell className="font-medium">{part.name}</TableCell>
                     <TableCell>{part.manufacturer}</TableCell>
                     <TableCell>{maskMoney(part.sale_price)}</TableCell>
-                    <TableCell>{part.quantity}</TableCell>
+                    <TableCell>
+                      {part.minimum_stock_level}
+                    </TableCell>
+                    <TableCell>
+                      {part.quantity <= part.minimum_stock_level
+                        ? <Badge variant={'destructive'}>{part.quantity}</Badge>
+                        : <Badge variant={'default'}>{part.quantity}</Badge>
+                      }
+                    </TableCell>
                     <TableCell>{moment(part.created_at).format("DD/MM/YYYY")}</TableCell>
-                    
+
                     <TableCell className='flex justify-end gap-2'>
-                      
+
                       <Button asChild size="icon" className="bg-orange-500 hover:bg-orange-600 text-white">
                         <Link href={route('app.parts.edit', part.id)}>
                           <Edit />

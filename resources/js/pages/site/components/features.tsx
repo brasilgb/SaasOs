@@ -12,6 +12,9 @@ import {
   Tag,
   CheckSquare,
   BarChart3,
+  FileSpreadsheet,
+  ShoppingCart,
+  BookOpen,
 } from "lucide-react"
 
 const features = [
@@ -23,7 +26,7 @@ const features = [
   {
     icon: Calendar,
     title: "Agendamento de Visitas",
-    description: "Calendário inteligente para organizar visitas técnicas e otimizar rotas da equipe.",
+    description: "Agendamento de visitas técnicas para otimizar o tempo da equipe.",
   },
   {
     icon: ClipboardList,
@@ -31,9 +34,19 @@ const features = [
     description: "Controle total com status em tempo real, fotos do equipamento e histórico completo.",
   },
   {
+    icon: FileSpreadsheet,
+    title: "Pré-Orçamentos Prontos",
+    description: "Gere orçamentos instantâneos com templates pré-configurados para equipamentos específicos. Economize tempo com valores e serviços já definidos.",
+  },
+  {
     icon: Package,
     title: "Controle de Estoque",
-    description: "Gestão de peças e produtos com alertas de estoque mínimo e ajuste de estoque.",
+    description: "Gestão de peças e produtos com alertas de estoque mínimo e histórico de movimentações.",
+  },
+  {
+    icon: ShoppingCart,
+    title: "Vendas de Produtos/Peças",
+    description: "Venda produtos e peças para clientes ou avulso, com emissão automática de recibos profissionais.",
   },
   {
     icon: MessageSquare,
@@ -58,17 +71,22 @@ const features = [
   {
     icon: CheckSquare,
     title: "Checklist Comparativo",
-    description: "Registre o estado do equipamento na entrada e compare na entrega para o cliente.",
+    description: "Crie um checklist personalisado para equipamentos e compare na entrega com o cliente.",
   },
   {
     icon: BarChart3,
     title: "Relatórios Detalhados",
-    description: "Gere relatórios de visitas, ordens de serviço e desempenho por período em PDF.",
+    description: "Gere relatórios de visitas, ordens de serviço, clientes e vendas por período em PDF.",
   },
   {
     icon: Tag,
     title: "Etiquetas Inteligentes",
     description: "Imprima etiquetas para identificação rápida de equipamentos.",
+  },
+  {
+    icon: BookOpen,
+    title: "Manuais e Tutoriais em Vídeo",
+    description: "Acesso completo a documentação detalhada e vídeos tutoriais para facilitar o uso de todas as funcionalidades.",
   },
   {
     icon: Settings,

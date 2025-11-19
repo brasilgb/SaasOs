@@ -3,7 +3,7 @@ import { Icon } from '@/components/icon';
 import AppLayout from '@/layouts/app-layout'
 import { BreadcrumbItem } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react'
-import { Eye, MessageSquareMore, Pencil, Plus } from 'lucide-react';
+import { Edit, Eye, MessageSquareMore, Pencil, Plus } from 'lucide-react';
 import moment from 'moment'
 import {
   Table,
@@ -95,7 +95,7 @@ export default function Messages({ messages }: any) {
                         ? <AppLoadMessage message={message} />
                         : <Button asChild size="icon" className="bg-orange-500 hover:bg-orange-600 text-white">
                           <Link href={route("app.messages.edit", message.id)}>
-                            {message.sender_id === auth.user.id ? <Pencil className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            {message.sender_id === auth.user.id ? <Edit /> : <Eye />}
                           </Link>
                         </Button>}
 

@@ -51,7 +51,7 @@ export default function Customers({ customers }: any) {
 
       <div className='flex items-center justify-between p-4'>
         <div className='w-full'>
-          <InputSearch placeholder="Pesquisar cliente por nome ou cpf/cnpj" url="app.customers.index" cpfCnpj />
+          <InputSearch placeholder="Pesquisar cliente por nome ou cpf/cnpj" url="app.customers.index" />
         </div>
         <div className='w-full flex justify-end'>
           <Button variant={'default'} asChild>

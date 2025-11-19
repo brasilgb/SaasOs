@@ -3,7 +3,7 @@ import { Icon } from '@/components/icon';
 import AppLayout from '@/layouts/app-layout'
 import { BreadcrumbItem } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react'
-import { Calendar, Pencil, Plus } from 'lucide-react';
+import { Calendar, Edit, Pencil, Plus } from 'lucide-react';
 import moment from 'moment'
 import {
   Table,
@@ -109,7 +109,7 @@ export default function Schedules({ schedules }: any) {
 
                       <Button asChild size="icon" className="bg-orange-500 hover:bg-orange-600 text-white">
                         <Link href={route("app.schedules.edit", schedule.id)}>
-                          <Pencil className="h-4 w-4" />
+                          <Edit />
                         </Link>
                       </Button>
 

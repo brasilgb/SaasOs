@@ -32,6 +32,7 @@ export default function Others({ othersettings, company }: any) {
         navigation: othersettings?.navigation,
         budget: othersettings?.budget,
         enableparts: othersettings?.enableparts,
+        enablesales: othersettings?.enablesales,
     });
 
     const handleSubmit = (e: any) => {
@@ -99,6 +100,16 @@ export default function Others({ othersettings, company }: any) {
                                 id="enableparts"
                                 checked={data.enableparts}
                                 onCheckedChange={(checked: any) => setData('enableparts', checked)}
+                            />
+                        </div>
+                    </div>
+                    <div className="space-y-6 mt-6">
+                        <HeadingSmall title="Habilitar a venda de peças e/ou produtos" description="Habilitar a venda de peças e/ou produtos avulsos ou para usuários específicos, com ajuste de estoque." />
+                        <div className="grid gap-2">
+                            <Switch
+                                id="enablesales"
+                                checked={data.enablesales}
+                                onCheckedChange={(checked: any) => setData('enablesales', checked)}
                             />
                         </div>
                     </div>

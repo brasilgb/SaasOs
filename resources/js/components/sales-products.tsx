@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -13,8 +13,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Select from 'react-select';
 import { useForm } from '@inertiajs/react';
-import { ShoppingCartIcon, Trash2 } from 'lucide-react'; // Adicionado Trash2 para remover item
+import { Loader2, ShoppingCartIcon, Trash2 } from 'lucide-react'; // Adicionado Trash2 para remover item
 import { maskMoney } from '@/Utils/mask';
+import { pdf } from '@react-pdf/renderer';
+import SaleReceiptPDF from './SaleReceiptPDF';
 
 interface Part {
     id: number;
@@ -34,11 +36,14 @@ interface SalesProductsProps {
     customers: any[];
 }
 
-export function SalesProducts({ parts, customers}: SalesProductsProps) {
+export function SalesProducts({ parts, customers }: SalesProductsProps) {
     const [selectedPart, setSelectedPart] = useState<Part | null>(null);
     const [open, setOpen] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
     const [cartItems, setCartItems] = useState<CartItem[]>([]); // New state for cart items
+    const [saleCompleted, setSaleCompleted] = useState(false);
+    const [customerNameToPrint, setCustomerNameToPrint] = useState<string | undefined>(undefined);
+    const [isPrinting, setIsPrinting] = useState(false);
 
     const { data, setData, post, processing, errors, reset } = useForm({
         customer_id: '',
@@ -115,11 +120,13 @@ export function SalesProducts({ parts, customers}: SalesProductsProps) {
             },
             onSuccess: () => {
                 setSuccessMessage('Venda efetuada com sucesso!');
+                setCustomerNameToPrint(selectedOptionCustomers?.label); // Salva o nome do cliente
+                setSaleCompleted(true); // Indica que a venda foi concluída
                 reset();
                 setSelectedPart(null);
-                setCartItems([]); // Clear cart after successful sale
                 setTimeout(() => {
                     setSuccessMessage('');
+                    // Não limpa mais o carrinho aqui para permitir a impressão
                 }, 3000);
             },
         } as any);
@@ -142,6 +149,38 @@ export function SalesProducts({ parts, customers}: SalesProductsProps) {
         reset();
         setSelectedPart(null);
         setCartItems([]); // Clear cart on dialog close
+        setSaleCompleted(false); // Reseta o estado da venda
+        setCustomerNameToPrint(undefined); // Limpa o nome do cliente para a próxima venda
+    };
+
+    const handleNewSale = () => {
+        setSuccessMessage('');
+        reset();
+        setSelectedPart(null);
+        setCartItems([]);
+        setSaleCompleted(false);
+        setCustomerNameToPrint(undefined);
+    };
+
+    const handlePrintReceipt = async () => {
+        if (cartItems.length === 0) {
+            alert("O carrinho está vazio. Adicione itens para gerar um recibo.");
+            return;
+        }
+        setIsPrinting(true);
+        try {           
+            const customerNameForPDF = customerNameToPrint || 'Consumidor Final';
+            const blob = await pdf(
+                <SaleReceiptPDF items={cartItems} total={cartTotal} customerName={customerNameForPDF} />
+            ).toBlob();
+            const url = URL.createObjectURL(blob);
+            window.open(url, "_blank");
+        } catch (error) {
+            console.error("Erro ao gerar o PDF:", error);
+            alert("Ocorreu um erro ao gerar o recibo. Tente novamente.");
+        } finally {
+            setIsPrinting(false);
+        }
     };
 
     const selectedOptionParts = optionsParts.find(option => option.value === data.part_id) || null;
@@ -297,8 +336,30 @@ export function SalesProducts({ parts, customers}: SalesProductsProps) {
                         <Button type="button" variant="outline" onClick={handleClose}>
                             Fechar
                         </Button>
-                        <Button type="submit" disabled={processing || cartItems.length === 0}>
-                            {processing ? 'Vendendo...' : 'Finalizar Venda'}
+                        {!saleCompleted && (
+                            <Button type="submit" disabled={processing || cartItems.length === 0}>
+                                {processing ? 'Vendendo...' : 'Finalizar Venda'}
+                            </Button>
+                        )}
+                        {saleCompleted && (
+                            <Button type="button" variant="default" onClick={handleNewSale}>
+                                Nova Venda
+                            </Button>
+                        )}
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={handlePrintReceipt}
+                            className="bg-emerald-500 hover:bg-emerald-600 text-white"
+                            disabled={isPrinting || cartItems.length === 0 || processing}
+                        >
+                            {isPrinting ? (
+                                <Fragment>
+                                    <Loader2 className="mr-2 size-4 animate-spin" /> Imprimindo...
+                                </Fragment>
+                            ) : (
+                                'Imprimir recibo'
+                            )}
                         </Button>
                     </DialogFooter>
                 </form>
@@ -306,4 +367,3 @@ export function SalesProducts({ parts, customers}: SalesProductsProps) {
         </Dialog>
     );
 }
-export default SalesProducts;

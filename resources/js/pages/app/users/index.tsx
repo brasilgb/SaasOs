@@ -3,7 +3,7 @@ import { Icon } from '@/components/icon';
 import AppLayout from '@/layouts/app-layout'
 import { BreadcrumbItem } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react'
-import { Pencil, Plus, UserCog } from 'lucide-react';
+import { Edit, Pencil, Plus, UserCog } from 'lucide-react';
 import moment from 'moment'
 import {
   Table,
@@ -95,7 +95,7 @@ export default function Users({ users }: any) {
 
                       <Button asChild size="icon" className="bg-orange-500 hover:bg-orange-600 text-white">
                         <Link href={route("app.users.edit", user.id)}>
-                          <Pencil className="h-4 w-4" />
+                          <Edit />
                         </Link>
                       </Button>
 
