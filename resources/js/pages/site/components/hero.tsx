@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ArrowRight, CheckCircle2 } from "lucide-react"
 import { Link } from "@inertiajs/react"
+import { ProductCarousel } from "./product-carousel"
 
 export function Hero() {
   return (
@@ -49,11 +50,12 @@ export function Hero() {
 
         <div className="mt-16 mx-auto max-w-5xl">
           <div className="rounded-xl border border-border bg-card p-2 shadow-2xl">
-            <img
+            {/* <img
               src="./images/placeholder.svg?height=600&width=1200"
               alt="Dashboard do sistema"
               className="rounded-lg w-full"
-            />
+            /> */}
+            <ProductCarousel />
           </div>
         </div>
       </div>

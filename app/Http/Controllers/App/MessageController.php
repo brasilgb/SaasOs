@@ -32,7 +32,7 @@ class MessageController extends Controller
                     });
             });
         }
-        $messages = $query->with('sender')->with('recipient')->paginate(12);
+        $messages = $query->with('sender')->with('recipient')->paginate(11);
 
         return Inertia::render('app/messages/index', ['messages' => $messages]);
     }

@@ -25,7 +25,7 @@ class UserController extends Controller
         if ($search) {
             $query->where('name', 'like', '%' . $search . '%');
         }
-        $users = $query->whereNull('roles')->orWhere('roles', '9')->with('tenant')->paginate(12);
+        $users = $query->whereNull('roles')->orWhere('roles', '9')->with('tenant')->paginate(11);
         return Inertia::render('admin/users/index', ['users' => $users]);
     }
 

@@ -50,26 +50,26 @@ const chartConfig = {
 
 export function ChartAreaDashboard({ chartequipments }: any) {
   const isMobile = useIsMobile()
-  const [timeRange, setTimeRange] = React.useState("90d")
+  const [timeRange, setTimeRange] = React.useState("7d")
 
   const chartData = chartequipments?.map((type: any) => ({ "date": type.date, "desktop": type.desktop_count, "mobile": type.mobile_count, "notebook": type.notebook_count }))
 
   React.useEffect(() => {
     if (isMobile) {
-      setTimeRange("7d")
+      setTimeRange("30d")
     }
   }, [isMobile])
 
   const filteredData = chartData.filter((item: any) => {
     const date = new Date(item.date)
-    const referenceDate = new Date("2024-06-30")
-    let daysToSubtract = 90
+    const now = new Date()
+    let daysToSubtract = 60
     if (timeRange === "30d") {
       daysToSubtract = 30
     } else if (timeRange === "7d") {
       daysToSubtract = 7
     }
-    const startDate = new Date(referenceDate)
+    const startDate = new Date(now)
     startDate.setDate(startDate.getDate() - daysToSubtract)
     return date >= startDate
   })
@@ -80,7 +80,7 @@ export function ChartAreaDashboard({ chartequipments }: any) {
         <CardTitle>Equipamentos recebidos</CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/card:block">
-            Total de equipamentos recebidos
+            Total de equipamentos recebidos nos últimos meses
           </span>
           <span className="@[540px]/card:hidden">Últimos 3 meses</span>
         </CardDescription>
@@ -92,9 +92,9 @@ export function ChartAreaDashboard({ chartequipments }: any) {
             variant="outline"
             className="hidden *:data-[slot=toggle-group-item]:!px-4 @[767px]/card:flex"
           >
-            <ToggleGroupItem value="30d">Últimos 30 dias</ToggleGroupItem>
-            <ToggleGroupItem value="90d">Últimos 3 meses</ToggleGroupItem>
             <ToggleGroupItem value="7d">Últimos 7 dias</ToggleGroupItem>
+            <ToggleGroupItem value="30d">Últimos 30 dias</ToggleGroupItem>
+            <ToggleGroupItem value="60d">Últimos 60 dias</ToggleGroupItem>
           </ToggleGroup>
           <Select value={timeRange} onValueChange={setTimeRange}>
             <SelectTrigger
@@ -102,17 +102,17 @@ export function ChartAreaDashboard({ chartequipments }: any) {
               size="sm"
               aria-label="Select a value"
             >
-              <SelectValue placeholder="Últimos 3 meses" />
+              <SelectValue placeholder="Últimos 60 dias" />
             </SelectTrigger>
             <SelectContent className="rounded-xl">
+              <SelectItem value="7d" className="rounded-lg">
+                Últimos 7 dias
+              </SelectItem>
               <SelectItem value="30d" className="rounded-lg">
                 Últimos 30 dias
               </SelectItem>
-              <SelectItem value="90d" className="rounded-lg">
-                Últimos 3 meses
-              </SelectItem>
-              <SelectItem value="7d" className="rounded-lg">
-                Últimos 7 dias
+              <SelectItem value="60d" className="rounded-lg">
+                Últimos 60 dias
               </SelectItem>
             </SelectContent>
           </Select>
@@ -198,6 +198,7 @@ export function ChartAreaDashboard({ chartequipments }: any) {
               fill="url(#fillMobile)"
               stroke="var(--color-mobile)"
               stackId="a"
+              dot={true}
             />
             <Area
               dataKey="desktop"
@@ -205,6 +206,7 @@ export function ChartAreaDashboard({ chartequipments }: any) {
               fill="url(#fillDesktop)"
               stroke="var(--color-desktop)"
               stackId="a"
+              dot={true}
             />
             <Area
               dataKey="notebook"
@@ -212,6 +214,7 @@ export function ChartAreaDashboard({ chartequipments }: any) {
               fill="url(#fillNotebook)"
               stroke="var(--color-notebook)"
               stackId="a"
+              dot={true}
             />
           </AreaChart>
         </ChartContainer>

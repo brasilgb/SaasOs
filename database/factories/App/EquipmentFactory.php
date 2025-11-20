@@ -18,7 +18,7 @@ class EquipmentFactory extends Factory
     public function definition(): array
     {
         return [
-            "equipment" => $this->faker->unique()->randomElement(['Notebook', 'PC', 'Mobile', 'Impressora']),
+            "equipment" => $this->faker->unique(true)->randomElement(['Notebook', 'PC', 'Mobile', 'Impressora']),
         ];
     }
 

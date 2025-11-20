@@ -12,6 +12,7 @@ use App\Models\App\Equipment;
 use App\Models\App\Customer;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
 
@@ -57,7 +58,7 @@ class HandleInertiaRequests extends Middleware
             'setting' => Setting::first(['name', 'logo']),
             'whatsapp' => WhatsappMessage::first(),
             'othersetting' => Other::first(),
-            'notifications' => Message::where('recipient_id', $request->user()->id)->where('status', '0')->count(),
+            'notifications' => Auth::user() && Message::where('recipient_id', Auth::user()->id)->where('status', '0')->count(),
             'equipments' => Equipment::get(),
             'customers' => Customer::get(),
             'technicals' => User::where('roles', 3)->orWhere('roles', 1)->where('status', 1)->get(),

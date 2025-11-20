@@ -17,7 +17,7 @@ use App\Tenantable;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use Notifiable, HasApiTokens, Tenantable;
+    use Notifiable, HasApiTokens, Tenantable, HasFactory;
 
     /**
      * The attributes that are mass assignable.

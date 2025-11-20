@@ -21,9 +21,11 @@ class OrderFactory extends Factory
      */
     public function definition(): array
     {
-        // A instância do faker da factory ($this->faker) já está disponível.
-        // Se precisar do locale pt_BR, configure-o globalmente no AppServiceProvider.
+        $createdAt = $this->faker->dateTimeBetween('-3 months', 'now');
+        $deliveryDays = $this->faker->randomElement([5, 8]);
+
         return [
+            // ...
             "model" => $this->faker->randomElement(['Notebook Dell', 'PC Gamer', 'Macbook Pro', 'Celular Samsung']),
             "password" => $this->faker->optional()->password(6, 10),
             "defect" => $this->faker->sentence(4),
@@ -32,13 +34,15 @@ class OrderFactory extends Factory
             "budget_description" => $this->faker->paragraph,
             "budget_value" => $this->faker->randomFloat(2, 50, 1000),
             "service_status" => $this->faker->randomElement(['1', '2', '3', '4']), // Orçamento, Aprovado, etc.
-            "delivery_forecast" => $this->faker->dateTimeBetween('+1 day', '+2 weeks'),
+            "delivery_forecast" => (clone $createdAt)->modify("+$deliveryDays days"),
             "observations" => $this->faker->optional()->sentence,
             "services_performed" => $this->faker->optional()->paragraph,
             "parts" => $this->faker->optional()->words(3, true),
 
             "delivery_date" => $this->faker->optional()->date('Y-m-d'),
             "responsible_technician" => $this->faker->name,
+            'created_at' => $createdAt,
+            'updated_at' => $createdAt,
         ];
     }
 

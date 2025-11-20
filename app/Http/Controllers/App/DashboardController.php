@@ -39,15 +39,18 @@ class DashboardController extends Controller
                 ->whereBetween('delivery_date', [$startDate, $endDate])
                 ->get('id')
         ];
+        
         $chartequipments = Order::select(
             DB::raw('DATE(created_at) as date'),
             DB::raw('SUM(CASE WHEN equipment_id = 1 THEN 1 ELSE 0 END) as mobile_count'),
             DB::raw('SUM(CASE WHEN equipment_id = 2 THEN 1 ELSE 0 END) as desktop_count'),
             DB::raw('SUM(CASE WHEN equipment_id = 3 THEN 1 ELSE 0 END) as notebook_count')
         )
+        ->whereBetween('created_at', [Carbon::now()->subMonths(2), Carbon::now()])
         ->groupBy('date')
         ->orderBy('date', 'desc')
         ->get();
+
         $parts = Part::get();
         $customers = Customer::get();
         // $chartequipments = response()->json($cequipments);

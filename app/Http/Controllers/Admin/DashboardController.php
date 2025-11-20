@@ -13,7 +13,7 @@ class DashboardController extends Controller
     public function index()
     {
         $metrics = [
-            "users" => User::get(),
+            "users" => User::where('roles', 9)->orWhereNull('roles')->get(),
             "companies" => Tenant::get()
         ];
         return Inertia::render('admin/dashboard/index', ['metrics' => $metrics]);

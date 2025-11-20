@@ -36,7 +36,7 @@ class CustomerController extends Controller
                 ->orWhere('cpf', 'like', '%' . $search . '%');
         }
 
-        $customers = $query->paginate(12);
+        $customers = $query->paginate(11);
         $customerlast = Customer::orderBy('id', 'DESC')->first();
         return Inertia::render('app/customers/index', ["customers" => $customers, "customerlast" => $customerlast]);
     }
