@@ -38,7 +38,7 @@ class OrderController extends Controller
     // Display and linting order for id
     public function getOrder($order)
     {
-        $query = Order::where('id', $order)->with('customer')->with('equipment')->get();
+        $query = Order::where('order_number', $order)->with('customer')->with('equipment')->get();
         return [
             'success' => true,
             'result' => $query
