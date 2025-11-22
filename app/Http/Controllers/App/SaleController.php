@@ -13,11 +13,21 @@ use Inertia\Inertia;
 class SaleController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
+        $search = $request->get('q');
+        $query = Sale::with('customer')->with('items')->orderBy('id', 'DESC');
         
-        $sales = Sale::with('customer')->with('items')->paginate(10);
-        return Inertia::render('app/sales/index', ['sales' => $sales]);
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('sales_number', 'like', '%' . $search . '%')
+                    ->orWhereHas('customer', function ($subQuery) use ($search) {
+                        $subQuery->where('name', 'like', '%' . $search . '%');
+                    });
+            });
+        }
+        $sales = $query->paginate(10)->withQueryString();
+        return Inertia::render('app/sales/index', ['sales' => $sales, 'search' => $search]);
     }
 
     public function store(Request $request)

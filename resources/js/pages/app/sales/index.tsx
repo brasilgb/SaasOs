@@ -60,7 +60,7 @@ export default function Sales({ sales }: any) {
 
       <div className='flex items-center justify-between p-4'>
         <div className='w-full'>
-          <InputSearch placeholder="Buscar vendas" url="app.sales.index" />
+          <InputSearch placeholder="Buscar vendas por número e cliente" url="app.sales.index" />
         </div>
         <div className='w-full flex justify-end'>
           
