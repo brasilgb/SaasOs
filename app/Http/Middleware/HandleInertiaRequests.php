@@ -58,7 +58,7 @@ class HandleInertiaRequests extends Middleware
             'setting' => Setting::first(['name', 'logo']),
             'whatsapp' => WhatsappMessage::first(),
             'othersetting' => Other::first(),
-            'notifications' => Auth::user() && Message::where('recipient_id', Auth::user()->id)->where('status', '0')->count(),
+            'notifications' => Message::where('recipient_id', $request->user()->id)->where('status', '0')->count(),
             'equipments' => Equipment::get(),
             'customers' => Customer::get(),
             'technicals' => User::where('roles', 3)->orWhere('roles', 1)->where('status', 1)->get(),

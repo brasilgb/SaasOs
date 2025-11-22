@@ -46,7 +46,7 @@ class BudgetController extends Controller
     /**
      * Display a listing of the resource.
      */
-public function index(Request $request)
+    public function index(Request $request)
     {
         $search = $request->get('q');
         $query = Budget::with('brand')->with('eqmodel')->with('service')->orderBy('id', 'DESC');

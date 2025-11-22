@@ -85,7 +85,7 @@ export default function Users({ users }: any) {
               {users?.data.length > 0 ?
                 users?.data?.map((user: any) => (
                   <TableRow key={user.id}>
-                    <TableCell>{user.users_number}</TableCell>
+                    <TableCell>{user.user_number}</TableCell>
                     <TableCell className="font-medium">{user.name}</TableCell>
                     <TableCell className="font-medium">{maskPhone(user.telephone)}</TableCell>
                     <TableCell>{roleUserByValue(user.roles)}</TableCell>

@@ -12,6 +12,7 @@ import { Badge } from './ui/badge';
 export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: BreadcrumbItemType[] }) {
     const page = usePage<SharedData>();
     const { auth, notifications } = page.props;
+console.log(notifications);
 
     const getInitials = useInitials();
     return (
