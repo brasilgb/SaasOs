@@ -12,7 +12,6 @@ import { Badge } from './ui/badge';
 export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: BreadcrumbItemType[] }) {
     const page = usePage<SharedData>();
     const { auth, notifications } = page.props;
-console.log(notifications);
 
     const getInitials = useInitials();
     return (
@@ -27,12 +26,15 @@ console.log(notifications);
                         <Bell />
                     </Link>
                 </Button> */}
-                <Button variant="ghost" size="icon" asChild className="relative">
-                    <Link href={route('app.messages.index')}>
-                        <Badge variant="default" className="absolute -top-2 -right-2">{String(notifications)}</Badge>
-                        <MessageSquareMoreIcon />
-                    </Link>
-                </Button>
+
+                {auth.user.tenant_id !== null &&
+                    <Button variant="ghost" size="icon" asChild className="relative">
+                        <Link href={route('app.messages.index')}>
+                            <Badge variant="default" className="absolute -top-2 -right-2">{String(notifications)}</Badge>
+                            <MessageSquareMoreIcon />
+                        </Link>
+                    </Button>
+                }
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="size-10 rounded-full p-1">
