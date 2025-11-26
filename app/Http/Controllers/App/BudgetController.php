@@ -49,15 +49,12 @@ class BudgetController extends Controller
     public function index(Request $request)
     {
         $search = $request->get('q');
-        $query = Budget::with('brand')->with('eqmodel')->with('service')->orderBy('id', 'DESC');
+        $query = Budget::orderBy('id', 'DESC');
         if ($search) {
-            $query->where('title', 'like', '%' . $search . '%');
+            $query->where('categoria', 'like', '%' . $search . '%');
         }
-        $budgets = $query->paginate(12)->withQueryString();
-        $brands = Brand::get();
-        $models = EQModel::get();
-        $services = Service::get();
-        return Inertia::render('app/budgets/index', ['budgets' => $budgets, 'brands' => $brands, 'models' => $models, 'services' => $services]);
+        $budgets = $query->paginate(12);
+        return Inertia::render('app/budgets/index', ['budgets' => $budgets,]);
     }
 
     /**
@@ -65,7 +62,8 @@ class BudgetController extends Controller
      */
     public function create()
     {
-        //
+        $budgets = Budget::distinct()->pluck('category');
+        return Inertia::render('app/budgets/create-budget', ['budgets' => $budgets]);
     }
 
     /**
@@ -75,9 +73,9 @@ class BudgetController extends Controller
     {
         $data = $request->all();
         $request->validated();
-        $data['budgets_number'] = Budget::exists() ? Budget::latest()->first()->budgets_number + 1 : 1;
+        $data['budget_number'] = Budget::exists() ? Budget::latest()->first()->budget_number + 1 : 1;
         Budget::create($data);
-        return redirect()->route('app.register-budgets.index')->with('success', 'Orçamento cadastrado com sucesso');
+        return redirect()->route('app.budgets.index')->with('success', 'Orçamento cadastrado com sucesso');
     }
 
     /**
@@ -104,7 +102,7 @@ class BudgetController extends Controller
         $data = $request->all();
         $request->validated();
         $budget->update($data);
-        return redirect()->route('app.register-budgets.index')->with('success', 'Orçamento editado com sucesso');
+        return redirect()->route('app.budgets.index')->with('success', 'Orçamento editado com sucesso');
     }
 
     /**
@@ -113,6 +111,6 @@ class BudgetController extends Controller
     public function destroy(Budget $budget)
     {
         $budget->delete();
-        return redirect()->route('app.register-budgets.index')->with('success', 'Orçamento excluido com sucesso!');
+        return redirect()->route('app.budgets.index')->with('success', 'Orçamento excluido com sucesso!');
     }
 }

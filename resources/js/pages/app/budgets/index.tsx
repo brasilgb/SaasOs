@@ -2,8 +2,8 @@ import { Breadcrumbs } from '@/components/breadcrumbs'
 import { Icon } from '@/components/icon';
 import AppLayout from '@/layouts/app-layout'
 import { BreadcrumbItem } from '@/types';
-import { Head, usePage } from '@inertiajs/react'
-import { PackagePlus } from 'lucide-react';
+import { Head, Link, usePage } from '@inertiajs/react'
+import { Edit, PackagePlus, Plus } from 'lucide-react';
 import moment from 'moment'
 import {
   Table,
@@ -20,6 +20,7 @@ import ActionDelete from '@/components/action-delete';
 import AlertSuccess from '@/components/app-alert-success';
 import CreateBudget from './create-budget';
 import EditBudget from './edit-budget';
+import { Button } from '@/components/ui/button';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -32,7 +33,7 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-export default function CheckList({ budgets, brands, models, services }: any) {
+export default function CheckList({ budgets }: any) {
   const { flash } = usePage().props as any;
 
   return (
@@ -48,12 +49,20 @@ export default function CheckList({ budgets, brands, models, services }: any) {
           <Breadcrumbs breadcrumbs={breadcrumbs} />
         </div>
       </div>
+
       <div className='flex items-center justify-between p-4'>
         <div className='w-full'>
-          <InputSearch placeholder="Buscar orçamento" url="app.register-budgets.index" />
+          <InputSearch placeholder="Pesquisar por categoria" url="app.budgets.index" />
         </div>
         <div className='w-full flex justify-end'>
-          <CreateBudget brands={brands} models={models} services={services} />
+          <Button variant={'default'} asChild>
+            <Link
+              href={route('app.budgets.create')}
+            >
+              <Plus className='h-4 w-4' />
+              <span>Orçamento</span>
+            </Link>
+          </Button>
         </div>
       </div>
 
@@ -63,9 +72,10 @@ export default function CheckList({ budgets, brands, models, services }: any) {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[100px]">#</TableHead>
+                <TableHead>Categoria</TableHead>
                 <TableHead>Serviço</TableHead>
-                <TableHead>Marca</TableHead>
-                <TableHead>Modelo</TableHead>
+                <TableHead>Tempo Estimado</TableHead>
+                <TableHead>Valor Total</TableHead>
                 <TableHead>Cadastro</TableHead>
                 <TableHead></TableHead>
               </TableRow>
@@ -75,13 +85,18 @@ export default function CheckList({ budgets, brands, models, services }: any) {
                 budgets?.data?.map((budget: any) => (
                   <TableRow key={budget.id}>
                     <TableCell>{budget.budget_number}</TableCell>
-                    <TableCell className="font-medium">{budget.service.service}</TableCell>
-                    <TableCell>{budget.brand.brand}</TableCell>
-                    <TableCell>{budget.eqmodel.model}</TableCell>
+                    <TableCell className="font-medium">{budget.service}</TableCell>
+                    <TableCell>{budget.estimated_time}</TableCell>
+                    <TableCell>{budget.total_value}</TableCell>
                     <TableCell>{moment(budget.created_at).format("DD/MM/YYYY")}</TableCell>
                     <TableCell className='flex justify-end gap-2'>
-                    <EditBudget budget={budget} brands={brands} models={models} services={services} />
-                      <ActionDelete title={'este orçamento'} url={'app.register-budgets.destroy'} param={budget.id} />
+
+                      <Button asChild size="icon" className="bg-orange-500 hover:bg-orange-600 text-white">
+                        <Link href={route('app.bugets.edit', budget.id)}>
+                          <Edit />
+                        </Link>
+                      </Button>
+
                     </TableCell>
                   </TableRow>
                 ))
@@ -94,13 +109,13 @@ export default function CheckList({ budgets, brands, models, services }: any) {
                 )
               }
             </TableBody>
-              <TableFooter>
-                <TableRow>
-                  <TableCell colSpan={6}>
-                    <AppPagination data={budgets} />
-                  </TableCell>
-                </TableRow>
-              </TableFooter>
+            <TableFooter>
+              <TableRow>
+                <TableCell colSpan={6}>
+                  <AppPagination data={budgets} />
+                </TableCell>
+              </TableRow>
+            </TableFooter>
           </Table>
         </div>
       </div>

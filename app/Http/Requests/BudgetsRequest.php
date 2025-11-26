@@ -21,19 +21,27 @@ class BudgetsRequest extends FormRequest
      */
     public function rules(): array
     {
-         return [
-            'service_id' => 'required',
+        return [
+            'category' => 'required',
+            'service' => 'required',
             'description' => 'required',
-            'value' => 'required',
+            'estimated_time' => 'required',
+            'labor_value' => 'required',
+            'total_value' => 'required',
+            'warranty' => 'required' // Garantia
         ];
     }
 
     public function attributes(): array
     {
         return [
-            'service_id' => 'serviço',
-            'description' => 'descrição',
-            'value' => 'valor',
+            'category' =>       'categoria',
+            'service' =>        'serviço',
+            'description' =>    'descrição',
+            'estimated_time' => 'tempo estimado',
+            'labor_value' =>    'valor mão de obra',
+            'total_value' =>    'valor total',
+            'warranty' =>       'garantia'
         ];
     }
 }

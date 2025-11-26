@@ -30,13 +30,6 @@ export function AppSidebar() {
                     <div className='my-1'>
                         <NavMainCollapsible items={mainConfItems} />
                     </div>
-
-                    {othersetting?.budget ?
-                        <div className='my-1'>
-                            <NavMainCollapsible items={mainRegisterItems} />
-                        </div> : ''
-                    }
-
                     <NavMain items={mainUserItems} />
 
                 </SidebarGroup>

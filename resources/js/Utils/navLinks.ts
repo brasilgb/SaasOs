@@ -1,5 +1,5 @@
 import { type NavItem } from '@/types';
-import { Link as linkmegb, Calendar, Cog, LayoutGrid, MessageSquareMore, PackagePlus, UserCog, Users2, Wrench, Building, MessageCircleCode, Printer, Tags, CogIcon, Copyright, Monitor, Sparkles, ClipboardList, Blocks, Building2, HandCoins, MemoryStick, ShoppingCartIcon, FileTextIcon } from 'lucide-react';
+import { Link as linkmegb, Calendar, Cog, LayoutGrid, MessageSquareMore, PackagePlus, UserCog, Users2, Wrench, Building, MessageCircleCode, Printer, Tags, CogIcon, Copyright, Monitor, Sparkles, ClipboardList, Blocks, Building2, HandCoins, MemoryStick, ShoppingCartIcon, FileTextIcon, FileInputIcon } from 'lucide-react';
 
 const mainNavItems: NavItem[] = [
     {
@@ -15,6 +15,14 @@ const mainNavItems: NavItem[] = [
         icon: Users2,
         active: 'app.customers.*',
         enabled: 'customers'
+        
+    },
+    {
+        title: 'Orçamentos',
+        href: route('app.budgets.index'),
+        icon: PackagePlus,
+        active: 'app.budgets.*',
+        enabled: 'budgets'
         
     },
     {
@@ -151,7 +159,7 @@ const mainRegisterItems = [
             },
             {
                 title: 'Cadastrar orçamentos',
-                url: route('app.register-budgets.index'),
+                url: route('app.budgets.index'),
                 icon: Blocks,
                 active: 'app.register-budgets.*',
             },

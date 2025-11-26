@@ -29,7 +29,7 @@ export default function EditBudget({ budget, brands, models, services }: any) {
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
-        patch(route('app.register-budgets.update', budget?.id), {
+        patch(route('app.budgets.update', budget?.id), {
             onSuccess: () => {
                 setOpen(false)
             },

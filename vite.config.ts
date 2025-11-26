@@ -16,8 +16,8 @@ export default defineConfig({
     ],
     server: {
         // host: 'https://techos.megb.com.br',
-        // host: '172.16.1.67',
-        host: '192.168.2.53',
+        host: '172.16.1.67',
+        // host: '192.168.2.53',
         cors: true
     },
     esbuild: {

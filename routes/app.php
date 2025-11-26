@@ -32,13 +32,13 @@ Route::resource('orders', OrderController::class);
 Route::resource('schedules', ScheduleController::class);
 Route::resource('services', ServiceController::class);
 Route::resource('users', UserController::class);
+Route::resource('budgets', BudgetController::class);
 Route::resource('whatsapp-messages', WhatsappMessageController::class);
 Route::resource('register-brands', BrandController::class)->parameters(['register-brands' => 'brand']);
 Route::resource('register-equipments', EquipmentController::class)->parameters(['register-equipments' => 'equipment']);
 Route::resource('register-models', EQModelController::class)->parameters(['register-models' => 'eQModel']);
 Route::resource('register-services', ServiceController::class)->parameters(['register-services' => 'service']);
 Route::resource('register-checklists', ChecklistController::class)->parameters(['register-checklists' => 'checklist']);
-Route::resource('register-budgets', BudgetController::class)->parameters(['register-budgets' => 'budget']);
 Route::get('images', [ImageController::class, 'index'])->name('images.index');
 Route::post('images', [ImageController::class, 'store'])->name('images.store');
 Route::delete('images/{image}', [ImageController::class, 'destroy'])->name('images.destroy');
@@ -49,6 +49,7 @@ Route::put('other-settings/{other}', [OtherController::class, 'update'])->name('
 Route::resource('company', CompanyController::class);
 Route::resource('whatsapp-message', WhatsappMessageController::class)->parameters(['whatsapp-message' => 'whatsappmessage']);
 Route::resource('receipts', ReceiptController::class);
+
 Route::get('receipts/{or}/{tp}', [ReceiptController::class, 'printing'])->name('receipts.printing');
 
 Route::resource('label-printing', LabelPrintingController::class);
