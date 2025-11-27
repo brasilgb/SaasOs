@@ -6,10 +6,12 @@ use App\Models\App\Budget;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\BudgetsRequest;
 use App\Models\App\Brand;
+use App\Models\App\Company;
 use App\Models\App\EQModel;
 use App\Models\App\Service;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 
 class BudgetController extends Controller
@@ -51,10 +53,11 @@ class BudgetController extends Controller
         $search = $request->get('q');
         $query = Budget::orderBy('id', 'DESC');
         if ($search) {
-            $query->where('categoria', 'like', '%' . $search . '%');
+            $query->where('category', 'like', '%' . $search . '%');
         }
         $budgets = $query->paginate(12);
-        return Inertia::render('app/budgets/index', ['budgets' => $budgets,]);
+        $company = Company::first();
+        return Inertia::render('app/budgets/index', ['budgets' => $budgets, 'company' => $company]);
     }
 
     /**
@@ -83,7 +86,8 @@ class BudgetController extends Controller
      */
     public function show(Budget $budget)
     {
-        //
+        $budgets = Budget::distinct()->pluck('category');
+        return Inertia::render('app/budgets/edit-budget', ['budget' => $budget, 'budgets' => $budgets]);
     }
 
     /**
@@ -91,7 +95,7 @@ class BudgetController extends Controller
      */
     public function edit(Budget $budget)
     {
-        //
+        return Redirect::route('app.budgets.show', ['budget' => $budget->id]);
     }
 
     /**

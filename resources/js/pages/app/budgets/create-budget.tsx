@@ -24,7 +24,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     href: route('app.dashboard'),
   },
   {
-    title: 'Mensagens',
+    title: 'Orçamentos',
     href: route('app.budgets.index'),
   },
   {
@@ -35,20 +35,20 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 // Opções de Exemplo para o campo "Garantia"
 const initialWarrantyOptions: OptionType[] = [
-  { value: '1 meses', label: '1 meses' },
+  { value: '1 meses', label: '1 mês' },
   { value: '3 meses', label: '3 meses' },
   { value: '6 meses', label: '6 meses' },
   { value: '1 ano', label: '1 ano' },
 ];
 
 
-export default function CreateMessage({ budgets }: any) {
+export default function CreateBudget({ budgets }: any) {
   const { flash, auth } = usePage().props as any;
 
   // --- Lógica para o Select 'Category' (Criação/Seleção) ---
   const initialCategoryOptions: OptionType[] = budgets.map((budget: any) => ({
-    value: budget.category,
-    label: budget.category,
+    value: budget,
+    label: budget,
   }));
 
   const [categoryOptions, setCategoryOptions] = useState<OptionType[]>(initialCategoryOptions);

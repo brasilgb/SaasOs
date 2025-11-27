@@ -18,9 +18,8 @@ import InputSearch from '@/components/inputSearch';
 import AppPagination from '@/components/app-pagination';
 import ActionDelete from '@/components/action-delete';
 import AlertSuccess from '@/components/app-alert-success';
-import CreateBudget from './create-budget';
-import EditBudget from './edit-budget';
 import { Button } from '@/components/ui/button';
+import { PrintBudget } from './print-buget';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -33,8 +32,11 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-export default function CheckList({ budgets }: any) {
+export default function CheckList({ budgets, company }: any) {
   const { flash } = usePage().props as any;
+
+  
+  
 
   return (
     <AppLayout>
@@ -85,24 +87,29 @@ export default function CheckList({ budgets }: any) {
                 budgets?.data?.map((budget: any) => (
                   <TableRow key={budget.id}>
                     <TableCell>{budget.budget_number}</TableCell>
-                    <TableCell className="font-medium">{budget.service}</TableCell>
+                    <TableCell>{budget.category}</TableCell>
+                    <TableCell>{budget.service}</TableCell>
                     <TableCell>{budget.estimated_time}</TableCell>
                     <TableCell>{budget.total_value}</TableCell>
                     <TableCell>{moment(budget.created_at).format("DD/MM/YYYY")}</TableCell>
                     <TableCell className='flex justify-end gap-2'>
 
+                    <PrintBudget company={company} budget={budget} />
+
                       <Button asChild size="icon" className="bg-orange-500 hover:bg-orange-600 text-white">
-                        <Link href={route('app.bugets.edit', budget.id)}>
+                        <Link href={route('app.budgets.edit', budget.id)}>
                           <Edit />
                         </Link>
                       </Button>
+
+                      <ActionDelete title={'este orçamento'} url={'app.budgets.destroy'} param={budget.id} />
 
                     </TableCell>
                   </TableRow>
                 ))
                 : (
                   <TableRow>
-                    <TableCell colSpan={6} className='h-16 w-full flex items-center justify-center'>
+                    <TableCell colSpan={7} className='h-16 w-full flex items-center justify-center'>
                       Não há dados a serem mostrados no momento.
                     </TableCell>
                   </TableRow>
@@ -111,7 +118,7 @@ export default function CheckList({ budgets }: any) {
             </TableBody>
             <TableFooter>
               <TableRow>
-                <TableCell colSpan={6}>
+                <TableCell colSpan={7}>
                   <AppPagination data={budgets} />
                 </TableCell>
               </TableRow>
