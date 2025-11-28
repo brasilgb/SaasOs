@@ -20,6 +20,7 @@ import ActionDelete from '@/components/action-delete';
 import AlertSuccess from '@/components/app-alert-success';
 import { Button } from '@/components/ui/button';
 import { PrintBudget } from './print-buget';
+import { maskMoney } from '@/Utils/mask';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -90,7 +91,7 @@ export default function CheckList({ budgets, company }: any) {
                     <TableCell>{budget.category}</TableCell>
                     <TableCell>{budget.service}</TableCell>
                     <TableCell>{budget.estimated_time}</TableCell>
-                    <TableCell>{budget.total_value}</TableCell>
+                    <TableCell>R$ {maskMoney(budget.total_value)}</TableCell>
                     <TableCell>{moment(budget.created_at).format("DD/MM/YYYY")}</TableCell>
                     <TableCell className='flex justify-end gap-2'>
 

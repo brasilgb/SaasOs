@@ -1,171 +1,202 @@
 import React from 'react';
-import { Page, Text, View, Document, StyleSheet, Font } from '@react-pdf/renderer';
+import { Page, Text, View, Document, StyleSheet } from '@react-pdf/renderer';
 
-// Opcional: Registrar uma fonte para melhor suporte a caracteres especiais
-// Font.register({ family: 'Roboto', src: 'caminho/para/sua/fonte.ttf' }); 
-// Exemplo com fontes padrão:
+// --- Utilitários ---
+const formatCurrency = (value) => {
+    const num = parseFloat(value);
+    if (isNaN(num)) return 'R$ 0,00'; 
+    return `R$ ${num.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
+};
 
-// Estilos
+// --- Estilos ---
 const styles = StyleSheet.create({
-  page: {
-    padding: 30,
-    fontFamily: 'Helvetica', // Usando uma fonte padrão
-    fontSize: 10,
-    lineHeight: 1.5,
+  page: { 
+    padding: 30, 
+    fontFamily: 'Helvetica', 
+    fontSize: 10, 
+    lineHeight: 1.5 
   },
-  // --- Seção Cabeçalho ---
-  headerSection: {
-    marginBottom: 20,
-    paddingBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-    borderBottomStyle: 'solid',
+  
+  // === Cabeçalho da Empresa ===
+  headerSection: { 
+    marginBottom: 20, 
+    paddingBottom: 10, 
+    borderBottomWidth: 1, 
+    borderBottomColor: '#333', 
+    borderBottomStyle: 'solid', 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center' 
   },
-  companyName: {
-    fontSize: 16,
+  companyInfo: { width: '75%' },
+  companyName: { fontSize: 18, fontWeight: 'bold', marginBottom: 2, color: '#003366' },
+  companyDetails: { fontSize: 9, color: '#555' },
+  logoPlaceholder: { width: '20%', height: 50, backgroundColor: '#eee', justifyContent: 'center', alignItems: 'center', border: '1px solid #ccc' },
+  
+  // === Título ===
+  budgetTitle: { 
+    fontSize: 14, 
+    fontWeight: 'bold', 
+    marginBottom: 15, 
+    textAlign: 'center', 
+    textDecoration: 'underline', 
+    color: '#333' 
+  },
+  
+  // === Seção de Detalhes (Geral) ===
+  sectionContainer: {
+    marginBottom: 15,
+    padding: 5,
+    backgroundColor: '#f9f9f9',
+    border: '1px solid #ddd',
+    borderRadius: 2,
+  },
+  sectionTitle: {
+    fontSize: 12,
     fontWeight: 'bold',
-    marginBottom: 5,
+    marginBottom: 8,
+    color: '#333',
+    paddingBottom: 2,
+    borderBottom: '1px solid #eee',
   },
-  companyDetails: {
-    fontSize: 9,
+
+  // Layout de Colunas (Usado para Valores)
+  row: {
+    flexDirection: 'row',
+    marginBottom: 5,
+    justifyContent: 'space-between',
+  },
+  column: {
+    width: '48%', // Duas colunas
+  },
+  detailItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 2,
+  },
+  label: {
+    fontWeight: 'bold',
     color: '#555',
   },
-  // --- Seção Orçamento ---
-  budgetTitle: {
+  value: {
+    color: '#000',
+  },
+
+  // === Observações ===
+  obsBox: { 
+    marginTop: 10,
+    border: '1px solid #ccc', 
+    padding: 8, 
+    minHeight: 60,
+  },
+  totalGeral: {
     fontSize: 14,
     fontWeight: 'bold',
-    marginBottom: 10,
-    textAlign: 'center',
-    textDecoration: 'underline',
-  },
-  table: {
-    display: 'flex',
-    width: 'auto',
-    borderStyle: 'solid',
-    borderWidth: 1,
-    borderRightWidth: 0,
-    borderBottomWidth: 0,
-  },
-  tableRow: {
-    margin: 'auto',
-    flexDirection: 'row',
-  },
-  tableColHeader: {
-    width: '20%',
-    borderStyle: 'solid',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    backgroundColor: '#f0f0f0',
-    padding: 5,
-    textAlign: 'center',
-    fontWeight: 'bold',
-  },
-  tableCol: {
-    width: '20%',
-    borderStyle: 'solid',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    padding: 5,
-    textAlign: 'right',
-  },
-  colService: {
-    width: '40%',
-    textAlign: 'left',
-  },
-  colServiceHeader: {
-    width: '40%',
-    textAlign: 'left',
-  },
-  // --- Seção Observação ---
-  obsSection: {
-    marginTop: 20,
-    border: '1px solid #ccc',
-    padding: 10,
-  },
-  obsTitle: {
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  // --- Footer ---
-  footer: {
-    position: 'absolute',
-    bottom: 30,
-    left: 30,
-    right: 30,
-    textAlign: 'center',
-    fontSize: 8,
-    color: '#888',
-    borderTopWidth: 1,
-    borderTopColor: '#ccc',
+    color: '#A50000',
+    marginTop: 10,
     paddingTop: 5,
+    borderTop: '1px solid #333',
+    textAlign: 'right',
   }
 });
 
-const formatCurrency = (value) => `R$ ${parseFloat(value).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
-
 /**
  * Componente do Orçamento em PDF.
- * @param {object} props
- * @param {object} props.company - Dados da empresa.
- * @param {object} props.budget - Dados do orçamento (itens, observação).
  */
 export const BudgetPDF = ({ company, budget }) => {
-    
-  const { companyname, telephone, cnpj, city } = company;
-  const { service, labor_value, part_value, total_value, obs } = budget;
-
+  // 1. Desestruturando Dados da EMPRESA
+  const { companyname, cnpj, city, number, street, district, telephone } = company;
+  
+  // 2. Desestruturando Dados do ORÇAMENTO (Serviço e Observação)
+  const { 
+    service, 
+    description, 
+    estimated_time, 
+    part_value, 
+    labor_value, 
+    total_value, 
+    warranty, 
+    obs, 
+  } = budget;
+  
+  const obsText = obs || 'Nenhuma observação informada.';
+  
   return (
     <Document>
       <Page size="A4" style={styles.page}>
         
         {/* === Cabeçalho da Empresa === */}
-        <View style={styles.headerSection}>
-          <Text style={styles.companyName}>{companyname}</Text>
-          <Text style={styles.companyDetails}>CNPJ: {cnpj} | Tel: {telephone}</Text>
-          <Text style={styles.companyDetails}>Endereço: {city}</Text>
+        <View style={styles.headerSection} fixed>
+          <View style={styles.companyInfo}>
+            <Text style={styles.companyName}>{companyname}</Text>
+            <Text style={styles.companyDetails}>CNPJ: {cnpj}</Text>
+            <Text style={styles.companyDetails}>Tel: {telephone}</Text>
+            <Text style={styles.companyDetails}>
+              {street}, {number} - {district}, {city}
+            </Text>
+          </View>
+          <View style={styles.logoPlaceholder}>
+            <Text style={{ fontSize: 8 }}>LOGO AQUI</Text>
+          </View>
         </View>
 
-        {/* === Título do Orçamento === */}
-        <Text style={styles.budgetTitle}>ORÇAMENTO</Text>
+        {/* --- Título do Orçamento --- */}
+        <Text style={styles.budgetTitle}>DETALHES DO ORÇAMENTO DE SERVIÇO</Text>
 
-        {/* === Tabela de Serviços === */}
-        <View style={styles.table}>
-          {/* Cabeçalho da Tabela */}
-          <View style={styles.tableRow}>
-            <Text style={{ ...styles.tableColHeader, ...styles.colServiceHeader }}>Serviço e Descrição</Text>
-            <Text style={styles.tableColHeader}>Mão de Obra</Text>
-            <Text style={styles.tableColHeader}>Peças</Text>
-            <Text style={styles.tableColHeader}>Total</Text>
-          </View>
-
-          {/* Linhas de Serviços */}
-
-            <View style={styles.tableRow} key={index}>
-              <View style={{ ...styles.tableCol, ...styles.colService }}>
-                <Text style={{ fontWeight: 'bold' }}>{service}</Text>
-              </View>
+        {/* === 1. Detalhes do Serviço === */}
+        <View style={styles.sectionContainer}>
+            <Text style={styles.sectionTitle}>Serviço Orçado</Text>
+            
+            <View style={styles.detailItem}>
+                <Text style={styles.label}>Nome do Serviço:</Text>
+                <Text style={styles.value}>{service}</Text>
             </View>
-          
-          {/* Linha de Totais */}
-          <View style={styles.tableRow} fixed> {/* 'fixed' garante que o total não seja quebrado entre páginas */}
-            <Text style={{ ...styles.tableColHeader, ...styles.colServiceHeader, backgroundColor: '#e0e0e0' }}>TOTAL GERAL</Text>
-            <Text style={{ ...styles.tableColHeader, backgroundColor: '#e0e0e0' }}>{formatCurrency(labor_value)}</Text>
-            <Text style={{ ...styles.tableColHeader, backgroundColor: '#e0e0e0' }}>{formatCurrency(part_value)}</Text>
-            <Text style={{ ...styles.tableColHeader, backgroundColor: '#e0e0e0' }}>{formatCurrency(total_value)}</Text>
-          </View>
-
+            <View style={styles.detailItem}>
+                <Text style={styles.label}>Descrição:</Text>
+                <Text style={styles.value}>{description}</Text>
+            </View>
+            <View style={styles.detailItem}>
+                <Text style={styles.label}>Tempo Estimado:</Text>
+                <Text style={styles.value}>{estimated_time}</Text>
+            </View>
         </View>
 
-        {/* === Observações === */}
-        <View style={styles.obsSection}>
-          <Text style={styles.obsTitle}>Observações:</Text>
-          <Text>{obs}</Text>
+        {/* === 2. Valores e Garantia === */}
+        <View style={styles.sectionContainer}>
+            <Text style={styles.sectionTitle}>Valores e Condições</Text>
+            
+            <View style={styles.row}>
+                <View style={styles.column}>
+                    <View style={styles.detailItem}>
+                        <Text style={styles.label}>Valor Mão de Obra:</Text>
+                        <Text style={styles.value}>{formatCurrency(labor_value)}</Text>
+                    </View>
+                    <View style={styles.detailItem}>
+                        <Text style={styles.label}>Valor Peças:</Text>
+                        <Text style={styles.value}>{formatCurrency(part_value)}</Text>
+                    </View>
+                </View>
+                
+                <View style={styles.column}>
+                    <View style={styles.detailItem}>
+                        <Text style={styles.label}>Garantia:</Text>
+                        <Text style={styles.value}>{warranty}</Text>
+                    </View>
+                    
+                    {/* Linha Total */}
+                    <View style={[styles.detailItem, styles.totalGeral]}>
+                        <Text>TOTAL GERAL:</Text>
+                        <Text>{formatCurrency(total_value)}</Text>
+                    </View>
+                </View>
+            </View>
         </View>
-        
-        {/* === Rodapé === */}
-        <Text style={styles.footer} fixed>
-          Orçamento válido por 7 dias. Para mais informações, entre em contato.
-        </Text>
+
+        {/* === 3. Observações === */}
+        <View style={styles.obsBox}>
+            <Text style={{ fontWeight: 'bold', marginBottom: 5 }}>Observações:</Text>
+            <Text>{obsText}</Text>
+        </View>
 
       </Page>
     </Document>

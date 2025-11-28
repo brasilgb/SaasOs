@@ -84,16 +84,6 @@ export default function Others({ othersettings, company }: any) {
                         </div>
                     </div>
                     <div className="space-y-6 mt-6">
-                        <HeadingSmall title="Habilitar pré-orçamento Tablet" description="Habilita as opções no cadastro para o uso dos orçamentos pré-gerados no auto atendimento no app do tablet." />
-                        <div className="grid gap-2">
-                            <Switch
-                                id="budget"
-                                checked={data.budget}
-                                onCheckedChange={(checked: any) => setData('budget', checked)}
-                            />
-                        </div>
-                    </div>
-                    <div className="space-y-6 mt-6">
                         <HeadingSmall title="Habilitar cadastro e utilização de estoque de peças e/ou produtos " description="Habilita a opções de cadastro e a utilização de inserção de peças e/ou produtos nas ordens de serviço. Padrão inserção manual do nome e valor." />
                         <div className="grid gap-2">
                             <Switch

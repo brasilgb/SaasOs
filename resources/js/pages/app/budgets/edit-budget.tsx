@@ -11,7 +11,7 @@ import CreatableSelect from 'react-select/creatable';
 import Select from 'react-select';
 import InputError from "@/components/input-error";
 import { useEffect, useState } from "react";
-import { maskMoney, unMask } from "@/Utils/mask";
+import { maskMoney, maskMoneyDot, unMask } from "@/Utils/mask";
 
 // Definição de tipo para as opções
 interface OptionType {
@@ -89,9 +89,9 @@ export default function EditBudget({ budgets, budget }: any) {
   useEffect(() => {
     setData((data: any) => ({
       ...data,
-      part_value: unMask(data.part_value),
-      labor_value: unMask(data.labor_value),
-      total_value: unMask(data.total_value),
+      part_value: maskMoneyDot(data.part_value),
+      labor_value: maskMoneyDot(data.labor_value),
+      total_value: maskMoneyDot(data.total_value),
     }));
   }, [data.part_value, data.labor_value, data.total_value]);
 
