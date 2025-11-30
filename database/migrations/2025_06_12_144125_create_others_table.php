@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('others', function (Blueprint $table) {
             $table->id();
             $table->foreignId('tenant_id')->nullable()->constrained()->onDelete('cascade');
-            $table->boolean('navigation')->default(true);
+            $table->boolean('navigation')->default(false);
             $table->boolean('enableparts')->default(false);
             $table->boolean('enablesales')->default(false);
             $table->timestamps();

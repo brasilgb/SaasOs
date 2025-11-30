@@ -24,8 +24,6 @@ export function AppSidebar() {
             </SidebarHeader>
             <SidebarContent>
                 <SidebarGroup>
-                    <SidebarGroupLabel>Operações do sistema</SidebarGroupLabel>
-
                     <NavMain items={mainNavItems} />
                     <div className='my-1'>
                         <NavMainCollapsible items={mainConfItems} />

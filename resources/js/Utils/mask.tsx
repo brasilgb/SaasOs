@@ -71,7 +71,7 @@ function unMask(value: any) {
     }
 }
 
-function maskMoney(value: string) {
+function maskMoney(value: any) {
     if (value) {
         var valorAlterado = value;
         valorAlterado = valorAlterado.replace(/\D/g, ""); // Remove todos os não dígitos

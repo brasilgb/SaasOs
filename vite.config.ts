@@ -14,12 +14,12 @@ export default defineConfig({
         react(),
         tailwindcss(),
     ],
-    server: {
+    // server: {
         // host: 'https://techos.megb.com.br',
-        host: '172.16.1.67',
-        // host: '192.168.2.53',
-        cors: true
-    },
+        // host: '172.16.1.67',
+        // host: 'http://localhost',
+        // cors: true
+    // },;
     esbuild: {
         jsx: 'automatic',
     },

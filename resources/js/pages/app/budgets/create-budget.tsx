@@ -4,12 +4,12 @@ import { Button } from "@/components/ui/button";
 import AppLayout from "@/layouts/app-layout";
 import { BreadcrumbItem } from "@/types";
 import { Head, Link, useForm, usePage } from "@inertiajs/react";
-import { ArrowLeft, PackagePlus, Save } from "lucide-react";
+import { ArrowLeft, Calculator, PackagePlus, Save } from "lucide-react";
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label";
 import CreatableSelect from 'react-select/creatable';
 import InputError from "@/components/input-error";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { maskMoney, maskMoneyDot, unMask } from "@/Utils/mask";
 
 // Definição de tipo para as opções
@@ -43,7 +43,7 @@ const initialWarrantyOptions: OptionType[] = [
 
 
 export default function CreateBudget({ budgets }: any) {
-  const { flash, auth } = usePage().props as any;
+  const { auth } = usePage().props as any;
 
   // --- Lógica para o Select 'Category' (Criação/Seleção) ---
   const initialCategoryOptions: OptionType[] = budgets.map((budget: any) => ({
@@ -72,7 +72,20 @@ export default function CreateBudget({ budgets }: any) {
     'obs': '', // Campo TextArea
   });
 
+  const calculateTotal = useCallback(() => {
+    const partValue = parseFloat(unMask(data.part_value)) || 0;
+    const laborValue = parseFloat(unMask(data.labor_value)) || 0;
+    const total = partValue + laborValue;
+    setData('total_value', maskMoney(String(total)));
+  }, [data.part_value, data.labor_value, setData]);
+
   useEffect(() => {
+    if (data.part_value || data.labor_value) {
+        calculateTotal();
+    }     
+  }, [data.part_value, data.labor_value, calculateTotal]);
+
+    useEffect(() => {
     setData((data: any) => ({
       ...data,
       part_value: maskMoneyDot(data.part_value),
@@ -205,7 +218,7 @@ export default function CreateBudget({ budgets }: any) {
                   value={data.service}
                   onChange={(e) => setData('service', e.target.value)}
                 />
-                {errors.service && <div className="text-red-500 text-sm">{errors.service}</div>}
+                <InputError className="mt-2" message={errors.service} />
               </div>
 
               {/* Campo 3: MODEL (Input) */}
@@ -217,7 +230,7 @@ export default function CreateBudget({ budgets }: any) {
                   value={data.model}
                   onChange={(e) => setData('model', e.target.value)}
                 />
-                {errors.model && <div className="text-red-500 text-sm">{errors.model}</div>}
+                <InputError className="mt-2" message={errors.model} />
               </div>
             </div>
 
@@ -230,8 +243,9 @@ export default function CreateBudget({ budgets }: any) {
                   id="part_value"
                   type="text"
                   value={maskMoney(data.part_value)}
-                  onChange={(e) => setData('part_value', e.target.value)}
+                  onChange={(e) => setData('part_value', maskMoney(e.target.value))}
                 />
+                <InputError className="mt-2" message={errors.part_value} />
               </div>
 
               {/* Campo 5: ESTIMATED TIME (Input Numérico) */}
@@ -242,7 +256,7 @@ export default function CreateBudget({ budgets }: any) {
                   value={data.estimated_time}
                   onChange={(e) => setData('estimated_time', e.target.value)}
                 />
-                {errors.estimated_time && <div className="text-red-500 text-sm">{errors.estimated_time}</div>}
+                <InputError className="mt-2" message={errors.estimated_time} />
               </div>
 
               {/* Campo 6: WARRANTY (CreatableSelect - Select Adicional) */}
@@ -271,20 +285,26 @@ export default function CreateBudget({ budgets }: any) {
                 <Input
                   id="labor_value"
                   value={maskMoney(data.labor_value)}
-                  onChange={(e) => setData('labor_value', e.target.value)}
+                  onChange={(e) => setData('labor_value', maskMoney(e.target.value))}
                 />
-                {errors.labor_value && <div className="text-red-500 text-sm">{errors.labor_value}</div>}
+                <InputError className="mt-2" message={errors.labor_value} />
               </div>
 
               {/* Campo 8: TOTAL VALUE (Input Numérico) */}
               <div className="grid gap-2">
                 <Label htmlFor="total_value">Valor Total</Label>
-                <Input
-                  id="total_value"
-                  value={maskMoney(data.total_value)}
-                  onChange={(e) => setData('total_value', e.target.value)}
-                />
-                {errors.total_value && <div className="text-red-500 text-sm">{errors.total_value}</div>}
+                <div className="relative">
+                    <Input
+                        id="total_value"
+                        value={maskMoney(data.total_value)}
+                        onChange={(e) => setData('total_value', maskMoney(e.target.value))}
+                        className="pr-10"
+                    />
+                    <button type="button" onClick={calculateTotal} className="absolute inset-y-0 right-0 flex items-center pr-3">
+                        <Calculator className="h-5 w-5 text-gray-400" />
+                    </button>
+                </div>
+                <InputError className="mt-2" message={errors.total_value} />
               </div>
             </div>
 
@@ -300,7 +320,7 @@ export default function CreateBudget({ budgets }: any) {
                   value={data.description}
                   onChange={(e) => setData('description', e.target.value)}
                 ></textarea>
-                {errors.description && <div className="text-red-500 text-sm">{errors.description}</div>}
+                <InputError className="mt-2" message={errors.description} />
               </div>
 
               {/* Campo 10: OBS (TextArea) */}
@@ -313,7 +333,7 @@ export default function CreateBudget({ budgets }: any) {
                   value={data.obs}
                   onChange={(e) => setData('obs', e.target.value)}
                 ></textarea>
-                {errors.obs && <div className="text-red-500 text-sm">{errors.obs}</div>}
+                <InputError className="mt-2" message={errors.obs} />
               </div>
             </div>
 
