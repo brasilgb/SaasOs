@@ -14,12 +14,12 @@ export default defineConfig({
         react(),
         tailwindcss(),
     ],
-    server: {
-        host: 'https://sigmaos.com.br',
+    // server: {
+        // host: 'https://sigmaos.com.br',
         // host: '172.16.1.67',
         // host: 'http://localhost',
         // cors: true
-    },
+    // },
     esbuild: {
         jsx: 'automatic',
     },
