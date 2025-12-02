@@ -22,7 +22,7 @@ export function Header() {
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-2">
           <div className="bg-white rounded">
-          <img src="images/logo.png" alt="TechOS" className="h-8 w-8"/>
+            <img src="images/logo.png" alt="TechOS" className="h-8 w-8" />
           </div>
           <span className="text-xl font-bold text-foreground">SigmaOs</span>
         </div>

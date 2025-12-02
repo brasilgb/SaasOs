@@ -7,11 +7,13 @@ export function Footer() {
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <Wrench className="h-6 w-6 text-primary" />
-              <span className="text-xl font-bold text-foreground">TechOS</span>
+              <div className="bg-white rounded">
+                <img src="images/logo.png" alt="TechOS" className="h-8 w-8" />
+              </div>
+              <span className="text-xl font-bold text-foreground">SigmaOs</span>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Sistema completo de gestão para empresas de manutenção em informática, eletrônicos e eletrodomésticos.
+              Sistema de gestão de ordens de serviço para empresas de manutenção em informática, eletrônicos e eletrodomésticos.
             </p>
           </div>
 
@@ -29,13 +31,8 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Demonstração
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                  App Android
+                <a href="#contato" className="text-muted-foreground hover:text-foreground transition-colors">
+                  Contato
                 </a>
               </li>
             </ul>
@@ -95,8 +92,8 @@ export function Footer() {
         </div>
 
         <div className="mt-12 border-t border-border pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-muted-foreground">© 2025 TechOS. Todos os direitos reservados.</p>
-          <div className="flex gap-6 text-sm">
+          <p className="text-sm text-muted-foreground">© 2025 SigmaOS. Todos os direitos reservados.</p>
+          {/* <div className="flex gap-6 text-sm">
             <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
               Privacidade
             </a>
@@ -106,7 +103,7 @@ export function Footer() {
             <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
               Cookies
             </a>
-          </div>
+          </div> */}
         </div>
       </div>
     </footer>
