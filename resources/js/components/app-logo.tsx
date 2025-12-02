@@ -5,7 +5,7 @@ export default function AppLogo() {
    
     return (
         <>
-            <div className="flex aspect-square size-8 items-center justify-center">
+            <div className="flex aspect-square size-8 items-center justify-center bg-white">
                 <img
                     src={`/storage/logos/${company?.logo ? company?.logo : "default.png"}`}
                     alt="Imagem de logo"
