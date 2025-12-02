@@ -5,7 +5,7 @@ export default function AuthLogoIcon(props: SVGAttributes<SVGElement>) {
     
     return (
         <div className='flex flex-col items-center'>
-            <div className="flex aspect-square items-center justify-center border-4 rounded-lg p-0.5">
+            <div className="flex aspect-square items-center justify-center border-4 rounded-lg p-0.5 bg-white">
                 <img
                     className='bg-transparent h-14 w-14 rounded-lg'
                     src="./images/logo.png"

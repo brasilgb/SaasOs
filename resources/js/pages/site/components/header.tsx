@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button"
-import { Link, usePage } from "@inertiajs/react"
+import { Head, Link, usePage } from "@inertiajs/react"
 import { Menu, Wrench, X } from "lucide-react"
 import { useState } from "react"
 
@@ -18,10 +18,13 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <Head title="Início" />
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-2">
+          <div className="bg-white rounded">
           <img src="images/logo.png" alt="TechOS" className="h-8 w-8"/>
-          <span className="text-xl font-bold text-foreground">TechOS</span>
+          </div>
+          <span className="text-xl font-bold text-foreground">SigmaOs</span>
         </div>
 
         <nav className="hidden md:flex items-center gap-6">
