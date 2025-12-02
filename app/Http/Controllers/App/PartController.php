@@ -37,7 +37,7 @@ class PartController extends Controller
             $query->where('name', 'like', '%' . $search . '%')
                 ->orWhere('part_number', 'like', '%' . $search . '%');
         }
-        $parts = $query->paginate(12);
+        $parts = $query->paginate(11);
         return Inertia::render('app/parts/index', ['parts' => $parts]);
     }
 
