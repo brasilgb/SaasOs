@@ -12,27 +12,45 @@ interface Product {
 const products: Product[] = [
   {
     id: 1,
-    title: "Produto Premium",
-    description: "Qualidade incomparável com design moderno",
-    image: "/premium-product-showcase-elegant-modern.jpg",
+    title: "Dashboard optimizado",
+    description: "Dashboard com as informações necessárias para agilizar o processo.",
+    image: "/images/slide/1.png",
   },
   {
     id: 2,
-    title: "Inovação Tecnológica",
-    description: "Desenvolvido com a melhor tecnologia disponível",
-    image: "/technology-innovation-product-sleek-design.jpg",
+    title: "Funções de clientes",
+    description: "Fuções e informações de clientes, verifique ordens, visitas agendadas e envie mensagens Whatsapp",
+    image: "/images/slide/2.png",
   },
   {
     id: 3,
-    title: "Design Exclusivo",
-    description: "Criado com atenção aos detalhes e estilo",
-    image: "/exclusive-design-luxury-product-high-end.jpg",
+    title: "Cadastro e edição detalhado de clientes",
+    description: "Tenha em mãos as informações gerais sobre clientes",
+    image: "/images/slide/3.png",
   },
   {
     id: 4,
-    title: "Perfeição Absoluta",
-    description: "O ponto final em qualidade e performance",
-    image: "/perfect-product-excellence-performance-premium-qua.jpg",
+    title: "Funções de ordens de serviço",
+    description: "O ponto crucial de qualquer empresa de manutenção, orçamentos, status recibos.",
+    image: "/images/slide/4.png",
+  },
+  {
+    id: 4,
+    title: "Cadastro e edição de ordens de serviço",
+    description: "Cadastre e gerencie as ordens de serviço com agilidade e sem dor de cabeça",
+    image: "/images/slide/5.png",
+  },
+  {
+    id: 4,
+    title: "Produtos e peças",
+    description: "Gerencie produtos e peças, com controle de estoque e disponibilidade",
+    image: "/images/slide/6.png",
+  },
+  {
+    id: 4,
+    title: "Cadastro e edição de produtos e peças",
+    description: "Ajuste informações sobre peças e produtos e adicionando ou incrementando o estoque",
+    image: "/images/slide/7.png",
   },
 ]
 
@@ -66,7 +84,7 @@ export function ProductCarousel() {
   }
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 py-12">
+    <div className="w-full mx-auto p-2 ">
       {/* Main Carousel */}
       <div className="relative bg-muted rounded-lg overflow-hidden group">
         {/* Slides */}
@@ -81,10 +99,10 @@ export function ProductCarousel() {
               <img
                 src={product.image || "/placeholder.svg"}
                 alt={product.title}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
               />
               {/* Overlay com informações do produto */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-8">
+              <div className="absolute inset-0 bg-gradient-to from-black/60 to-transparent flex flex-col justify-end p-8">
                 <h2 className="text-4xl font-bold text-white mb-2 text-balance">{product.title}</h2>
                 <p className="text-lg text-gray-100">{product.description}</p>
               </div>
