@@ -39,7 +39,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="font-semibold text-foreground mb-4">Empresa</h3>
+            {/* <h3 className="font-semibold text-foreground mb-4">Empresa</h3>
             <ul className="space-y-3 text-sm">
               <li>
                 <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
@@ -61,13 +61,13 @@ export function Footer() {
                   Contato
                 </a>
               </li>
-            </ul>
+            </ul> */}
           </div>
 
           <div>
             <h3 className="font-semibold text-foreground mb-4">Suporte</h3>
             <ul className="space-y-3 text-sm">
-              <li>
+              {/* <li>
                 <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
                   Central de ajuda
                 </a>
@@ -81,7 +81,7 @@ export function Footer() {
                 <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
                   Tutoriais
                 </a>
-              </li>
+              </li> */}
               <li>
                 <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
                   WhatsApp
