@@ -20,7 +20,6 @@ export default defineConfig({
         // host: 'http://localhost',
         cors: true
     },
-    
     esbuild: {
         jsx: 'automatic',
     },
