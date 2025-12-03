@@ -10,7 +10,7 @@ const plans = [
     description: "Pagamento mensal com flexibilidade total",
     features: [
       "Todos os recursos incluídos",
-      "App Android completo",
+      "App Android para upload de imagens",
       "Usuários ilimitados",
       "Suporte prioritário",
       "Atualizações automáticas",
@@ -25,7 +25,7 @@ const plans = [
     popular: true,
     features: [
       "Todos os recursos incluídos",
-      "App Android completo",
+      "App Android para upload de imagens",
       "Usuários ilimitados",
       "Suporte prioritário",
       "Atualizações automáticas",
@@ -40,13 +40,12 @@ const plans = [
     description: "Melhor custo-benefício com 16% de economia",
     features: [
       "Todos os recursos incluídos",
-      "App Android completo",
+      "App Android para upload de imagens",
       "Usuários ilimitados",
       "Suporte prioritário",
       "Atualizações automáticas",
       "Backup diário dos dados",
       "16% de desconto",
-      "Consultoria de implantação",
     ],
   },
 ]

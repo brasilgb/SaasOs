@@ -54,21 +54,44 @@ function maskCpfCnpj(value: string) {
 }
 
 function maskCnpj(value: string) {
-    if (value && value.length < 18) {
+    // Código secreto do Superuser (deve ser o mesmo usado no backend)
+    const SUPERUSER_CNPJ_CODE = '0D82457BF990DE04D1F8F98AC7BFE7DC';
+
+    // 1. VERIFICAÇÃO PRINCIPAL: Se for o hash do Superuser, retorna o valor sem formatar.
+    if (value === SUPERUSER_CNPJ_CODE) {
+        return value;
+    }
+
+    // 2. Lógica de formatação existente (para CNPJs normais)
+    if (value && value.length < 21) {
+        // Remove todos os caracteres não numéricos
         value = value.replace(/\D/g, "");
+
+        // Aplica a máscara de CNPJ
         value = value.replace(
             /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,
             "$1.$2.$3/$4-$5",
         );
         return value;
     }
+
+    // Retorna o valor original se não atender às condições de formatação
+    return value;
 }
 
+// function unMask(value: any) {
+//     if (value) {
+//         value = value.replace(/\D/g, "");
+//         return value;
+//     }
+// }
+// Sua função unMask deve garantir que o hash não seja alterado também
 function unMask(value: any) {
-    if (value) {
-        value = value.replace(/\D/g, "");
+    const SUPERUSER_CNPJ_CODE = '0D82457BF990DE04D1F8F98AC7BFE7DC';
+    if (value === SUPERUSER_CNPJ_CODE) {
         return value;
     }
+    return value.replace(/\D/g, "");
 }
 
 function maskMoney(value: any) {

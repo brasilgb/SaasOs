@@ -22,16 +22,18 @@ export default function Dashboard({ orders, acount, chartequipments, parts, cust
                     <KpiDashboard link={route('app.orders.index')} title="Ordens" value={acount?.numorde} icon={<Wrench className='h-10 w-10' />} description="Todas as ordens emitidas" />
                     <KpiDashboard link={route('app.schedules.index')} title="Agendamentos" value={acount?.numshed} icon={<Calendar className='h-10 w-10' />} description="Todos os agendamentos efetuados" />
                     <KpiDashboard link={route('app.messages.index')} title="Mensagens" value={acount?.nummess} icon={<MessageSquareMore className='h-10 w-10' />} description="Mensagens enviadas e recebidas" />
-                    {othersetting?.enableparts &&
+                    {othersetting?.enableparts ?
                         <KpiDashboard link={route('app.parts.index')} title="Peças" value={acount?.numparts} icon={<MemoryStickIcon className='h-10 w-10' />} description="Peças cadastradas" />
+                    : ''
                     }
-                    {othersetting?.enablesales &&
+                    {othersetting?.enablesales ?
                         <Card className='flex items-center justify-center'>
                             <CardDescription>
                                 Venda de Peças/Produtos
                             </CardDescription>
                             <SalesProducts parts={parts} customers={customers} />
                         </Card>
+                        : ''
                     }
                 </div>
 

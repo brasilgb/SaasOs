@@ -83,7 +83,7 @@ export function Footer() {
                 </a>
               </li> */}
               <li>
-                <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                <a href="https://wa.me/5551995179173?text=Quero%20mais%20informações%20sobre%20SigmaOs" target="_blank" rel="noopener" className="text-muted-foreground hover:text-foreground transition-colors">
                   WhatsApp
                 </a>
               </li>

@@ -22,7 +22,7 @@ export function CTA() {
               </Link>
             </Button>
             <Button size="lg" variant="outline" className="text-base bg-transparent">
-              <a href="https://wa.me/5551995179173?text=Quero%20mais%20informações%20sobre%20SalesEasy">
+              <a href="https://wa.me/5551995179173?text=Quero%20mais%20informações%20sobre%20SigmaOs" target="_blank" rel="noopener">
               Falar com Vendas
               </a>
             </Button>
