@@ -64,7 +64,7 @@ export default function CreateOrder({ customers, equipments, orderlast }: any) {
     });
   }
   useEffect(() => {
-    setData('budget_value', (data.budget_value).replace(',', '.'));
+    setData('budget_value', maskMoneyDot(data.budget_value));
   },[data.budget_value]);
 
   const changeCustomer = (selected: any) => {

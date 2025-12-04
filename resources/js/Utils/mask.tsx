@@ -106,7 +106,7 @@ function maskMoney(value: any) {
 }
 
 
-function maskMoneyDot(value: string) {
+function maskMoneyDot(value: any) {
     if (value) {
         var valorAlterado = value;
         valorAlterado = valorAlterado.replace(/\D/g, ""); // Remove todos os não dígitos
