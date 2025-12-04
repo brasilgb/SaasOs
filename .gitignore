@@ -25,3 +25,4 @@ yarn-error.log
 /.zed
 vite.config.ts
 compose.yaml
+composer.lock
