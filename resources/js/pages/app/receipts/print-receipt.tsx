@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button"
+import { maskMoney } from "@/Utils/mask";
 import { Link } from "@inertiajs/react"
 import { ArrowLeft, Printer, Square } from "lucide-react"
 
@@ -127,7 +128,7 @@ function ReceiptCopy({ order, company, type, receipt, checklist, qrcode }: { ord
                             </div>
                             <div className="flex justify-between items-center pt-2 gap-2">
                                 <span className="font-medium text-sm">Valor: </span>
-                                <span className="text-sm font-bold text-gray-600">{order?.budget_value}</span>
+                                <span className="text-sm font-bold text-gray-600">R$ {maskMoney(order?.budget_value)}</span>
                             </div>
                         </div>
                     </div>
@@ -143,15 +144,15 @@ function ReceiptCopy({ order, company, type, receipt, checklist, qrcode }: { ord
                         <div className="flex items-center justify-between border-t border-gray-300">
                             <div className="flex justify-between items-center pt-2 gap-2">
                                 <span className="font-medium">Peças: </span>
-                                <span className="text-sm font-medium text-gray-600">{order?.parts_value}</span>
+                                <span className="text-sm font-medium text-gray-600">R$ {maskMoney(order?.parts_value)}</span>
                             </div>
                             <div className="flex justify-between items-center pt-2 gap-2">
                                 <span className="font-medium">Serviço: </span>
-                                <span className="text-sm font-medium text-gray-600">{order?.service_value}</span>
+                                <span className="text-sm font-medium text-gray-600">R$ {maskMoney(order?.service_value)}</span>
                             </div>
                             <div className="flex justify-between items-center pt-2 gap-2">
                                 <span className="font-medium text-sm">Total: </span>
-                                <span className="text-sm font-bold text-gray-600">{order?.service_cost}</span>
+                                <span className="text-sm font-bold text-gray-600">R$ {maskMoney(order?.service_cost)}</span>
                             </div>
                         </div>
                     </div>
