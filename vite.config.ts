@@ -15,9 +15,7 @@ export default defineConfig({
         tailwindcss(),
     ],
     server: {
-        // host: 'https://sigmaos.com.br',
-        // host: '172.16.1.67',
-        // host: 'http://localhost',
+
         cors: true
     },
     esbuild: {
