@@ -1,5 +1,4 @@
 import { usePage } from '@inertiajs/react';
-import defaultImage from '@/images/default.png';
 
 export default function AdminLogo() {
     const { setting } = usePage().props as any;
@@ -8,7 +7,7 @@ export default function AdminLogo() {
         <>
             <div className="flex aspect-square size-8 items-center justify-center">
                 <img
-                    src={`${setting?.logo ? '/storage/logos/'+setting?.logo  : defaultImage }`}
+                    src={`${setting?.logo ? '/storage/logos/'+setting?.logo  : '/images/default.png' }`}
                     alt="Imagem de logo"
                 />
             </div>
