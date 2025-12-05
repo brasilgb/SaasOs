@@ -167,7 +167,7 @@ export default function Register() {
                             <InputError message={errors.password_confirmation} />
                         </div>
 
-                        <Button type="submit" className="mt-2 w-full" tabIndex={5} disabled={processing}>
+                        <Button type="submit" className="mt-2 w-full" tabIndex={7} disabled={processing}>
                             {processing ? (
                                 <>
                                     <svg
@@ -193,7 +193,7 @@ export default function Register() {
 
                     <div className="text-muted-foreground text-center text-sm">
                         Já tem uma conta?{' '}
-                        <TextLink href={route('login')} tabIndex={6}>
+                        <TextLink href={route('login')} tabIndex={8}>
                             Entrar
                         </TextLink>
                     </div>

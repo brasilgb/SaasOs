@@ -2,7 +2,7 @@ import AuthLogoIcon from '@/components/auth-logo-icon';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link } from '@inertiajs/react';
 import { type PropsWithChildren } from 'react';
-
+import authImage from '@/images/auth-images.jpg';
 interface AuthLayoutProps {
     name?: string;
     title?: string;
@@ -16,7 +16,7 @@ export default function AuthSimpleLayout({ children, title, description }: Props
             <div
                 className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                 style={{
-                    backgroundImage: "url('https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2070')"
+                    backgroundImage: `url(${authImage})`
                 }}
             />
 

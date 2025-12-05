@@ -108,7 +108,7 @@ export default function CreateCustomer({ customerlast }: any) {
           <form onSubmit={handleSubmit} className="space-y-8">
             <div className="grid md:grid-cols-6 gap-4 mt-4">
 
-              <div className=" gap-2">
+              <div className="grid gap-2">
                 <Label htmlFor="name">CPF/CNPJ</Label>
                 <Input
                   type="text"
@@ -120,7 +120,7 @@ export default function CreateCustomer({ customerlast }: any) {
                 {errors.cpf && <div className="text-red-500 text-sm">{errors.cpf}</div>}
               </div>
 
-              <div className=" gap-2">
+              <div className="grid gap-2">
                 <Label htmlFor="birth">Nascimento</Label>
                 <Input
                   type="date"
