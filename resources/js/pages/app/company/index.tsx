@@ -108,7 +108,7 @@ export default function Company({ company }: any) {
                             alt="Imagem de logo"
                         />
                     </div>
-                    <form onSubmit={handleSubmit} className="space-y-8">
+                    <form onSubmit={handleSubmit} autoComplete="off"className="space-y-8">
                         <div className="grid md:grid-cols-6 gap-4 mt-4">
 
                             <div className="grid gap-2">

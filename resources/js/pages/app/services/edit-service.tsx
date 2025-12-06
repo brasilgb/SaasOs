@@ -55,7 +55,7 @@ export default function EditService({ equipments, service }: any) {
                     <DialogHeader>
                         <DialogTitle>Cadastrar Serviço</DialogTitle>
                     </DialogHeader>
-                    <form onSubmit={handleSubmit} autoComplete="off">
+                    <form onSubmit={handleSubmit} autoComplete="off"autoComplete="off">
 
                         <div className="md:col-span-2 grid gap-2">
                             <Label htmlFor="equipment_id">Serviço</Label>

@@ -38,7 +38,7 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
   console.log(orderparts);
 
   const { flash, ziggy, othersetting } = usePage().props as any;
-    const disableParts = !othersetting?.enableparts ? 'parts' : '';
+  const disableParts = !othersetting?.enableparts ? 'parts' : '';
   const { page, oc } = (ziggy as any).query
   const [partsData, setPartsData] = useState<any>([]);
 
@@ -88,7 +88,7 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
     setData('parts_value', String(partsTotal));
     setData('allparts', data);
   };
-  
+
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     patch(route('app.orders.update', order.id));
@@ -143,13 +143,13 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
   const handleRemovePart = (partId: any) => {
     const filteredParts = partsData.filter((part: any) => part.id !== partId)
     setPartsData(filteredParts);
-    
+
     const valueParts = filteredParts.reduce((acc: any, item: any) => acc + Number(item.sale_price * item.quantity), 0);
-    
+
     setData((data: any) => ({ ...data, parts_value: valueParts.toFixed(2) }));
     setPartsData([]);
   };
-  
+
   return (
     <AppLayout>
       {flash.message && <AlertSuccess message={flash.message} />}
@@ -184,7 +184,7 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
       <div className='p-4'>
         <div className='border rounded-lg p-2'>
 
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
             <div className="grid md:grid-cols-8 gap-4 mt-4">
 
               <div className="md:col-span-2 grid gap-2">
@@ -459,6 +459,7 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
                     }),
                   }}
                 />
+                {errors.services_performed && <div className="text-red-500 text-sm">{errors.services_performed}</div>}
               </div>
 
               <div className="grid gap-2">

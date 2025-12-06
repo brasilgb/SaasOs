@@ -66,7 +66,7 @@ export default function LabelPrinting({ labels }: any) {
                     <div className="mb-8">
                         <h2 className="text-sm">As etiquetas são do modelo <strong className="text-red-600">A4048 (6x16)</strong> veja as configurações <a href="https://sig.ufla.br/modulos/ajuda/etiquetas.php?op=abrir&cod_etiqueta=12" target="_blank" rel="noopener noreferrer" className="uppercase text-sky-600 font-semibold underline">aqui</a>.</h2>
                     </div>
-                    <form onSubmit={handleSubmit} className="space-y-8" method="post" target="_blank">
+                    <form onSubmit={handleSubmit} autoComplete="off"className="space-y-8" method="post" target="_blank">
                         <div className="flex items-center justify-start gap-4 my-4">
 
                             <div className="grid gap-2">

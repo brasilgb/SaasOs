@@ -25,6 +25,7 @@ class OrderRequest extends FormRequest
             'customer_id' => 'nullable',
             'equipment_id' => 'required',
             'defect' => 'required',
+            'responsible_technician' => 'required'
         ];
     }
 
@@ -34,6 +35,7 @@ class OrderRequest extends FormRequest
             'customer_id' => 'cliente',
             'equipment_id' => 'equipamento',
             'defect' => 'defeito',
+            'responsible_technician' => 'técnico',
         ];
     }
 }

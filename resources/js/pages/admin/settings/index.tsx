@@ -74,7 +74,7 @@ export default function SettingsIndex({ settings }: any) {
           />
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} autoComplete="off"className="space-y-8">
           <div className="flex flex-col md:w-2xl gap-4 mt-4">
 
             <div className="grid gap-2">

@@ -194,7 +194,7 @@ export default function EditBudget({ budgets, budget }: any) {
       <div className='p-4'>
         <div className='border rounded-lg p-2'>
 
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <form onSubmit={handleSubmit} autoComplete="off"className="space-y-8">
             {/* Linha 1: Categoria, Serviço, Modelo */}
             <div className="grid md:grid-cols-3 gap-4 mt-4">
 

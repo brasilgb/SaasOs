@@ -81,11 +81,11 @@ export default function CreateBudget({ budgets }: any) {
 
   useEffect(() => {
     if (data.part_value || data.labor_value) {
-        calculateTotal();
-    }     
+      calculateTotal();
+    }
   }, [data.part_value, data.labor_value, calculateTotal]);
 
-    useEffect(() => {
+  useEffect(() => {
     setData((data: any) => ({
       ...data,
       part_value: maskMoneyDot(data.part_value),
@@ -188,7 +188,7 @@ export default function CreateBudget({ budgets }: any) {
       <div className='p-4'>
         <div className='border rounded-lg p-2'>
 
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
             {/* Linha 1: Categoria, Serviço, Modelo */}
             <div className="grid md:grid-cols-3 gap-4 mt-4">
 
@@ -294,15 +294,15 @@ export default function CreateBudget({ budgets }: any) {
               <div className="grid gap-2">
                 <Label htmlFor="total_value">Valor Total</Label>
                 <div className="relative">
-                    <Input
-                        id="total_value"
-                        value={maskMoney(data.total_value)}
-                        onChange={(e) => setData('total_value', maskMoney(e.target.value))}
-                        className="pr-10"
-                    />
-                    <button type="button" onClick={calculateTotal} className="absolute inset-y-0 right-0 flex items-center pr-3">
-                        <Calculator className="h-5 w-5 text-gray-400" />
-                    </button>
+                  <Input
+                    id="total_value"
+                    value={maskMoney(data.total_value)}
+                    onChange={(e) => setData('total_value', maskMoney(e.target.value))}
+                    className="pr-10"
+                  />
+                  <button type="button" onClick={calculateTotal} className="absolute inset-y-0 right-0 flex items-center pr-3">
+                    <Calculator className="h-5 w-5 text-gray-400" />
+                  </button>
                 </div>
                 <InputError className="mt-2" message={errors.total_value} />
               </div>

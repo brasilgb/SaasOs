@@ -48,7 +48,7 @@ export default function EditModel({ brands, model }: any) {
                     <DialogHeader>
                         <DialogTitle>Editar Marca do Equipamento</DialogTitle>
                     </DialogHeader>
-                    <form onSubmit={handleSubmit} autoComplete="off">
+                    <form onSubmit={handleSubmit} autoComplete="off"autoComplete="off">
                         <div className="md:col-span-2 grid gap-2">
                             <Label htmlFor="brand_id">Marca</Label>
                             <Select

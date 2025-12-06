@@ -17,20 +17,21 @@ const mainNavItems: NavItem[] = [
         enabled: 'customers'
         
     },
-    {
-        title: 'Orçamentos',
-        href: route('app.budgets.index'),
-        icon: PackagePlus,
-        active: 'app.budgets.*',
-        enabled: 'budgets'
-        
-    },
+    
     {
         title: 'Ordens de serviço',
         href: route('app.orders.index'),
         icon: Wrench,
         active: 'app.orders.*',
         enabled: 'orders'
+        
+    },
+    {
+        title: 'Orçamentos',
+        href: route('app.budgets.index'),
+        icon: PackagePlus,
+        active: 'app.budgets.*',
+        enabled: 'budgets'
         
     },
     {

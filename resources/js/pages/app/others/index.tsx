@@ -72,7 +72,7 @@ export default function Others({ othersettings, company }: any) {
 
                     {uploading && <AlertSuccess message={uploading} className='!p-0' />}
                 </div>
-                <form onSubmit={handleSubmit} className="space-y-8">
+                <form onSubmit={handleSubmit} autoComplete="off"className="space-y-8">
                     <div className="space-y-6 mt-6">
                         <HeadingSmall title="Configuração de navegação" description="Altere entre o menu de navegação lateral Sidebar e a barra de navegação no topo." />
                         <div className="grid gap-2">

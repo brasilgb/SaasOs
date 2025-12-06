@@ -114,7 +114,7 @@ export default function CreateTenant({ plans }: any) {
             <div className='p-4'>
                 <div className='border rounded-lg p-2'>
 
-                    <form onSubmit={handleSubmit} className="space-y-8">
+                    <form onSubmit={handleSubmit} autoComplete="off"className="space-y-8">
                         <div className="grid md:grid-cols-9 gap-4 mt-4">
 
                             <div className="md:col-span-2 grid gap-2">
