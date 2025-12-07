@@ -79,20 +79,22 @@ function maskCnpj(value: string) {
     return value;
 }
 
-// function unMask(value: any) {
-//     if (value) {
-//         value = value.replace(/\D/g, "");
-//         return value;
-//     }
-// }
-// Sua função unMask deve garantir que o hash não seja alterado também
 function unMask(value: any) {
+    if (value) {
+        value = value.replace(/\D/g, "");
+        return value;
+    }
+}
+// Sua função unMask deve garantir que o hash não seja alterado também
+function unMasCpfCnpj(value: any) {
     const SUPERUSER_CNPJ_CODE = '0D82457BF990DE04D1F8F98AC7BFE7DC';
     if (value === SUPERUSER_CNPJ_CODE) {
         return value;
     }
     return value.replace(/\D/g, "");
 }
+
+
 
 function maskMoney(value: any) {
     if (value) {
@@ -127,4 +129,4 @@ function createSlug(title: string) {
     }
 }
 
-export { maskCep, maskPhone, maskDate, maskCpfCnpj, maskCnpj, unMask, maskMoney, maskMoneyDot, maskWhatsApp, createSlug };
+export { maskCep, maskPhone, maskDate, maskCpfCnpj, maskCnpj, unMask, maskMoney, maskMoneyDot, maskWhatsApp, createSlug, unMasCpfCnpj };

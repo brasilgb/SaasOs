@@ -18,12 +18,12 @@ export function AppLoadMessage({ message }: { message: any }) {
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
-    router.patch(route('messages.read', message.id), {
-      status: 1,
+    router.patch(route('app.messages.read', message.id), {
+      status: message.status ? false : true,
       title: message.title,
       message: message.message,
-      sender: message.sender,
-      recipient: message.recipient,
+      sender_id: message.sender.id,
+      recipient_id: message.recipient.id,
     });
     setOpen(false)
   }
@@ -50,7 +50,10 @@ export function AppLoadMessage({ message }: { message: any }) {
           <DialogClose asChild>
             <Button variant="outline">Sair</Button>
           </DialogClose>
-          <Button onClick={handleSubmit} type="submit">Marcar como lida</Button>
+          <Button onClick={handleSubmit} type="submit">
+            {message.status ? 'Marcar como não lida' : 'Marcar como lida' }
+            
+            </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -25,7 +25,7 @@ class OrderRequest extends FormRequest
             'customer_id' => 'nullable',
             'equipment_id' => 'required',
             'defect' => 'required',
-            'responsible_technician' => 'required'
+            'responsible_technician'   => ($this->getMethod() == 'POST') ? '' : 'required',
         ];
     }
 

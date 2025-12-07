@@ -8,6 +8,7 @@ use App\Http\Requests\MessageRequest;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class MessageController extends Controller
@@ -20,7 +21,8 @@ class MessageController extends Controller
         $search = $request->get('q');
         $sdate = $request->get('dt');
 
-        $query = Message::orderBy('id', 'DESC');
+        $logged = Auth::user();
+        $query = Message::where('recipient_id', $logged->id)->orWhere('sender_id', $logged->id)->orderBy('id', 'DESC');
         if ($sdate) {
             $query->whereDate('messages', $sdate);
         }
@@ -42,7 +44,7 @@ class MessageController extends Controller
      */
     public function create()
     {
-        $logged = auth()->user();
+        $logged = Auth::user();
         $users = User::where('id', '!=', $logged->id)->get();
         return Inertia::render('app/messages/create-message', ['users' => $users]);
     }
@@ -64,7 +66,8 @@ class MessageController extends Controller
      */
     public function show(Message $message)
     {
-        $users = User::get();
+        $logged = Auth::user();
+        $users = User::where('id', '!=', $logged->id)->get();
         return Inertia::render('app/messages/edit-message', ['message' => $message, 'users' => $users]);
     }
 
@@ -83,7 +86,6 @@ class MessageController extends Controller
     {
         $data = $request->all();
         $request->validated();
-        $data['message_number'] = Message::exists() ? Message::latest()->first()->message_number + 1 : 1;
         $message->update($data);
         return redirect()->route('app.messages.show', ['message' => $message->id])->with('success', 'Agenda editada com sucesso');
     }
@@ -91,10 +93,10 @@ class MessageController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function read(MessageRequest $request, Message $message): RedirectResponse
+    public function read(Request $request, Message $message): RedirectResponse
     {
         $data = $request->all();
-        $message->update($data);
+        $message->update(['status' => $data['status']]);
         return redirect()->route('app.messages.index')->with('success', 'Mensagem marcada como lida');
     }
 

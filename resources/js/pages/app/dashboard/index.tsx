@@ -9,31 +9,28 @@ import { Card, CardDescription } from '@/components/ui/card';
 import { ChartAreaDashboard } from '@/components/chart-area-dashboard';
 import { SalesProducts } from '@/components/sales-products';
 
-export default function Dashboard({ orders, acount, chartequipments, parts, customers }: { orders: any, acount: any, chartequipments: any, parts: any, customers: any }) {
-    const { othersetting } = usePage().props as any;
+export default function Dashboard({ orders, acount, chartequipments, parts, customers, others }: { orders: any, acount: any, chartequipments: any, parts: any, customers: any, others: any }) {
 
     return (
         <AppLayout>
             <Head title="Dashboard" />
             <div className='p-4'>
-                <div className={`grid ${othersetting?.enableparts && othersetting?.enablesales ? 'md:grid-cols-7' : othersetting?.enableparts || othersetting?.enablesales ? 'md:grid-cols-6' : 'md:grid-cols-5'} gap-4 rounded-xl`}>
+                <div className={`grid ${others?.enableparts && others?.enablesales ? 'md:grid-cols-7' : others?.enableparts || others?.enablesales ? 'md:grid-cols-6' : 'md:grid-cols-5'} gap-4 rounded-xl`}>
                     <KpiDashboard link={route('app.users.index')} title="Usuários" value={acount?.numuser} icon={<User className='h-10 w-10' />} description="Usários do sistema" />
                     <KpiDashboard link={route('app.customers.index')} title="Clientes" value={acount?.numcust} icon={<Users className='h-10 w-10' />} description="Todos os clientes cadastrados" />
                     <KpiDashboard link={route('app.orders.index')} title="Ordens" value={acount?.numorde} icon={<Wrench className='h-10 w-10' />} description="Todas as ordens emitidas" />
                     <KpiDashboard link={route('app.schedules.index')} title="Agendamentos" value={acount?.numshed} icon={<Calendar className='h-10 w-10' />} description="Todos os agendamentos efetuados" />
                     <KpiDashboard link={route('app.messages.index')} title="Mensagens" value={acount?.nummess} icon={<MessageSquareMore className='h-10 w-10' />} description="Mensagens enviadas e recebidas" />
-                    {othersetting?.enableparts ?
-                        <KpiDashboard link={route('app.parts.index')} title="Peças" value={acount?.numparts} icon={<MemoryStickIcon className='h-10 w-10' />} description="Peças cadastradas" />
-                    : ''
+                    {others?.enableparts ?
+                        <KpiDashboard link={route('app.parts.index')} title="Peças" value={acount?.numparts} icon={<MemoryStickIcon className='h-10 w-10' />} description="Peças cadastradas" /> : ''
                     }
-                    {othersetting?.enablesales ?
+                    {others?.enablesales ?
                         <Card className='flex items-center justify-center'>
                             <CardDescription>
                                 Venda de Peças/Produtos
                             </CardDescription>
                             <SalesProducts parts={parts} customers={customers} />
-                        </Card>
-                        : ''
+                        </Card> : ''
                     }
                 </div>
 

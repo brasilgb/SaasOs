@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth-layout';
-import { maskCnpj, maskPhone, unMask } from '@/Utils/mask';
+import { maskCnpj, maskPhone, unMask, unMasCpfCnpj } from '@/Utils/mask';
 
 type RegisterForm = {
     cnpj: string;
@@ -36,7 +36,7 @@ export default function Register() {
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        setData((data: any) => ({ ...data, cnpj: unMask(data.cnpj) }));
+        setData((data: any) => ({ ...data, cnpj: unMasCpfCnpj(data.cnpj) }));
         setData((data: any) => ({ ...data, phone: unMask(data.phone) }));
         post(route('register'), {
             onFinish: () => reset('password', 'password_confirmation'),

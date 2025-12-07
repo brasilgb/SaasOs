@@ -1,5 +1,4 @@
-import React from 'react';
-import { Page, Text, View, Document, StyleSheet } from '@react-pdf/renderer';
+import { Page, Text, View, Document, StyleSheet, Image } from '@react-pdf/renderer';
 
 // --- Utilitários ---
 const formatCurrency = (value) => {
@@ -29,9 +28,9 @@ const styles = StyleSheet.create({
     alignItems: 'center' 
   },
   companyInfo: { width: '75%' },
-  companyName: { fontSize: 18, fontWeight: 'bold', marginBottom: 2, color: '#003366' },
+  companyName: { fontSize: 18, fontWeight: 'bold', paddingBottom: 10, color: '#003366' },
   companyDetails: { fontSize: 9, color: '#555' },
-  logoPlaceholder: { width: '20%', height: 50, backgroundColor: '#eee', justifyContent: 'center', alignItems: 'center', border: '1px solid #ccc' },
+  logoPlaceholder: { width: 60, height: 60,justifyContent: 'center', alignItems: 'center' },
   
   // === Título ===
   budgetTitle: { 
@@ -105,7 +104,7 @@ const styles = StyleSheet.create({
  */
 export const BudgetPDF = ({ company, budget }) => {
   // 1. Desestruturando Dados da EMPRESA
-  const { companyname, cnpj, city, number, street, district, telephone } = company;
+  const { companyname, cnpj, city, number, street, district, telephone, logo } = company;
   
   // 2. Desestruturando Dados do ORÇAMENTO (Serviço e Observação)
   const { 
@@ -136,7 +135,7 @@ export const BudgetPDF = ({ company, budget }) => {
             </Text>
           </View>
           <View style={styles.logoPlaceholder}>
-            <Text style={{ fontSize: 8 }}>LOGO AQUI</Text>
+              <Image source={`/storage/logos/${logo}`} />
           </View>
         </View>
 

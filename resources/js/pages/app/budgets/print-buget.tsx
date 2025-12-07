@@ -59,8 +59,8 @@ export function PrintBudget({ company, budget }: any) {
         disabled={loading || !company || !budget} // Desabilita se estiver carregando ou sem dados
         title={!company || !budget ? "Dados do orçamento ausentes" : "Visualizar Orçamento"}
       >
-        {loading ? <LoaderIcon className="w-4 h-4 mr-2 animate-spin" /> : <PrinterIcon className="w-4 h-4 mr-2" />}
-        Gerar PDF
+        {loading ? <LoaderIcon className="w-4 h-4 animate-spin" /> : <PrinterIcon className="w-4 h-4" />}
+        Gerar
       </Button>
     </div>
   );

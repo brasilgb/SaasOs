@@ -77,7 +77,7 @@ export default function CreateBudget({ budgets }: any) {
     const laborValue = parseFloat(unMask(data.labor_value)) || 0;
     const total = partValue + laborValue;
     setData('total_value', maskMoney(String(total)));
-  }, [data.part_value, data.labor_value, setData]);
+  }, [data.part_value, data.labor_value]);
 
   useEffect(() => {
     if (data.part_value || data.labor_value) {

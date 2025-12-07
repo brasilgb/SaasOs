@@ -102,7 +102,7 @@ export default function EditMessage({ users, message }: any) {
               <div className=" grid gap-2">
                 <Label htmlFor="recipient_id">Para</Label>
                 <Select
-                  isDisabled={message.user_id === auth.user.id ? false : true}
+                  isDisabled={message.sender_id === auth.user.id ? false : true}
                   menuPosition='fixed'
                   defaultValue={defaultUser}
                   options={optionsUser}
@@ -136,7 +136,7 @@ export default function EditMessage({ users, message }: any) {
             <div className="grid gap-2">
               <Label htmlFor="service">Título</Label>
               <Input
-                readOnly={message.user_id === auth.user.id ? false : true}
+                readOnly={message.sender_id === auth.user.id ? false : true}
                 id="title"
                 type="text"
                 value={data.title}
@@ -148,7 +148,7 @@ export default function EditMessage({ users, message }: any) {
             <div className="grid gap-2">
               <Label htmlFor="message">Mensagem</Label>
               <Textarea
-                readOnly={message.user_id === auth.user.id ? false : true}
+                readOnly={message.sender_id === auth.user.id ? false : true}
                 id="message"
                 value={data.message}
                 onChange={(e) => setData('message', e.target.value)}

@@ -78,7 +78,6 @@ class BrandController extends Controller
     {
         $data = $request->all();
         $request->validated();
-        $data['order_number'] = Brand::exists() ? Brand::latest()->first()->brand_number + 1 : 1;
         $brand->update($data);
         return redirect()->route('app.register-brands.index')->with('success', 'Marca editada com sucesso');
     }

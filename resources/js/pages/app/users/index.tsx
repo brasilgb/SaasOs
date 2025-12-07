@@ -74,6 +74,7 @@ export default function Users({ users }: any) {
               <TableRow>
                 <TableHead className="w-[100px]">#</TableHead>
                 <TableHead>Nome</TableHead>
+                <TableHead>E-mail</TableHead>
                 <TableHead>Telefone</TableHead>
                 <TableHead>Função</TableHead>
                 <TableHead>Status</TableHead>
@@ -87,6 +88,7 @@ export default function Users({ users }: any) {
                   <TableRow key={user.id}>
                     <TableCell>{user.user_number}</TableCell>
                     <TableCell className="font-medium">{user.name}</TableCell>
+                    <TableCell className="font-medium">{user.email}</TableCell>
                     <TableCell className="font-medium">{maskPhone(user.telephone)}</TableCell>
                     <TableCell>{roleUserByValue(user.roles)}</TableCell>
                     <TableCell>{user.status ? <Badge variant={'default'}>Ativo</Badge> : <Badge variant={'destructive'}>Inativo</Badge>}</TableCell>

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\App\Customer;
 use App\Models\App\Message;
 use App\Models\App\Order;
+use App\Models\App\Other;
 use App\Models\App\Schedule;
 use App\Models\App\Part;
 use App\Models\User;
@@ -34,7 +35,6 @@ class DashboardController extends Controller
             'aprovados'  => Order::where('service_status', 4)->get('id'),
             'concluidosca' => Order::where('service_status', 6)->get('id'),
             'concluidoscn' => Order::where('service_status', 7)->get('id'),
-            
             'feedback' => Order::where('service_status', 8)
                 ->whereBetween('delivery_date', [$startDate, $endDate])
                 ->get('id')
@@ -53,7 +53,8 @@ class DashboardController extends Controller
 
         $parts = Part::get();
         $customers = Customer::get();
+        $others = Other::first();
         // $chartequipments = response()->json($cequipments);
-        return Inertia::render('app/dashboard/index', ['orders' => $orders, 'acount' => $acount, 'chartequipments' => $chartequipments, 'parts' => $parts, 'customers' => $customers]);
+        return Inertia::render('app/dashboard/index', ['orders' => $orders, 'acount' => $acount, 'chartequipments' => $chartequipments, 'parts' => $parts, 'customers' => $customers, 'others' => $others]);
     }
 }

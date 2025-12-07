@@ -148,7 +148,7 @@ export default function Orders({ orders, whats, feedback }: any) {
                                         <TableCell className='flex justify-end gap-2'>
 
                                             <TemplateSenderWhatsapp
-                                                phone={order.customer.phone}
+                                                phone={order.customer.whatsapp}
                                                 template={`${order.service_status == '7' ? whats?.servicecompleted : order.service_status == '3' ? whats?.generatedbudget : "Olá, cliente!"}`}
                                                 data={{
                                                     greeting: getGreeting(),

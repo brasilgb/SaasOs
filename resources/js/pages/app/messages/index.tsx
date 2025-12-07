@@ -91,13 +91,15 @@ export default function Messages({ messages }: any) {
                     <TableCell>{<Badge variant={'default'}>{statusMessageByValue(message.status)}</Badge>}</TableCell>
                     <TableCell>{moment(message.created_at).format("DD/MM/YYYY")}</TableCell>
                     <TableCell className='flex justify-end gap-2'>
-                      {message.sender_id !== auth.user.id
-                        ? <AppLoadMessage message={message} />
-                        : <Button asChild size="icon" className="bg-orange-500 hover:bg-orange-600 text-white">
+                      {message.sender_id == auth.user.id 
+                        ? <Button asChild size="icon" className="bg-orange-500 hover:bg-orange-600 text-white">
                           <Link href={route("app.messages.edit", message.id)}>
-                            {message.sender_id === auth.user.id ? <Edit /> : <Eye />}
+                            {message.sender_id === auth.user.id === message.status ? <Eye /> : <Edit /> }
                           </Link>
-                        </Button>}
+                        </Button>
+                        : 
+                        <AppLoadMessage message={message} />
+                      }
 
                       <ActionDelete title={'esta mensagem'} url={'app.messages.destroy'} param={message.id} />
 
