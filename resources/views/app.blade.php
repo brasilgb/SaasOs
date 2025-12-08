@@ -30,13 +30,23 @@
             }
         </style>
 
-        <title inertia>{{ config('app.name', 'Laravel') }}</title>
+        <title inertia>{{ config('app.name', 'SigmaOs') }}</title>
 
         <link rel="icon" href="/favicon.ico" sizes="any">
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+        <link rel="apple-touch-icon" href="images/logo.png">
 
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
+
+        <meta property="og:title" content="{{ config('app.name', 'SigmaOs') }}" />
+        <meta property="og:description" content="Sistema de Gestão de Ordens de Serviço." />
+        <meta property="og:url" content="{{ url()->current() }}" />
+        
+        <meta property="og:image" content="{{ asset('images/logo.png') }}" />
+        <meta property="og:type" content="website" />
+        
+        <meta property="og:image:width" content="200" />
+        <meta property="og:image:height" content="200" />
 
         @routes
         @viteReactRefresh

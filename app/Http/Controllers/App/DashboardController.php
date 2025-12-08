@@ -55,6 +55,6 @@ class DashboardController extends Controller
         $customers = Customer::get();
         $others = Other::first();
         // $chartequipments = response()->json($cequipments);
-        return Inertia::render('app/dashboard/index', ['orders' => $orders, 'acount' => $acount, 'chartequipments' => $chartequipments, 'parts' => $parts, 'customers' => $customers, 'others' => $others]);
+        return Inertia::render('app/dashboard/index', ['reloadKey' => now()->timestamp, 'orders' => $orders, 'acount' => $acount, 'chartequipments' => $chartequipments, 'parts' => $parts, 'customers' => $customers, 'others' => $others]);
     }
 }
