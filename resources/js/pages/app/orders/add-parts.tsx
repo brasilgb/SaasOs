@@ -91,7 +91,7 @@ export default function AddPartsModal({ onSubmit, parts }: any) {
                     <DialogHeader>
                         <DialogTitle>Selecionar Peças</DialogTitle>
                     </DialogHeader>
-                    <form onSubmit={handleSubmit} autoComplete="off"autoComplete="off">
+                    <form onSubmit={handleSubmit} autoComplete="off">
                         <div className="grid gap-4 py-4">
 
                             <div className="md:col-span-2 grid gap-2">

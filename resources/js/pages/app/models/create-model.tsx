@@ -55,7 +55,7 @@ export default function CreateModel({ brands }: any) {
                     <DialogHeader>
                         <DialogTitle>Cadastrar Modelo do Equipamento</DialogTitle>
                     </DialogHeader>
-                    <form onSubmit={handleSubmit} autoComplete="off"autoComplete="off">
+                    <form onSubmit={handleSubmit} autoComplete="off">
 
                         <div className="md:col-span-2 grid gap-2">
                             <Label htmlFor="brand_id">Marca</Label>

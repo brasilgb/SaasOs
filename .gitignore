@@ -21,6 +21,7 @@ compose.yaml
 /vendor/
 /node_modules/
 /public/hot
+/public/build
 /public/storage
 /storage/*.key
 /storage/app

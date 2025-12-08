@@ -41,7 +41,7 @@ export default function CreateEquipment() {
                     <DialogHeader>
                         <DialogTitle>Cadastrar Tipo do Equipamento</DialogTitle>
                     </DialogHeader>
-                    <form onSubmit={handleSubmit} autoComplete="off"autoComplete="off">
+                    <form onSubmit={handleSubmit} autoComplete="off">
                         <div className="grid gap-4 py-4">
                             <div className="grid gap-2">
                                 <Label htmlFor="equipment">Nome do Equipamento *</Label>

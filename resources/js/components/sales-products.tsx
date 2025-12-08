@@ -206,7 +206,7 @@ export function SalesProducts({ parts, customers }: SalesProductsProps) {
                         Selecione a peça/produto e a quantidade para registrar a venda.
                     </DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleSubmit} autoComplete="off"autoComplete="off">
+                <form onSubmit={handleSubmit} autoComplete="off">
                     {successMessage && <p className="text-green-500 mb-4 text-center">{successMessage}</p>}
                     <div className="grid gap-4 py-4">
                         <div className="items-center gap-4">

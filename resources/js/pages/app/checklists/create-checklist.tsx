@@ -55,7 +55,7 @@ export default function CreateChecklist({ equipments }: any) {
                     <DialogHeader>
                         <DialogTitle>Cadastrar Checklist</DialogTitle>
                     </DialogHeader>
-                    <form onSubmit={handleSubmit} autoComplete="off"autoComplete="off">
+                    <form onSubmit={handleSubmit} autoComplete="off">
 
                         <div className="md:col-span-2 grid gap-2">
                             <Label htmlFor="customer_id">Equipamento</Label>

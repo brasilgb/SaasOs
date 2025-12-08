@@ -37,7 +37,7 @@ export default function EditEquipment({equipment}:any) {
                     <DialogHeader>
                         <DialogTitle>Editar Tipo de Equipamento</DialogTitle>
                     </DialogHeader>
-                    <form onSubmit={handleSubmit} autoComplete="off"autoComplete="off">
+                    <form onSubmit={handleSubmit} autoComplete="off">
                         <div className="grid gap-4 py-4">
                             <div className="grid gap-2">
                                 <Label htmlFor="nome">Nome do Equipamento *</Label>
