@@ -45,8 +45,8 @@
         <meta property="og:image" content="{{ asset('images/logo.png') }}" />
         <meta property="og:type" content="website" />
         
-        <meta property="og:image:width" content="200" />
-        <meta property="og:image:height" content="200" />
+        <meta property="og:image:width" content="100" />
+        <meta property="og:image:height" content="100" />
 
         @routes
         @viteReactRefresh
