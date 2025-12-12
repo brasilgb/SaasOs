@@ -459,7 +459,7 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
                     }),
                   }}
                 />
-                {errors.services_performed && <div className="text-red-500 text-sm">{errors.services_performed}</div>}
+                {errors.responsible_technician && <div className="text-red-500 text-sm">{errors.responsible_technician}</div>}
               </div>
 
               <div className="grid gap-2">
