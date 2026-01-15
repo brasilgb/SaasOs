@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label";
 import { maskCep, maskCnpj, maskPhone, unMask } from "@/Utils/mask";
 import AlertSuccess from "@/components/app-alert-success";
+import { toastSuccess, toastWarning } from "@/components/app-toast-messages";
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -42,29 +43,40 @@ export default function Company({ company }: any) {
         email: company?.email,
     });
 
-    const handleSubmit = (e: any) => {
-        e.preventDefault();
+const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
 
-        router.post(route('app.company.update', company.id), {
-            _method: "put",
-            shortname: data?.shortname,
-            companyname: data?.companyname,
-            cnpj: data?.cnpj,
-            logo: data?.logo,
-            zip_code: data?.zip_code,
-            state: data?.state,
-            city: data?.city,
-            district: data?.district,
-            street: data?.street,
-            number: data?.number,
-            complement: data?.complement,
-            telephone: data?.telephone,
-            whatsapp: data?.whatsapp,
-            site: data?.site,
-            email: data?.email,
+    router.post(route('app.company.update', company.id), 
+        {
+            // DADOS (Primeiro Objeto)
+            _method: "put", // Necessário para simular PUT em formulários com arquivos (logo)
+            shortname: data.shortname,
+            companyname: data.companyname,
+            cnpj: data.cnpj,
+            logo: data.logo,
+            zip_code: data.zip_code,
+            state: data.state,
+            city: data.city,
+            district: data.district,
+            street: data.street,
+            number: data.number,
+            complement: data.complement,
+            telephone: data.telephone,
+            whatsapp: data.whatsapp,
+            site: data.site,
+            email: data.email,
+        },
+        {
             preserveScroll: true,
-        })
-    }
+            onSuccess: () => {
+                toastSuccess("Sucesso", "Dados da empresa ajustados com sucesso");
+            },
+            onError: (errors: any) => {
+                toastWarning("Erro ao validar:", errors);
+            }
+        }
+    );
+};
 
     const getCep = (zip_code: string) => {
         const cleanCep = unMask(zip_code);
@@ -82,7 +94,7 @@ export default function Company({ company }: any) {
 
     return (
         <AppLayout>
-            {flash.message && <AlertSuccess message={flash.message} />}
+
             <Head title="Dados da empresa" />
             <div className='flex items-center justify-between h-16 px-4'>
                 <div className='flex items-center gap-2'>

@@ -11,7 +11,7 @@ export function Hero() {
         <div className="mx-auto max-w-4xl text-center">
           <Badge variant="secondary" className="mb-6 text-sm">
             <span className="mr-2 inline-block h-2 w-2 rounded-full bg-accent"></span>
-            30 dias grátis • Sem cartão de crédito
+            07 dias grátis • Sem cartão de crédito
           </Badge>
 
           <h1 className="text-balance text-4xl font-bold tracking-tight text-foreground sm:text-6xl lg:text-7xl">

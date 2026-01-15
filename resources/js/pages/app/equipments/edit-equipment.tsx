@@ -12,8 +12,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Pencil, Save } from "lucide-react"
 import { useForm } from "@inertiajs/react"
+import { toastSuccess } from "@/components/app-toast-messages"
 
-export default function EditEquipment({equipment}:any) {
+export default function EditEquipment({ equipment }: any) {
     const [open, setOpen] = useState(false)
 
     const { data, setData, processing, patch, errors, reset } = useForm({
@@ -22,9 +23,15 @@ export default function EditEquipment({equipment}:any) {
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
-        patch(route('app.register-equipments.update', equipment.id));
-        setOpen(false);
+        patch(route('app.register-equipments.update', equipment.id),
+            {
+                onSuccess: () => {
+                    toastSuccess("Sucesso", "Edição realizado com sucesso")
+                    setOpen(false)
+                }
+            });
     }
+
     return (
         <div>
             <Dialog open={open} onOpenChange={setOpen}>

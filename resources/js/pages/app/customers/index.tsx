@@ -33,11 +33,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Customers({ customers }: any) {
-  const { flash } = usePage().props as any;
 
   return (
     <AppLayout>
-      {flash.message && <AlertSuccess message={flash.message} />}
       <Head title="Clientes" />
       <div className='flex items-center justify-between h-16 px-4'>
         <div className='flex items-center gap-2'>

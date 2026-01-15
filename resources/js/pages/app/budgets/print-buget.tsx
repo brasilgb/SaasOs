@@ -24,24 +24,14 @@ export function PrintBudget({ company, budget }: any) {
     setLoading(true);
 
     try {
-      // Cria a instância do PDF diretamente dentro da função assíncrona
-      // usando o componente React (BudgetPDF).
+
       const pdfInstance = pdf(<BudgetPDF company={company} budget={budget} />);
-      
-      // Gera o Blob a partir da instância do PDF
-      // A chamada para pdfInstance.toBlob() é assíncrona.
+
       const blob = await pdfInstance.toBlob();
 
-      // Cria uma URL temporária do Blob
       const url = URL.createObjectURL(blob);
 
-      // Abre a URL em uma nova aba
       window.open(url, '_blank');
-      
-      // 💡 Opcional: Recomendado liberar a URL para economia de memória.
-      // Você pode fazer isso após um breve timeout, pois o navegador
-      // precisa da URL para carregar o conteúdo na nova aba.
-      // setTimeout(() => URL.revokeObjectURL(url), 100); 
 
     } catch (error) {
       console.error("Erro ao gerar ou abrir o PDF:", error);

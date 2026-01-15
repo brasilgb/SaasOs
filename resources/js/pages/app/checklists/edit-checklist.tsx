@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label"
 import { Pencil, Plus, Save } from "lucide-react"
 import { useForm } from "@inertiajs/react"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { toastSuccess } from "@/components/app-toast-messages"
 
 export default function EditChecklist({ equipments, checklist }: any) {
     const [open, setOpen] = useState(false)
@@ -26,10 +27,10 @@ export default function EditChecklist({ equipments, checklist }: any) {
         e.preventDefault();
         patch(route('app.register-checklists.update', checklist.id), {
             onSuccess: () => {
-                setOpen(false)
+                toastSuccess("Sucesso", "Edição realizada com sucesso"),
+                    setOpen(false)
             },
         });
-
     }
 
     const optionsEquipment = equipments.map((equipment: any) => ({

@@ -10,7 +10,7 @@ import { ChartAreaDashboard } from '@/components/chart-area-dashboard';
 import { SalesProducts } from '@/components/sales-products';
 
 export default function Dashboard({ reloadKey, orders, acount, chartequipments, parts, customers, others, }: any) {
-    console.log(others?.enableparts, others?.enablesales, reloadKey);
+
     return (
         <AppLayout>
             <Head title="Dashboard" />
@@ -51,7 +51,7 @@ export default function Dashboard({ reloadKey, orders, acount, chartequipments, 
                                     {orders?.agendados.map((age: any) => (
                                         <Button key={age.id} variant={'secondary'} asChild>
                                             <Link href={route('app.schedules.index', { "q": age.id, "init": true })}>
-                                                {age.id}
+                                                {age.order_number}
                                             </Link>
                                         </Button>
                                     ))}
@@ -63,7 +63,7 @@ export default function Dashboard({ reloadKey, orders, acount, chartequipments, 
                                     {orders?.gerados.map((ger: any) => (
                                         <Button key={ger.id} variant={'secondary'} asChild>
                                             <Link href={route('app.orders.index', { "q": ger.id, "init": true })}>
-                                                {ger.id}
+                                                {ger.order_number}
                                             </Link>
                                         </Button>
                                     ))}
@@ -75,7 +75,7 @@ export default function Dashboard({ reloadKey, orders, acount, chartequipments, 
                                     {orders?.aprovados.map((apro: any) => (
                                         <Button key={apro.id} variant={'secondary'} asChild>
                                             <Link href={route('app.orders.index', { "q": apro.id, "init": true })}>
-                                                {apro.id}
+                                                {apro.order_number}
                                             </Link>
                                         </Button>
                                     ))}
@@ -87,7 +87,7 @@ export default function Dashboard({ reloadKey, orders, acount, chartequipments, 
                                     {orders?.concluidosca.map((conca: any) => (
                                         <Button key={conca.id} variant={'secondary'} asChild>
                                             <Link href={route('app.orders.index', { "q": conca.id, "init": true })}>
-                                                {conca.id}
+                                                {conca.order_number}
                                             </Link>
                                         </Button>
                                     ))}
@@ -99,7 +99,7 @@ export default function Dashboard({ reloadKey, orders, acount, chartequipments, 
                                     {orders?.concluidoscn.map((concn: any) => (
                                         <Button key={concn.id} variant={'secondary'} asChild>
                                             <Link href={route('app.orders.index', { "q": concn.id, "init": true })}>
-                                                {concn.id}
+                                                {concn.order_number}
                                             </Link>
                                         </Button>
                                     ))}
@@ -116,7 +116,7 @@ export default function Dashboard({ reloadKey, orders, acount, chartequipments, 
                                         >
                                             <Link href={route('app.orders.index', { "q": ger.id, "init": true, "fd": 1 })} className='relative'>
                                                 {ger.feedback && <Check className='h-4 w-4 absolute -top-1 -right-1' />}
-                                                {ger.id}
+                                                {ger.order_number}
                                             </Link>
                                         </Button>
                                     ))}
@@ -125,7 +125,7 @@ export default function Dashboard({ reloadKey, orders, acount, chartequipments, 
                         </Tabs>
                     </div>
                     <div className='mt-4'>
-                        <ChartAreaDashboard chartequipments={chartequipments} />
+                        <ChartAreaDashboard />
                     </div>
                 </div>
             </div>

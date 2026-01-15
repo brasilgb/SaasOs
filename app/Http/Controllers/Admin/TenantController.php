@@ -40,7 +40,7 @@ class TenantController extends Controller
         // Adiciona a data de expiração com base no plano
         if (isset($data['plan'])) {
             $days = match ((int) $data['plan']) {
-                1 => 30,  // Exemplo: plano com id 1 tem 30 dias
+                1 => 30,  // Exemplo: plano com id 1 tem 07 dias
                 3 => 90,  // Exemplo: plano com id 2 tem 90 dias ou 3 meses
                 4 => 180, // Exemplo: plano com id 3 tem 180 dias ou 6 meses
                 default => null,
@@ -82,7 +82,7 @@ class TenantController extends Controller
         
         if (isset($data['plan'])) {
             $days = match ((int) $data['plan']) {
-                1 => 30,  // Exemplo: plano com id 1 tem 30 dias
+                1 => 30,  // Exemplo: plano com id 1 tem 07 dias
                 3 => 90,  // Exemplo: plano com id 2 tem 90 dias ou 3 meses
                 4 => 180, // Exemplo: plano com id 3 tem 180 dias ou 6 meses
                 default => null,

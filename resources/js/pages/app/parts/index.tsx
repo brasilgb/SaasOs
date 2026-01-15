@@ -17,7 +17,6 @@ import {
 import InputSearch from '@/components/inputSearch';
 import AppPagination from '@/components/app-pagination';
 import ActionDelete from '@/components/action-delete';
-import AlertSuccess from '@/components/app-alert-success';
 import { Button } from '@/components/ui/button';
 import { maskMoney } from '@/Utils/mask';
 import { Badge } from '@/components/ui/badge';
@@ -34,13 +33,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Parts({ parts }: any) {
-  const { flash } = usePage().props as any;
-  console.log(parts.data);
 
   return (
     <AppLayout>
       <Head title="Peças" />
-      {flash.message && <AlertSuccess message={flash.message} />}
       <div className='flex items-center justify-between h-16 px-4'>
         <div className='flex items-center gap-2'>
           <Icon iconNode={MemoryStick} className='w-8 h-8' />
@@ -71,6 +67,7 @@ export default function Parts({ parts }: any) {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="min-w-max">#</TableHead>
                 <TableHead className="min-w-max">Part Number</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Fabricante</TableHead>
@@ -86,6 +83,7 @@ export default function Parts({ parts }: any) {
                 parts?.data?.map((part: any) => (
                   <TableRow key={part.id}>
                     <TableCell>{part.part_number}</TableCell>
+                    <TableCell>{part.reference_number}</TableCell>
                     <TableCell className="font-medium">{part.name}</TableCell>
                     <TableCell>{part.manufacturer}</TableCell>
                     <TableCell>{maskMoney(part.sale_price)}</TableCell>
@@ -115,7 +113,7 @@ export default function Parts({ parts }: any) {
                 ))
                 : (
                   <TableRow>
-                    <TableCell colSpan={5} className='h-16 w-full flex items-center justify-center'>
+                    <TableCell colSpan={9} className='h-16 w-full flex items-center justify-center'>
                       Não há dados a serem mostrados no momento.
                     </TableCell>
                   </TableRow>
@@ -124,7 +122,7 @@ export default function Parts({ parts }: any) {
             </TableBody>
             <TableFooter>
               <TableRow>
-                <TableCell colSpan={8}>
+                <TableCell colSpan={9}>
                   <AppPagination data={parts} />
                 </TableCell>
               </TableRow>

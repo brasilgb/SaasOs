@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('parts', function (Blueprint $table) {
             $table->id();
             $table->foreignId('tenant_id')->nullable()->constrained()->onDelete('cascade');
+            $table->string('category')->unique();
             $table->string('part_number')->unique();
             $table->string('name');
             $table->text('description')->nullable();

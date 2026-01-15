@@ -39,6 +39,7 @@ class Order extends Model
     {
         return $this->belongsToMany(Part::class, 'order_parts')
             ->using(OrderPart::class)
-            ->withPivot('quantity');
+            ->withPivot('quantity')
+            ->withTimestamps();
     }
 }

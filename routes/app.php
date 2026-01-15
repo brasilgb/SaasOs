@@ -16,6 +16,7 @@ use App\Http\Controllers\App\MessageController;
 use App\Http\Controllers\App\OrderController;
 use App\Http\Controllers\App\PartController;
 use App\Http\Controllers\App\ReportController;
+use App\Http\Controllers\App\Reports\SalesReportController;
 use App\Http\Controllers\App\SaleController;
 use App\Http\Controllers\App\ScheduleController;
 use App\Http\Controllers\App\ServiceController;
@@ -24,6 +25,8 @@ use App\Http\Controllers\App\WhatsappMessageController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+Route::get('/chartEquipments/{timerange}', [DashboardController::class, 'chartEquipments'])->name('chartEquipments');
+
 Route::resource('customers', CustomerController::class);
 Route::resource('messages', MessageController::class);
 Route::patch('messages/{message}/read', [MessageController::class, 'read'])->name('messages.read');
@@ -56,4 +59,5 @@ Route::resource('label-printing', LabelPrintingController::class);
 Route::resource('/parts', PartController::class);
 Route::post('/orders/remove-part', [OrderController::class, 'removePart'])->name('orders.removePart');
 Route::resource('/sales', SaleController::class);
+Route::post('/sales/{sale}/cancel', [SaleController::class, 'cancel'])->name('sales.cancel');
 Route::resource('/reports', ReportController::class);

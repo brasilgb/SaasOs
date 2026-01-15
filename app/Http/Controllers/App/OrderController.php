@@ -60,6 +60,9 @@ class OrderController extends Controller
      */
     public function index(Request $request)
     {
+        $startDate = Carbon::now()->subDays(10)->startOfDay();
+        $endDate = Carbon::now()->subDays(7)->endOfDay();
+
         $status = $request->get('status');
         $search = $request->get('q');
         $customer = $request->get('cl');
@@ -76,7 +79,7 @@ class OrderController extends Controller
 
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('id', 'like', '%' . $search . '%')
+                $q->where('id', $search)
                     ->orWhereHas('customer', function ($subQuery) use ($search) {
                         $subQuery->where('name', 'like', "%$search%")
                             ->orWhere('cpf', 'like', '%' . $search . '%');
@@ -88,13 +91,13 @@ class OrderController extends Controller
         $whats = WhatsappMessage::first();
 
         $feedbackOrders = Order::where('service_status', 8)
-            ->whereBetween('delivery_date', [Carbon::now()->subDays(7), Carbon::now()])
-            ->get('id');
+            ->whereBetween('delivery_date', [$startDate, $endDate])
+            ->get('order_number');
 
         return Inertia::render('app/orders/index', [
             'orders' => $orders,
             'whats' => $whats,
-            'feedback' => $feedbackOrders
+            'feedback' => $feedbackOrders,
         ]);
     }
 
@@ -174,7 +177,7 @@ class OrderController extends Controller
         if (isset($data['allparts'])) {
             $partsToSync = [];
             foreach ($data['allparts'] as $part) {
-                $partsToSync[$part['id']] = ['quantity' => $part['quantity']];
+                $partsToSync[$part['part_id']] = ['quantity' => $part['quantity']];
             }
             // 2. Sincroniza as peças à Ordem de Serviço usando a tabela pivô
             $order->orderParts()->sync($partsToSync);

@@ -20,7 +20,6 @@ interface SaleDetailsModalProps {
 export default function SaleDetailsModal({ isOpen, onClose, sale }: SaleDetailsModalProps) {
   if (!sale) return null;
 
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[625px]">
@@ -50,10 +49,10 @@ export default function SaleDetailsModal({ isOpen, onClose, sale }: SaleDetailsM
                 <TableBody>
                   {sale.items?.map((item: any) => (
                     <TableRow key={item.id}>
-                      <TableCell>{item.product?.name}</TableCell>
+                      <TableCell>{item.part?.name}</TableCell>
                       <TableCell className="text-center">{item.quantity}</TableCell>
-                      <TableCell className="text-right">{maskMoney(item.price)}</TableCell>
-                      <TableCell className="text-right">{maskMoney(String(item.quantity * item.price))}</TableCell>
+                      <TableCell className="text-right">{maskMoney(item.unit_price)}</TableCell>
+                      <TableCell className="text-right">{maskMoney(String(item.quantity * item.unit_price))}</TableCell>
                     </TableRow>
                   ))}
                   <TableRow className="font-bold bg-muted/50">

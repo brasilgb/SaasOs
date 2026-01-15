@@ -1,7 +1,6 @@
 import React from "react";
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import moment from "moment";
-import "moment/dist/locale/pt-br";
 import { maskMoney } from "@/Utils/mask";
 
 moment.locale("pt-br");
@@ -41,6 +40,12 @@ export default function SalesReportPDF({ data, dateRange }: any) {
     (acc: number, sale: any) => acc + Number(sale.total_amount || 0),
     0
   );
+  const totalCanceled = data.filter(
+    (sale: any) => sale.status === "cancelled"
+  ).reduce(
+    (acc: number, sale: any) => acc + Number(sale.total_amount || 0),
+    0
+  );
 
   return (
     <Document>
@@ -57,7 +62,8 @@ export default function SalesReportPDF({ data, dateRange }: any) {
         <View style={styles.tableHeader}>
           <Text style={styles.colSmall}>#</Text>
           <Text style={styles.colMedium}>Cliente</Text>
-          <Text style={styles.colDate}>Data</Text>
+          <Text style={styles.colDate}>Data Compra</Text>
+          <Text style={styles.colDate}>Status</Text>
           <Text style={styles.colRight}>Valor Total (R$)</Text>
         </View>
 
@@ -69,6 +75,7 @@ export default function SalesReportPDF({ data, dateRange }: any) {
             <Text style={styles.colDate}>
               {moment(sale.created_at).format("DD/MM/YYYY")}
             </Text>
+            <Text style={styles.colDate}>{sale.status}</Text>
             <Text style={styles.colRight}>
               R$ {maskMoney(String(sale.total_amount))}
             </Text>
@@ -76,9 +83,11 @@ export default function SalesReportPDF({ data, dateRange }: any) {
         ))}
 
         {/* Rodapé com totais */}
-        <View style={styles.footer}>
-          <Text>Total de Vendas no período: {data.length}</Text>
-          <Text>Valor Total: R$ {maskMoney(String(totalGeral))}</Text>
+        <View style={[styles.footer, {flex: 1, flexDirection: "row", justifyContent: "space-between", textAlign: "center"}]}>
+          <Text>Nº Vendas: {data.length}</Text>
+          <Text>Nº Canceladas: {data.filter((sale: any) => sale.status === "cancelled").length}</Text>
+          <Text>Total: R$ {maskMoney(String(totalGeral))}</Text>
+          <Text>Canceladas: R$ {maskMoney(String(totalCanceled))}</Text>
         </View>
       </Page>
     </Document>

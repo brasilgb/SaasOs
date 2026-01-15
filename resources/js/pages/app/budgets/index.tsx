@@ -34,15 +34,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function CheckList({ budgets, company }: any) {
-  const { flash } = usePage().props as any;
-
-  
-  
 
   return (
     <AppLayout>
       <Head title="Orçamentos" />
-      {flash.message && <AlertSuccess message={flash.message} />}
       <div className='flex items-center justify-between h-16 px-4'>
         <div className='flex items-center gap-2'>
           <Icon iconNode={PackagePlus} className='w-8 h-8' />
@@ -78,6 +73,7 @@ export default function CheckList({ budgets, company }: any) {
                 <TableHead>Categoria</TableHead>
                 <TableHead>Serviço</TableHead>
                 <TableHead>Tempo Estimado</TableHead>
+                <TableHead>Validade(dias)</TableHead>
                 <TableHead>Valor Total</TableHead>
                 <TableHead>Cadastro</TableHead>
                 <TableHead></TableHead>
@@ -91,11 +87,12 @@ export default function CheckList({ budgets, company }: any) {
                     <TableCell>{budget.category}</TableCell>
                     <TableCell>{budget.service}</TableCell>
                     <TableCell>{budget.estimated_time}</TableCell>
+                    <TableCell>{budget.validity}</TableCell>
                     <TableCell>R$ {maskMoney(budget.total_value)}</TableCell>
                     <TableCell>{moment(budget.created_at).format("DD/MM/YYYY")}</TableCell>
                     <TableCell className='flex justify-end gap-2'>
 
-                    <PrintBudget company={company} budget={budget} />
+                      <PrintBudget company={company} budget={budget} />
 
                       <Button asChild size="icon" className="bg-orange-500 hover:bg-orange-600 text-white">
                         <Link href={route('app.budgets.edit', budget.id)}>
@@ -110,7 +107,7 @@ export default function CheckList({ budgets, company }: any) {
                 ))
                 : (
                   <TableRow>
-                    <TableCell colSpan={7} className='h-16 w-full flex items-center justify-center'>
+                    <TableCell colSpan={8} className='h-16 w-full flex items-center justify-center'>
                       Não há dados a serem mostrados no momento.
                     </TableCell>
                   </TableRow>
@@ -119,7 +116,7 @@ export default function CheckList({ budgets, company }: any) {
             </TableBody>
             <TableFooter>
               <TableRow>
-                <TableCell colSpan={7}>
+                <TableCell colSpan={8}>
                   <AppPagination data={budgets} />
                 </TableCell>
               </TableRow>

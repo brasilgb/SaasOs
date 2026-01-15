@@ -33,12 +33,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function CheckList({ equipments, checklists }: any) {
-  const { flash } = usePage().props as any;
 
   return (
     <AppLayout>
       <Head title="Checklists" />
-      {flash.message && <AlertSuccess message={flash.message} />}
+      
       <div className='flex items-center justify-between h-16 px-4'>
         <div className='flex items-center gap-2'>
           <Icon iconNode={PackagePlus} className='w-8 h-8' />
@@ -50,7 +49,7 @@ export default function CheckList({ equipments, checklists }: any) {
       </div>
       <div className='flex items-center justify-between p-4'>
         <div className='w-full'>
-          <InputSearch placeholder="Buscar equipamento" url="app.register-checklists.index" />
+          <InputSearch placeholder="Buscar checklist ou equipamento" url="app.register-checklists.index" />
         </div>
         <div className='w-full flex justify-end'>
           <CreateChecklist equipments={equipments} />

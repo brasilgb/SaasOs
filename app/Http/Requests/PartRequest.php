@@ -22,7 +22,7 @@ class PartRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'part_number' => 'required',
+            'reference_number' => 'required',
             'name' => 'required',
             'description' => 'required',
             'manufacturer' => 'required',
@@ -36,7 +36,7 @@ class PartRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'part_number' => 'part number',
+            'reference_number' => 'núm. de referencia',
             'name' => 'nome',
             'description' => 'descrição',
             'manufacturer' => 'Fabricante',

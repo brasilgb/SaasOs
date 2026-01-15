@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Plus, Save } from "lucide-react"
 import { useForm } from "@inertiajs/react"
+import { toastSuccess } from "@/components/app-toast-messages"
 
 export default function CreateEquipment() {
     const [open, setOpen] = useState(false)
@@ -23,10 +24,13 @@ export default function CreateEquipment() {
     const handleSubmit = (e: any) => {
         e.preventDefault();
         post(route('app.register-equipments.store'), {
-            onSuccess: () => reset(),
+            onSuccess: () => {
+                toastSuccess("Sucesso", "Cadastro realizado com sucesso"),
+                    reset(),
+                    setOpen(false)
+            },
         });
 
-        setOpen(false);
     }
     return (
         <div>

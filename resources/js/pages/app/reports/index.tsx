@@ -57,7 +57,7 @@ export default function Sales({ sales }: any) {
             <CardTitle>Selecione um intervalo de datas e um módulo para gerar o relatório.</CardTitle>
           </CardHeader>
           <CardContent>
-            <DatePicker dateRange={dateRange} setDateRange={setDateRange} />
+            <DatePicker mode={'range'} setDate={setDateRange} date={dateRange} />
           </CardContent>
           <CardContent className="flex flex-wrap items-start justify-start gap-4">
             <OrdersReport dateRange={dateRange} />

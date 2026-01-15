@@ -13,6 +13,8 @@ import Select from 'react-select';
 import InputError from "@/components/input-error";
 import { useEffect } from "react";
 import { maskMoney, maskMoneyDot } from "@/Utils/mask";
+import { toastSuccess } from "@/components/app-toast-messages";
+import { DatePicker } from "@/components/date-picker";
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -29,8 +31,7 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-export default function CreateOrder({ customers, equipments, orderlast }: any) {
-  const { flash } = usePage().props as any;
+export default function CreateOrder({ customers, equipments }: any) {
 
   const optionsCustomer = customers.map((customer: any) => ({
     value: customer.id,
@@ -60,12 +61,16 @@ export default function CreateOrder({ customers, equipments, orderlast }: any) {
   const handleSubmit = (e: any) => {
     e.preventDefault();
     post(route('app.orders.store'), {
-      onSuccess: () => reset(),
+      onSuccess: () => {
+        toastSuccess("Sucesso", "Cadastro realizado com sucesso")
+        reset()
+      },
     });
   }
+
   useEffect(() => {
     setData('budget_value', maskMoneyDot(data.budget_value));
-  },[data.budget_value]);
+  }, [data.budget_value]);
 
   const changeCustomer = (selected: any) => {
     setData('customer_id', selected?.value || '');
@@ -110,9 +115,9 @@ export default function CreateOrder({ customers, equipments, orderlast }: any) {
       <div className='p-4'>
         <div className='border rounded-lg p-2'>
 
-          <form onSubmit={handleSubmit} autoComplete="off"className="space-y-8">
+          <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
             <div className="grid md:grid-cols-8 gap-4 mt-4">
-    
+
               <div className="md:col-span-2 grid gap-2">
                 <Label htmlFor="customer_id">Cliente</Label>
                 <Select
@@ -196,14 +201,26 @@ export default function CreateOrder({ customers, equipments, orderlast }: any) {
 
               <div className="grid gap-2">
                 <Label htmlFor="delivery_forecast">Previsão de entrega</Label>
-                <Input
-                  type="date"
-                  id="delivery_forecast"
-                  value={data.delivery_forecast}
-                  onChange={(e) => setData('delivery_forecast', e.target.value)}
+                <DatePicker
+                  mode="single"
+                  date={data.delivery_forecast}
+                  setDate={(value) => {
+                    if (!value) {
+                      setData('delivery_forecast', '')
+                      return
+                    }
+                    const d = value as Date
+                    const formatted = [
+                      d.getFullYear(),
+                      String(d.getMonth() + 1).padStart(2, '0'),
+                      String(d.getDate()).padStart(2, '0'),
+                    ].join('-')
+
+                    setData('delivery_forecast', formatted)
+                  }}
                 />
-                {errors.delivery_forecast && <div className="text-red-500 text-sm">{errors.delivery_forecast}</div>}
               </div>
+
             </div>
 
             <div className="grid md:grid-cols-3 gap-4 mt-4">

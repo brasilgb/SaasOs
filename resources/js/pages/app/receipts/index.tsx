@@ -8,6 +8,7 @@ import { Cog, Save } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import AlertSuccess from "@/components/app-alert-success";
+import { toastSuccess } from "@/components/app-toast-messages";
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -21,8 +22,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Receipts({ receipt }: any) {
-    const { flash } = usePage().props as any;
-
     const { data, setData, patch, progress, processing, errors } = useForm({
         receivingequipment: receipt?.receivingequipment,
         equipmentdelivery: receipt?.equipmentdelivery,
@@ -31,12 +30,15 @@ export default function Receipts({ receipt }: any) {
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
-        patch(route('app.receipts.update', receipt?.id));
+        patch(route('app.receipts.update', receipt?.id),{
+            onSuccess: () => {
+                toastSuccess("Sucesso", "Mensagens para recibos ajustadas com sucesso")
+            },
+        });
     }
 
     return (
         <AppLayout>
-            {flash.message && <AlertSuccess message={flash.message} />}
             <Head title="Impressão de recibos" />
             <div className='flex items-center justify-between h-16 px-4'>
                 <div className='flex items-center gap-2'>
@@ -56,7 +58,7 @@ export default function Receipts({ receipt }: any) {
             <div className='p-4'>
                 <div className='border rounded-lg p-2'>
 
-                    <form onSubmit={handleSubmit} autoComplete="off"className="space-y-8">
+                    <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
                         <div className="grid gap-4 mt-4">
 
                             <div className="md:col-span-2 grid gap-2">

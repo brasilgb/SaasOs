@@ -38,7 +38,7 @@ class ReceiptController extends Controller
 
     public function printing($or, $tp)
     {
-        $order = Order::where('id', $or)->with('customer')->with('equipment')->first();
+        $order = Order::where('id', $or)->with(['customer','equipment', 'orderParts'])->first();
         $company = Company::first();
         $receipt = Receipt::first();
         $checklist = Checklist::where('equipment_id', $order->equipment_id)->first('checklist');

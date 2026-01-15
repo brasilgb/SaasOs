@@ -10,4 +10,11 @@ const apios = axios.create({
   },
 });
 
-export default apios;
+const connectBackend = axios.create({
+  baseURL: "http://localhost:8000/app/",
+  headers: {
+    "Content-Type": "application/json"
+  }
+});
+
+export { apios, connectBackend};

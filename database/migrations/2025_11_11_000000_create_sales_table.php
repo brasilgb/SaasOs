@@ -17,6 +17,8 @@ return new class extends Migration
             $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
             $table->foreignId('customer_id')->nullable()->constrained('customers')->onDelete('cascade');
             $table->decimal('total_amount', 10, 2);
+            $table->enum('status', ['completed', 'cancelled'])->default('completed');
+            $table->timestamp('cancelled_at')->nullable();
             $table->timestamps();
         });
     }

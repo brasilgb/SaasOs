@@ -18,6 +18,8 @@ import moment from "moment";
 import AddPartsModal from "./add-parts";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { toastSuccess } from "@/components/app-toast-messages";
+import { DatePicker } from "@/components/date-picker";
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -35,14 +37,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function EditOrder({ customers, order, technicals, equipments, parts, orderparts }: any) {
-  console.log(orderparts);
 
-  const { flash, ziggy, othersetting } = usePage().props as any;
+  const { ziggy, othersetting } = usePage().props as any;
   const disableParts = !othersetting?.enableparts ? 'parts' : '';
   const { page, oc } = (ziggy as any).query
   const [partsData, setPartsData] = useState<any>([]);
-
-
 
   const optionsCustomer = customers.map((customer: any) => ({
     value: customer.id,
@@ -82,18 +81,48 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
     allparts: '',
   });
 
-  const handleModalSubmit = (data: any) => {
-    setPartsData(data);
-    const partsTotal = data.reduce((acc: any, item: any) => acc + Number(item.sale_price * item.quantity), 0);
-    setData('parts_value', String(partsTotal));
-    setData('allparts', data);
+  const handleModalSubmit = (modalParts: any) => {
+    setPartsData((currentLocalParts: any) => {
+      const partsMap = new Map(currentLocalParts.map((p: any) => [p.id, p]));
+      modalParts.forEach((part: any) => {
+        partsMap.set(part.id, part); // Adiciona ou atualiza a peça
+      });
+      return Array.from(partsMap.values());
+    });
   };
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    patch(route('app.orders.update', order.id));
-    setPartsData([]);
+    patch(route('app.orders.update', order.id), {
+      onSuccess: () => {
+        toastSuccess("Sucesso", "Edição realizada com sucesso")
+        setPartsData([]);
+      },
+    });
   }
+
+  useEffect(() => {
+    if (othersetting?.enableparts) {
+      const finalPartsMap = new Map();
+      // Adiciona peças do banco de dados
+      (orderparts || []).forEach((p: any) => finalPartsMap.set(p.id, { id: p.id, sale_price: p.sale_price, quantity: p.pivot.quantity }));
+      // Adiciona/sobrescreve com peças adicionadas localmente
+      (partsData || []).forEach((p: any) => finalPartsMap.set(p.id, { id: p.id, sale_price: p.sale_price, quantity: p.quantity }));
+      const finalListWithDetails = Array.from(finalPartsMap.values());
+
+      // Prepara o payload para o backend
+      const allpartsPayload = finalListWithDetails.map(p => ({ part_id: p.id, quantity: p.quantity }));
+      // Calcula o valor total de todas as peças
+      const totalValue = finalListWithDetails.reduce((acc, p) => acc + (Number(p.sale_price) * p.quantity), 0);
+
+      // Atualiza o estado do formulário
+      setData((currentData: any) => ({
+        ...currentData,
+        allparts: allpartsPayload,
+        parts_value: String(totalValue)
+      }));
+    }
+  }, [partsData, orderparts, othersetting]);
 
   useEffect(() => {
     setData((data: any) => ({ ...data, budget_value: maskMoneyDot(data?.budget_value) }));
@@ -141,18 +170,24 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
   }
 
   const handleRemovePart = (partId: any) => {
-    const filteredParts = partsData.filter((part: any) => part.id !== partId)
-    setPartsData(filteredParts);
-
-    const valueParts = filteredParts.reduce((acc: any, item: any) => acc + Number(item.sale_price * item.quantity), 0);
-
-    setData((data: any) => ({ ...data, parts_value: valueParts.toFixed(2) }));
-    setPartsData([]);
+    setPartsData((  currentLocalParts: any) => currentLocalParts.filter((part: any) => part.id !== partId));
   };
+
+  const combinedParts = [
+    ...(orderparts || []).map((part: any) => ({
+      ...part,
+      quantity: part.pivot.quantity,
+      source: 'database'
+    })),
+    ...(partsData || []).map((part: any) => ({
+      ...part,
+      source: 'local'
+    }))
+  ];
 
   return (
     <AppLayout>
-      {flash.message && <AlertSuccess message={flash.message} />}
+
       <Head title="Ordens" />
       <div className='flex items-center justify-between h-16 px-4'>
         <div className='flex items-center gap-2'>
@@ -273,14 +308,26 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
 
               <div className="grid gap-2">
                 <Label htmlFor="delivery_forecast">Previsão de entrega</Label>
-                <Input
-                  type="date"
-                  id="delivery_forecast"
-                  value={data.delivery_forecast}
-                  onChange={(e) => setData('delivery_forecast', e.target.value)}
+                <DatePicker
+                  mode="single"
+                  date={data.delivery_forecast}
+                  setDate={(value) => {
+                    if (!value) {
+                      setData('delivery_forecast', '')
+                      return
+                    }
+                    const d = value as Date
+                    const formatted = [
+                      d.getFullYear(),
+                      String(d.getMonth() + 1).padStart(2, '0'),
+                      String(d.getDate()).padStart(2, '0'),
+                    ].join('-')
+
+                    setData('delivery_forecast', formatted)
+                  }}
                 />
-                {errors.delivery_forecast && <div className="text-red-500 text-sm">{errors.delivery_forecast}</div>}
               </div>
+
             </div>
 
             <div className="grid md:grid-cols-3 gap-4 mt-4">
@@ -335,33 +382,15 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
               </div>
             </div>
 
-            {orderparts?.length > 0 && othersetting?.enableparts > 0 &&
+            {combinedParts.length > 0 && othersetting?.enableparts > 0 &&
               <Card className="p-4 mb-4">
-                <CardTitle className="border-b pb-2">Peças adicionadas A</CardTitle>
-                <CardContent className="flex items-center justify-start gap-4">
-                  {orderparts.map((part: any) => (
-                    <div key={part.id} className="flex items-center gap-2">
-                      <Badge variant={'secondary'} className="text-sm gap-2">
-                        <span>{part.name}(x{part.pivot.quantity}) - {maskMoney(String(Number(part.sale_price)))} = {maskMoney(String(Number(part.sale_price) * Number(part.pivot.quantity)))}</span>
-                        <Button type="button" variant={'destructive'} onClick={(e) => handleRemovePartsOrder(e, part.id)} >
-                          <X />
-                        </Button>
-                      </Badge>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            }
-
-            {partsData?.length > 0 &&
-              <Card className="p-4 mb-4">
-                <CardTitle className="border-b pb-2">Peças adicionadas B</CardTitle>
-                <CardContent className="flex items-center justify-start gap-4">
-                  {partsData.map((part: any) => (
-                    <div key={part.id} className="flex items-center gap-2">
+                <CardTitle className="border-b pb-2">Peças adicionadas</CardTitle>
+                <CardContent className="flex items-center justify-start gap-4 flex-wrap">
+                  {combinedParts.map((part: any, index: number) => (
+                    <div key={`${part.source}-${part.id}-${index}`} className="flex items-center gap-2">
                       <Badge variant={'secondary'} className="text-sm gap-2">
                         <span>{part.name}(x{part.quantity}) - {maskMoney(String(Number(part.sale_price)))} = {maskMoney(String(Number(part.sale_price) * Number(part.quantity)))}</span>
-                        <Button type="button" variant={'destructive'} onClick={() => handleRemovePart(part.id)} >
+                        <Button type="button" variant={'destructive'} onClick={(e) => part.source === 'database' ? handleRemovePartsOrder(e, part.id) : handleRemovePart(part.id)} >
                           <X />
                         </Button>
                       </Badge>

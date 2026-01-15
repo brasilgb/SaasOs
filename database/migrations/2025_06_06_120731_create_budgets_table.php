@@ -22,6 +22,7 @@ return new class extends Migration
             $table->decimal('labor_value', 10, 2);            // valor_mao_obra
             $table->decimal('total_value', 10, 2);            // valor_total
             $table->string('warranty', 50)->nullable();       // garantia
+            $table->integer('validity')->nullable();        // Prazo
             $table->text('obs')->nullable();                  // observacoes
             $table->timestamps();
         });

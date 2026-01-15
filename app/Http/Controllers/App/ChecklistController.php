@@ -20,7 +20,12 @@ class ChecklistController extends Controller
         $search = $request->get('q');
         $query = Checklist::with('equipment')->orderBy('id', 'DESC');
         if ($search) {
-            $query->where('checklist', 'like', '%' . $search . '%');
+            $query->where(function ($q) use ($search) {
+                $q->where('checklist', 'like', "%{$search}%")
+                    ->orWhereHas('equipment', function ($eq) use ($search) {
+                        $eq->where('equipment', 'like', "%{$search}%");
+                    });
+            });
         }
         $checklists = $query->paginate(12);
         $equipments = Equipment::get();

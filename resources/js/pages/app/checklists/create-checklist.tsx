@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label"
 import { Plus, Save } from "lucide-react"
 import { useForm } from "@inertiajs/react"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { toastSuccess } from "@/components/app-toast-messages"
 
 export default function CreateChecklist({ equipments }: any) {
     const [open, setOpen] = useState(false)
@@ -26,11 +27,11 @@ export default function CreateChecklist({ equipments }: any) {
         e.preventDefault();
         post(route('app.register-checklists.store'), {
             onSuccess: () => {
-                reset()
-                setOpen(false)
+                toastSuccess("Sucesso", "Cadastro realizado com sucesso"),
+                    reset(),
+                    setOpen(false)
             },
         });
-
     }
 
     const optionsEquipment = equipments.map((equipment: any) => ({

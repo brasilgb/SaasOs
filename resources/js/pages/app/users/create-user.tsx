@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { rolesUser } from "@/Utils/dataSelect";
 import { useState } from "react";
 import { maskPhone } from "@/Utils/mask";
+import { toastSuccess } from "@/components/app-toast-messages";
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -47,10 +48,12 @@ export default function CreateUser() {
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
-    console.log(data);
-    
+
     post(route('app.users.store'), {
-      onSuccess: () => reset(),
+      onSuccess: () => {
+        toastSuccess("Sucesso", "Cadastro realizado com sucesso"),
+          reset()
+      },
     });
   }
 
@@ -88,7 +91,7 @@ export default function CreateUser() {
 
       <div className='p-4'>
         <div className='border rounded-lg p-2'>
-          <form onSubmit={handleSubmit} autoComplete="off"className="space-y-8">
+          <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
             <div className="grid md:grid-cols-6 gap-4 mt-4">
 
               <div className="grid gap-2 md:col-span-2">
@@ -99,7 +102,7 @@ export default function CreateUser() {
                   id="name"
                   onChange={(e) => setData('name', e.target.value)}
                 />
-              {errors.name && <div className="text-red-500 text-sm">{errors.name}</div>}
+                {errors.name && <div className="text-red-500 text-sm">{errors.name}</div>}
               </div>
 
               <div className="grid gap-2 md:col-span-2">

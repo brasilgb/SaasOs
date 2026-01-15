@@ -5,6 +5,7 @@ import { BreadcrumbItem } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react'
 import { Calendar, Edit, Pencil, Plus } from 'lucide-react';
 import moment from 'moment'
+
 import {
   Table,
   TableBody,
@@ -17,11 +18,10 @@ import {
 import { Button } from '@/components/ui/button';
 import InputSearch from '@/components/inputSearch';
 import AppPagination from '@/components/app-pagination';
-import AlertSuccess from '@/components/app-alert-success';
-import { statusAgendaByValue } from '@/Utils/functions';
 import ActionDelete from '@/components/action-delete';
 import SelectFilter from '@/components/SelectFilter';
 import { statusAgenda } from '@/Utils/dataSelect';
+import { StatusBadge } from '@/components/StatusBadge';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -35,12 +35,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Schedules({ schedules }: any) {
-  const { flash } = usePage().props as any;
 
   return (
     <AppLayout>
       <Head title="Agendamentos" />
-      {flash.message && <AlertSuccess message={flash.message} />}
       <div className='flex items-center justify-between h-16 px-4'>
         <div className='flex items-center gap-2'>
           <Icon iconNode={Calendar} className='w-8 h-8' />
@@ -93,11 +91,10 @@ export default function Schedules({ schedules }: any) {
                     <TableCell>{schedule.customer.name}</TableCell>
                     <TableCell>{moment(schedule.schedules).format("DD/MM/YYYY HH:mm")}</TableCell>
                     <TableCell>{schedule.service}</TableCell>
-                    <TableCell>{statusAgendaByValue(schedule.status)}</TableCell>
+                    <TableCell><StatusBadge category='agenda' value={schedule.status} /></TableCell>
                     <TableCell>{schedule.user.name}</TableCell>
                     <TableCell>{moment(schedule.created_at).format("DD/MM/YYYY")}</TableCell>
                     <TableCell className='flex justify-end gap-2'>
-
 
                       <Button asChild size="icon" className="bg-green-500 hover:bg-green-500 text-white">
                         <a target='_blank' href={`https://wa.me/${schedule.user.whatsapp}?text=${schedule.service} - ${schedule.customer.street}, ${schedule.customer.number}, ${schedule.customer.complement}, ${schedule.customer.district}, ${schedule.customer.city}`}>

@@ -46,7 +46,7 @@ const features = [
   {
     icon: ShoppingCart,
     title: "Vendas de Produtos/Peças",
-    description: "Venda produtos e peças para clientes ou avulso, com emissão automática de recibos profissionais.",
+    description: "Venda produtos e peças para clientes ou avulso, com emissão automática de recibos.",
   },
   {
     icon: MessageSquare,

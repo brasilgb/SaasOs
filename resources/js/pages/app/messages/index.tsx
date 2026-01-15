@@ -35,10 +35,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Messages({ messages }: any) {
-  const { flash, auth } = usePage().props as any;
+  const { auth } = usePage().props as any;
   return (
     <AppLayout>
-      {flash.message && <AlertSuccess message={flash.message} />}
+      
       <Head title="Mensagens" />
       <div className='flex items-center justify-between h-16 px-4'>
         <div className='flex items-center gap-2'>

@@ -27,6 +27,8 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@/components/ui/toggle-group"
+import { useEffect } from "react"
+import { connectBackend } from "@/Utils/connectApi"
 
 export const description = "Gráfico de área interativo"
 
@@ -48,31 +50,27 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
-export function ChartAreaDashboard({ chartequipments }: any) {
+export function ChartAreaDashboard() {
   const isMobile = useIsMobile()
-  const [timeRange, setTimeRange] = React.useState("7d")
+  const [timeRange, setTimeRange] = React.useState("7")
+  const [chartData, setChartData] = React.useState([])
 
-  const chartData = chartequipments?.map((type: any) => ({ "date": type.date, "desktop": type.desktop_count, "mobile": type.mobile_count, "notebook": type.notebook_count }))
+
+
 
   React.useEffect(() => {
     if (isMobile) {
-      setTimeRange("30d")
+      setTimeRange("30")
     }
   }, [isMobile])
 
-  const filteredData = chartData.filter((item: any) => {
-    const date = new Date(item.date)
-    const now = new Date()
-    let daysToSubtract = 60
-    if (timeRange === "30d") {
-      daysToSubtract = 30
-    } else if (timeRange === "7d") {
-      daysToSubtract = 7
+  useEffect(() => {
+    const chartForDays = async () => {
+      const response = await connectBackend.get(`chartEquipments/${timeRange}`);
+      setChartData(response.data);
     }
-    const startDate = new Date(now)
-    startDate.setDate(startDate.getDate() - daysToSubtract)
-    return date >= startDate
-  })
+    chartForDays();
+  }, [timeRange]);
 
   return (
     <Card className="@container/card">
@@ -80,7 +78,7 @@ export function ChartAreaDashboard({ chartequipments }: any) {
         <CardTitle>Equipamentos recebidos</CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/card:block">
-            Total de equipamentos recebidos nos últimos meses
+            Total de equipamentos recebidos
           </span>
           <span className="@[540px]/card:hidden">Últimos 3 meses</span>
         </CardDescription>
@@ -90,11 +88,11 @@ export function ChartAreaDashboard({ chartequipments }: any) {
             value={timeRange}
             onValueChange={setTimeRange}
             variant="outline"
-            className="hidden *:data-[slot=toggle-group-item]:!px-4 @[767px]/card:flex"
+            className="hidden *:data-[slot=toggle-group-item]:px-4! @[767px]/card:flex"
           >
-            <ToggleGroupItem value="7d">Últimos 7 dias</ToggleGroupItem>
-            <ToggleGroupItem value="30d">Últimos 30 dias</ToggleGroupItem>
-            <ToggleGroupItem value="60d">Últimos 60 dias</ToggleGroupItem>
+            <ToggleGroupItem value="7">Últimos 7 dias</ToggleGroupItem>
+            <ToggleGroupItem value="30">Últimos 07 dias</ToggleGroupItem>
+            <ToggleGroupItem value="60">Últimos 60 dias</ToggleGroupItem>
           </ToggleGroup>
           <Select value={timeRange} onValueChange={setTimeRange}>
             <SelectTrigger
@@ -105,13 +103,13 @@ export function ChartAreaDashboard({ chartequipments }: any) {
               <SelectValue placeholder="Últimos 60 dias" />
             </SelectTrigger>
             <SelectContent className="rounded-xl">
-              <SelectItem value="7d" className="rounded-lg">
+              <SelectItem value="7" className="rounded-lg">
                 Últimos 7 dias
               </SelectItem>
-              <SelectItem value="30d" className="rounded-lg">
-                Últimos 30 dias
+              <SelectItem value="30" className="rounded-lg">
+                Últimos 07 dias
               </SelectItem>
-              <SelectItem value="60d" className="rounded-lg">
+              <SelectItem value="60" className="rounded-lg">
                 Últimos 60 dias
               </SelectItem>
             </SelectContent>
@@ -123,7 +121,7 @@ export function ChartAreaDashboard({ chartequipments }: any) {
           config={chartConfig}
           className="aspect-auto h-[250px] w-full"
         >
-          <AreaChart data={filteredData}>
+          <AreaChart data={chartData}>
             <defs>
               <linearGradient id="fillDesktop" x1="0" y1="0" x2="0" y2="1">
                 <stop

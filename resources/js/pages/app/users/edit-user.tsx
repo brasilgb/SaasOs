@@ -15,6 +15,7 @@ import { rolesUser } from "@/Utils/dataSelect";
 import { useState } from "react";
 import { maskPhone } from "@/Utils/mask";
 import AlertSuccess from "@/components/app-alert-success";
+import { toastSuccess } from "@/components/app-toast-messages";
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -33,7 +34,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function CreateUser({ user }: any) {
   const [showPassword, setShowPassword] = useState<boolean>(false)
-  const { flash, auth } = usePage().props as any;
+  const { auth } = usePage().props as any;
 
   const { data, setData, patch, progress, processing, reset, errors } = useForm({
     tenant_id: auth.user.tenant_id,
@@ -49,7 +50,11 @@ export default function CreateUser({ user }: any) {
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
-    patch(route('app.users.update', user?.id));
+    patch(route('app.users.update', user?.id), {
+      onSuccess: () => {
+        toastSuccess("Sucesso", "Cadastro alterado com sucesso")
+      }
+    });
   }
 
   const changeRoles = (selected: any) => {
@@ -61,7 +66,7 @@ export default function CreateUser({ user }: any) {
   return (
     <AppLayout>
       <Head title="Usuários" />
-      {flash.message && <AlertSuccess message={flash.message} />}
+
       <div className='flex items-center justify-between h-16 px-4'>
         <div className='flex items-center gap-2'>
           <Icon iconNode={UserCog} className='w-8 h-8' />
@@ -89,7 +94,7 @@ export default function CreateUser({ user }: any) {
 
       <div className='p-4'>
         <div className='border rounded-lg p-2'>
-          <form onSubmit={handleSubmit} autoComplete="off"className="space-y-8">
+          <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
             <div className="grid md:grid-cols-6 gap-4 mt-4">
 
               <div className="grid gap-2 md:col-span-2">

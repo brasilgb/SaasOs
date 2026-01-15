@@ -18,7 +18,7 @@ class PlanSeeder extends Seeder
         Plan::create([
             'name' => 'Trial 30 Dias',
             'slug' => Str::slug('Trial 30 Dias'),
-            'description' => 'Plano de teste gratuito por 30 dias com acesso a todos os recursos.',
+            'description' => 'Plano de teste gratuito por 07 dias com acesso a todos os recursos.',
         ]);
 
         Plan::create([

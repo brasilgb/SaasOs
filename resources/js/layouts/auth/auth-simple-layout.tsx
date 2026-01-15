@@ -7,9 +7,10 @@ interface AuthLayoutProps {
     name?: string;
     title?: string;
     description?: string;
+    width?: string;
 }
 
-export default function AuthSimpleLayout({ children, title, description }: PropsWithChildren<AuthLayoutProps>) {
+export default function AuthSimpleLayout({ children, title, description, width = 'md:w-1/4 w-11/12' }: PropsWithChildren<AuthLayoutProps>) {
     return (
         <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden">
             {/* Background Image */}
@@ -21,9 +22,9 @@ export default function AuthSimpleLayout({ children, title, description }: Props
             />
 
             {/* Dark Overlay */}
-            <div className="absolute inset-0 bg-linear-to-br from-black/75 via-black/60 to-black/75" />
+            <div className="absolute inset-0 bg-linear-to-br from-black/75 via-black/80 to-black/75" />
 
-            <Card className="absolute border-border/50 shadow-2xl bg-background/50 backdrop-blur-md md:w-1/4 w-11/12 md:p-8 p-4">
+            <Card className={`absolute border-border/50 shadow-2xl bg-background/50 backdrop-blur-md ${width} md:p-8 p-4`}>
                 {/* Logo */}
                 <div className="top-8 left-8 z-10 flex flex-col items-center gap-3">
                     <Link href={route('home')} className="flex flex-col items-center gap-2 font-medium">

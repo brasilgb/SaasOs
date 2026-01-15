@@ -16,8 +16,8 @@ class SaleController extends Controller
     public function index(Request $request)
     {
         $search = $request->get('q');
-        $query = Sale::with('customer')->with('items')->orderBy('id', 'DESC');
-        
+        $query = Sale::with('customer')->with('items.part')->orderBy('id', 'DESC');
+
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('sales_number', 'like', '%' . $search . '%')
@@ -32,7 +32,6 @@ class SaleController extends Controller
 
     public function store(Request $request)
     {
-
         $request->validate([
             'customer_id' => 'nullable|exists:customers,id',
             'total_amount' => 'required|numeric',
@@ -45,33 +44,66 @@ class SaleController extends Controller
             DB::beginTransaction();
 
             $sale = Sale::create([
-                'sales_number' => Sale::exists() ? Sale::latest()->first()->sales_number + 1 : 1,
+                'sales_number' => Sale::max('sales_number') + 1,
                 'customer_id' => $request->customer_id,
                 'total_amount' => $request->total_amount,
+                'status' => 'completed',
             ]);
 
-            foreach ($request->parts as $partData) {
-                $part = Part::find($partData['part_id']);
+            foreach ($request->parts as $item) {
+                $part = Part::lockForUpdate()->findOrFail($item['part_id']);
+
+                if ($part->quantity < $item['quantity']) {
+                    throw new \Exception("Estoque insuficiente para {$part->name}");
+                }
 
                 SaleItem::create([
                     'sale_id' => $sale->id,
-                    'part_id' => $partData['part_id'],
-                    'quantity' => $partData['quantity'],
-                    'unit_price' => $part->sale_price, // Get price from DB
+                    'part_id' => $part->id,
+                    'quantity' => $item['quantity'],
+                    'unit_price' => $part->sale_price,
                 ]);
 
-                // Adjust stock
-                $part->quantity -= $partData['quantity'];
-                $part->save();
+                $part->decrement('quantity', $item['quantity']);
             }
 
             DB::commit();
 
-            return redirect()->route('app.dashboard')->with('success', 'Venda realizada com sucesso!');
-        } catch (\Exception $e) {
+            return response()->json([
+                'success' => true,
+                'sale_id' => $sale->id,
+            ]);
+        } catch (\Throwable $e) {
             DB::rollBack();
-            return back()->with('error', 'Erro ao realizar a venda: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
         }
+    }
+
+    public function cancel(Sale $sale)
+    {
+        if ($sale->status === 'cancelled') {
+            return back()->with('error', 'Venda já está cancelada.');
+        }
+
+        DB::transaction(function () use ($sale) {
+
+            foreach ($sale->items as $item) {
+                $part = Part::find($item->part_id);
+                $part->quantity += $item->quantity;
+                $part->save();
+            }
+
+            $sale->update([
+                'status' => 'cancelled',
+                'cancelled_at' => now(),
+            ]);
+        });
+
+        return back()->with('success', 'Venda cancelada com sucesso.');
     }
 
     public function destroy(Sale $sale)

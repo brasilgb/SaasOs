@@ -18,13 +18,12 @@ class PartController extends Controller
 
     public function getPartsForPartNumber(Request $request)
     {
-        $parts = Part::where('part_number', $request->part_number)->first();
+        $parts = Part::where('reference_number', $request->reference_number)->first();
         return response()->json([
             "success" => true,
             "parts" => $parts
         ]);
     }
-
 
     /**
      * Display a listing of the resource.
@@ -35,7 +34,7 @@ class PartController extends Controller
         $query = Part::orderBy('id', 'DESC');
         if ($search) {
             $query->where('name', 'like', '%' . $search . '%')
-                ->orWhere('part_number', 'like', '%' . $search . '%');
+                ->orWhere('reference_number', 'like', '%' . $search . '%');
         }
         $parts = $query->paginate(11);
         return Inertia::render('app/parts/index', ['parts' => $parts]);
@@ -46,7 +45,8 @@ class PartController extends Controller
      */
     public function create()
     {
-        return Inertia::render('app/parts/create-part');
+        $categories = Part::distinct()->pluck('category');
+        return Inertia::render('app/parts/create-part', ['categories' => $categories]);
     }
 
     /**
@@ -60,9 +60,11 @@ class PartController extends Controller
         DB::transaction(function () use ($data) {
             $part = Part::firstOrCreate(
                 [
-                    'part_number' => $data['part_number'],
+                    'reference_number' => $data['reference_number'],
                 ],
                 [
+                    'part_number' => Part::exists() ? Part::latest()->first()->part_number + 1 : 1,
+                    'category' => $data['category'],
                     'name' => $data['name'],
                     'description' => $data['description'],
                     'manufacturer' => $data['manufacturer'],
@@ -97,7 +99,8 @@ class PartController extends Controller
      */
     public function show(Part $part)
     {
-        return Inertia::render('app/parts/edit-part', ['parts' => $part]);
+        $categories = Part::distinct()->pluck('category');
+        return Inertia::render('app/parts/edit-part', ['parts' => $part, 'categories' => $categories]);
     }
 
     /**

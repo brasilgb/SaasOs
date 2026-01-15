@@ -17,10 +17,10 @@ import {
 } from "@/components/ui/table"
 import InputSearch from '@/components/inputSearch';
 import AppPagination from '@/components/app-pagination';
-import AlertSuccess from '@/components/app-alert-success';
-import ActionDelete from '@/components/action-delete';
 import { Button } from '@/components/ui/button';
 import SaleDetailsModal from './app-sale-details-modal';
+import ActionCancelSale from '@/components/action-cancel-sale';
+import { Badge } from '@/components/ui/badge';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -34,7 +34,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Sales({ sales }: any) {
-  const { flash } = usePage().props as any;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSale, setSelectedSale] = useState(null);
 
@@ -47,7 +46,6 @@ export default function Sales({ sales }: any) {
     <AppLayout>
       <SaleDetailsModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} sale={selectedSale} />
       <Head title="Vendas" />
-      {flash.message && <AlertSuccess message={flash.message} />}
       <div className='flex items-center justify-between h-16 px-4'>
         <div className='flex items-center gap-2'>
           <Icon iconNode={ShoppingCartIcon} className='w-8 h-8' />
@@ -63,7 +61,7 @@ export default function Sales({ sales }: any) {
           <InputSearch placeholder="Buscar vendas por número e cliente" url="app.sales.index" />
         </div>
         <div className='w-full flex justify-end'>
-          
+
         </div>
       </div>
 
@@ -89,11 +87,19 @@ export default function Sales({ sales }: any) {
                     <TableCell>{moment(sale.created_at).format("DD/MM/YYYY")}</TableCell>
                     <TableCell className='flex justify-end gap-2'>
 
+                      {sale.status === 'completed' && (
+                        <ActionCancelSale saleId={sale.id} />
+                      )}
+
+                      {sale.status === 'cancelled' && (
+                        <Badge variant="destructive">
+                          Cancelada
+                        </Badge>
+                      )}
+
                       <Button onClick={() => handleViewDetails(sale)} size="icon" className="bg-orange-500 hover:bg-orange-600 text-white">
                         <EyeIcon className="h-4 w-4" />
                       </Button>
-
-                      <ActionDelete title={'esta venda'} url={'app.sales.destroy'} param={sale.id} />
 
                     </TableCell>
                   </TableRow>

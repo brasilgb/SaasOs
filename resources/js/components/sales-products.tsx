@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { useState, useEffect, Fragment, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -17,6 +17,11 @@ import { Loader2, ShoppingCartIcon, Trash2 } from 'lucide-react'; // Adicionado 
 import { maskMoney } from '@/Utils/mask';
 import { pdf } from '@react-pdf/renderer';
 import SaleReceiptPDF from './SaleReceiptPDF';
+import { toastSuccess, toastWarning } from './app-toast-messages';
+import {apios} from '@/Utils/connectApi';
+import Receipt from '@/pages/app/sales/receipt';
+import { useReactToPrint } from "react-to-print"
+import { usePaperSize } from '@/hooks/usePaperSize';
 
 interface Part {
     id: number;
@@ -95,41 +100,49 @@ export function SalesProducts({ parts, customers }: SalesProductsProps) {
             // Reset selected part and quantity after adding to cart
             setSelectedPart(null);
             setData(prevData => ({ ...prevData, part_id: '', quantity: 1 }));
-        } else if (data.quantity > selectedPart?.quantity) {
+        } else if (data.quantity > Number(selectedPart?.quantity) || selectedPart === null) {
             alert('Quantidade em estoque insuficiente.');
         }
     };
 
     const removeFromCart = (cartItemId: string) => {
         setCartItems(prevItems => prevItems.filter(item => item.cartItemId !== cartItemId));
+        setData(data => ({
+            ...data,
+            part_id: '',
+            quantity: 1,
+        }))
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (cartItems.length === 0) {
             alert('Adicione itens ao carrinho antes de finalizar a venda.');
             return;
         }
 
-        post(route('app.sales.store'), { // A função post aqui espera 2 argumentos
-            // O segundo argumento é um objeto que pode conter os dados e as opções da visita
-            data: {
-                customer_id: data.customer_id,
-                parts: cartItems.map(item => ({ part_id: item.id, quantity: item.selected_quantity })),
-                total_amount: cartTotal,
-            },
-            onSuccess: () => {
-                setSuccessMessage('Venda efetuada com sucesso!');
-                setCustomerNameToPrint(selectedOptionCustomers?.label); // Salva o nome do cliente
-                setSaleCompleted(true); // Indica que a venda foi concluída
-                reset();
-                setSelectedPart(null);
-                setTimeout(() => {
-                    setSuccessMessage('');
-                    // Não limpa mais o carrinho aqui para permitir a impressão
-                }, 3000);
-            },
-        } as any);
+        try { 
+            const response = await apios.post(
+                route('app.sales.store'),
+                {
+                    customer_id: data.customer_id,
+                    parts: cartItems.map(item => ({
+                        part_id: item.id,
+                        quantity: item.selected_quantity,
+                    })),
+                    total_amount: cartTotal,
+                }
+            )
+
+            toastSuccess('Sucesso', 'Venda realizada com sucesso')
+
+            setSaleCompleted(true)
+            setOpen(true)
+
+        } catch (error: any) {
+            toastWarning(error.response?.data?.message ?? 'Erro ao realizar venda')
+        }
+
     };
 
     const changeParts = (selected: any) => {
@@ -168,7 +181,7 @@ export function SalesProducts({ parts, customers }: SalesProductsProps) {
             return;
         }
         setIsPrinting(true);
-        try {           
+        try {
             const customerNameForPDF = customerNameToPrint || 'Consumidor Final';
             const blob = await pdf(
                 <SaleReceiptPDF items={cartItems} total={cartTotal} customerName={customerNameForPDF} />
@@ -188,22 +201,24 @@ export function SalesProducts({ parts, customers }: SalesProductsProps) {
 
     const cartTotal = cartItems.reduce((sum, item) => sum + (Number(item.sale_price) * item.selected_quantity), 0);
 
+    const paper = usePaperSize()
+    const receiptRef = useRef<HTMLDivElement>(null)
+
+    const handlePrint = useReactToPrint({
+        contentRef: receiptRef,
+        documentTitle: "Comprovante de Pagamento",
+    })
+
     return (
-        <Dialog open={open} onOpenChange={(isOpen) => {
-            if (!isOpen) {
-                handleClose();
-            } else {
-                setOpen(true);
-            }
-        }}>
+        <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger className='w-full h-full flex items-center justify-center cursor-pointer'>
                 <ShoppingCartIcon size={50} className='text-green-300' />
             </DialogTrigger>
             <DialogContent className="sm:max-w-lvh">
                 <DialogHeader>
-                    <DialogTitle>Venda de Peças/Produtos</DialogTitle>
+                    <DialogTitle>Frente de Caixa</DialogTitle>
                     <DialogDescription>
-                        Selecione a peça/produto e a quantidade para registrar a venda.
+                        Registre uma nova venda.
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} autoComplete="off">
@@ -211,7 +226,7 @@ export function SalesProducts({ parts, customers }: SalesProductsProps) {
                     <div className="grid gap-4 py-4">
                         <div className="items-center gap-4">
                             <Label htmlFor="customer_id" className="text-right mb-1">
-                                Clientes
+                                Selecione o cliente
                             </Label>
                             <Select
                                 isSearchable
@@ -243,68 +258,82 @@ export function SalesProducts({ parts, customers }: SalesProductsProps) {
                                 <p className="col-span-4 text-red-500 text-xs text-right">{errors.customer_id}</p>
                             )}
                         </div>
-                        <div className="items-center gap-4">
-                            <Label htmlFor="part_id" className="text-right mb-1">
-                                Peças/produtos
-                            </Label>
-                            <Select
-                                isSearchable
-                                value={selectedOptionParts}
-                                options={optionsParts}
-                                onChange={changeParts}
-                                placeholder="Selecione a peça/produto"
-                                className="w-full shadow-xs p-0 border text-gray-700 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-9"
-                                styles={{
-                                    control: (baseStyles, state) => ({
-                                        ...baseStyles,
-                                        fontSize: '14px',
-                                        boxShadow: 'none',
-                                        border: 'none',
-                                        background: 'transparent',
-                                        paddingBottom: '2px',
-                                    }),
-                                    dropdownIndicator: (base) => ({
-                                        ...base,
+                        <div className='grid grid-cols-5 md:gap-4'>
+                            <div className="items-center gap-4 col-span-2">
+                                <Label htmlFor="part_id" className="text-right mb-1">
+                                    Selecione o Produto
+                                </Label>
+                                <Select
+                                    isSearchable
+                                    value={selectedOptionParts}
+                                    options={optionsParts}
+                                    onChange={changeParts}
+                                    placeholder="Selecione a peça/produto"
+                                    className="w-full shadow-xs p-0 border text-gray-700 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-9"
+                                    styles={{
+                                        control: (baseStyles, state) => ({
+                                            ...baseStyles,
+                                            fontSize: '14px',
+                                            boxShadow: 'none',
+                                            border: 'none',
+                                            background: 'transparent',
+                                            paddingBottom: '2px',
+                                        }),
+                                        dropdownIndicator: (base) => ({
+                                            ...base,
 
-                                    }),
-                                    menuList: (base) => ({
-                                        ...base,
-                                        fontSize: '14px',
-                                    }),
-                                }}
-                            />
-                            {errors.part_id && (
-                                <p className="col-span-4 text-red-500 text-xs text-right">{errors.part_id}</p>
-                            )}
+                                        }),
+                                        menuList: (base) => ({
+                                            ...base,
+                                            fontSize: '14px',
+                                        }),
+                                    }}
+                                />
+                                {errors.part_id && (
+                                    <p className="col-span-4 text-red-500 text-xs text-right">{errors.part_id}</p>
+                                )}
+                            </div>
+                            <div className="items-center gap-4 col-span-2">
+                                <div>
+                                    <Label htmlFor="quantity" className="text-right mb-1">
+                                        Quantidade
+                                    </Label>
+                                    <Input
+                                        id="quantity"
+                                        type="number"
+                                        value={data.quantity}
+                                        onChange={e => setData('quantity', parseInt(e.target.value, 10) || 1)}
+                                        className="col-span-3"
+                                    />
+                                </div>
+                                <div className='h-4'>
+                                    {!selectedPart || data.quantity <= 0 || data.quantity > selectedPart.quantity && (
+                                        <div className="col-span-4 text-red-500 text-xs text-left">Estoque insuficiente</div>
+                                    )}
+                                </div>
+                            </div>
+                            <div className='md:mt-4.5'>
+                                <Button type="button" onClick={addToCart} disabled={!selectedPart || data.quantity <= 0 || data.quantity > selectedPart.quantity}>
+                                    <ShoppingCartIcon /> Adicionar
+                                </Button>
+                            </div>
                         </div>
-
-                        <div className='flex items-center justify-start gap-4'>
-                            <div className='text-sm'>Estoque: <span className='font-semibold text-blue-400'>{selectedPart?.quantity}</span></div>
-                        </div>
-
-                        <div className="items-center gap-4">
-                            <Label htmlFor="quantity" className="text-right mb-1">
-                                Quantidade
-                            </Label>
-                            <Input
-                                id="quantity"
-                                type="number"
-                                value={data.quantity}
-                                onChange={e => setData('quantity', parseInt(e.target.value, 10) || 1)}
-                                className="col-span-3"
-                            />
-                            {errors.quantity && (
-                                <p className="col-span-4 text-red-500 text-xs text-right">{errors.quantity}</p>
-                            )}
-                        </div>
+                    </div>
+                    <div className="items-center gap-4">
                         <div className='flex items-center justify-between'>
                             <div className='flex items-center justify-start gap-4'>
-                                <div className='text-sm'>Valor unitário: <span className='font-semibold text-blue-400'>R$ {maskMoney(String(selectedPart?.sale_price))}</span></div>
-                                <div className='text-sm'>Total: <span className='font-semibold text-blue-400'>R$ {maskMoney(String(data?.quantity * Number(selectedPart?.sale_price)))}</span></div>
+                                {selectedPart &&
+                                    <>
+                                        <div className='text-sm'>Em estoque: <span className='font-semibold text-blue-400'>{selectedPart?.quantity}</span></div>
+                                        <div className='text-sm'>Valor unitário: <span className='font-semibold text-blue-400'>R$ {maskMoney(String(selectedPart?.sale_price))}</span></div>
+                                        <div className='text-sm'>Total: <span className='font-semibold text-blue-400'>R$ {maskMoney(String(data?.quantity <= selectedPart?.quantity
+                                            ? data?.quantity * Number(selectedPart?.sale_price)
+                                            : selectedPart?.quantity * Number(selectedPart?.sale_price)
+                                        )
+                                        )}</span></div>
+                                    </>
+                                }
                             </div>
-                            <Button type="button" onClick={addToCart} disabled={!selectedPart || data.quantity <= 0 || data.quantity > selectedPart.quantity}>
-                                Adicionar ao Carrinho
-                            </Button>
                         </div>
                     </div>
 
@@ -336,34 +365,67 @@ export function SalesProducts({ parts, customers }: SalesProductsProps) {
                         <Button type="button" variant="outline" onClick={handleClose}>
                             Fechar
                         </Button>
-                        {!saleCompleted && (
+                        {!saleCompleted ? (
                             <Button type="submit" disabled={processing || cartItems.length === 0}>
                                 {processing ? 'Vendendo...' : 'Finalizar Venda'}
                             </Button>
+                        ) : (
+                            <>
+                                <Button
+                                    type="button"
+                                    variant="secondary"
+                                    onClick={handlePrint}
+                                    className="bg-emerald-500 hover:bg-emerald-600 text-white"
+                                    disabled={isPrinting}
+                                >
+                                    {isPrinting ? (
+                                        <Fragment>
+                                            <Loader2 className="mr-2 size-4 animate-spin" /> Imprimindo...
+                                        </Fragment>
+                                    ) : (
+                                        'Imprimir Comprovante de Venda'
+                                    )}
+                                </Button>
+                                <Button type="button" variant="default" onClick={handleNewSale}>
+                                    Nova Venda
+                                </Button>
+                                <div className="hidden">
+                                    <Receipt ref={receiptRef} paper={paper} items={cartItems} total={cartTotal} customer={customerNameToPrint} />
+                                </div>
+                            </>
                         )}
-                        {saleCompleted && (
-                            <Button type="button" variant="default" onClick={handleNewSale}>
-                                Nova Venda
-                            </Button>
-                        )}
-                        <Button
-                            type="button"
-                            variant="secondary"
-                            onClick={handlePrintReceipt}
-                            className="bg-emerald-500 hover:bg-emerald-600 text-white"
-                            disabled={isPrinting || cartItems.length === 0 || processing}
-                        >
-                            {isPrinting ? (
-                                <Fragment>
-                                    <Loader2 className="mr-2 size-4 animate-spin" /> Imprimindo...
-                                </Fragment>
-                            ) : (
-                                'Imprimir recibo'
-                            )}
-                        </Button>
                     </DialogFooter>
                 </form>
             </DialogContent>
         </Dialog>
     );
 }
+/*
+
+const handlePrintReceipt = async () => {
+        if (cartItems.length === 0) {
+            alert("O carrinho está vazio. Adicione itens para gerar um recibo.");
+            return;
+        }
+        setIsPrinting(true);
+        try {
+            const customerNameForPDF = customerNameToPrint || 'Consumidor Final';
+            const blob = await pdf(
+                <SaleReceiptPDF items={cartItems} total={cartTotal} customerName={customerNameForPDF} />
+            ).toBlob();
+            const url = URL.createObjectURL(blob);
+            window.open(url, "_blank");
+        } catch (error) {
+            console.error("Erro ao gerar o PDF:", error);
+            alert("Ocorreu um erro ao gerar o recibo. Tente novamente.");
+        } finally {
+            setIsPrinting(false);
+        }
+
+
+            const optionsCustomers = customers.map((customer: any) => ({
+        value: customer.id,
+        label: customer.name,
+    }));
+    };
+*/

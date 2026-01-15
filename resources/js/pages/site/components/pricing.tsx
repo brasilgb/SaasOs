@@ -59,7 +59,7 @@ export function Pricing() {
             Preços simples e transparentes
           </h2>
           <p className="mt-4 text-pretty text-lg text-muted-foreground">
-            Teste grátis por 30 dias. Sem cartão de crédito. Cancele quando quiser.
+            Teste grátis por 07 dias. Sem cartão de crédito. Cancele quando quiser.
           </p>
         </div>
 
@@ -114,7 +114,7 @@ export function Pricing() {
         </div>
 
         <p className="text-center text-sm text-muted-foreground mt-12">
-          Todos os planos incluem 30 dias de teste gratuito. Sem compromisso, cancele a qualquer momento.
+          Todos os planos incluem 07 dias de teste gratuito. Sem compromisso, cancele a qualquer momento.
         </p>
       </div>
     </section>

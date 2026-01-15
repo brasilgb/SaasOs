@@ -1,6 +1,11 @@
 import { LucideIcon } from 'lucide-react';
 import type { Config } from 'ziggy-js';
 
+export interface OptionType {
+    value: string;
+    label: string;
+}
+
 export interface Auth {
     user: User;
 }
@@ -29,7 +34,7 @@ export interface SharedData {
     auth: Auth;
     ziggy: Config & { location: string };
     sidebarOpen: boolean;
-    othersettings: {budget: boolean, navigation: boolean}
+    othersettings: { budget: boolean, navigation: boolean }
     [key: string]: unknown;
 }
 
@@ -50,8 +55,8 @@ export interface Customer {
     cpf: string;
     birth: string;
     email: string;
-    cep: string;
-    uf: string;
+    zipcode: string;
+    state: string;
     city: string;
     district: string;
     street: string;
@@ -87,14 +92,17 @@ export interface Order {
 
 export interface Scheduler {
     id: number;
+    user_id: number;
     customer_id: number;
     service: string;
+    details: string;
     status: number;
     schedules: string;
     created_at: string;
     updated_at: string;
     customer: Customer;
     user: User;
+    observations: string;
 }
 
 export interface Message {
@@ -103,7 +111,23 @@ export interface Message {
     recipient_id: number;
     title: string;
     message: string;
-    status: number;
+    status: any;
     sender: User;
     recipient: User;
+}
+
+export interface Budget {
+    id: number;
+    category: string;
+    service: string;
+    model: string;
+    description: string;
+    estimated_time: number;
+    part_value: number;
+    labor_value: number;
+    total_value: number;
+    warranty: string;
+    validity: number;
+    obs: string;
+    created_at: string;
 }

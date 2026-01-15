@@ -33,12 +33,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Equipment({ equipments }: any) {
-  const { flash } = usePage().props as any;
 
   return (
     <AppLayout>
       <Head title="Equipamentos" />
-      {flash.message && <AlertSuccess message={flash.message} />}
+
       <div className='flex items-center justify-between h-16 px-4'>
         <div className='flex items-center gap-2'>
           <Icon iconNode={PackagePlus} className='w-8 h-8' />
@@ -91,13 +90,13 @@ export default function Equipment({ equipments }: any) {
                 )
               }
             </TableBody>
-              <TableFooter>
-                <TableRow>
-                  <TableCell colSpan={4}>
-                    <AppPagination data={equipments} />
-                  </TableCell>
-                </TableRow>
-              </TableFooter>
+            <TableFooter>
+              <TableRow>
+                <TableCell colSpan={4}>
+                  <AppPagination data={equipments} />
+                </TableCell>
+              </TableRow>
+            </TableFooter>
           </Table>
         </div>
       </div>

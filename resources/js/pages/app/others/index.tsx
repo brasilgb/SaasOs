@@ -1,4 +1,5 @@
 import AlertSuccess from '@/components/app-alert-success'
+import { toastSuccess } from '@/components/app-toast-messages'
 import AppearanceTabs from '@/components/appearance-tabs'
 import { Breadcrumbs } from '@/components/breadcrumbs'
 import HeadingSmall from '@/components/heading-small'
@@ -26,8 +27,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Others({ othersettings, company }: any) {
 
     const [uploading, setUploading] = useState<string>('');
-
-    const { flash } = usePage().props as any;
     const { data, setData, put, processing } = useForm({
         navigation: othersettings?.navigation,
         budget: othersettings?.budget,
@@ -37,12 +36,16 @@ export default function Others({ othersettings, company }: any) {
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
-        put(route('app.other-settings.update', othersettings?.id));
+        put(route('app.other-settings.update', othersettings?.id), {
+            onSuccess: () => {
+                toastSuccess("Sucesso", "Configuração ajustada com sucesso")
+            },
+        });
     }
 
     return (
         <AppLayout>
-            {flash.message && <AlertSuccess message={flash.message} />}
+            
             <Head title="Outras configurações" />
             <div className='flex items-center justify-between h-16 px-4'>
                 <div className='flex items-center gap-2'>
@@ -72,7 +75,7 @@ export default function Others({ othersettings, company }: any) {
 
                     {uploading && <AlertSuccess message={uploading} className='!p-0' />}
                 </div>
-                <form onSubmit={handleSubmit} autoComplete="off"className="space-y-8">
+                <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
                     <div className="space-y-6 mt-6">
                         <HeadingSmall title="Configuração de navegação" description="Altere entre o menu de navegação lateral Sidebar e a barra de navegação no topo." />
                         <div className="grid gap-2">

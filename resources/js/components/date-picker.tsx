@@ -8,54 +8,104 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { DateRange } from "react-day-picker"
+import { DateRange, SelectRangeEventHandler, SelectSingleEventHandler } from "react-day-picker"
 import moment from "moment"
-import "moment/dist/locale/pt-br"
-
 moment.locale("pt-br")
 
 interface DatePickerProps {
-  dateRange: DateRange | undefined
-  setDateRange: (range: DateRange | undefined) => void
+  date: Date | string | DateRange | undefined
+  setDate: (date: Date | DateRange | undefined) => void
+  mode?: "single" | "range"
 }
 
 // Arrays fixos para evitar recriação a cada render
 const MONTHS = moment.months()
-const YEARS = Array.from({ length: 20 }, (_, i) => new Date().getFullYear() - 10 + i)
+const currentYear = new Date().getFullYear()
+const YEARS = Array.from({ length: 100 }, (_, i) => currentYear - 80 + i)
 
-export function DatePicker({ dateRange, setDateRange }: DatePickerProps) {
+export function DatePicker({ date, setDate, mode = "range" }: DatePickerProps) {
   const [open, setOpen] = React.useState(false)
-  const [month, setMonth] = React.useState<Date>(dateRange?.from ?? new Date())
+
+  function parseLocalDate(value?: string | Date) {
+    if (!value) return undefined
+    if (value instanceof Date) return value
+
+    const [year, month, day] = value.split('-').map(Number)
+    return new Date(year, month - 1, day) // 🔥 LOCAL
+  }
+
+  const parsedDate = React.useMemo(() => {
+    const parse = (d: Date | string | undefined) => {
+      if (!d) return undefined
+      return parseLocalDate(d)
+    }
+
+    if (mode === "range") {
+      const range = date as any
+      return {
+        from: parse(range?.from),
+        to: parse(range?.to),
+      }
+    }
+
+    return parse(date as any)
+  }, [date, mode])
+
+  const initialMonth = React.useMemo(() => {
+    if (mode === "range") {
+      const range = parsedDate as DateRange | undefined
+      return range?.from || new Date()
+    }
+    return (parsedDate as Date) || new Date()
+  }, [parsedDate, mode])
+
+  const [month, setMonth] = React.useState<Date>(initialMonth)
+
+  React.useEffect(() => {
+    if (open) {
+      setMonth(initialMonth)
+    }
+  }, [open, initialMonth])
+
   const hasSelectedFirst = React.useRef(false)
 
-  const displayValue = dateRange?.from
-    ? dateRange.to
-      ? `${moment(dateRange.from).format("DD/MM/YYYY")} - ${moment(dateRange.to).format("DD/MM/YYYY")}`
-      : moment(dateRange.from).format("DD/MM/YYYY")
-    : "Selecione o intervalo"
+  const displayValue = React.useMemo(() => {
+    if (mode === "range") {
+      const range = parsedDate as DateRange | undefined
+      return range?.from
+        ? range.to
+          ? `${moment(range.from).format("DD/MM/YYYY")} - ${moment(range.to).format("DD/MM/YYYY")}`
+          : moment(range.from).format("DD/MM/YYYY")
+        : "Selecione o intervalo"
+    }
+    const single = parsedDate as Date | undefined
+    return single ? moment(single).format("DD/MM/YYYY") : "Selecione a data"
+  }, [parsedDate, mode])
 
-  const handleSelect = (range: DateRange | undefined) => {
+  const handleSelectRange: SelectRangeEventHandler = (range, selectedDay, activeModifiers, e) => {
     if (!range) {
-      setDateRange(undefined)
+      setDate(undefined)
       hasSelectedFirst.current = false
       return
     }
 
-    if (dateRange?.from && dateRange?.to) {
+    const currentRange = parsedDate as DateRange | undefined
+
+    if (currentRange?.from && currentRange?.to) {
       // Reinicia nova seleção
-      setDateRange({ from: range.from, to: undefined })
+      setDate({ from: range.from, to: undefined })
       hasSelectedFirst.current = true
       return
     }
 
     // Caso o usuário clique duas vezes no mesmo dia
     if (range.from && range.to && range.from.getTime() === range.to.getTime()) {
-      setDateRange({ from: range.from, to: undefined })
+      setDate({ from: range.from, to: undefined })
       hasSelectedFirst.current = true
       return
     }
 
-    setDateRange(range)
+    setDate(range)
 
     if (!hasSelectedFirst.current) {
       hasSelectedFirst.current = true
@@ -63,6 +113,11 @@ export function DatePicker({ dateRange, setDateRange }: DatePickerProps) {
       hasSelectedFirst.current = false
       setOpen(false)
     }
+  }
+
+  const handleSelectSingle: SelectSingleEventHandler = (day, selectedDay, activeModifiers, e) => {
+    setDate(day)
+    setOpen(false)
   }
 
   const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -80,18 +135,18 @@ export function DatePicker({ dateRange, setDateRange }: DatePickerProps) {
   }
 
   return (
-    <div className="flex flex-col gap-3 w-60">
+    <div className="flex flex-col gap-3 w-full">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <div className="relative">
             <Input
               id="date"
               value={displayValue}
-              placeholder="Selecione o intervalo"
+              placeholder={mode === "range" ? "Selecione o intervalo" : "Selecione a data"}
               className="bg-background pr-10 cursor-pointer"
               readOnly
               onClick={() => setOpen(true)}
-              aria-label="Selecionar intervalo de datas"
+              aria-label="Selecionar data"
             />
             <div className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground">
               <CalendarIcon className="size-3.5" />
@@ -109,10 +164,10 @@ export function DatePicker({ dateRange, setDateRange }: DatePickerProps) {
           <div className="flex items-center justify-between gap-2 mb-2">
             <select
               className="border rounded-md px-2 py-1 text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-              value={month.getMonth()}
+              value={new Date(month).getMonth()}
               onChange={handleMonthChange}
             >
-              {MONTHS.map((m, idx) => (
+              {MONTHS.map((m: string, idx: any) => (
                 <option key={idx} value={idx}>
                   {m.charAt(0).toUpperCase() + m.slice(1)}
                 </option>
@@ -121,7 +176,7 @@ export function DatePicker({ dateRange, setDateRange }: DatePickerProps) {
 
             <select
               className="border rounded-md px-2 py-1 text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-              value={month.getFullYear()}
+              value={new Date(month).getFullYear()}
               onChange={handleYearChange}
             >
               {YEARS.map((y) => (
@@ -135,29 +190,46 @@ export function DatePicker({ dateRange, setDateRange }: DatePickerProps) {
           {/* Calendário principal */}
           <Calendar
             locale={ptBR}
-            mode="range"
-            selected={dateRange}
-            month={month}
+            mode={mode as any}
+            selected={parsedDate as any}
+            month={new Date(month)}
             onMonthChange={setMonth}
-            onSelect={handleSelect}
+            onSelect={mode === "range" ? handleSelectRange : handleSelectSingle}
             className="rounded-lg border shadow-sm"
           />
 
-          {/* Botão para limpar seleção */}
-          {dateRange?.from && (
-            <div className="flex justify-end mt-2">
+          {/* Botões de ação */}
+          <div className="flex justify-end gap-2 mt-2">
+            <button
+              type="button"
+              onClick={() => {
+                const today = new Date()
+                if (mode === "range") {
+                  setDate({ from: today, to: today })
+                } else {
+                  setDate(today)
+                }
+                setMonth(today)
+                setOpen(false)
+                hasSelectedFirst.current = false
+              }}
+              className="text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+            >
+              Hoje
+            </button>
+            {date && (
               <button
                 type="button"
                 onClick={() => {
-                  setDateRange(undefined)
+                  setDate(undefined)
                   hasSelectedFirst.current = false
                 }}
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 Limpar
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </PopoverContent>
       </Popover>
     </div>

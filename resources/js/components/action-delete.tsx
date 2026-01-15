@@ -23,7 +23,7 @@ export default function ActionDelete({ title, url, param }: { title: string, url
         <div className="">
             <AlertDialog>
                 <AlertDialogTrigger asChild>
-                    <Button variant="destructive" size="icon">
+                    <Button variant="destructive" size="icon" title={`Excluir ${title}`}>
                         <Trash2 className="h-4 w-4" />
                     </Button>
                 </AlertDialogTrigger>
