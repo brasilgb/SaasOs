@@ -15,6 +15,7 @@ use Illuminate\Validation\Rules;
 use Carbon\Carbon;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Facades\DB;
 
 class RegisteredUserController extends Controller
 {
@@ -32,48 +33,52 @@ class RegisteredUserController extends Controller
 
     /**
      * Handle an incoming registration request.
-     *
-     * @throws \Illuminate\Validation\ValidationException
      */
     public function store(Request $request): RedirectResponse
     {
-        $isSuperUserRegistration = $request->company === self::SUPERUSER_COMPANY_CODE && $request->cnpj === self::SUPERUSER_CNPJ_CODE;
+        $isSuperUserRegistration =
+            $request->company === self::SUPERUSER_COMPANY_CODE &&
+            $request->cnpj === self::SUPERUSER_CNPJ_CODE;
+
         $superuserExists = User::whereNull('tenant_id')->exists();
 
-
+        // 🔐 Regras base
         $rules = [
             'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:' . User::class,
-            'phone' => 'required|string|max:255',
-            'whatsapp' => 'required|string|max:255',
+            'email' => 'required|string|lowercase|email|max:255|unique:users,email',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ];
 
-        if ($isSuperUserRegistration) {
-            if ($superuserExists) {
-                return back()->withErrors(['company' => 'Já existe um superusuário registrado no sistema.']);
-            }
-        } else {
-            $rules['company'] = 'required|string|max:255|unique:' . Tenant::class;
-            $rules['cnpj'] = 'required|string|cnpj|unique:' . Tenant::class;
+        // 🔐 Regras extras apenas para usuários normais
+        if (!$isSuperUserRegistration) {
+            $rules['company'] = 'required|string|max:255|unique:tenants,company';
+            $rules['cnpj'] = 'required|string|cnpj|unique:tenants,cnpj';
+            $rules['phone'] = 'required|string|max:255';
+            $rules['whatsapp'] = 'required|string|max:255';
         }
-        $aliases = [
-            'name' => 'Nome',
-            'email' => 'E-mail',
-            'password' => 'Senha',
-            'company' => 'Razão Social',
-            'cnpj' => 'CNPJ',
-        ];
 
-        $request->validate($rules, [], $aliases);
+        $request->validate($rules);
 
+        /**
+         * ======================================================
+         * 👑 REGISTRO ROOT (SEM TENANT)
+         * ======================================================
+         */
         if ($isSuperUserRegistration) {
+
+            if ($superuserExists) {
+                return back()->withErrors([
+                    'company' => 'Já existe um usuário root no sistema.'
+                ]);
+            }
+
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'tenant_id' => null,
-                'status' => 1
+                'status' => 1,
+                'roles' => 99, // ROOT
             ]);
 
             event(new Registered($user));
@@ -82,50 +87,49 @@ class RegisteredUserController extends Controller
             return redirect()->route('admin.dashboard');
         }
 
-        // Create new tenant and user
-        $tenant = Tenant::create([
-            'name' => $request->name,
-            'company' => $request->company,
-            'cnpj' => $request->cnpj,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'whatsapp' => $request->whatsapp,
-            'status' => 1,
-            'plan' => 1,
-            'expiration_date' => Carbon::now()->addDays(30)
-        ]);
+        /**
+         * ======================================================
+         * 🏢 REGISTRO NORMAL (COM TENANT)
+         * ======================================================
+         */
+        DB::transaction(function () use ($request, &$user) {
 
-        if (!$tenant || !$tenant->id) {
-            return back()->withErrors(['tenant' => 'Failed to create tenant.']);
-        }
+            $tenant = Tenant::create([
+                'name' => $request->name,
+                'company' => $request->company,
+                'cnpj' => $request->cnpj,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'whatsapp' => $request->whatsapp,
+                'status' => 1,
+                'plan' => 1,
+                'expiration_date' => Carbon::now()->addDays(30),
+            ]);
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'tenant_id' => $tenant->id,
-            'telephone' => $request->phone,
-            'whatsapp' => $request->whatsapp,
-            'status' => 1,
-            'roles' => 9
-        ]);
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'tenant_id' => $tenant->id,
+                'telephone' => $request->phone,
+                'whatsapp' => $request->whatsapp,
+                'status' => 1,
+                'roles' => 9,
+            ]);
 
-        Company::create([
-            'tenant_id' => $tenant->id,
-            'companyname' => $request->company,
-            'cnpj' => $request->cnpj,
-            'telephone' => $request->phone,
-            'whatsapp' => $request->whatsapp,
-            'email' => $request->email
-        ]);
+            Company::create([
+                'tenant_id' => $tenant->id,
+                'companyname' => $request->company,
+                'cnpj' => $request->cnpj,
+                'telephone' => $request->phone,
+                'whatsapp' => $request->whatsapp,
+                'email' => $request->email,
+            ]);
+        });
 
         event(new Registered($user));
         Auth::login($user);
 
-
-        if (Auth::user() && Auth::user()->tenant_id === null) {
-            return redirect()->route('admin.dashboard');
-        }
         return redirect()->route('app.dashboard');
     }
 }
