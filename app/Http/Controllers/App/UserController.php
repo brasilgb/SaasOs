@@ -25,7 +25,8 @@ class UserController extends Controller
             $query->where('name', 'like', '%' . $search . '%');
         }
         $users = $query->paginate(12);
-        return Inertia::render('app/users/index', ['users' => $users]);
+        $firstAdminId = User::where('roles', 9)->orderBy('id', 'asc')->value('id');
+        return Inertia::render('app/users/index', ['users' => $users, 'firstAdminId' => $firstAdminId]);
     }
 
     /**
@@ -44,8 +45,8 @@ class UserController extends Controller
         $data = $request->all();
         $request->validated();
         $data['password'] = Hash::make($request->password);
-        Model::reguard();
         $data['user_number'] = User::exists() ? User::latest()->first()->user_number + 1 : 1;
+        Model::reguard();
         User::create($data);
         Model::unguard();
         return redirect()->route('app.users.index')->with('success', 'Usuário cadastrado com sucesso');

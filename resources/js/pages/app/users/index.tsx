@@ -2,8 +2,8 @@ import { Breadcrumbs } from '@/components/breadcrumbs'
 import { Icon } from '@/components/icon';
 import AppLayout from '@/layouts/app-layout'
 import { BreadcrumbItem } from '@/types';
-import { Head, Link, usePage } from '@inertiajs/react'
-import { Edit, Pencil, Plus, Trash2Icon, TrashIcon, UserCog } from 'lucide-react';
+import { Head, Link } from '@inertiajs/react'
+import { Edit, Plus, Trash2Icon, UserCog } from 'lucide-react';
 import moment from 'moment'
 import {
   Table,
@@ -18,9 +18,6 @@ import { Button } from '@/components/ui/button';
 import InputSearch from '@/components/inputSearch';
 import AppPagination from '@/components/app-pagination';
 import ActionDelete from '@/components/action-delete';
-import AlertSuccess from '@/components/app-alert-success';
-import { Badge } from '@/components/ui/badge';
-import { roleUserByValue } from '@/Utils/functions';
 import { maskPhone } from '@/Utils/mask';
 import { StatusBadge } from '@/components/StatusBadge';
 
@@ -35,7 +32,7 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-export default function Users({ users }: any) {
+export default function Users({ users, firstAdminId }: any) {
 
   return (
     <AppLayout>
@@ -98,7 +95,7 @@ export default function Users({ users }: any) {
                           <Edit />
                         </Link>
                       </Button>
-                      {user.roles === 9 && idx === 0
+                      {user.roles === 9 && user.id === firstAdminId
                         ? <Button variant="destructive" size="icon" disabled={true}>
                           <Trash2Icon className="h-4 w-4" />
                         </Button>
