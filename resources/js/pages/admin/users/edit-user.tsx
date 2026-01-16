@@ -16,6 +16,7 @@ import { useState } from "react";
 import { maskPhone } from "@/Utils/mask";
 import AlertSuccess from "@/components/app-alert-success";
 import AdminLayout from "@/layouts/admin/admin-layout";
+import { toastSuccess } from "@/components/app-toast-messages";
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -55,7 +56,11 @@ export default function CreateUser({ user, tenants }: any) {
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
-    patch(route('admin.users.update', user?.id));
+    patch(route('admin.users.update', user?.id), {
+      onSuccess: () => {
+        toastSuccess("Sucesso", "Cadastro alterado com sucesso")
+      }
+    });
   }
 
 
@@ -101,7 +106,7 @@ export default function CreateUser({ user, tenants }: any) {
 
       <div className='p-4'>
         <div className='border rounded-lg p-2'>
-          <form onSubmit={handleSubmit} autoComplete="off"className="space-y-8">
+          <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
             <div className="grid md:grid-cols-6 gap-4 mt-4">
 
               <div className="grid gap-2 md:col-span-2">

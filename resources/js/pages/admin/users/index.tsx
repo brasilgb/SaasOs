@@ -22,6 +22,7 @@ import AlertSuccess from '@/components/app-alert-success';
 import { Badge } from '@/components/ui/badge';
 import { roleUserByValue } from '@/Utils/functions';
 import AdminLayout from '@/layouts/admin/admin-layout';
+import { StatusBadge } from '@/components/StatusBadge';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -36,11 +37,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function Users({ users }: any) {
   const { flash, auth } = usePage().props as any;
-console.log(auth?.user?.tenant_id);
+  console.log(auth?.user?.tenant_id);
 
   return (
     <AdminLayout>
-      {flash.message && <AlertSuccess message={flash.message} />}
+
       <Head title="Usuários" />
       <div className='flex items-center justify-between h-16 px-4 mb-4'>
         <div className='flex items-center gap-2'>
@@ -93,17 +94,15 @@ console.log(auth?.user?.tenant_id);
                     <TableCell className="font-medium">{user.name}</TableCell>
                     <TableCell className="font-medium">{user.telephone}</TableCell>
                     <TableCell className="font-medium">{user.email}</TableCell>
-                    <TableCell>{user?.roles === null ? <Badge variant={'destructive'}>RootSystem</Badge> : <Badge variant={'default'}>{roleUserByValue(user.roles)}</Badge>}</TableCell>
-                    <TableCell>{user.status ? <Badge variant={'default'}>Ativo</Badge> : <Badge variant={'destructive'}>Inativo</Badge>}</TableCell>
+                    <TableCell>{<StatusBadge category="role" value={user.roles} />}</TableCell>
+                    <TableCell>{<StatusBadge category="userStatus" value={user.status} />}{user.status}</TableCell>
                     <TableCell>{moment(user.created_at).format("DD/MM/YYYY")}</TableCell>
                     <TableCell className='flex justify-end gap-2'>
-
                       <Button asChild size="icon" className="bg-orange-500 hover:bg-orange-600 text-white">
                         <Link href={route("admin.users.edit", user.id)}>
                           <Pencil className="h-4 w-4" />
                         </Link>
                       </Button>
-
                       <ActionDelete title={'esta mensagem'} url={'admin.users.destroy'} param={user.id} />
                     </TableCell>
                   </TableRow>

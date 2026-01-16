@@ -17,7 +17,6 @@ const mainNavItems: NavItem[] = [
         enabled: 'customers'
         
     },
-    
     {
         title: 'Ordens de serviço',
         href: route('app.orders.index'),

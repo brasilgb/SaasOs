@@ -13,6 +13,7 @@ import { rolesUser } from "@/Utils/dataSelect";
 import { useState } from "react";
 import { maskPhone } from "@/Utils/mask";
 import AdminLayout from "@/layouts/admin/admin-layout";
+import { toastSuccess } from "@/components/app-toast-messages";
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -53,7 +54,10 @@ export default function CreateUser({ tenants }: any) {
   const handleSubmit = (e: any) => {
     e.preventDefault();
     post(route('admin.users.store'), {
-      onSuccess: () => reset(),
+      onSuccess: () => {
+        toastSuccess("Sucesso", "Cadastro realizado com sucesso"),
+          reset()
+      },
     });
   }
 
@@ -95,7 +99,7 @@ export default function CreateUser({ tenants }: any) {
 
       <div className='p-4'>
         <div className='border rounded-lg p-2'>
-          <form onSubmit={handleSubmit} autoComplete="off"className="space-y-8">
+          <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
             <div className="grid md:grid-cols-6 gap-4 mt-4">
 
               <div className="grid gap-2 md:col-span-2">
