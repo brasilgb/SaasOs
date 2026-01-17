@@ -1,0 +1,1 @@
+const e=a=>{switch(a){case 0:return"Não lida";case 1:return"lida"}},s=a=>{switch(a){case 1:return"Ativo";case 2:return"Inativo";case 3:return"Trial";case 4:return"Pausado";case 5:return"Vence em 5D"}};export{e as a,s};
