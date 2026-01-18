@@ -95,7 +95,7 @@ export default function Users({ users }: any) {
                     <TableCell className="font-medium">{user.telephone}</TableCell>
                     <TableCell className="font-medium">{user.email}</TableCell>
                     <TableCell>{<StatusBadge category="role" value={user.roles} />}</TableCell>
-                    <TableCell>{<StatusBadge category="userStatus" value={user.status} />}{user.status}</TableCell>
+                    <TableCell>{<StatusBadge category="userStatus" value={user.status} />}</TableCell>
                     <TableCell>{moment(user.created_at).format("DD/MM/YYYY")}</TableCell>
                     <TableCell className='flex justify-end gap-2'>
                       <Button asChild size="icon" className="bg-orange-500 hover:bg-orange-600 text-white">

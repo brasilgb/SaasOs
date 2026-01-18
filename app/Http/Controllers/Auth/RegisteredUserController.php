@@ -16,6 +16,8 @@ use Carbon\Carbon;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\UserRegisteredMail;
 
 class RegisteredUserController extends Controller
 {
@@ -116,6 +118,7 @@ class RegisteredUserController extends Controller
                 'status' => 1,
                 'roles' => 9,
             ]);
+            Mail::to($user->email)->send(new UserRegisteredMail($user));
 
             Company::create([
                 'tenant_id' => $tenant->id,
@@ -129,6 +132,7 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
         Auth::login($user);
+
 
         return redirect()->route('app.dashboard');
     }
