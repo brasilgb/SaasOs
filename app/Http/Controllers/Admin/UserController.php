@@ -25,7 +25,7 @@ class UserController extends Controller
         if ($search) {
             $query->where('name', 'like', '%' . $search . '%');
         }
-        $users = $query->whereNull('roles')->orWhere('roles', '99')->with('tenant')->paginate(11);
+        $users = $query->where('roles', '9')->orWhere('roles', '99')->with('tenant')->paginate(11);
         return Inertia::render('admin/users/index', ['users' => $users]);
     }
 
@@ -45,7 +45,7 @@ class UserController extends Controller
     {
         $data = $request->all();
         $request->validated();
-        $data['id'] = User::exists() ? User::latest()->first()->id + 1 : 1;
+        $data['user_number'] = User::exists() ? User::latest()->first()->user_number + 1 : 1;
         $data['password'] = Hash::make($request->password);
         Model::reguard();
         User::create($data);
@@ -115,11 +115,11 @@ class UserController extends Controller
         ]);
     }
 
-    public function logoutuser(){
+    public function logoutuser()
+    {
         Auth::user()->tokens()->delete();
         return response()->json([
-          "message"=>"logged out"
+            "message" => "logged out"
         ]);
     }
-
 }

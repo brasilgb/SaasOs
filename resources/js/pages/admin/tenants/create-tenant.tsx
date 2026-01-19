@@ -12,6 +12,7 @@ import AdminLayout from "@/layouts/admin/admin-layout";
 import InputError from "@/components/input-error";
 import Select from 'react-select';
 import { statusSaas } from "@/Utils/dataSelect";
+import { toastSuccess } from "@/components/app-toast-messages";
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -57,7 +58,10 @@ export default function CreateTenant({ plans }: any) {
     const handleSubmit = async (e: any) => {
         e.preventDefault();
         post(route('admin.tenants.store'), {
-            onSuccess: () => reset(),
+            onSuccess: () => {
+                toastSuccess("Sucesso", "Cadastro realizado com sucesso")
+                reset()
+            },
         });
     }
 
@@ -114,7 +118,7 @@ export default function CreateTenant({ plans }: any) {
             <div className='p-4'>
                 <div className='border rounded-lg p-2'>
 
-                    <form onSubmit={handleSubmit} autoComplete="off"className="space-y-8">
+                    <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
                         <div className="grid md:grid-cols-9 gap-4 mt-4">
 
                             <div className="md:col-span-2 grid gap-2">

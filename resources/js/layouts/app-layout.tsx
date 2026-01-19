@@ -1,8 +1,8 @@
 
-import { useAppearance } from '@/hooks/use-appearance';
 import AppLayoutTemplate from '@/layouts/app/app-sidebar-layout';
 import { type ReactNode } from 'react';
 import { Toaster } from 'sonner';
+import { useAppearance } from '@/hooks/use-appearance';
 
 interface AppLayoutProps {
     children: ReactNode;

@@ -32,7 +32,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function CreateUser({ tenants }: any) {
   const [showPassword, setShowPassword] = useState<boolean>(false)
-  const { flash, auth } = usePage().props as any;
 
   const newCompany = tenants?.map((tenant: any) => ({
     value: tenant.id,

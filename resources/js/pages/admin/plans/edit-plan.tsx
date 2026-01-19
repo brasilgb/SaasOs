@@ -7,6 +7,7 @@ import { Edit, Save } from 'lucide-react';
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useState } from "react";
+import { toastSuccess } from "@/components/app-toast-messages";
 
 export default function EditPlan({ plan }: any) {
   const [open, setOpen] = useState(false)
@@ -26,7 +27,10 @@ export default function EditPlan({ plan }: any) {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     patch(route('admin.plans.update', plan.id), {
-      onSuccess: () => setOpen(false),
+      onSuccess: () => {
+        toastSuccess("Sucesso", "Cadastro alterado com sucesso")
+        setOpen(false)
+      },
     });
   }
 
@@ -41,7 +45,7 @@ export default function EditPlan({ plan }: any) {
         <DialogHeader>
           <DialogTitle>Cadastrar um plano</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} autoComplete="off"className="space-y-8">
+        <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
           <div className="grid gap-2">
             <Label htmlFor="name">Nome</Label>
             <Input

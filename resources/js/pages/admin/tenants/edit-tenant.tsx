@@ -13,6 +13,7 @@ import InputError from "@/components/input-error";
 import Select from 'react-select';
 import { statusSaas } from "@/Utils/dataSelect";
 import AlertSuccess from "@/components/app-alert-success";
+import { toastSuccess } from "@/components/app-toast-messages";
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -58,7 +59,9 @@ export default function EditTenant({ plans, tenant }: any) {
     const handleSubmit = async (e: any) => {
         e.preventDefault();
         patch(route('admin.tenants.update', tenant.id), {
-            onSuccess: () => reset(),
+            onSuccess: () => {
+                toastSuccess("Sucesso", "Cadastro alterado com sucesso")
+            },
         });
     }
 
@@ -89,7 +92,7 @@ export default function EditTenant({ plans, tenant }: any) {
 
     return (
         <AdminLayout>
-                {flash.message && <AlertSuccess message={flash.message} />}
+            {flash.message && <AlertSuccess message={flash.message} />}
             <div className='flex items-center justify-between h-16 px-4'>
                 <Head title="Empresas" />
                 <div className='flex items-center gap-2'>
@@ -119,7 +122,7 @@ export default function EditTenant({ plans, tenant }: any) {
             <div className='p-4'>
                 <div className='border rounded-lg p-2'>
 
-                    <form onSubmit={handleSubmit} autoComplete="off"className="space-y-8">
+                    <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
                         <div className="grid md:grid-cols-9 gap-4 mt-4">
 
                             <div className="md:col-span-2 grid gap-2">

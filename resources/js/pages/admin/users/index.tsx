@@ -1,8 +1,7 @@
 import { Breadcrumbs } from '@/components/breadcrumbs'
 import { Icon } from '@/components/icon';
-import AppLayout from '@/layouts/app-layout'
 import { BreadcrumbItem } from '@/types';
-import { Head, Link, usePage } from '@inertiajs/react'
+import { Head, Link } from '@inertiajs/react'
 import { Pencil, Plus, UserCog } from 'lucide-react';
 import moment from 'moment'
 import {
@@ -18,9 +17,6 @@ import { Button } from '@/components/ui/button';
 import InputSearch from '@/components/inputSearch';
 import AppPagination from '@/components/app-pagination';
 import ActionDelete from '@/components/action-delete';
-import AlertSuccess from '@/components/app-alert-success';
-import { Badge } from '@/components/ui/badge';
-import { roleUserByValue } from '@/Utils/functions';
 import AdminLayout from '@/layouts/admin/admin-layout';
 import { StatusBadge } from '@/components/StatusBadge';
 
@@ -36,8 +32,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Users({ users }: any) {
-  const { flash, auth } = usePage().props as any;
-  console.log(auth?.user?.tenant_id);
 
   return (
     <AdminLayout>

@@ -20,8 +20,8 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('manufacturer')->nullable();
             $table->text('model_compatibility')->nullable(); // Ou use json('model_compatibility')
-            $table->string('cost_price');
-            $table->string('sale_price');
+            $table->decimal('cost_price', 10, 2);
+            $table->decimal('sale_price', 10, 2);
             $table->unsignedInteger('quantity')->default(0);
             $table->unsignedInteger('minimum_stock_level')->default(0);
             $table->string('location')->nullable();

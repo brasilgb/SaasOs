@@ -1,7 +1,7 @@
 import AdminLayout from '@/layouts/admin/admin-layout'
-import { Head, Link, usePage } from '@inertiajs/react'
+import { Head } from '@inertiajs/react'
 import { BreadcrumbItem } from '@/types';
-import { Edit, HandCoins } from 'lucide-react'
+import { HandCoins } from 'lucide-react'
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
 import InputSearch from '@/components/inputSearch';
@@ -11,7 +11,7 @@ import moment from 'moment';
 import ActionDelete from '@/components/action-delete';
 import AppPagination from '@/components/app-pagination';
 import CreatePlan from './create-plan';
-import AlertSuccess from '@/components/app-alert-success';
+import { maskMoney } from '@/Utils/mask';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -25,12 +25,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function PlansIndex({ plans }: any) {
-    const { flash } = usePage().props as any;
 
     return (
         <AdminLayout>
             <Head title="Planos" />
-            {flash.message && <AlertSuccess message={flash.message} />}
             <div className='flex items-center justify-between h-16 px-4'>
                 <div className='flex items-center gap-2'>
                     <Icon iconNode={HandCoins} className='w-8 h-8' />
@@ -58,6 +56,7 @@ export default function PlansIndex({ plans }: any) {
                                 <TableHead>Nome</TableHead>
                                 <TableHead>Slug</TableHead>
                                 <TableHead>Descrição</TableHead>
+                                <TableHead>Valor</TableHead>
                                 <TableHead>Cadastro</TableHead>
                                 <TableHead></TableHead>
                             </TableRow>
@@ -70,6 +69,7 @@ export default function PlansIndex({ plans }: any) {
                                         <TableCell>{plan.name}</TableCell>
                                         <TableCell>{plan.slug}</TableCell>
                                         <TableCell>{plan.description}</TableCell>
+                                        <TableCell>R$ {maskMoney(plan.value)}</TableCell>
                                         <TableCell>{moment(plan.created_at).format("DD/MM/YYYY")}</TableCell>
                                         <TableCell className='flex justify-end gap-2'>
                                             <EditPlan plan={plan} />

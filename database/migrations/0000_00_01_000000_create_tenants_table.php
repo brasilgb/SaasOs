@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->tinyInteger('plan');
             $table->string('name');
-            $table->string('company');
+            $table->string('company')->nullable();
             $table->string('cnpj');
             $table->string('email');
             $table->string('phone')->nullable();

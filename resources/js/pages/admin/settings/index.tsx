@@ -11,6 +11,7 @@ import { Building, Save } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { useForm } from '@inertiajs/react';
+import { toastSuccess } from '@/components/app-toast-messages';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -24,7 +25,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function SettingsIndex({ settings }: any) {
-  const { flash, auth } = usePage().props as any;
 
   const { data, setData, progress, processing, errors } = useForm({
     name: settings?.name,
@@ -37,13 +37,18 @@ export default function SettingsIndex({ settings }: any) {
     router.post(route('admin.settings.update', settings.id), {
       _method: "put",
       name: data?.name,
-      logo: data?.logo
-    })
+      logo: data?.logo,
+    },
+      {
+        onSuccess: () => {
+          toastSuccess("Sucesso", "Cadastro realizado com sucesso")
+        }
+      })
   }
 
   return (
     <AdminLayout>
-      {flash.message && <AlertSuccess message={flash.message} />}
+
       <Head title="Configurações" />
       <div className='flex items-center justify-between h-16 px-4'>
         <div className='flex items-center gap-2'>
@@ -74,7 +79,7 @@ export default function SettingsIndex({ settings }: any) {
           />
         </div>
 
-        <form onSubmit={handleSubmit} autoComplete="off"className="space-y-8">
+        <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
           <div className="flex flex-col md:w-2xl gap-4 mt-4">
 
             <div className="grid gap-2">

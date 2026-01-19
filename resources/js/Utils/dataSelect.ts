@@ -10,6 +10,7 @@ const statusServico = [
 ];
 
 const rolesUser = [
+    { value: '99', label: "RootSystem" },
     { value: '9', label: "RootApp" },
     { value: '1', label: "Administrador" },
     { value: '2', label: "Usuário" },

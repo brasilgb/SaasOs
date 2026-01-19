@@ -35,7 +35,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function CreateUser({ user, tenants }: any) {
   const [showPassword, setShowPassword] = useState<boolean>(false)
-  const { flash, auth } = usePage().props as any;
 
   const newTenant = tenants?.map((tenant: any) => ({
     value: tenant.id,
@@ -78,7 +77,7 @@ export default function CreateUser({ user, tenants }: any) {
   return (
     <AdminLayout>
       <Head title="Usuários" />
-      {flash.message && <AlertSuccess message={flash.message} />}
+      
       <div className='flex items-center justify-between h-16 px-4'>
         <div className='flex items-center gap-2'>
           <Icon iconNode={UserCog} className='w-8 h-8' />

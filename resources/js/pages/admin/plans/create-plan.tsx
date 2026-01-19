@@ -1,12 +1,13 @@
 import { Button } from "@/components/ui/button";
-import { createSlug } from "@/Utils/mask";
+import { createSlug, maskMoney, maskMoneyDot } from "@/Utils/mask";
 import { useForm } from "@inertiajs/react";
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label";
 import { Plus, Save } from 'lucide-react';
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toastSuccess } from "@/components/app-toast-messages";
 
 export default function CreatePlan() {
   const [open, setOpen] = useState(false)
@@ -14,7 +15,8 @@ export default function CreatePlan() {
   const { data, setData, post, progress, processing, reset, errors } = useForm({
     name: '',
     slug: '',
-    description: ''
+    description: '',
+    value: '0.00'
   });
 
   const handleSlug = (slug: any) => {
@@ -27,11 +29,15 @@ export default function CreatePlan() {
     e.preventDefault();
     post(route('admin.plans.store'), {
       onSuccess: () => {
+        toastSuccess("Sucesso", "Cadastro realizado com sucesso")
         reset()
         setOpen(false)
       },
     });
   }
+  useEffect(() => {
+    setData('value', maskMoneyDot(data.value));
+  }, [data.value]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -45,7 +51,7 @@ export default function CreatePlan() {
         <DialogHeader>
           <DialogTitle>Cadastrar um plano</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} autoComplete="off"className="space-y-8">
+        <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
           <div className="grid gap-2">
             <Label htmlFor="name">Nome</Label>
             <Input
@@ -76,6 +82,17 @@ export default function CreatePlan() {
               onChange={(e) => setData('description', e.target.value)}
             />
             {errors.description && <div className="text-red-500 text-sm">{errors.description}</div>}
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="value">Valor</Label>
+            <Input
+              type="text"
+              id="value"
+              value={maskMoney(data.value)}
+              onChange={(e) => setData('value', e.target.value)}
+            />
+            {errors.value && <div className="text-red-500 text-sm">{errors.value}</div>}
           </div>
 
           <DialogFooter className="gap-2">

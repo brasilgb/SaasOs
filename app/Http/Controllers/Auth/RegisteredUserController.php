@@ -74,66 +74,59 @@ class RegisteredUserController extends Controller
                 ]);
             }
 
-            $user = User::create([
+            $user = new User([
                 'name' => $request->name,
+                'user_number' => User::where('tenant_id', null)->exists() ? User::latest()->first()->user_number + 1 : 1,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
-                'tenant_id' => null,
                 'status' => 1,
                 'roles' => 99, // ROOT
             ]);
+            $user->tenant_id = null;
+            User::withoutEvents(function () use ($user) {
+                $user->save();
+            });
 
             event(new Registered($user));
             Auth::login($user);
 
             return redirect()->route('admin.dashboard');
+        } else {
+
+            DB::transaction(function () use ($request, &$user) {
+
+                $tenant = Tenant::create([
+                    'name' => $request->name,
+                    'company' => $request->company,
+                    'cnpj' => $request->cnpj,
+                    'email' => $request->email,
+                    'phone' => $request->phone,
+                    'whatsapp' => $request->whatsapp,
+                    'status' => 1,
+                    'plan' => 1,
+                    'expiration_date' => Carbon::now()->addDays(30),
+                ]);
+
+                $user = new User([
+                    'name' => $request->name,
+                    'user_number' => User::where('tenant_id', $tenant->id)->exists() ? User::latest()->first()->user_number + 1 : 1,
+                    'email' => $request->email,
+                    'password' => Hash::make($request->password),
+                    'telephone' => $request->phone,
+                    'whatsapp' => $request->whatsapp,
+                    'status' => 1,
+                    'roles' => 9,
+                ]);
+                $user->tenant_id = $tenant->id;
+                $user->save();
+                Mail::to($user->email)->send(new UserRegisteredMail($user));
+            });
+
+            event(new Registered($user));
+            Auth::login($user);
+
+
+            return redirect()->route('app.dashboard');
         }
-
-        /**
-         * ======================================================
-         * 🏢 REGISTRO NORMAL (COM TENANT)
-         * ======================================================
-         */
-        DB::transaction(function () use ($request, &$user) {
-
-            $tenant = Tenant::create([
-                'name' => $request->name,
-                'company' => $request->company,
-                'cnpj' => $request->cnpj,
-                'email' => $request->email,
-                'phone' => $request->phone,
-                'whatsapp' => $request->whatsapp,
-                'status' => 1,
-                'plan' => 1,
-                'expiration_date' => Carbon::now()->addDays(30),
-            ]);
-
-            $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-                'tenant_id' => $tenant->id,
-                'telephone' => $request->phone,
-                'whatsapp' => $request->whatsapp,
-                'status' => 1,
-                'roles' => 9,
-            ]);
-            Mail::to($user->email)->send(new UserRegisteredMail($user));
-
-            Company::create([
-                'tenant_id' => $tenant->id,
-                'companyname' => $request->company,
-                'cnpj' => $request->cnpj,
-                'telephone' => $request->phone,
-                'whatsapp' => $request->whatsapp,
-                'email' => $request->email,
-            ]);
-        });
-
-        event(new Registered($user));
-        Auth::login($user);
-
-
-        return redirect()->route('app.dashboard');
     }
 }
