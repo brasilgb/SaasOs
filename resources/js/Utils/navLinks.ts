@@ -224,8 +224,8 @@ const mainPlansItems = [
 
 const footerNavItems: NavItem[] = [
     {
-        title: 'MEGB',
-        href: 'https://megb.com.br',
+        title: 'SIGMAOS',
+        href: 'https://sigmaos.com.br',
         icon: linkmegb,
     },
 ];
