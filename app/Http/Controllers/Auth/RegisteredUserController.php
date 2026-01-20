@@ -104,7 +104,7 @@ class RegisteredUserController extends Controller
                     'whatsapp' => $request->whatsapp,
                     'status' => 1,
                     'plan' => 1,
-                    'expiration_date' => Carbon::now()->addDays(30),
+                    'expires_at' => Carbon::now()->addDays(30),
                 ]);
 
                 $user = new User([

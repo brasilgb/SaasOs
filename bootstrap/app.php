@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\AdminAccessMiddleware;
 use App\Http\Middleware\AppAccessMiddleware;
+use App\Http\Middleware\CheckSubscription;
 use App\Http\Middleware\Cors;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
@@ -27,7 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
             Route::middleware('web')
                 ->group(base_path('routes/web.php'));
 
-            Route::middleware(['web', 'auth', 'app'])
+            Route::middleware(['web', 'auth', 'app', 'subscribed'])
                 ->prefix('app')
                 ->name('app.')
                 ->group(base_path('routes/app.php'));
@@ -43,6 +44,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => AdminAccessMiddleware::class,
             'app' => AppAccessMiddleware::class,
+            'subscribed' => CheckSubscription::class,
         ]);
         $middleware->web(append: [
             HandleAppearance::class,

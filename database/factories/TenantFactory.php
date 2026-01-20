@@ -32,7 +32,7 @@ class TenantFactory extends Factory
             'status' => 1, // Assumindo 1 como 'ativo'
             'payment' => $this->faker->boolean,
             'observations' => $this->faker->sentence,
-            'expiration_date' => $this->faker->dateTimeBetween('+1 month', '+1 year'),
+            'expires_at' => $this->faker->dateTimeBetween('+1 month', '+1 year'),
         ];
     }
 }

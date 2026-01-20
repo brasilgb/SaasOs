@@ -28,9 +28,11 @@ return new class extends Migration
             $table->string('complement', 50)->nullable();
             $table->string('number', 50)->nullable();
             $table->integer('status');
+            $table->string('subscription_status')->default('active');
             $table->boolean('payment')->nullable();
             $table->text('observations')->nullable();
-            $table->date('expiration_date')->nullable();
+            $table->timestamp('expires_at')->nullable();
+            $table->string('last_payment_id')->nullable();
             $table->timestamps();
         });
     }

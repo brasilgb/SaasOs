@@ -82,7 +82,7 @@ export default function TenantsIndex({ tenants }: any) {
                     <TableCell>{maskPhone(tenant.phone)}</TableCell>
                     <TableCell>{statusSaasByValue(tenant.status)}</TableCell>
                     <TableCell>{moment(tenant.created_at).format("DD/MM/YYYY")}</TableCell>
-                    <TableCell>{moment(tenant.expiration_date).format("DD/MM/YYYY")}</TableCell>
+                    <TableCell>{moment(tenant.expires_at).format("DD/MM/YYYY")}</TableCell>
                     <TableCell>{tenant.plan.name}</TableCell>
                     <TableCell className='flex justify-end gap-2'>
 

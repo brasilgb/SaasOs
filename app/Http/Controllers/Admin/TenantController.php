@@ -69,15 +69,20 @@ class TenantController extends Controller
         $request->validated();
 
         if (isset($data['plan'])) {
-            $days = match ((int) $data['plan']) {
-                1 => 30,  // Exemplo: plano com id 1 tem 07 dias
-                3 => 90,  // Exemplo: plano com id 2 tem 90 dias ou 3 meses
-                4 => 180, // Exemplo: plano com id 3 tem 180 dias ou 6 meses
-                default => null,
-            };
+            $planId = (int) $data['plan'];
 
-            if ($days) {
-                $data['expiration_date'] = Carbon::now()->addDays($days);
+            // Plano Cortesia (ID 2) - Indefinido (até cancelamento manual)
+            if ($planId === 2) {
+                $data['expires_at'] = null; // Ou uma data muito distante
+            } else {
+                $days = match ($planId) {
+                    1 => 7,   // Trial 07 dias
+                    3 => 30,  // Mensal (Básico)
+                    4 => 90,  // Trimestral
+                    5 => 180, // Semestral
+                    default => 30,
+                };
+                $data['expires_at'] = Carbon::now()->addDays($days);
             }
         }
         $tenant->update($data);
