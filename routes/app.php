@@ -25,6 +25,7 @@ use App\Http\Controllers\App\WhatsappMessageController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+
 Route::get('/chartEquipments/{timerange}', [DashboardController::class, 'chartEquipments'])->name('chartEquipments');
 
 Route::resource('customers', CustomerController::class);
