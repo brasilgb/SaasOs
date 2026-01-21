@@ -9,33 +9,34 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CheckSubscription
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     */
     public function handle(Request $request, Closure $next): Response
     {
         $user = Auth::user();
 
-        // Se não estiver logado ou for Root (roles == 99), permite passar
+        // 1. Permite acesso total para Super Admin (Root)
         if (!$user || $user->roles === 99) {
             return $next($request);
         }
 
         $tenant = $user->tenant;
 
-        // Se for Plano Cortesia (ID 2), não verifica expiração
-        if ($tenant && $tenant->getAttribute('plan') === 2) {
-            return $next($request);
+        // 2. BLOQUEIO ADMINISTRATIVO (Campo: status)
+        // Se o status for 0, a conta está suspensa manualmente por você.
+        if ($tenant->status === 0) {
+            Auth::logout(); // Desloga o usuário
+            return redirect()->route('login')->withErrors([
+                'email' => 'Esta conta foi suspensa. Entre em contato com o suporte.'
+            ]);
         }
 
-        // Verifica se o campo expires_at já passou da data/hora atual
-        if ($tenant && $tenant->expires_at && now()->gt($tenant->expires_at)) {
+        // 3. BLOQUEIO POR PAGAMENTO (Campos: expires_at e subscription_status)
+        // Se a data de expiração passou, redireciona para a tela do Pix.
+        if ($tenant->expires_at && now()->gt($tenant->expires_at)) {
             
-            // Se for uma requisição Inertia/Web, redireciona para página de renovação
-            return redirect()->route('subscription.expired')
-                ->with('error', 'Sua assinatura expirou. Por favor, realize o pagamento via Pix.');
+            // Evita loop infinito: se ele já estiver na tela de expiração ou tentando pagar, permite.
+            if (!$request->routeIs('subscription.expired') && !$request->routeIs('logout')) {
+                return redirect()->route('subscription.expired');
+            }
         }
 
         return $next($request);

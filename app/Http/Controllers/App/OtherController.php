@@ -7,6 +7,8 @@ use App\Http\Controllers\Controller;
 use App\Models\App\Customer;
 use App\Models\App\Order;
 use App\Models\App\Other;
+use App\Models\Tenant;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -23,7 +25,10 @@ class OtherController extends Controller
         $customers = Customer::get(["id", "name", "cpf", "email"]);
         $orders = Order::get();
         $company = Company::first();
-        return Inertia::render('app/others/index', ['othersettings' => $othersettings, 'customers' => $customers, 'orders' => $orders, 'company' => $company]);
+        $expiresAt = Carbon::parse(Tenant::first()->expires_at);
+        $diff = Carbon::now()->diff($expiresAt);
+        $time_remaining = ', restante ' . $diff->days . ' dias e ' . $diff->h . ' horas';
+        return Inertia::render('app/others/index', ['othersettings' => $othersettings, 'customers' => $customers, 'orders' => $orders, 'company' => $company, 'time_remaining' => $time_remaining]);
     }
 
     /**

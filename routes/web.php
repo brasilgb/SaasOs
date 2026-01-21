@@ -16,7 +16,7 @@ Route::get('/subscription/expired', function () {
     // Aqui estou assumindo que você já tem uma lógica de geração
     $pixData = app(PaymentController::class)->generatePixData($tenant);
 
-    return inertia('Auth/ExpiredSubscription', [
+    return inertia('auth/ExpiredSubscription', [
         'pix_code_base64' => $pixData['qr_code_base64'],
         'pix_copy_paste' => $pixData['qr_code'],
     ]);

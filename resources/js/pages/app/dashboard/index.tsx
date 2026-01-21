@@ -8,11 +8,15 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardDescription } from '@/components/ui/card';
 import { ChartAreaDashboard } from '@/components/chart-area-dashboard';
 import { SalesProducts } from '@/components/sales-products';
+import AlertSuccess from '@/components/app-alert-success';
 
 export default function Dashboard({ reloadKey, orders, acount, chartequipments, parts, customers, others, }: any) {
 
+    const { flash } = usePage().props as any;
+    
     return (
         <AppLayout>
+            {flash?.message && <AlertSuccess message={flash?.message} />}
             <Head title="Dashboard" />
             <div key={reloadKey}>
                 <div className='p-4'>

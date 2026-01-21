@@ -4,12 +4,22 @@ namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tenant;
+use App\Models\Admin\Plan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class PaymentController extends Controller
 {
+    public function expired()
+    {
+        $tenant = Auth::user()->tenant;
+        $data = $this->generatePixData($tenant);
+        return Inertia::render('auth/ExpiredSubscription', $data);
+    }
+
     public function generatePixData(Tenant $tenant)
     {
         $token = config('services.mercadopago.token');
@@ -25,7 +35,8 @@ class PaymentController extends Controller
 
         // Obtém o valor do plano. Se não houver plano associado, usa um valor de fallback ou trata o erro.
         // Assumindo que $tenant->plan retorna o model Plan com a propriedade 'value'
-        $amount = $tenant->plan ? (float) $tenant->plan->value : 0.00;
+        $plan = Plan::find($tenant->plan);
+        $amount = $plan ? (float) $plan->value : 0.00;
 
         if ($amount <= 0) {
             // Defina um valor padrão ou lance uma exceção se o plano for gratuito/inválido

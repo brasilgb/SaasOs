@@ -1,7 +1,5 @@
-import { useState, useEffect } from "react"
 import { CheckCircle, X } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Button } from "@/components/ui/button"
 
 export default function AlertSuccess({ message, className }: { message?: string, className?: string }) {
 

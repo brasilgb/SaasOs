@@ -104,7 +104,7 @@ class RegisteredUserController extends Controller
                     'whatsapp' => $request->whatsapp,
                     'status' => 1,
                     'plan' => 1,
-                    'expires_at' => Carbon::now()->addDays(30),
+                    'expires_at' => Carbon::now()->addDays(7),
                 ]);
 
                 $user = new User([
@@ -125,8 +125,7 @@ class RegisteredUserController extends Controller
             event(new Registered($user));
             Auth::login($user);
 
-
-            return redirect()->route('app.dashboard');
+            return redirect()->route('app.dashboard')->with('success', 'Seja bem-vindo! Sua conta foi criada com sucesso com 7 dias de acesso cortesia!');
         }
     }
 }
