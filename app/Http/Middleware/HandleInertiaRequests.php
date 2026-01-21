@@ -66,7 +66,7 @@ class HandleInertiaRequests extends Middleware
             'name' => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
-                'plan' => $request->user() ? Plan::where('id', $request->user()->tenant->plan)->first()->name : null ,
+                'plan' => $request->user()?->tenant ? Plan::where('id', $request->user()->tenant->plan)->first()?->name : null,
                 'user' => $request->user(),
             ],
             'ziggy' => fn(): array => [
