@@ -4,10 +4,10 @@ use App\Http\Controllers\App\PaymentController;
 use App\Http\Controllers\Site\HomeController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-
-Route::get('/', [HomeController::class, 'index'])->name('home');
 use MercadoPago\SDK;
 use MercadoPago\Payment;
+
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('/subscription/expired', function () {
     $tenant = Auth::user()->tenant;

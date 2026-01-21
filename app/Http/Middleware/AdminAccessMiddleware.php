@@ -18,7 +18,7 @@ class AdminAccessMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         if (Auth::user()->tenant_id !== null) {
-            return Redirect::route('app.dashboard');
+            return Redirect::to(config('app.url').'/app');
         }
         return $next($request);
     }
