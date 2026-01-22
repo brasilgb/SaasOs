@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('tenant_id')->nullable()->constrained()->onDelete('cascade');
             $table->string('category')->unique();
             $table->string('part_number')->unique();
+            $table->string('reference_number')->unique();
             $table->string('name');
             $table->text('description')->nullable();
             $table->string('manufacturer')->nullable();
