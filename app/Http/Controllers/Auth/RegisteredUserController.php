@@ -107,6 +107,12 @@ class RegisteredUserController extends Controller
                     'expires_at' => Carbon::now()->addDays(7),
                 ]);
 
+                Company::create([
+                    'name' => $request->name,
+                    'cnpj' => $request->cnpj,
+                    'email' => $request->email,
+                ]);
+
                 $user = new User([
                     'name' => $request->name,
                     'user_number' => User::where('tenant_id', $tenant->id)->exists() ? User::latest()->first()->user_number + 1 : 1,

@@ -3,13 +3,14 @@ import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { type User } from '@/types';
 import { Link, router } from '@inertiajs/react';
-import { LogOut, Settings, User2} from 'lucide-react';
+import { LogOut, Settings, User2 } from 'lucide-react';
 
 interface UserMenuContentProps {
     user: User;
 }
 
 export function UserMenuContent({ user }: UserMenuContentProps) {
+
     const cleanup = useMobileNavigation();
 
     const handleLogout = () => {
@@ -27,13 +28,13 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
                 <DropdownMenuItem asChild>
-                    <Link className="block w-full" href={route('admin.settings.index')} as="button" prefetch onClick={cleanup}>
+                    <Link className="block w-full" href={route(`${user?.tenant_id === null ? 'admin.settings.index' : 'app.other-settings.index'}`)} as="button" prefetch onClick={cleanup}>
                         <Settings className="mr-2" />
                         Aparência
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                    <Link className="block w-full" href={route('admin.users.edit', user.id)} as="button" prefetch onClick={cleanup}>
+                    <Link className="block w-full" href={route(`${user?.tenant_id === null ? 'admin.users.edit' : 'app.users.edit'}`, user.id)} as="button" prefetch onClick={cleanup}>
                         <User2 className="mr-2" />
                         Usuário
                     </Link>
