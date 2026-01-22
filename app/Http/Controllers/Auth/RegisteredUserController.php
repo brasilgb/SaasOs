@@ -108,8 +108,11 @@ class RegisteredUserController extends Controller
                 ]);
 
                 Company::create([
-                    'name' => $request->name,
+                    'tenant_id' => $tenant->id,
+                    'companyname' => $request->company,
                     'cnpj' => $request->cnpj,
+                    'telephone' => $request->phone,
+                    'whatsapp' => $request->whatsapp,
                     'email' => $request->email,
                 ]);
 
@@ -125,7 +128,7 @@ class RegisteredUserController extends Controller
                 ]);
                 $user->tenant_id = $tenant->id;
                 $user->save();
-                Mail::to($user->email)->send(new UserRegisteredMail($user));
+                // Mail::to($user->email)->send(new UserRegisteredMail($user));
             });
 
             event(new Registered($user));

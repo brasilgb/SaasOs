@@ -3,7 +3,7 @@ import { Icon } from '@/components/icon';
 import AppLayout from '@/layouts/app-layout'
 import { BreadcrumbItem } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react'
-import { Edit, PackagePlus, Plus } from 'lucide-react';
+import { Edit, PackagePlus, Plus, PrinterIcon } from 'lucide-react';
 import moment from 'moment'
 import {
   Table,
@@ -63,8 +63,10 @@ export default function CheckList({ budgets, company }: any) {
           </Button>
         </div>
       </div>
-
       <div className='p-4'>
+        <div className='p-2 mb-2 rounded-md bg-accent text-accent-foreground text-xs font-medium'>
+          Os dados da empresa devem estar preenchidos para exibir corretamente o orçamento
+        </div>
         <div className='border rounded-lg'>
           <Table>
             <TableHeader>
@@ -91,9 +93,7 @@ export default function CheckList({ budgets, company }: any) {
                     <TableCell>R$ {maskMoney(budget.total_value)}</TableCell>
                     <TableCell>{moment(budget.created_at).format("DD/MM/YYYY")}</TableCell>
                     <TableCell className='flex justify-end gap-2'>
-
                       <PrintBudget company={company} budget={budget} />
-
                       <Button asChild size="icon" className="bg-orange-500 hover:bg-orange-600 text-white">
                         <Link href={route('app.budgets.edit', budget.id)}>
                           <Edit />

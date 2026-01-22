@@ -122,7 +122,7 @@ export default function BudgetForm({ initialData, budgets }: BudgetFormProps) {
       {/* Linha 1 */}
       <div className="grid md:grid-cols-3 gap-4">
         <div className="grid gap-2">
-          <Label>Categoria</Label>
+          <Label>Categoria do Orçamento</Label>
           <CreatableSelect
             value={selectedCategory}
             options={categoryOptions}
@@ -156,7 +156,7 @@ export default function BudgetForm({ initialData, budgets }: BudgetFormProps) {
         </div>
 
         <div className="grid gap-2">
-          <Label>Tempo Estimado</Label>
+          <Label>Tempo Estimado do Serviço (Hs)</Label>
           <Input value={data.estimated_time} onChange={e => setData("estimated_time", e.target.value)} />
           <InputError message={errors.estimated_time} />
         </div>
@@ -191,7 +191,7 @@ export default function BudgetForm({ initialData, budgets }: BudgetFormProps) {
         </div>
 
         <div className="grid gap-2">
-          <Label>Validade(dias)</Label>
+          <Label>Validade do orçamento(dias)</Label>
           <Input value={maskMoney(String(data.validity))} onChange={e => setData("validity", e.target.value)} />
           <InputError message={errors.validity} />
         </div>

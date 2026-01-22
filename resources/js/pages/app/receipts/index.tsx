@@ -80,7 +80,7 @@ export default function Receipts({ receipt }: any) {
                             </div>
 
                             <div className="md:col-span-2 grid gap-2">
-                                <Label htmlFor="budgetissuance">Emissão de orçamento</Label>
+                                <Label htmlFor="budgetissuance">Emissão de orçamento inicial em ordens</Label>
                                 <Textarea
                                     id="budgetissuance"
                                     value={data.budgetissuance}

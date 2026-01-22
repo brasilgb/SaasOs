@@ -33,9 +33,9 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
         if (Auth::user() && Auth::user()->tenant_id === null) {
-            return redirect()->to(config('app.url').'/admin');
+            return redirect()->intended(route('admin.dashboard', absolute: false));
         }
-        return redirect()->to(config('app.url').'/app');
+        return redirect()->intended(route('app.dashboard', absolute: false));
     }
 
     /**

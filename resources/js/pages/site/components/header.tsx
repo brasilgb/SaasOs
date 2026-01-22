@@ -51,7 +51,7 @@ export function Header() {
         <div className="flex items-center gap-4">
           <Button variant="ghost" className="hidden md:inline-flex">
             {auth?.user ? (
-              <Link href={route('app.dashboard')}>{auth.user.name}</Link>
+              <Link href={route(`${auth?.user?.tenant_id === null ? 'admin.dashboard' : 'app.dashboard'}`)}>{auth.user.name}</Link>
             ) : (
               <Link href={route('login')}>Entrar</Link>
             )}

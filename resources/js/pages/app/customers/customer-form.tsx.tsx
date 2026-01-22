@@ -3,12 +3,12 @@ import { Icon } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/layouts/app-layout";
 import { Head, Link, useForm, usePage } from "@inertiajs/react";
-import { ArrowLeft, Loader2Icon, Save, Users } from "lucide-react";
+import { ArrowLeft, Loader2Icon, Save, Search, Users } from "lucide-react";
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { maskCep, maskCpfCnpj, maskPhone, unMask } from "@/Utils/mask";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { DatePicker } from "@/components/date-picker";
 import { Customer } from "@/types";
 import { useZipcodeAutocomplete } from "@/hooks/useZipcodeAutocomplete";
@@ -17,6 +17,8 @@ import { toastSuccess } from "@/components/app-toast-messages";
 export default function CustomerForm({ initialData }: any) {
 
   const isEdit = !!initialData
+
+  const [zipcodeToSearch, setZipcodeToSearch] = useState<string | null>(null)
 
   const { data, setData, post, progress, processing, reset, setError, clearErrors, errors, put } = useForm<Customer>(
     initialData || {}
@@ -55,7 +57,7 @@ const handleSubmit = (e: React.FormEvent) => {
   }, [data.cpf]);
 
   const { isZipcodeLoading } = useZipcodeAutocomplete<Customer>({
-    zipcode: data.zipcode,
+    zipcode: zipcodeToSearch || "",
     paths: {
       zipcode: "zipcode",
       state: "state",
@@ -64,11 +66,14 @@ const handleSubmit = (e: React.FormEvent) => {
       street: "street",
       complement: "complement",
     },
-    setData,
+    setData: (key: any, value: any) => {
+      if (zipcodeToSearch !== null) {
+        setData(key, value)
+      }
+    },
     setError,
     clearErrors,
   } as any)
-
 
   return (
 
@@ -134,21 +139,28 @@ const handleSubmit = (e: React.FormEvent) => {
 
       <div className="grid md:grid-cols-6 gap-4 mt-4">
 
-        <div className="grid gap-2 relative">
+        <div className="grid gap-2">
           <Label htmlFor="zipcode">CEP</Label>
-          <Input
-            type="text"
-            id="zipcode"
-            value={maskCep(data.zipcode)}
-            onChange={(e) => setData('zipcode', e.target.value)}
-            maxLength={9}
-            disabled={isZipcodeLoading}
-          />
-          {isZipcodeLoading && (
-            <Loader2Icon
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground"
-            />
-          )}
+          <div className="flex gap-2 relative">
+            <div className="relative w-full">
+              <Input
+                type="text"
+                id="zipcode"
+                value={maskCep(data.zipcode)}
+                onChange={(e) => setData('zipcode', e.target.value)}
+                maxLength={9}
+                disabled={isZipcodeLoading}
+              />
+              {isZipcodeLoading && (
+                <Loader2Icon
+                  className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground"
+                />
+              )}
+            </div>
+            <Button type="button" size="icon" variant="outline" onClick={() => setZipcodeToSearch(data.zipcode)}>
+              <Search className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         <div className="grid gap-2">

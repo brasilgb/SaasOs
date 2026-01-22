@@ -110,7 +110,7 @@ function ReceiptCopy({ order, company, type, receipt, checklist, qrcode }: { ord
                     <div className="rounded-lg print:bg-gray-100">
                         <ul className="flex flex-wrap items-center justify-start gap-1">
                             {listchec && listchec?.map((list: any) => (
-                                <li className="flex items-center gap-2"><Square className="h-2 w-2" /> {list}</li>
+                                <li className="flex items-center gap-2 text-xs"><Square className="h-3 w-3" /> {list}</li>
                             ))}
                         </ul>
                     </div>

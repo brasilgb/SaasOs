@@ -15,11 +15,6 @@ export function PrintBudget({ company, budget }: any) {
 
   // 1. Função que lida com a geração e abertura do PDF
   const handleViewPDF = async () => {
-    // ⚠️ Verificação: Se os dados essenciais não existirem, encerra.
-    if (!company || !budget) {
-        console.error("Dados de empresa ou orçamento ausentes.");
-        return;
-    }
 
     setLoading(true);
 
@@ -43,7 +38,7 @@ export function PrintBudget({ company, budget }: any) {
 
   return (
     <div className="print-budget-container">
-      {/* Botão VIEW */}
+      
       <Button 
         onClick={handleViewPDF} 
         disabled={loading || !company || !budget} // Desabilita se estiver carregando ou sem dados
