@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('cpf', 50)->nullable();
             $table->date('birth')->nullable();
             $table->string('email', 50)->nullable();
-            $table->string('cep', 20)->nullable();
+            $table->string('zipcode', 20)->nullable();
             $table->string('state', 20)->nullable();
             $table->string('city', 50)->nullable();
             $table->string('district', 50)->nullable();
