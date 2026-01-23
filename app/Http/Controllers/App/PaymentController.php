@@ -88,7 +88,7 @@ class PaymentController extends Controller
             return ['requires_plan' => true];
         }
 
-        $idempotencyKey = 'pix_'.$tenant->id.'_'.$plan->id.'_'.now()->format('Ym');
+        $idempotencyKey = 'pix_' . $tenant->id . '_' . $plan->id . '_' . now()->format('Ym');
 
         // Reutiliza Pix pendente SOMENTE do mesmo valor
         $pendingPayment = Payment::where('tenant_id', $tenant->id)

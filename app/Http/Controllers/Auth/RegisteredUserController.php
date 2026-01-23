@@ -128,7 +128,7 @@ class RegisteredUserController extends Controller
                 ]);
                 $user->tenant_id = $tenant->id;
                 $user->save();
-                // Mail::to($user->email)->send(new UserRegisteredMail($user));
+                Mail::to($user->email)->send(new UserRegisteredMail($user));
             });
 
             event(new Registered($user));
