@@ -8,6 +8,17 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::middleware(['auth'])
-    ->get('/subscription/expired', [PaymentController::class, 'expired'])
-    ->name('subscription.expired');
+    ->prefix('subscription')
+    ->group(function () {
+
+        Route::get('/expired', [PaymentController::class, 'expired'])
+            ->name('subscription.expired');
+
+        Route::post('/select-plan', [PaymentController::class, 'selectPlan'])
+            ->name('payment.select-plan');
+
+        Route::get('/payment-status/{paymentId}', [PaymentController::class, 'paymentStatus'])
+            ->name('payment.status');
+    });
+
 require __DIR__ . '/auth.php';

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\App;
 use App\Http\Controllers\Controller;
 use App\Models\Tenant;
 use App\Models\Admin\Plan;
+use App\Models\App\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -13,86 +14,156 @@ use Inertia\Inertia;
 
 class PaymentController extends Controller
 {
+    /* ===============================
+       TELA DE ASSINATURA EXPIRADA
+    ================================ */
     public function expired()
     {
         $tenant = Auth::user()->tenant;
 
-        $data = $this->generatePixData($tenant);
-
-        return Inertia::render('auth/ExpiredSubscription', $data);
-    }
-
-    private function generatePixData(Tenant $tenant): array
-    {
-        // Plano cortesia não gera pagamento
-        if ((int) $tenant->plan === 2) {
-            return [
-                'qr_code' => '',
-                'qr_code_base64' => '',
-                'payment_id' => null,
-            ];
+        // 1. Não tem plano → força seleção
+        if (!$tenant->plan) {
+            return $this->renderPlanSelection();
         }
 
+        $pix = $this->generatePixData($tenant);
+
+        // 2. Caso o plano seja inválido
+        if (!empty($pix['requires_plan'])) {
+            return $this->renderPlanSelection();
+        }
+
+        return Inertia::render('auth/ExpiredSubscription', $pix);
+    }
+
+    private function renderPlanSelection()
+    {
+        return Inertia::render('auth/ExpiredSubscription', [
+            'requires_plan' => true,
+            'plans' => Plan::where('id', '>', '2')->get(['id', 'name', 'value']),
+        ]);
+    }
+
+    /* ===============================
+       SELEÇÃO DE PLANO
+    ================================ */
+    public function selectPlan(Request $request)
+    {
+        $data = $request->validate([
+            'plan_id' => ['required', 'exists:plans,id'],
+        ]);
+
+        $tenant = Auth::user()->tenant;
+
+        $tenant->update([
+            'plan' => $data['plan_id'],
+        ]);
+
+        return redirect()->route('subscription.expired');
+    }
+
+    /* ===============================
+       STATUS DO PAGAMENTO (POLLING)
+    ================================ */
+    public function paymentStatus($paymentId)
+    {
+        $tenant = Auth::user()->tenant;
+
+        return response()->json([
+            'paid' =>
+                $tenant->last_payment_id === $paymentId &&
+                $tenant->subscription_status === 'active',
+        ]);
+    }
+
+    /* ===============================
+       GERAÇÃO DE PIX (IDEMPOTENTE)
+    ================================ */
+    private function generatePixData(Tenant $tenant): array
+    {
         $plan = Plan::find($tenant->plan);
 
         if (!$plan || $plan->value <= 0) {
-            Log::error('Plano inválido para pagamento', [
-                'tenant_id' => $tenant->id,
-                'plan_id' => $tenant->plan,
-            ]);
+            return ['requires_plan' => true];
+        }
 
+        // 1. Reutiliza Pix pendente (IDEMPOTÊNCIA)
+        $pendingPayment = Payment::where('tenant_id', $tenant->id)
+            ->where('status', 'pending')
+            ->latest()
+            ->first();
+
+        if ($pendingPayment) {
             return [
-                'qr_code' => '',
-                'qr_code_base64' => '',
-                'payment_id' => null,
+                'payment_id' => $pendingPayment->payment_id,
+                'qr_code' => data_get(
+                    $pendingPayment->raw_response,
+                    'point_of_interaction.transaction_data.qr_code'
+                ),
+                'qr_code_base64' => data_get(
+                    $pendingPayment->raw_response,
+                    'point_of_interaction.transaction_data.qr_code_base64'
+                ),
             ];
         }
 
         $token = config('services.mercadopago.token');
 
+        if (!$token) {
+            Log::critical('Token Mercado Pago não configurado');
+            return [];
+        }
+
         $payload = [
             'transaction_amount' => (float) $plan->value,
-            'description'        => 'Renovação Assinatura - ' . $tenant->name,
-            'payment_method_id'  => 'pix',
+            'description' => 'Renovação de Assinatura - ' . $tenant->name,
+            'payment_method_id' => 'pix',
             'payer' => [
                 'email' => $tenant->email,
                 'first_name' => $tenant->name,
                 'identification' => [
-                    'type'   => 'CNPJ',
+                    'type' => 'CNPJ',
                     'number' => preg_replace('/\D/', '', $tenant->cnpj),
                 ],
             ],
             'metadata' => [
                 'tenant_id' => $tenant->id,
-                'plan_id'   => $plan->id,
+                'plan_id' => $plan->id,
             ],
             'notification_url' => config('services.mercadopago.webhook_url'),
         ];
 
         $response = Http::withToken($token)
+            ->timeout(15)
             ->post('https://api.mercadopago.com/v1/payments', $payload);
 
         if (!$response->ok()) {
             Log::error('Erro ao gerar Pix Mercado Pago', [
                 'response' => $response->json(),
             ]);
-
-            return [
-                'qr_code' => '',
-                'qr_code_base64' => '',
-                'payment_id' => null,
-            ];
+            return [];
         }
 
         $payment = $response->json();
 
+        Payment::create([
+            'tenant_id' => $tenant->id,
+            'payment_id' => $payment['id'],
+            'amount' => $plan->value,
+            'status' => 'pending',
+            'raw_response' => $payment,
+        ]);
+
         return [
+            'payment_id' => $payment['id'],
             'qr_code' => data_get($payment, 'point_of_interaction.transaction_data.qr_code'),
             'qr_code_base64' => data_get($payment, 'point_of_interaction.transaction_data.qr_code_base64'),
-            'payment_id' => $payment['id'] ?? null,
         ];
     }
 
+    /* ===============================
+       WEBHOOK MERCADO PAGO
+    ================================ */
     public function handleWebhook(Request $request)
     {
         $paymentId = $request->input('data.id') ?? $request->input('id');
@@ -148,7 +219,6 @@ class PaymentController extends Controller
                 'expected' => $plan?->value,
                 'paid' => $payment['transaction_amount'],
             ]);
-
             return response()->json(['status' => 'invalid_amount'], 200);
         }
 
@@ -156,12 +226,17 @@ class PaymentController extends Controller
             ? $tenant->expires_at
             : now();
 
+        Payment::where('payment_id', $paymentId)->update([
+            'status' => 'approved',
+            'raw_response' => $payment,
+        ]);
+
         $tenant->update([
-            'payment'            => true,
-            'status'             => 1,
-            'subscription_status'=> 'active',
-            'last_payment_id'    => $paymentId,
-            'expires_at'         => $baseDate->addDays(30),
+            'payment' => true,
+            'status' => 1,
+            'subscription_status' => 'active',
+            'last_payment_id' => $paymentId,
+            'expires_at' => $baseDate->addDays(30),
         ]);
 
         Log::info('Pagamento aprovado e assinatura renovada', [

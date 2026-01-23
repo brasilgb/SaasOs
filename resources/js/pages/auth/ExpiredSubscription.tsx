@@ -1,125 +1,181 @@
 import React, { useEffect, useState } from 'react';
-import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
+import { Head, Link, router } from '@inertiajs/react';
 
-type Props = {
-    qr_code_base64?: string;
+type ExpiredSubscriptionProps = {
+    requires_plan?: boolean;
+    plans?: {
+        id: number;
+        name: string;
+        value: number;
+    }[];
+
     qr_code?: string;
-    payment_id?: number;
+    qr_code_base64?: string;
+    payment_id?: string | number;
 };
 
-export default function ExpiredSubscription({
-    qr_code_base64,
-    qr_code,
-    payment_id,
-}: Props) {
-    const [copied, setCopied] = useState(false);
-    const [checking, setChecking] = useState(true);
-    const cleanup = useMobileNavigation();
+export default function ExpiredSubscription(props: ExpiredSubscriptionProps) {
+    const {
+        requires_plan,
+        plans = [],
+        qr_code_base64,
+        qr_code,
+        payment_id,
+    } = props;
 
-    const handleLogout = () => {
-        cleanup();
-        router.flushAll();
-    };
+    const [copied, setCopied] = useState(false);
+    const [checking] = useState(!!payment_id);
 
     const handleCopyPix = () => {
         if (!qr_code) return;
-
         navigator.clipboard.writeText(qr_code);
         setCopied(true);
-        setTimeout(() => setCopied(false), 3000);
+        setTimeout(() => setCopied(false), 2500);
     };
 
-    /**
-     * Polling do status do pagamento
-     */
+    const handleSelectPlan = (planId: number) => {
+        router.post(route('payment.select-plan'), {
+            plan_id: planId,
+        });
+    };
+
     useEffect(() => {
         if (!payment_id) return;
 
-        const interval = setInterval(() => {
-            router.get(
-                route('payment.status', payment_id),
-                {},
-                {
-                    preserveScroll: true,
-                    preserveState: true,
-                    only: [],
-                    onSuccess: (page) => {
-                        if ((page.props as any)?.paid) {
-                            clearInterval(interval);
-                            router.visit(route('home'));
-                        }
-                    },
+        const interval = setInterval(async () => {
+            try {
+                const response = await fetch(
+                    route('payment.status', payment_id)
+                );
+
+                const data = await response.json();
+
+                if (data.paid) {
+                    clearInterval(interval);
+                    router.visit('/');
                 }
-            );
-        }, 5000); // a cada 5 segundos
+            } catch {}
+        }, 5000);
 
         return () => clearInterval(interval);
     }, [payment_id]);
 
-    return (
-        <div className="min-h-screen bg-gray-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-            <Head title="Assinatura Expirada" />
+    /* =========================
+       SELEÇÃO DE PLANO
+    ========================== */
+    if (requires_plan) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-zinc-900">
+                <Head title="Escolha um plano" />
 
-            <div className="sm:mx-auto sm:w-full sm:max-w-md">
-                <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 text-center">
-                    <div className="mb-6">
-                        <span className="text-red-500 text-6xl">⚠️</span>
-                        <h2 className="mt-4 text-2xl font-bold text-gray-900">
-                            Assinatura Expirada
-                        </h2>
-                        <p className="mt-2 text-sm text-gray-600">
-                            Para continuar utilizando o sistema, realize o pagamento via Pix.
-                        </p>
-                    </div>
+                <div className="max-w-3xl w-full bg-white dark:bg-zinc-800 p-8 rounded-lg shadow text-gray-900 dark:text-gray-100">
+                    <h2 className="text-2xl font-bold text-center mb-6">
+                        Escolha um plano para continuar
+                    </h2>
 
-                    {/* QR Code */}
-                    <div className="flex justify-center mb-6 border-2 border-dashed border-gray-200 p-4 rounded-xl">
-                        {qr_code_base64 ? (
-                            <img
-                                src={`data:image/png;base64,${qr_code_base64}`}
-                                alt="QR Code Pix"
-                                className="w-48 h-48"
-                            />
-                        ) : (
-                            <div className="w-48 h-48 bg-gray-200 animate-pulse flex items-center justify-center">
-                                Gerando QR Code...
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {plans.map((plan: any) => (
+                            <div
+                                key={plan.id}
+                                className="border border-gray-200 dark:border-zinc-700 rounded-lg p-6 flex flex-col justify-between"
+                            >
+                                <div>
+                                    <h3 className="text-lg font-semibold">
+                                        {plan.name}
+                                    </h3>
+                                    <p className="text-2xl font-bold mt-4">
+                                        R$ {Number(plan.value).toFixed(2)}
+                                    </p>
+                                </div>
+
+                                <button
+                                    onClick={() => handleSelectPlan(plan.id)}
+                                    className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded transition"
+                                >
+                                    Selecionar plano
+                                </button>
                             </div>
-                        )}
+                        ))}
                     </div>
 
-                    {/* Botão Copia e Cola */}
-                    <div className="space-y-3">
-                        <button
-                            onClick={handleCopyPix}
-                            disabled={!qr_code}
-                            className={`w-full py-3 px-4 rounded-md text-sm font-medium text-white transition-colors ${
-                                copied
-                                    ? 'bg-green-600'
-                                    : 'bg-blue-600 hover:bg-blue-700'
-                            }`}
-                        >
-                            {copied
-                                ? 'Código Pix Copiado!'
-                                : 'Copiar Código Pix (Copia e Cola)'}
-                        </button>
-
-                        <p className="text-xs text-gray-500">
-                            A liberação é automática após o pagamento.
-                        </p>
-                    </div>
-
-                    <div className="mt-6 border-t pt-6">
+                    <div className="text-center mt-6">
                         <Link
-                            className="text-sm font-medium text-blue-600 hover:text-blue-500"
                             method="post"
                             href={route('logout')}
                             as="button"
-                            onClick={handleLogout}
+                            className="text-sm text-gray-500 dark:text-gray-400 hover:underline"
                         >
                             Sair do sistema
                         </Link>
                     </div>
+                </div>
+            </div>
+        );
+    }
+
+    /* =========================
+       TELA PIX
+    ========================== */
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-zinc-900">
+            <Head title="Assinatura expirada" />
+
+            <div className="max-w-md w-full bg-white dark:bg-zinc-800 p-8 rounded-lg shadow text-center text-gray-900 dark:text-gray-100">
+                <h2 className="text-2xl font-bold mb-2">
+                    Assinatura expirada
+                </h2>
+
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                    Para continuar utilizando o sistema, realize o pagamento via
+                    Pix.
+                </p>
+
+                <div className="flex justify-center mb-6 border-2 border-dashed border-gray-300 dark:border-zinc-600 rounded p-4">
+                    {qr_code_base64 ? (
+                        <img
+                            src={`data:image/png;base64,${qr_code_base64}`}
+                            className="w-48 h-48 bg-white p-2 rounded"
+                            alt="QR Code Pix"
+                        />
+                    ) : (
+                        <div className="w-48 h-48 flex items-center justify-center text-gray-400 dark:text-gray-500">
+                            Gerando QR Code...
+                        </div>
+                    )}
+                </div>
+
+                <button
+                    onClick={handleCopyPix}
+                    disabled={!qr_code}
+                    className={`w-full py-3 rounded text-white transition
+                        ${
+                            copied
+                                ? 'bg-green-600'
+                                : 'bg-blue-600 hover:bg-blue-700'
+                        }`}
+                >
+                    {copied ? 'Código Pix copiado!' : 'Copiar código Pix'}
+                </button>
+
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-4">
+                    A liberação é automática após a confirmação do pagamento.
+                </p>
+
+                {checking && (
+                    <p className="text-xs text-blue-600 mt-3">
+                        Verificando pagamento automaticamente...
+                    </p>
+                )}
+
+                <div className="mt-6 border-t border-gray-200 dark:border-zinc-700 pt-4">
+                    <Link
+                        method="post"
+                        href={route('logout')}
+                        as="button"
+                        className="text-sm text-gray-500 dark:text-gray-400 hover:underline"
+                    >
+                        Sair do sistema
+                    </Link>
                 </div>
             </div>
         </div>
