@@ -88,6 +88,8 @@ class PaymentController extends Controller
             return ['requires_plan' => true];
         }
 
+        $idempotencyKey = 'pix_'.$tenant->id.'_'.$plan->id.'_'.now()->format('Ym');
+
         // Reutiliza Pix pendente SOMENTE do mesmo valor
         $pendingPayment = Payment::where('tenant_id', $tenant->id)
             ->where('status', 'pending')
@@ -138,6 +140,9 @@ class PaymentController extends Controller
         ];
 
         $response = Http::withToken($token)
+            ->withHeaders([
+                'X-Idempotency-Key' => $idempotencyKey,
+            ])
             ->timeout(15)
             ->post('https://api.mercadopago.com/v1/payments', $payload);
 
@@ -158,6 +163,7 @@ class PaymentController extends Controller
             'payment_id' => $payment['id'],
             'amount' => $plan->value,
             'status' => 'pending',
+            'idempotency_key' => $idempotencyKey,
             'raw_response' => $payment,
         ]);
 
