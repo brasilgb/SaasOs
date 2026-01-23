@@ -209,7 +209,6 @@ export function SalesProducts({ parts, customers }: SalesProductsProps) {
         setSelectedPart(null);
         setCartItems([]);
         setSaleCompleted(false);
-        setCustomerNameToPrint(undefined);
     };
 
     const selectedOptionParts = optionsParts.find(option => option.value === data.part_id) || null;
