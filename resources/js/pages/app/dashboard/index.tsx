@@ -55,7 +55,7 @@ export default function Dashboard({ reloadKey, orders, acount, chartequipments, 
                                     {orders?.agendados.map((age: any) => (
                                         <Button key={age.id} variant={'secondary'} asChild>
                                             <Link href={route('app.schedules.index', { "q": age.id, "init": true })}>
-                                                {age.order_number}
+                                                {age.schedules_number}
                                             </Link>
                                         </Button>
                                     ))}

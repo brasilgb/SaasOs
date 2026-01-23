@@ -72,13 +72,13 @@ const { auth } = usePage().props as any;
                     <HeadingSmall title="Configurações de aparência" description="Altere a aparencia do sistema entre temas claro ou escuro." />
                     <AppearanceTabs />
                 </div>
-                <div className="space-y-6 mt-6">
+                {/* <div className="space-y-6 mt-6">
                     <HeadingSmall title="Dados para área do cliente do site" description="Insere os dados do cliente e de suas ordens de serviço a área do cliente no site da empresa." />
 
                     {uploading && <AlertSuccess message={uploading} className='!p-0' />}
-                </div>
+                </div> */}
                 <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
-                    <div className="space-y-6 mt-6">
+                    {/* <div className="space-y-6 mt-6">
                         <HeadingSmall title="Configuração de navegação" description="Altere entre o menu de navegação lateral Sidebar e a barra de navegação no topo." />
                         <div className="grid gap-2">
                             <Switch
@@ -87,7 +87,7 @@ const { auth } = usePage().props as any;
                                 onCheckedChange={(checked: any) => setData('navigation', checked)}
                             />
                         </div>
-                    </div>
+                    </div> */}
                     <div className="space-y-6 mt-6">
                         <HeadingSmall title="Habilitar cadastro e utilização de estoque de peças e/ou produtos " description="Habilita a opções de cadastro e a utilização de inserção de peças e/ou produtos nas ordens de serviço. Padrão inserção manual do nome e valor." />
                         <div className="grid gap-2">

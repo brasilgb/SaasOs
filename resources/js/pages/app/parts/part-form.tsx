@@ -3,7 +3,7 @@ import { useForm, usePage } from "@inertiajs/react";
 import { Save } from "lucide-react";
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label";
-import { maskMoney, unMask } from "@/Utils/mask";
+import { maskMoney, maskMoneyDot, unMask } from "@/Utils/mask";
 import { Switch } from "@/components/ui/switch";
 import { useEffect, useState } from "react";
 import {apios} from "@/Utils/connectApi";
@@ -118,8 +118,8 @@ export default function PartForm({ categories, initialData }: PartFormProps) {
 
 
     useEffect(() => {
-        setData((data: any) => ({ ...data, cost_price: unMask(data.cost_price) }));
-        setData((data: any) => ({ ...data, sale_price: unMask(data.sale_price) }));
+        setData((data: any) => ({ ...data, cost_price: maskMoneyDot(data.cost_price) }));
+        setData((data: any) => ({ ...data, sale_price: maskMoneyDot(data.sale_price) }));
     }, [data.cost_price, data.sale_price])
 
     const changeCategory = (option: OptionType | null) => {

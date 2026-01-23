@@ -1,3 +1,6 @@
+import { maskCnpj, maskMoney } from "@/Utils/mask";
+import { usePage } from "@inertiajs/react";
+import moment from "moment";
 import { forwardRef } from "react"
 
 type Props = {
@@ -5,6 +8,7 @@ type Props = {
   items: any;
   total: any;
   customer: any;
+  sale: any;
 }
 
 const widths = {
@@ -13,7 +17,10 @@ const widths = {
 }
 
 const Receipt = forwardRef<HTMLDivElement, Props>(
-  ({ paper, items, total, customer}, ref) => {
+  ({ paper, items, total, customer, sale }, ref) => {
+    const { auth } = usePage().props as any;
+    const companyData = auth?.user?.tenant;
+
     return (
       <div
         ref={ref}
@@ -24,29 +31,32 @@ const Receipt = forwardRef<HTMLDivElement, Props>(
         <div className="p-2 text-[12px]">
 
           <div className="text-center font-bold uppercase">
-            EMPRESA EXEMPLO LTDA
+            {companyData?.company}
           </div>
 
           <div className="text-center text-[10px] leading-tight">
-            CNPJ: 12.345.678/0001-99<br />
-            Rua Exemplo, 123 – Centro
+            CNPJ: {maskCnpj(companyData?.cnpj)}<br />
+            {companyData?.street}, {companyData?.number} - {companyData?.district}<br />
+            {companyData?.city} - {companyData?.state}<br />
+            {companyData?.telephone}
           </div>
 
           <div className="border-t border-dashed border-black my-2" />
 
           <div className="text-[10px]">
-            Venda Nº 123<br />
-            Data: 06/01/2026 11:10
+            Venda Nº {sale?.id}<br />
+            Data: {moment(sale?.date).format('DD/MM/YYYY HH:mm')}<br />
+            Cliente: {customer}
           </div>
 
           <div className="border-t border-dashed border-black my-2" />
 
           {items.map((item: any, i: number) => (
             <div key={i} className="text-[10px] mt-1">
-              {item.product.name}
+              {item.name}
               <div className="flex justify-between pl-2">
-                <span>{item.quantity} x {item.unit_price}</span>
-                <span>{(item.quantity * item.unit_price).toFixed(2)}</span>
+                <span>{item.selected_quantity} x R$ {maskMoney(String(item.sale_price))}</span>
+                <span>R$ {maskMoney(String(item.selected_quantity * item.sale_price))}</span>
               </div>
             </div>
           ))}

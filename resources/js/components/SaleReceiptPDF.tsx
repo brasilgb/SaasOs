@@ -13,6 +13,8 @@ interface SaleReceiptPDFProps {
     items: CartItem[];
     total: number;
     customerName?: string;
+    sale: any;
+    company: any;
 }
 
 // Define os estilos para o PDF
@@ -28,7 +30,7 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     title: {
-        fontSize: 18,
+        fontSize: 14,
         fontWeight: "bold",
         textTransform: "uppercase",
     },
@@ -38,6 +40,12 @@ const styles = StyleSheet.create({
         marginTop: 4,
     },
     section: {
+        marginBottom: 15,
+    },
+    company: {
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
         marginBottom: 15,
     },
     sectionTitle: {
@@ -50,6 +58,10 @@ const styles = StyleSheet.create({
     },
     customerInfo: {
         fontSize: 12,
+        marginBottom: 5,
+    },
+    companyInfo: {
+        fontSize: 10,
         marginBottom: 5,
     },
     table: {
@@ -96,13 +108,21 @@ const styles = StyleSheet.create({
 });
 
 
-const SaleReceiptPDF = ({ items, total, customerName }: SaleReceiptPDFProps) => (
-    <Document title={`Recibo de Venda - ${moment().format("DD/MM/YYYY")}`}>
+const SaleReceiptPDF = ({ items, total, customerName, sale, company }: SaleReceiptPDFProps) => (
+    <Document title={`Recibo de Venda (${sale?.id}) - ${moment(sale?.date).format("DD/MM/YYYY")}`}>
         <Page size="A4" style={styles.page}>
-            <View style={styles.header}>
-                <Text style={styles.title}>Recibo de Venda</Text>
-                <Text style={styles.subtitle}>{moment().format("DD/MM/YYYY HH:mm")}</Text>
+            <View style={styles.company}>
+                <Text style={styles.title}>{company?.company}</Text>
+                <Text style={styles.companyInfo}>CNPJ: {company?.cnpj}</Text>
+                <Text style={styles.companyInfo}>{company?.street}, {company?.number} - {company?.district}</Text>
+                <Text style={styles.companyInfo}>{company?.city} - {company?.state}</Text>
+                <Text style={styles.companyInfo}>{company?.telephone}</Text>
             </View>
+            <View style={styles.header}>
+                <Text style={styles.subtitle}>Recibo de Venda ({sale?.id})</Text>
+                <Text style={styles.subtitle}>{moment(sale?.date).format("DD/MM/YYYY HH:mm")}</Text>
+            </View>
+
 
             {customerName && (
                 <View style={styles.section}>

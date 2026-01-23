@@ -71,7 +71,10 @@ class SaleController extends Controller
 
             return response()->json([
                 'success' => true,
-                'sale_id' => $sale->id,
+                'sale' => [
+                    'id' => $sale->id,
+                    'date' => $sale->created_at
+                ]
             ]);
         } catch (\Throwable $e) {
             DB::rollBack();
