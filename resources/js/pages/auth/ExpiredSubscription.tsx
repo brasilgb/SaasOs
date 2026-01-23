@@ -64,8 +64,7 @@ export default function ExpiredSubscription({ pix_code_base64, pix_copy_paste }:
 
                     <div className="mt-6 border-t pt-6">
                         <Link className="text-sm font-medium text-blue-600 hover:text-blue-500" method="post" href={route('logout')} as="button" onClick={handleLogout}>
-                            <LogOut className="mr-2" />
-                            Log out
+                            Sair do sistema
                         </Link>
                     </div>
                 </div>
