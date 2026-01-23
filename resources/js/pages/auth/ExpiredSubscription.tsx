@@ -1,8 +1,16 @@
 import React, { useState } from 'react';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
+import { LogOut } from 'lucide-react';
 
-export default function ExpiredSubscription({ pix_code_base64, pix_copy_paste }) {
+export default function ExpiredSubscription({ pix_code_base64, pix_copy_paste }: any) {
     const [copied, setCopied] = useState(false);
+    const cleanup = useMobileNavigation();
+
+    const handleLogout = () => {
+        cleanup();
+        router.flushAll();
+    };
 
     const handleCopyPix = () => {
         navigator.clipboard.writeText(pix_copy_paste);
@@ -27,9 +35,9 @@ export default function ExpiredSubscription({ pix_code_base64, pix_copy_paste })
                     {/* QR Code */}
                     <div className="flex justify-center mb-6 border-2 border-dashed border-gray-200 p-4 rounded-xl">
                         {pix_code_base64 ? (
-                            <img 
-                                src={`data:image/png;base64,${pix_code_base64}`} 
-                                alt="QR Code Pix" 
+                            <img
+                                src={`data:image/png;base64,${pix_code_base64}`}
+                                alt="QR Code Pix"
                                 className="w-48 h-48"
                             />
                         ) : (
@@ -43,22 +51,22 @@ export default function ExpiredSubscription({ pix_code_base64, pix_copy_paste })
                     <div className="space-y-3">
                         <button
                             onClick={handleCopyPix}
-                            className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-                                copied ? 'bg-green-600' : 'bg-blue-600 hover:bg-blue-700'
-                            } focus:outline-none transition-colors`}
+                            className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${copied ? 'bg-green-600' : 'bg-blue-600 hover:bg-blue-700'
+                                } focus:outline-none transition-colors`}
                         >
                             {copied ? '✅ Código Copiado!' : '📋 Copiar Código Pix (Copia e Cola)'}
                         </button>
-                        
+
                         <p className="text-xs text-gray-500">
                             A liberação é automática após o pagamento.
                         </p>
                     </div>
 
                     <div className="mt-6 border-t pt-6">
-                        <a href="/logout" className="text-sm font-medium text-blue-600 hover:text-blue-500">
-                            Sair do sistema
-                        </a>
+                        <Link className="text-sm font-medium text-blue-600 hover:text-blue-500" method="post" href={route('logout')} as="button" onClick={handleLogout}>
+                            <LogOut className="mr-2" />
+                            Log out
+                        </Link>
                     </div>
                 </div>
             </div>
