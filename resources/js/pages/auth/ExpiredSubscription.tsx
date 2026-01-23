@@ -38,7 +38,7 @@ export default function ExpiredSubscription(props: ExpiredSubscriptionProps) {
             plan_id: planId,
         });
     };
-
+    
     useEffect(() => {
         if (!payment_id) return;
 
@@ -49,7 +49,7 @@ export default function ExpiredSubscription(props: ExpiredSubscriptionProps) {
                 );
 
                 const data = await response.json();
-
+                
                 if (data.paid) {
                     clearInterval(interval);
                     router.visit('/');
@@ -59,9 +59,9 @@ export default function ExpiredSubscription(props: ExpiredSubscriptionProps) {
 
         return () => clearInterval(interval);
     }, [payment_id]);
-
+    
     /* =========================
-       SELEÇÃO DE PLANO
+    SELEÇÃO DE PLANO
     ========================== */
     if (requires_plan) {
         return (
@@ -76,8 +76,8 @@ export default function ExpiredSubscription(props: ExpiredSubscriptionProps) {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {plans.map((plan: any) => (
                             <div
-                                key={plan.id}
-                                className="border border-gray-200 dark:border-zinc-700 rounded-lg p-6 flex flex-col justify-between"
+                            key={plan.id}
+                            className="border border-gray-200 dark:border-zinc-700 rounded-lg p-6 flex flex-col justify-between"
                             >
                                 <div>
                                     <h3 className="text-lg font-semibold">
@@ -91,7 +91,7 @@ export default function ExpiredSubscription(props: ExpiredSubscriptionProps) {
                                 <button
                                     onClick={() => handleSelectPlan(plan.id)}
                                     className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded transition"
-                                >
+                                    >
                                     Selecionar plano
                                 </button>
                             </div>
@@ -104,7 +104,7 @@ export default function ExpiredSubscription(props: ExpiredSubscriptionProps) {
                             href={route('logout')}
                             as="button"
                             className="text-sm text-gray-500 dark:text-gray-400 hover:underline"
-                        >
+                            >
                             Sair do sistema
                         </Link>
                     </div>
@@ -114,7 +114,7 @@ export default function ExpiredSubscription(props: ExpiredSubscriptionProps) {
     }
 
     /* =========================
-       TELA PIX
+    TELA PIX
     ========================== */
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-zinc-900">

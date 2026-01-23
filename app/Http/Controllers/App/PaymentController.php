@@ -40,7 +40,8 @@ class PaymentController extends Controller
     {
         return Inertia::render('auth/ExpiredSubscription', [
             'requires_plan' => true,
-            'plans' => Plan::where('id', '>', '2')->get(['id', 'name', 'value']),
+            'plans' => Plan::where('value', '>', 0)
+                ->get(['id', 'name', 'value'])
         ]);
     }
 
@@ -71,7 +72,7 @@ class PaymentController extends Controller
 
         return response()->json([
             'paid' =>
-                $tenant->last_payment_id === $paymentId &&
+            $tenant->last_payment_id === $paymentId &&
                 $tenant->subscription_status === 'active',
         ]);
     }
@@ -87,9 +88,10 @@ class PaymentController extends Controller
             return ['requires_plan' => true];
         }
 
-        // 1. Reutiliza Pix pendente (IDEMPOTÊNCIA)
+        // Reutiliza Pix pendente SOMENTE do mesmo valor
         $pendingPayment = Payment::where('tenant_id', $tenant->id)
             ->where('status', 'pending')
+            ->where('amount', $plan->value)
             ->latest()
             ->first();
 
@@ -111,7 +113,9 @@ class PaymentController extends Controller
 
         if (!$token) {
             Log::critical('Token Mercado Pago não configurado');
-            return [];
+            return [
+                'error' => 'payment_unavailable',
+            ];
         }
 
         $payload = [
@@ -141,7 +145,10 @@ class PaymentController extends Controller
             Log::error('Erro ao gerar Pix Mercado Pago', [
                 'response' => $response->json(),
             ]);
-            return [];
+
+            return [
+                'error' => 'pix_generation_failed',
+            ];
         }
 
         $payment = $response->json();
@@ -160,7 +167,6 @@ class PaymentController extends Controller
             'qr_code_base64' => data_get($payment, 'point_of_interaction.transaction_data.qr_code_base64'),
         ];
     }
-
     /* ===============================
        WEBHOOK MERCADO PAGO
     ================================ */
