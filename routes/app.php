@@ -22,6 +22,7 @@ use App\Http\Controllers\App\ScheduleController;
 use App\Http\Controllers\App\ServiceController;
 use App\Http\Controllers\App\UserController;
 use App\Http\Controllers\App\WhatsappMessageController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
@@ -61,3 +62,12 @@ Route::post('/orders/remove-part', [OrderController::class, 'removePart'])->name
 Route::resource('/sales', SaleController::class);
 Route::post('/sales/{sale}/cancel', [SaleController::class, 'cancel'])->name('sales.cancel');
 Route::resource('/reports', ReportController::class);
+
+Route::get('/payment/status/{paymentId}', function ($paymentId) {
+    $tenant = Auth::user()->tenant;
+
+    return response()->json([
+        'paid' => $tenant->last_payment_id == $paymentId &&
+            $tenant->subscription_status === 'active',
+    ]);
+})->name('payment.status');

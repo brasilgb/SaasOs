@@ -13,28 +13,47 @@ class CheckSubscription
     {
         $user = Auth::user();
 
-        // 1. Permite acesso total para Super Admin (Root)
-        if (!$user || $user->roles === 99) {
+        // Middleware deve rodar apenas com usuário autenticado
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        // Super Admin (Root)
+        if ((int) $user->roles === 99) {
             return $next($request);
         }
 
         $tenant = $user->tenant;
 
-        // 2. BLOQUEIO ADMINISTRATIVO (Campo: status)
-        // Se o status for 0, a conta está suspensa manualmente por você.
-        if ($tenant->status === 0) {
-            Auth::logout(); // Desloga o usuário
-            return redirect()->route('login')->withErrors([
-                'email' => 'Esta conta foi suspensa. Entre em contato com o suporte.'
-            ]);
+        if (!$tenant) {
+            Auth::logout();
+            return redirect()->route('login');
         }
 
-        // 3. BLOQUEIO POR PAGAMENTO (Campos: expires_at e subscription_status)
-        // Se a data de expiração passou, redireciona para a tela do Pix.
-        if ($tenant->expires_at && now()->gt($tenant->expires_at)) {
-            
-            // Evita loop infinito: se ele já estiver na tela de expiração ou tentando pagar, permite.
-            if (!$request->routeIs('subscription.expired') && !$request->routeIs('logout')) {
+        // 1. BLOQUEIO ADMINISTRATIVO
+        if ((int) $tenant->status === 0) {
+            Auth::logout();
+
+            return redirect()
+                ->route('login')
+                ->withErrors([
+                    'email' => 'Esta conta foi suspensa. Entre em contato com o suporte.',
+                ]);
+        }
+
+        // 2. BLOQUEIO POR ASSINATURA
+        $isExpired = $tenant->expires_at && now()->gt($tenant->expires_at);
+        $isInactive = $tenant->subscription_status !== 'active';
+
+        if ($isExpired || $isInactive) {
+
+            // Evita loop infinito
+            if (
+                !$request->routeIs('subscription.expired') &&
+                !$request->routeIs('logout') &&
+                !$request->is('webhook/*') &&
+                !$request->expectsJson()
+            ) {
                 return redirect()->route('subscription.expired');
             }
         }
