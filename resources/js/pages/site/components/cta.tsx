@@ -11,7 +11,7 @@ export function CTA() {
             Pronto para transformar sua gestão?
           </h2>
           <p className="mt-6 text-pretty text-lg leading-relaxed opacity-90">
-            Junte-se a centenas de empresas que já otimizaram seus processos com o TechOS. Comece seu teste
+            Junte-se as empresas que já otimizaram seus processos com o SigmaOs. Comece seu teste
             gratuito hoje mesmo, sem compromisso.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">

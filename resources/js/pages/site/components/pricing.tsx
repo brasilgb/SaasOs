@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Link } from "@inertiajs/react"
 import { Check } from "lucide-react"
 
 const plans = [
@@ -22,7 +23,7 @@ const plans = [
     price: "R$ 132,30",
     period: "/trimestre",
     description: "Economize 10% no plano trimestral",
-    popular: true,
+    popular: false,
     features: [
       "Todos os recursos incluídos",
       "App Android para upload de imagens",
@@ -98,6 +99,9 @@ export function Pricing() {
               </CardContent>
 
               <CardFooter className="pt-6">
+                <Link
+                href={route('register')}
+                >
                 <Button
                   className={`w-full ${
                     plan.popular
@@ -108,6 +112,7 @@ export function Pricing() {
                 >
                   Começar teste grátis
                 </Button>
+                </Link>
               </CardFooter>
             </Card>
           ))}
