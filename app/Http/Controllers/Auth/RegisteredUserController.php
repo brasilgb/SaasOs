@@ -134,7 +134,7 @@ class RegisteredUserController extends Controller
             event(new Registered($user));
             Auth::login($user);
 
-            return redirect()->route('app.dashboard')->with('success', 'Seja bem-vindo! Sua conta foi criada com sucesso com 7 dias de acesso cortesia!');
+            return redirect()->route('app.dashboard')->with('success', 'Seja bem-vindo! Sua conta foi criada com sucesso com 7 dias de acesso para testes!');
         }
     }
 }

@@ -1,6 +1,6 @@
 import { Head, router, useForm, usePage } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
-import { FormEventHandler } from 'react';
+import { Eye, EyeOff, LoaderCircle } from 'lucide-react';
+import { FormEventHandler, useState } from 'react';
 
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
@@ -22,6 +22,7 @@ type RegisterForm = {
 };
 
 export default function Register() {
+    const [showPassword, setShowPassword] = useState(false);
 
     const { data, setData, post, processing, errors, reset } = useForm<Required<RegisterForm>>({
         cnpj: '',
@@ -135,40 +136,46 @@ export default function Register() {
                                 value={data.whatsapp}
                                 onChange={(e) => setData('whatsapp', e.target.value)}
                                 disabled={processing}
+                                maxLength={14 - 1}
                             />
                             <InputError message={errors.whatsapp} />
                         </div>
                     </div>
-                    <div className="grid gap-6 md:grid-cols-2">
-                        <div className="grid gap-2">
-                            <Label htmlFor="password">Senha</Label>
-                            <Input
-                                id="password"
-                                type="password"
-                                tabIndex={5}
-                                autoComplete="new-password"
-                                value={data.password}
-                                onChange={(e) => setData('password', e.target.value)}
-                                disabled={processing}
-                                placeholder="Senha"
-                            />
-                            <InputError message={errors.password} />
+                    <div className="grid gap-6">
+                        <div className="flex items-end justify-between gap-2">
+                            <div className="flex-1 flex flex-col gap-2">
+                                <Label htmlFor="password">Senha</Label>
+                                <Input
+                                    id="password"
+                                    type={showPassword ? 'text' : 'password'}
+                                    tabIndex={5}
+                                    autoComplete="new-password"
+                                    value={data.password}
+                                    onChange={(e) => setData('password', e.target.value)}
+                                    disabled={processing}
+                                    placeholder="Senha"
+                                />
+                                <InputError message={errors.password} />
+                            </div>
+                            <Button type="button" variant="ghost" size="icon" onClick={() => setShowPassword(!showPassword)}>
+                                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </Button>
+                            <div className="flex-1 flex flex-col gap-2">
+                                <Label htmlFor="password_confirmation">Confirmar senha</Label>
+                                <Input
+                                    id="password_confirmation"
+                                    type={showPassword ? 'text' : 'password'}
+                                    tabIndex={6}
+                                    autoComplete="new-password"
+                                    value={data.password_confirmation}
+                                    onChange={(e) => setData('password_confirmation', e.target.value)}
+                                    disabled={processing}
+                                    placeholder="Confirmar senha"
+                                />
+                                <InputError message={errors.password_confirmation} />
+                            </div>
                         </div>
 
-                        <div className="grid gap-2">
-                            <Label htmlFor="password_confirmation">Confirmar senha</Label>
-                            <Input
-                                id="password_confirmation"
-                                type="password"
-                                tabIndex={6}
-                                autoComplete="new-password"
-                                value={data.password_confirmation}
-                                onChange={(e) => setData('password_confirmation', e.target.value)}
-                                disabled={processing}
-                                placeholder="Confirmar senha"
-                            />
-                            <InputError message={errors.password_confirmation} />
-                        </div>
                     </div>
                     <Button type="submit" className="mt-2 w-full" tabIndex={7} disabled={processing}>
                         {processing ? (

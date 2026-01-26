@@ -2,10 +2,10 @@ import { Breadcrumbs } from '@/components/breadcrumbs'
 import { Icon } from '@/components/icon';
 import AppLayout from '@/layouts/app-layout'
 import { BreadcrumbItem } from '@/types';
-import { Head, usePage } from '@inertiajs/react'
-import { EyeIcon, ShoppingCartIcon } from 'lucide-react';
+import { Head } from '@inertiajs/react'
+import { EyeIcon, ShoppingCartIcon, PrinterIcon } from 'lucide-react';
 import moment from 'moment'
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Table,
   TableBody,
@@ -21,6 +21,8 @@ import { Button } from '@/components/ui/button';
 import SaleDetailsModal from './app-sale-details-modal';
 import ActionCancelSale from '@/components/action-cancel-sale';
 import { Badge } from '@/components/ui/badge';
+import { useReactToPrint } from 'react-to-print';
+import Receipt from './receipt';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -36,15 +38,50 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Sales({ sales }: any) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSale, setSelectedSale] = useState(null);
+  const [saleToPrint, setSaleToPrint] = useState<any>(null);
+  const receiptRef = useRef<HTMLDivElement>(null);
+
+  const handlePrint = useReactToPrint({
+    contentRef: receiptRef,
+    onAfterPrint: () => setSaleToPrint(null),
+  });
+
+  useEffect(() => {
+    if (saleToPrint) {
+      handlePrint();
+    }
+  }, [saleToPrint]);
 
   const handleViewDetails = (sale: any) => {
     setSelectedSale(sale);
     setIsModalOpen(true);
   }
 
+  const handlePrintReceipt = (sale: any) => {
+    const mappedSale = {
+      ...sale,
+      items: sale.items.map((item: any) => ({
+        name: item.part?.name || item.name || 'Produto',
+        selected_quantity: item.quantity,
+        sale_price: item.unit_price
+      }))
+    };
+    setSaleToPrint(mappedSale);
+  }
+
   return (
     <AppLayout>
       <SaleDetailsModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} sale={selectedSale} />
+      <div style={{ display: 'none' }}>
+        <Receipt
+          ref={receiptRef}
+          paper="80mm"
+          items={saleToPrint?.items || []}
+          total={new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(saleToPrint?.total_amount || 0)}
+          customer={saleToPrint?.customer?.name || 'Consumidor'}
+          sale={saleToPrint}
+        />
+      </div>
       <Head title="Vendas" />
       <div className='flex items-center justify-between h-16 px-4'>
         <div className='flex items-center gap-2'>
@@ -97,7 +134,11 @@ export default function Sales({ sales }: any) {
                         </Badge>
                       )}
 
-                      <Button onClick={() => handleViewDetails(sale)} size="icon" className="bg-orange-500 hover:bg-orange-600 text-white">
+                      <Button onClick={() => handlePrintReceipt(sale)} size="icon" className="bg-blue-600 hover:bg-blue-500 text-white" title="Imprimir Recibo">
+                        <PrinterIcon className="h-4 w-4" />
+                      </Button>
+
+                      <Button onClick={() => handleViewDetails(sale)} size="icon" className="bg-orange-500 hover:bg-orange-600 text-white" title="Ver Detalhes">
                         <EyeIcon className="h-4 w-4" />
                       </Button>
 
