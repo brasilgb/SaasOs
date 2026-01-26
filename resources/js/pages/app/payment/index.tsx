@@ -1,7 +1,14 @@
+import AppLayout from '@/layouts/app-layout';
 import React, { useEffect, useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 
-type ExpiredSubscriptionProps = {
+type AdvancePayment = {
     requires_plan?: boolean;
     plans?: {
         id: number;
@@ -14,7 +21,7 @@ type ExpiredSubscriptionProps = {
     payment_id?: string | number;
 };
 
-export default function ExpiredSubscription(props: ExpiredSubscriptionProps) {
+export default function AdvancePayment(props: AdvancePayment) {
     const {
         requires_plan,
         plans = [],
@@ -36,48 +43,47 @@ export default function ExpiredSubscription(props: ExpiredSubscriptionProps) {
     const handleSelectPlan = (planId: number) => {
         router.post(route('payment.select-plan'), {
             plan_id: planId,
+            source: 'pay-in-advance',
         });
     };
-    
+
     useEffect(() => {
         if (!payment_id) return;
 
         const interval = setInterval(async () => {
             try {
                 const response = await fetch(
-                    route('payment.status', payment_id)
+                    route('payment.status', payment_id),
                 );
 
                 const data = await response.json();
-                
+
                 if (data.paid) {
                     clearInterval(interval);
-                    router.visit('/');
+                    router.visit('/app');
                 }
             } catch {}
         }, 5000);
 
         return () => clearInterval(interval);
     }, [payment_id]);
-    
-    /* =========================
-    SELEÇÃO DE PLANO
-    ========================== */
-    if (requires_plan) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-zinc-900">
-                <Head title="Escolha um plano" />
 
-                <div className="max-w-3xl w-full bg-white dark:bg-zinc-800 p-8 rounded-lg shadow text-gray-900 dark:text-gray-100">
-                    <h2 className="text-2xl font-bold text-center mb-6">
-                        Escolha um plano para continuar
-                    </h2>
- 
+    return (
+        <AppLayout>
+            <Head title="Adiantar Pagamento" />
+
+            <Dialog open={requires_plan}>
+                <DialogContent className="max-w-3xl" showCloseButton={false}>
+                    <DialogHeader>
+                        <DialogTitle className="text-2xl font-bold text-center mb-6">
+                            Escolha um plano para continuar
+                        </DialogTitle>
+                    </DialogHeader>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {plans.map((plan: any) => (
                             <div
-                            key={plan.id}
-                            className="border border-gray-200 dark:border-zinc-700 rounded-lg p-6 flex flex-col justify-between"
+                                key={plan.id}
+                                className="border border-gray-200 dark:border-zinc-700 rounded-lg p-6 flex flex-col justify-between"
                             >
                                 <div>
                                     <h3 className="text-lg font-semibold">
@@ -91,43 +97,22 @@ export default function ExpiredSubscription(props: ExpiredSubscriptionProps) {
                                 <button
                                     onClick={() => handleSelectPlan(plan.id)}
                                     className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded transition"
-                                    >
+                                >
                                     Selecionar plano
                                 </button>
                             </div>
                         ))}
                     </div>
+                </DialogContent>
+            </Dialog>
 
-                    <div className="text-center mt-6">
-                        <Link
-                            method="post"
-                            href={route('logout')}
-                            as="button"
-                            className="text-sm text-gray-500 dark:text-gray-400 hover:underline"
-                            >
-                            Sair do sistema
-                        </Link>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    /* =========================
-    TELA PIX
-    ========================== */
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-zinc-900">
-            <Head title="Assinatura expirada" />
-
-            <div className="max-w-md w-full bg-white dark:bg-zinc-800 p-8 rounded-lg shadow text-center text-gray-900 dark:text-gray-100">
+            <div className="max-w-md w-full mx-auto bg-white dark:bg-zinc-800 p-8 rounded-lg shadow text-center text-gray-900 dark:text-gray-100">
                 <h2 className="text-2xl font-bold mb-2">
-                    Assinatura expirada
+                    Adiantar Pagamento
                 </h2>
 
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                    Para continuar utilizando o sistema, realize o pagamento via
-                    Pix.
+                    Realize o pagamento via Pix para adiantar uma mensalidade.
                 </p>
 
                 <div className="flex justify-center mb-6 border-2 border-dashed border-gray-300 dark:border-zinc-600 rounded p-4">
@@ -169,15 +154,13 @@ export default function ExpiredSubscription(props: ExpiredSubscriptionProps) {
 
                 <div className="mt-6 border-t border-gray-200 dark:border-zinc-700 pt-4">
                     <Link
-                        method="post"
-                        href={route('logout')}
-                        as="button"
+                        href={route('app.dashboard')}
                         className="text-sm text-gray-500 dark:text-gray-400 hover:underline"
                     >
-                        Sair do sistema
+                        Voltar para o dashboard
                     </Link>
                 </div>
             </div>
-        </div>
+        </AppLayout>
     );
 }

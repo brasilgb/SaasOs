@@ -261,7 +261,7 @@ export function SalesProducts({ parts, customers }: SalesProductsProps) {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger className='w-full h-full flex items-center justify-center cursor-pointer'>
-                <ShoppingCartIcon size={50} className='text-green-300' />
+                <ShoppingCartIcon size={80} className='text-green-300' />
             </DialogTrigger>
             <DialogContent className="sm:max-w-lvh">
                 <DialogHeader>

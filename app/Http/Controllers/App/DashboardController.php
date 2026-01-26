@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
+use App\Models\Admin\Plan;
 use App\Models\App\Customer;
 use App\Models\App\Message;
 use App\Models\App\Order;
@@ -44,7 +45,8 @@ class DashboardController extends Controller
         $parts = Part::get();
         $customers = Customer::get();
         $others = Other::first();
-        return Inertia::render('app/dashboard/index', ['reloadKey' => now()->timestamp, 'orders' => $orders, 'acount' => $acount, 'parts' => $parts, 'customers' => $customers, 'others' => $others]);
+        $plans = Plan::where('value', '>', 0)->get(['id', 'name', 'value']);
+        return Inertia::render('app/dashboard/index', ['plans' => $plans, 'reloadKey' => now()->timestamp, 'orders' => $orders, 'acount' => $acount, 'parts' => $parts, 'customers' => $customers, 'others' => $others]);
     }
 
     public function chartEquipments($timerange)

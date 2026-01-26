@@ -13,6 +13,9 @@ Route::middleware(['auth'])
 
         Route::get('/expired', [PaymentController::class, 'expired'])
             ->name('subscription.expired');
+        
+        Route::get('/pay-in-advance', [PaymentController::class, 'payInAdvance'])
+        ->name('subscription.pay-in-advance');
 
         Route::post('/select-plan', [PaymentController::class, 'selectPlan'])
             ->name('payment.select-plan');

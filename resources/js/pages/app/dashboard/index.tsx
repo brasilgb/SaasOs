@@ -1,7 +1,7 @@
 import { KpiDashboard } from '@/components/kpi-dashboard';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { Calendar, Check, MemoryStickIcon, MessageSquareMore, User, Users, Wrench } from 'lucide-react';
+import { Calendar, Check, CreditCard, MemoryStickIcon, MessageSquareMore, User, Users, Wrench } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,7 +13,7 @@ import AlertSuccess from '@/components/app-alert-success';
 export default function Dashboard({ reloadKey, orders, acount, chartequipments, parts, customers, others, }: any) {
 
     const { flash } = usePage().props as any;
-    
+
     return (
         <AppLayout>
             {flash?.message && <AlertSuccess message={flash?.message} />}

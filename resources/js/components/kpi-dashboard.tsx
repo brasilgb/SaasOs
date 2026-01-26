@@ -14,7 +14,7 @@ import { ReactNode } from "react";
 
 interface KpiDashboardProps {
   title: string;
-  value: number;
+  value?: number | null;
   icon: ReactNode;
   description: string;
   link?: string;

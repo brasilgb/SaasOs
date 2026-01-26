@@ -36,6 +36,15 @@ class PaymentController extends Controller
         return Inertia::render('auth/ExpiredSubscription', $pix);
     }
 
+    public function payInAdvance()
+    {
+        return Inertia::render('app/payment/index', [
+            'requires_plan' => true,
+            'plans' => Plan::where('value', '>', 0)
+                ->get(['id', 'name', 'value']),
+        ]);
+    }
+
     private function renderPlanSelection()
     {
         return Inertia::render('auth/ExpiredSubscription', [
@@ -52,6 +61,7 @@ class PaymentController extends Controller
     {
         $data = $request->validate([
             'plan_id' => ['required', 'exists:plans,id'],
+            'source' => ['sometimes', 'in:pay-in-advance'],
         ]);
 
         $tenant = Auth::user()->tenant;
@@ -59,6 +69,11 @@ class PaymentController extends Controller
         $tenant->update([
             'plan' => $data['plan_id'],
         ]);
+
+        if ($request->input('source') === 'pay-in-advance') {
+            $pix = $this->generatePixData($tenant);
+            return Inertia::render('app/payment/index', $pix);
+        }
 
         return redirect()->route('subscription.expired');
     }

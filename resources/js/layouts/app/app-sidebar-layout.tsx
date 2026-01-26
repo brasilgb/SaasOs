@@ -1,6 +1,5 @@
 import { AppContent } from '@/components/app-content';
 import AppFooter from '@/components/app-footer';
-import { AppHeader } from '@/components/app-header';
 import { AppShell } from '@/components/app-shell';
 import { AppSidebar } from '@/components/app-sidebar';
 import { AppSidebarHeader } from '@/components/app-sidebar-header';
@@ -8,17 +7,17 @@ import { usePage } from '@inertiajs/react';
 import { type PropsWithChildren } from 'react';
 
 export default function AppSidebarLayout({ children }: PropsWithChildren) {
-    const { othersetting } = usePage().props as any;
 
     return (
-        <AppShell variant={`${othersetting?.navigation ? "header" : "sidebar"}`}>
-            {othersetting?.navigation ? <AppHeader /> : <AppSidebar />}
-
-            <AppContent variant={`${othersetting?.navigation ? "header" : "sidebar"}`}>
-                {othersetting?.navigation ? '' : <AppSidebarHeader />}
+        <AppShell variant={"sidebar"}>
+            <AppSidebar />
+            <AppContent variant="sidebar">
+                <AppSidebarHeader />
+                <div className='grow'>
                 {children}
+                </div>
+                <AppFooter />
             </AppContent>
-            {othersetting?.navigation ? <AppFooter /> : ''}
         </AppShell>
     );
 }
