@@ -170,10 +170,7 @@ export function SalesProducts({ parts, customers }: SalesProductsProps) {
                 }
             )
             setSaleData(response.data.sale);
-
-
             toastSuccess('Sucesso', 'Venda realizada com sucesso')
-
             setSaleCompleted(true)
             setOpen(true)
 
@@ -250,7 +247,7 @@ export function SalesProducts({ parts, customers }: SalesProductsProps) {
                     company={companyData}
                 />
             ).toBlob();
-
+ 
             const url = URL.createObjectURL(blob);
             window.open(url, "_blank"); // Abre em nova aba para imprimir
         } catch (error) {
