@@ -31,7 +31,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function EditTenant({ plans, tenant }: any) {
-    const { flash } = usePage().props as any;
+
     const allPlans = plans.map((plan: any) => ({
         value: plan.id,
         label: plan.name,
@@ -92,7 +92,7 @@ export default function EditTenant({ plans, tenant }: any) {
 
     return (
         <AdminLayout>
-            {flash.message && <AlertSuccess message={flash.message} />}
+
             <div className='flex items-center justify-between h-16 px-4'>
                 <Head title="Empresas" />
                 <div className='flex items-center gap-2'>

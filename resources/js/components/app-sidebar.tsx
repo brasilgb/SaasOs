@@ -4,9 +4,10 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel
 import { Link, usePage } from '@inertiajs/react';
 import AppLogo from './app-logo';
 import NavMainCollapsible from './nav-main-collapsible';
-import { footerNavItems, mainConfItems, mainNavItems, mainRegisterItems, mainUserItems } from '@/Utils/navLinks';
+import { mainConfItems, mainNavItems, mainUserItems } from '@/Utils/navLinks';
 
 export function AppSidebar() {
+
 
     return (
         <Sidebar collapsible="icon" variant="inset">

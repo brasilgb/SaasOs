@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Tenant;
 use App\Models\Admin\Plan;
 use App\Models\App\Payment;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -103,9 +104,9 @@ class PaymentController extends Controller
             return ['requires_plan' => true];
         }
 
-        $idempotencyKey = 'pix_' . $tenant->id . '_' . $plan->id . '_' . now()->format('Ym');
+        $idempotencyKey = 'pix_' . $tenant->id . '_' . $plan->id . '_' . now()->format('YmdHis');
 
-        // Reutiliza Pix pendente SOMENTE do mesmo valor
+        // Reutiliza Pix pendente SOMENTE do mesmo valor e se não estiver expirado
         $pendingPayment = Payment::where('tenant_id', $tenant->id)
             ->where('status', 'pending')
             ->where('amount', $plan->value)
@@ -113,17 +114,27 @@ class PaymentController extends Controller
             ->first();
 
         if ($pendingPayment) {
-            return [
-                'payment_id' => $pendingPayment->payment_id,
-                'qr_code' => data_get(
-                    $pendingPayment->raw_response,
-                    'point_of_interaction.transaction_data.qr_code'
-                ),
-                'qr_code_base64' => data_get(
-                    $pendingPayment->raw_response,
-                    'point_of_interaction.transaction_data.qr_code_base64'
-                ),
-            ];
+            $expirationDate = Carbon::parse(
+                data_get($pendingPayment->raw_response, 'date_of_expiration')
+            );
+
+            // Se o PIX não estiver expirado, reutiliza
+            if ($expirationDate->isFuture()) {
+                return [
+                    'payment_id' => $pendingPayment->payment_id,
+                    'qr_code' => data_get(
+                        $pendingPayment->raw_response,
+                        'point_of_interaction.transaction_data.qr_code'
+                    ),
+                    'qr_code_base64' => data_get(
+                        $pendingPayment->raw_response,
+                        'point_of_interaction.transaction_data.qr_code_base64'
+                    ),
+                ];
+            }
+
+            // Se estiver expirado, cancela o pagamento antigo
+            $pendingPayment->update(['status' => 'cancelled']);
         }
 
         $token = config('services.mercadopago.token');
@@ -152,6 +163,7 @@ class PaymentController extends Controller
                 'plan_id' => $plan->id,
             ],
             'notification_url' => config('services.mercadopago.webhook_url'),
+            'date_of_expiration' => now()->addMinutes(30)->toIso8601String(),
         ];
 
         $response = Http::withToken($token)
