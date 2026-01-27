@@ -1,12 +1,12 @@
 import { Button } from "@/components/ui/button";
-import { createSlug, maskMoney } from "@/Utils/mask";
+import { createSlug, maskMoney, maskMoneyDot } from "@/Utils/mask";
 import { useForm } from "@inertiajs/react";
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label";
 import { Edit, Save } from 'lucide-react';
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toastSuccess } from "@/components/app-toast-messages";
 
 export default function EditPlan({ plan }: any) {
@@ -34,6 +34,10 @@ export default function EditPlan({ plan }: any) {
       },
     });
   }
+
+  useEffect(() => {
+    setData('value', maskMoneyDot(data.value));
+  }, [data.value]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

@@ -35,6 +35,7 @@ export default function CreatePlan() {
       },
     });
   }
+  
   useEffect(() => {
     setData('value', maskMoneyDot(data.value));
   }, [data.value]);
