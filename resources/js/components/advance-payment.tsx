@@ -18,7 +18,13 @@ interface Plan {
 }
 
 export function AdvancePayment() {
-    const { plans: plansData } = usePage().props as any;
+    const {
+        plans: plansData,
+        qr_code,
+        qr_code_base64,
+        payment_id,
+        error,
+    } = usePage().props as any;
     const [open, setOpen] = useState(false);
     const [plans, setPlans] = useState<Plan[]>([]);
     const [view, setView] = useState<'plans' | 'payment'>('plans');
@@ -31,6 +37,20 @@ export function AdvancePayment() {
     const [loading, setLoading] = useState(false);
     const [checking, setChecking] = useState(false);
 
+    // Efeito para sincronizar com as props do Inertia
+    useEffect(() => {
+        if (qr_code && qr_code_base64 && payment_id) {
+            setQrCode(qr_code);
+            setQrCodeBase64(qr_code_base64);
+            setPaymentId(payment_id);
+            setView('payment');
+            setOpen(true); // Abre o modal automaticamente
+        } else if (error) {
+            alert('Ocorreu um erro ao gerar o pagamento: ' + error);
+            setLoading(false);
+        }
+    }, [qr_code, qr_code_base64, payment_id, error]);
+
     // Reset state when modal is closed
     useEffect(() => {
         if (!open) {
@@ -42,16 +62,13 @@ export function AdvancePayment() {
                 setPaymentId(null);
                 setCopied(false);
                 setLoading(false);
-            }, 500); // give it a moment for the exit animation
+            }, 500);
         } else {
-            // Fetch plans when modal opens
             setLoading(true);
-            // Using dummy data for now
-
             setPlans(plansData);
             setLoading(false);
         }
-    }, [open]);
+    }, [open, plansData]);
 
     // Poll for payment status
     useEffect(() => {
@@ -66,11 +83,11 @@ export function AdvancePayment() {
                     setOpen(false);
                     router.visit('/'); // or show success message
                 }
-            } catch { }
+            } catch {}
         }, 5000);
 
         return () => {
-            clearInterval(interval)
+            clearInterval(interval);
             setChecking(false);
         };
     }, [paymentId]);
@@ -79,6 +96,7 @@ export function AdvancePayment() {
         setLoading(true);
         router.post(route('payment.select-plan'), {
             plan_id: planId,
+            source: 'pay-in-advance',
         });
     };
 
@@ -116,7 +134,7 @@ export function AdvancePayment() {
     const PaymentView = () => (
         <div>
             <DialogHeader>
-                <DialogTitle>Realize o Pagamento</DialogTitle>
+                <DialogTitle>Realize o Pagamento feito</DialogTitle>
                 <DialogDescription>Para continuar utilizando o sistema, realize o pagamento via Pix.</DialogDescription>
             </DialogHeader>
             <div className="py-4 text-center">

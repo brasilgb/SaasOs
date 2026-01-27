@@ -72,7 +72,7 @@ class PaymentController extends Controller
 
         if ($request->input('source') === 'pay-in-advance') {
             $pix = $this->generatePixData($tenant);
-            return Inertia::render('app/payment/index', $pix);
+            return back()->with($pix);
         }
 
         return redirect()->route('subscription.expired');
