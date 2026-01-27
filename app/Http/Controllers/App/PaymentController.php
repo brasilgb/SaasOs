@@ -153,11 +153,12 @@ class PaymentController extends Controller
             return ['error' => 'invalid_document_number'];
         }
 
-        $expiration = gmdate('Y-m-d\TH:i:s\Z', time() + 1800);
+        $expiration = now()->addMinutes(30)->format('Y-m-d\TH:i:s.vP');
         $payload = [
             'transaction_amount' => (float) $plan->value,
             'description' => 'Renovação de Assinatura - ' . $tenant->name,
             'payment_method_id' => 'pix',
+            'external_reference' => $idempotencyKey,
             'payer' => [
                 'email' => $tenant->email,
                 'first_name' => $tenant->name,
@@ -199,22 +200,133 @@ class PaymentController extends Controller
             ];
         }
 
-        $payment = $response->json();
+                        $payment = $response->json();
 
-        Payment::create([
-            'tenant_id' => $tenant->id,
-            'payment_id' => $payment['id'],
-            'amount' => $plan->value,
-            'status' => 'pending',
-            'idempotency_key' => $idempotencyKey,
-            'raw_response' => $payment,
-        ]);
+                
 
-        return [
-            'payment_id' => $payment['id'],
-            'qr_code' => data_get($payment, 'point_of_interaction.transaction_data.qr_code'),
-            'qr_code_base64' => data_get($payment, 'point_of_interaction.transaction_data.qr_code_base64'),
-        ];
+                        $qrCodeBase64 = data_get($payment, 'point_of_interaction.transaction_data.qr_code_base64');
+
+                
+
+                        // Valida se o QR Code foi realmente retornado na resposta da API
+
+                        if (!$qrCodeBase64) {
+
+                            Log::error('PIX gerado sem qr_code_base64 na resposta da API', [
+
+                                'payment_response' => $payment,
+
+                                'tenant_id' => $tenant->id,
+
+                            ]);
+
+                
+
+                            return [
+
+                                'error' => 'pix_generation_failed',
+
+                                'message' => 'Não foi possível obter o QR Code da operadora. Por favor, tente novamente em alguns instantes.',
+
+                            ];
+
+                        }
+
+                
+
+                        // Verifica se o pagamento foi criado, mas rejeitado imediatamente (ex: alto risco)
+
+                        if (data_get($payment, 'status') === 'rejected') {
+
+                    Log::warning('Pagamento recusado pela operadora (Mercado Pago)', [
+
+                        'payment_id' => data_get($payment, 'id'),
+
+                        'status' => data_get($payment, 'status'),
+
+                        'status_detail' => data_get($payment, 'status_detail'),
+
+                        'tenant_id' => $tenant->id,
+
+                    ]);
+
+        
+
+                    return [
+
+                        'error' => 'payment_rejected',
+
+                        'message' => 'A operadora recusou o pagamento. Verifique os dados ou tente com um valor maior.',
+
+                    ];
+
+                }
+
+        
+
+                        Payment::updateOrCreate(
+
+        
+
+                            [
+
+        
+
+                                'payment_id' => $payment['id'], // Atributo para encontrar o pagamento
+
+        
+
+                            ],
+
+        
+
+                            [
+
+        
+
+                                'tenant_id' => $tenant->id,
+
+        
+
+                                'amount' => $plan->value,
+
+        
+
+                                'status' => $payment['status'], // Atualiza com o status mais recente
+
+        
+
+                                'idempotency_key' => $idempotencyKey,
+
+        
+
+                                'raw_response' => $payment,
+
+        
+
+                            ]
+
+        
+
+                        );
+
+        
+
+                return [
+
+                    'payment_id' => $payment['id'],
+
+                    'qr_code' => data_get($payment, 'point_of_interaction.transaction_data.qr_code'),
+
+                    'qr_code_base64' => data_get(
+
+                        $payment,
+
+                        'point_of_interaction.transaction_data.qr_code_base64'
+
+                    ),
+
+                ];
     }
 
     /* ===============================

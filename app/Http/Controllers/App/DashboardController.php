@@ -45,8 +45,7 @@ class DashboardController extends Controller
         $parts = Part::get();
         $customers = Customer::get();
         $others = Other::first();
-        $plans = Plan::where('value', '>', 0)->get(['id', 'name', 'value']);
-        return Inertia::render('app/dashboard/index', ['plans' => $plans, 'reloadKey' => now()->timestamp, 'orders' => $orders, 'acount' => $acount, 'parts' => $parts, 'customers' => $customers, 'others' => $others]);
+        return Inertia::render('app/dashboard/index', ['reloadKey' => now()->timestamp, 'orders' => $orders, 'acount' => $acount, 'parts' => $parts, 'customers' => $customers, 'others' => $others]);
     }
 
     public function chartEquipments($timerange)
