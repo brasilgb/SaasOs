@@ -29,8 +29,6 @@ export function AdvancePayment() {
         error,
         message,
     } = (pageProps.flash || {}) as any;
-
-    console.log('Flash Props:', pageProps.flash);
     
     const [open, setOpen] = useState(false);
     const [plans, setPlans] = useState<Plan[]>([]);
