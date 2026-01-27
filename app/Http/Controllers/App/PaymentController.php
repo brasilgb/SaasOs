@@ -22,14 +22,12 @@ class PaymentController extends Controller
     {
         $tenant = Auth::user()->tenant;
 
-        // 1. Não tem plano → força seleção
         if (!$tenant->plan) {
             return $this->renderPlanSelection();
         }
 
         $pix = $this->generatePixData($tenant);
 
-        // 2. Caso o plano seja inválido
         if (!empty($pix['requires_plan'])) {
             return $this->renderPlanSelection();
         }
@@ -41,8 +39,7 @@ class PaymentController extends Controller
     {
         return Inertia::render('app/payment/index', [
             'requires_plan' => true,
-            'plans' => Plan::where('value', '>', 0)
-                ->get(['id', 'name', 'value']),
+            'plans' => Plan::where('value', '>', 0)->get(['id', 'name', 'value']),
         ]);
     }
 
@@ -50,8 +47,7 @@ class PaymentController extends Controller
     {
         return Inertia::render('auth/ExpiredSubscription', [
             'requires_plan' => true,
-            'plans' => Plan::where('value', '>', 0)
-                ->get(['id', 'name', 'value'])
+            'plans' => Plan::where('value', '>', 0)->get(['id', 'name', 'value']),
         ]);
     }
 
@@ -72,8 +68,9 @@ class PaymentController extends Controller
         ]);
 
         if ($request->input('source') === 'pay-in-advance') {
-            $pix = $this->generatePixData($tenant);
-            return back()->with($pix);
+            return back()->with(
+                $this->generatePixData($tenant)
+            );
         }
 
         return redirect()->route('subscription.expired');
@@ -86,10 +83,12 @@ class PaymentController extends Controller
     {
         $tenant = Auth::user()->tenant;
 
+        $payment = Payment::where('payment_id', $paymentId)
+            ->where('tenant_id', $tenant->id)
+            ->first();
+
         return response()->json([
-            'paid' =>
-            $tenant->last_payment_id === $paymentId &&
-                $tenant->subscription_status === 'active',
+            'paid' => $payment?->status === 'approved',
         ]);
     }
 
@@ -104,9 +103,10 @@ class PaymentController extends Controller
             return ['requires_plan' => true];
         }
 
-        $idempotencyKey = 'pix_' . $tenant->id . '_' . $plan->id . '_' . now()->format('YmdHis');
+        // 🔒 Idempotência REAL (determinística)
+        $idempotencyKey = 'pix_' . $tenant->id . '_' . $plan->id . '_subscription';
 
-        // Reutiliza Pix pendente SOMENTE do mesmo valor e se não estiver expirado
+        // Reutiliza PIX pendente válido
         $pendingPayment = Payment::where('tenant_id', $tenant->id)
             ->where('status', 'pending')
             ->where('amount', $plan->value)
@@ -118,8 +118,7 @@ class PaymentController extends Controller
                 data_get($pendingPayment->raw_response, 'date_of_expiration')
             );
 
-            // Se o PIX não estiver expirado, reutiliza
-            if ($expirationDate->isFuture()) {
+            if ($expirationDate && $expirationDate->isFuture()) {
                 return [
                     'payment_id' => $pendingPayment->payment_id,
                     'qr_code' => data_get(
@@ -133,7 +132,10 @@ class PaymentController extends Controller
                 ];
             }
 
-            // Se estiver expirado, cancela o pagamento antigo
+            Log::info('PIX expirado cancelado', [
+                'payment_id' => $pendingPayment->payment_id,
+            ]);
+
             $pendingPayment->update(['status' => 'cancelled']);
         }
 
@@ -141,10 +143,11 @@ class PaymentController extends Controller
 
         if (!$token) {
             Log::critical('Token Mercado Pago não configurado');
-            return [
-                'error' => 'payment_unavailable',
-            ];
+            return ['error' => 'payment_unavailable'];
         }
+
+        $cnpj = preg_replace('/\D/', '', $tenant->cnpj);
+        $docType = strlen($cnpj) === 14 ? 'CNPJ' : 'CPF';
 
         $payload = [
             'transaction_amount' => (float) $plan->value,
@@ -154,8 +157,8 @@ class PaymentController extends Controller
                 'email' => $tenant->email,
                 'first_name' => $tenant->name,
                 'identification' => [
-                    'type' => 'CNPJ',
-                    'number' => preg_replace('/\D/', '', $tenant->cnpj),
+                    'type' => $docType,
+                    'number' => $cnpj,
                 ],
             ],
             'metadata' => [
@@ -178,9 +181,7 @@ class PaymentController extends Controller
                 'response' => $response->json(),
             ]);
 
-            return [
-                'error' => 'pix_generation_failed',
-            ];
+            return ['error' => 'pix_generation_failed'];
         }
 
         $payment = $response->json();
@@ -200,15 +201,21 @@ class PaymentController extends Controller
             'qr_code_base64' => data_get($payment, 'point_of_interaction.transaction_data.qr_code_base64'),
         ];
     }
+
     /* ===============================
        WEBHOOK MERCADO PAGO
     ================================ */
     public function handleWebhook(Request $request)
     {
+        // 🔐 Aceita apenas eventos de pagamento
+        if ($request->input('type') !== 'payment') {
+            return response()->json(['status' => 'ignored'], 200);
+        }
+
         $paymentId = $request->input('data.id') ?? $request->input('id');
 
         if (!$paymentId) {
-            Log::warning('Webhook recebido sem payment_id');
+            Log::warning('Webhook sem payment_id');
             return response()->json(['status' => 'ignored'], 200);
         }
 
@@ -224,8 +231,17 @@ class PaymentController extends Controller
 
         $payment = $response->json();
 
+        $localPayment = Payment::where('payment_id', $paymentId)->first();
+
+        if ($localPayment) {
+            $localPayment->update([
+                'status' => $payment['status'],
+                'raw_response' => $payment,
+            ]);
+        }
+
         if ($payment['status'] !== 'approved') {
-            return response()->json(['status' => 'pending'], 200);
+            return response()->json(['status' => 'not_approved'], 200);
         }
 
         $tenantId = data_get($payment, 'metadata.tenant_id');
@@ -242,7 +258,6 @@ class PaymentController extends Controller
             return response()->json(['status' => 'not_found'], 200);
         }
 
-        // Idempotência
         if ($tenant->last_payment_id === $paymentId) {
             return response()->json(['status' => 'already_processed'], 200);
         }
@@ -258,17 +273,13 @@ class PaymentController extends Controller
                 'expected' => $plan?->value,
                 'paid' => $payment['transaction_amount'],
             ]);
+
             return response()->json(['status' => 'invalid_amount'], 200);
         }
 
         $baseDate = $tenant->expires_at && $tenant->expires_at->isFuture()
             ? $tenant->expires_at
             : now();
-
-        Payment::where('payment_id', $paymentId)->update([
-            'status' => 'approved',
-            'raw_response' => $payment,
-        ]);
 
         $tenant->update([
             'payment' => true,

@@ -13,7 +13,7 @@ class CheckSubscription
     {
         $user = Auth::user();
 
-        // Middleware deve rodar apenas com usuário autenticado
+        // Deve rodar apenas com usuário autenticado
         if (!$user) {
             return redirect()->route('login');
         }
@@ -30,6 +30,14 @@ class CheckSubscription
             return redirect()->route('login');
         }
 
+        // 🔓 Rotas técnicas nunca devem ser bloqueadas
+        if (
+            $request->routeIs('payment.status') ||
+            $request->is('webhook/*')
+        ) {
+            return $next($request);
+        }
+
         // 1. BLOQUEIO ADMINISTRATIVO
         if ((int) $tenant->status === 0) {
             Auth::logout();
@@ -42,17 +50,16 @@ class CheckSubscription
         }
 
         // 2. BLOQUEIO POR ASSINATURA
-        $isExpired = $tenant->expires_at && now()->gt($tenant->expires_at);
+        $isExpired = !is_null($tenant->expires_at) && now()->greaterThan($tenant->expires_at);
         $isInactive = $tenant->subscription_status !== 'active';
 
         if ($isExpired || $isInactive) {
 
-            // Evita loop infinito
+            // Rotas permitidas durante o bloqueio
             if (
                 !$request->routeIs('subscription.expired') &&
-                !$request->routeIs('logout') &&
-                !$request->is('webhook/*') &&
-                !$request->expectsJson()
+                !$request->routeIs('subscription.select-plan') &&
+                !$request->routeIs('logout')
             ) {
                 return redirect()->route('subscription.expired');
             }

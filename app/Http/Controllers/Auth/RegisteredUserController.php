@@ -54,7 +54,7 @@ class RegisteredUserController extends Controller
         // 🔐 Regras extras apenas para usuários normais
         if (!$isSuperUserRegistration) {
             $rules['company'] = 'required|string|max:255|unique:tenants,company';
-            $rules['cnpj'] = 'required|string|cnpj|unique:tenants,cnpj';
+            $rules['cnpj'] = 'required|string|unique:tenants,cnpj';
             $rules['phone'] = 'required|string|max:255';
             $rules['whatsapp'] = 'required|string|max:255';
         }
@@ -128,7 +128,7 @@ class RegisteredUserController extends Controller
                 ]);
                 $user->tenant_id = $tenant->id;
                 $user->save();
-                Mail::to($user->email)->send(new UserRegisteredMail($user));
+                // Mail::to($user->email)->send(new UserRegisteredMail($user));
             });
 
             event(new Registered($user));
