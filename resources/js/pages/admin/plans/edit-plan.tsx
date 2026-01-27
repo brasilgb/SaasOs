@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { createSlug } from "@/Utils/mask";
+import { createSlug, maskMoney } from "@/Utils/mask";
 import { useForm } from "@inertiajs/react";
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label";
@@ -15,7 +15,8 @@ export default function EditPlan({ plan }: any) {
   const { data, setData, patch, progress, processing, reset, errors } = useForm({
     name: plan.name,
     slug: plan.slug,
-    description: plan.description
+    description: plan.description,
+    value: plan.value
   });
 
   const handleSlug = (slug: any) => {
@@ -76,6 +77,17 @@ export default function EditPlan({ plan }: any) {
               onChange={(e) => setData('description', e.target.value)}
             />
             {errors.description && <div className="text-red-500 text-sm">{errors.description}</div>}
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="value">Valor</Label>
+            <Input
+              type="text"
+              id="value"
+              value={maskMoney(data.value)}
+              onChange={(e) => setData('value', e.target.value)}
+            />
+            {errors.value && <div className="text-red-500 text-sm">{errors.value}</div>}
           </div>
 
           <DialogFooter className="gap-2">
