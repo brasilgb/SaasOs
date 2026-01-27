@@ -107,9 +107,8 @@ class PaymentController extends Controller
         $idempotencyKey = 'pix_' . $tenant->id . '_' . $plan->id . '_subscription';
 
         // Reutiliza PIX pendente válido
-        $pendingPayment = Payment::where('tenant_id', $tenant->id)
+        $pendingPayment = Payment::where('idempotency_key', $idempotencyKey)
             ->where('status', 'pending')
-            ->where('amount', $plan->value)
             ->latest()
             ->first();
 
@@ -149,6 +148,12 @@ class PaymentController extends Controller
         $cnpj = preg_replace('/\D/', '', $tenant->cnpj);
         $docType = strlen($cnpj) === 14 ? 'CNPJ' : 'CPF';
 
+        if (!in_array(strlen($cnpj), [11, 14])) { // Verifica se o CNPJ/CPF tem 11 (CPF) ou 14 (CNPJ) dígitos
+            Log::error('CNPJ/CPF inválido para geração de Pix.', ['tenant_id' => $tenant->id, 'cnpj_raw' => $tenant->cnpj, 'cnpj_cleaned' => $cnpj]);
+            return ['error' => 'invalid_document_number'];
+        }
+
+        $expiration = gmdate('Y-m-d\TH:i:s\Z', time() + 1800);
         $payload = [
             'transaction_amount' => (float) $plan->value,
             'description' => 'Renovação de Assinatura - ' . $tenant->name,
@@ -166,7 +171,7 @@ class PaymentController extends Controller
                 'plan_id' => $plan->id,
             ],
             'notification_url' => config('services.mercadopago.webhook_url'),
-            'date_of_expiration' => now()->addMinutes(30)->toIso8601String(),
+            'date_of_expiration' => $expiration,
         ];
 
         $response = Http::withToken($token)
@@ -177,11 +182,21 @@ class PaymentController extends Controller
             ->post('https://api.mercadopago.com/v1/payments', $payload);
 
         if (!$response->ok()) {
+            $errorData = $response->json();
             Log::error('Erro ao gerar Pix Mercado Pago', [
-                'response' => $response->json(),
+                'status' => $response->status(),
+                'response' => $errorData,
+                'raw_response' => $response->body(),
             ]);
 
-            return ['error' => 'pix_generation_failed'];
+            return [
+                'error' => 'pix_generation_failed',
+                'message' => data_get(
+                    $errorData,
+                    'message',
+                    'A operadora recusou o pagamento. Verifique seus dados ou tente mais tarde.'
+                ),
+            ];
         }
 
         $payment = $response->json();
