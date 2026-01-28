@@ -16,19 +16,22 @@ class Tenant extends Model
 
     protected $guarded = ['_method'];
 
+    protected $casts = [
+        'expires_at' => 'datetime',
+    ];
+
     public function plan(): BelongsTo
     {
-        return $this->belongsTo(Plan::class, 'plan');
+        return $this->belongsTo(Plan::class, 'plan_id');
     }
-    
+
     public function branches(): HasMany
     {
         return $this->hasMany(Branch::class);
     }
-    
+
     public function user(): HasOne
     {
         return $this->hasOne(User::class)->whereNull('roles');
     }
-    
 }

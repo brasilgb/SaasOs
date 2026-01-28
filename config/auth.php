@@ -112,4 +112,15 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Super Admin Role
+    |--------------------------------------------------------------------------
+    |
+    | This value defines the role ID for a super administrator.
+    | Users with this role will bypass subscription checks.
+    |
+    */
+    'super_admin_role' => env('SUPER_ADMIN_ROLE', 99),
+
 ];

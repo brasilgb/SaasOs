@@ -13,12 +13,11 @@ class CheckSubscription
     {
         $user = Auth::user();
 
-        // Deve rodar apenas com usuário autenticado
         if (!$user) {
             return redirect()->route('login');
         }
 
-        // Super Admin (Root)
+        // ROOT nunca bloqueia
         if ((int) $user->roles === 99) {
             return $next($request);
         }
@@ -30,41 +29,53 @@ class CheckSubscription
             return redirect()->route('login');
         }
 
-        // 🔓 Rotas técnicas nunca devem ser bloqueadas
+        /*
+        |--------------------------------------------------------------------------
+        | Rotas liberadas SEMPRE
+        |--------------------------------------------------------------------------
+        */
         if (
             $request->routeIs('payment.status') ||
+            $request->routeIs('payment.select-plan') ||
+            $request->routeIs('subscription.expired') ||
+            $request->routeIs('webhook.mercadopago') ||
+            $request->routeIs('logout') ||
             $request->is('webhook/*')
         ) {
             return $next($request);
         }
 
-        // 1. BLOQUEIO ADMINISTRATIVO
+        /*
+        |--------------------------------------------------------------------------
+        | Bloqueio administrativo
+        |--------------------------------------------------------------------------
+        */
         if ((int) $tenant->status === 0) {
             Auth::logout();
 
             return redirect()
                 ->route('login')
                 ->withErrors([
-                    'email' => 'Esta conta foi suspensa. Entre em contato com o suporte.',
+                    'email' => 'Conta suspensa. Entre em contato com o suporte.',
                 ]);
         }
 
-        // 2. BLOQUEIO POR ASSINATURA
-        $isExpired = !is_null($tenant->expires_at) && now()->greaterThan($tenant->expires_at);
-        $isInactive = $tenant->subscription_status !== 'active';
+        /*
+        |--------------------------------------------------------------------------
+        | EXPIRAÇÃO — ÚNICA REGRA QUE BLOQUEIA
+        |--------------------------------------------------------------------------
+        */
 
-        if ($isExpired || $isInactive) {
-
-            // Rotas permitidas durante o bloqueio
-            if (
-                !$request->routeIs('subscription.expired') &&
-                !$request->routeIs('subscription.select-plan') &&
-                !$request->routeIs('logout')
-            ) {
-                return redirect()->route('subscription.expired');
-            }
+        // expires_at null = trial / lifetime → OK
+        if ($tenant->expires_at && $tenant->expires_at->isPast()) {
+            return redirect()->route('subscription.expired');
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Acesso liberado
+        |--------------------------------------------------------------------------
+        */
         return $next($request);
     }
 }

@@ -8,7 +8,6 @@ type ExpiredSubscriptionProps = {
         name: string;
         value: number;
     }[];
-
     qr_code?: string;
     qr_code_base64?: string;
     payment_id?: string | number;
@@ -24,12 +23,17 @@ export default function ExpiredSubscription(props: ExpiredSubscriptionProps) {
     } = props;
 
     const [copied, setCopied] = useState(false);
-    const [checking] = useState(!!payment_id);
+    const [checking, setChecking] = useState(!!payment_id);
+    const [attempts, setAttempts] = useState(0);
+
+    const MAX_ATTEMPTS = 60; // ~5 minutos
 
     const handleCopyPix = () => {
         if (!qr_code) return;
+
         navigator.clipboard.writeText(qr_code);
         setCopied(true);
+
         setTimeout(() => setCopied(false), 2500);
     };
 
@@ -38,30 +42,42 @@ export default function ExpiredSubscription(props: ExpiredSubscriptionProps) {
             plan_id: planId,
         });
     };
-    
+
     useEffect(() => {
         if (!payment_id) return;
 
         const interval = setInterval(async () => {
             try {
+                setAttempts((prev) => prev + 1);
+
                 const response = await fetch(
-                    route('payment.status', payment_id)
+                    route('payment.status', payment_id),
+                    { credentials: 'same-origin' }
                 );
 
                 const data = await response.json();
-                
+
                 if (data.paid) {
                     clearInterval(interval);
                     router.visit('/');
                 }
-            } catch {}
+
+                if (attempts >= MAX_ATTEMPTS) {
+                    clearInterval(interval);
+                    setChecking(false);
+                }
+            } catch (error) {
+                console.error('Erro ao verificar pagamento:', error);
+                clearInterval(interval);
+                setChecking(false);
+            }
         }, 5000);
 
         return () => clearInterval(interval);
-    }, [payment_id]);
-    
+    }, [payment_id, attempts]);
+
     /* =========================
-    SELEÇÃO DE PLANO
+       SELEÇÃO DE PLANO
     ========================== */
     if (requires_plan) {
         return (
@@ -72,12 +88,12 @@ export default function ExpiredSubscription(props: ExpiredSubscriptionProps) {
                     <h2 className="text-2xl font-bold text-center mb-6">
                         Escolha um plano para continuar
                     </h2>
- 
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {plans.map((plan: any) => (
+                        {plans.map((plan) => (
                             <div
-                            key={plan.id}
-                            className="border border-gray-200 dark:border-zinc-700 rounded-lg p-6 flex flex-col justify-between"
+                                key={plan.id}
+                                className="border border-gray-200 dark:border-zinc-700 rounded-lg p-6 flex flex-col justify-between"
                             >
                                 <div>
                                     <h3 className="text-lg font-semibold">
@@ -91,7 +107,7 @@ export default function ExpiredSubscription(props: ExpiredSubscriptionProps) {
                                 <button
                                     onClick={() => handleSelectPlan(plan.id)}
                                     className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded transition"
-                                    >
+                                >
                                     Selecionar plano
                                 </button>
                             </div>
@@ -104,7 +120,7 @@ export default function ExpiredSubscription(props: ExpiredSubscriptionProps) {
                             href={route('logout')}
                             as="button"
                             className="text-sm text-gray-500 dark:text-gray-400 hover:underline"
-                            >
+                        >
                             Sair do sistema
                         </Link>
                     </div>
@@ -114,7 +130,7 @@ export default function ExpiredSubscription(props: ExpiredSubscriptionProps) {
     }
 
     /* =========================
-    TELA PIX
+       TELA PIX
     ========================== */
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-zinc-900">
@@ -126,8 +142,7 @@ export default function ExpiredSubscription(props: ExpiredSubscriptionProps) {
                 </h2>
 
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                    Para continuar utilizando o sistema, realize o pagamento via
-                    Pix.
+                    Para continuar utilizando o sistema, realize o pagamento via Pix.
                 </p>
 
                 <div className="flex justify-center mb-6 border-2 border-dashed border-gray-300 dark:border-zinc-600 rounded p-4">
@@ -147,12 +162,11 @@ export default function ExpiredSubscription(props: ExpiredSubscriptionProps) {
                 <button
                     onClick={handleCopyPix}
                     disabled={!qr_code}
-                    className={`w-full py-3 rounded text-white transition
-                        ${
-                            copied
-                                ? 'bg-green-600'
-                                : 'bg-blue-600 hover:bg-blue-700'
-                        }`}
+                    className={`w-full py-3 rounded text-white transition ${
+                        copied
+                            ? 'bg-green-600'
+                            : 'bg-blue-600 hover:bg-blue-700 disabled:opacity-50'
+                    }`}
                 >
                     {copied ? 'Código Pix copiado!' : 'Copiar código Pix'}
                 </button>
@@ -161,9 +175,13 @@ export default function ExpiredSubscription(props: ExpiredSubscriptionProps) {
                     A liberação é automática após a confirmação do pagamento.
                 </p>
 
-                {checking && (
+                {checking ? (
                     <p className="text-xs text-blue-600 mt-3">
                         Verificando pagamento automaticamente...
+                    </p>
+                ) : (
+                    <p className="text-xs text-gray-500 mt-3">
+                        Caso já tenha pago, aguarde alguns instantes ou atualize a página.
                     </p>
                 )}
 

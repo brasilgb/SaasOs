@@ -22,7 +22,7 @@ class PaymentController extends Controller
     {
         $tenant = Auth::user()->tenant;
 
-        if (!$tenant->plan) {
+        if (!$tenant->plan_id) {
             return $this->renderPlanSelection();
         }
 
@@ -64,7 +64,8 @@ class PaymentController extends Controller
         $tenant = Auth::user()->tenant;
 
         $tenant->update([
-            'plan' => $data['plan_id'],
+            'plan_id' => $data['plan_id'],
+            'subscription_status' => 'pending',
         ]);
 
         if ($request->input('source') === 'pay-in-advance') {
@@ -89,6 +90,7 @@ class PaymentController extends Controller
 
         return response()->json([
             'paid' => $payment?->status === 'approved',
+            'status' => $payment?->status,
         ]);
     }
 
@@ -97,45 +99,33 @@ class PaymentController extends Controller
     ================================ */
     private function generatePixData(Tenant $tenant): array
     {
-        $plan = Plan::find($tenant->plan);
+        $plan = Plan::find($tenant->plan_id);
 
         if (!$plan || $plan->value <= 0) {
             return ['requires_plan' => true];
         }
 
-        // 🔒 Idempotência REAL (determinística)
         $idempotencyKey = 'pix_' . $tenant->id . '_' . $plan->id . '_subscription';
 
-        // Reutiliza PIX pendente válido
+        // Reutiliza Pix pendente e válido
         $pendingPayment = Payment::where('idempotency_key', $idempotencyKey)
             ->where('status', 'pending')
+            ->where('expires_at', '>', now())
             ->latest()
             ->first();
 
         if ($pendingPayment) {
-            $expirationDate = Carbon::parse(
-                data_get($pendingPayment->raw_response, 'date_of_expiration')
-            );
-
-            if ($expirationDate && $expirationDate->isFuture()) {
-                return [
-                    'payment_id' => $pendingPayment->payment_id,
-                    'qr_code' => data_get(
-                        $pendingPayment->raw_response,
-                        'point_of_interaction.transaction_data.qr_code'
-                    ),
-                    'qr_code_base64' => data_get(
-                        $pendingPayment->raw_response,
-                        'point_of_interaction.transaction_data.qr_code_base64'
-                    ),
-                ];
-            }
-
-            Log::info('PIX expirado cancelado', [
+            return [
                 'payment_id' => $pendingPayment->payment_id,
-            ]);
-
-            $pendingPayment->update(['status' => 'cancelled']);
+                'qr_code' => data_get(
+                    $pendingPayment->raw_response,
+                    'point_of_interaction.transaction_data.qr_code'
+                ),
+                'qr_code_base64' => data_get(
+                    $pendingPayment->raw_response,
+                    'point_of_interaction.transaction_data.qr_code_base64'
+                ),
+            ];
         }
 
         $token = config('services.mercadopago.token');
@@ -145,15 +135,20 @@ class PaymentController extends Controller
             return ['error' => 'payment_unavailable'];
         }
 
-        $cnpj = preg_replace('/\D/', '', $tenant->cnpj);
-        $docType = strlen($cnpj) === 14 ? 'CNPJ' : 'CPF';
+        $document = preg_replace('/\D/', '', $tenant->cnpj);
+        $docType = strlen($document) === 14 ? 'CNPJ' : 'CPF';
 
-        if (!in_array(strlen($cnpj), [11, 14])) { // Verifica se o CNPJ/CPF tem 11 (CPF) ou 14 (CNPJ) dígitos
-            Log::error('CNPJ/CPF inválido para geração de Pix.', ['tenant_id' => $tenant->id, 'cnpj_raw' => $tenant->cnpj, 'cnpj_cleaned' => $cnpj]);
+        if (!in_array(strlen($document), [11, 14])) {
+            Log::error('Documento inválido', [
+                'tenant_id' => $tenant->id,
+                'document' => $tenant->cnpj,
+            ]);
+
             return ['error' => 'invalid_document_number'];
         }
 
-        $expiration = now()->addMinutes(30)->format('Y-m-d\TH:i:s.vP');
+        $expiration = now()->addMinutes(30);
+
         $payload = [
             'transaction_amount' => (float) $plan->value,
             'description' => 'Renovação de Assinatura - ' . $tenant->name,
@@ -164,7 +159,7 @@ class PaymentController extends Controller
                 'first_name' => $tenant->name,
                 'identification' => [
                     'type' => $docType,
-                    'number' => $cnpj,
+                    'number' => $document,
                 ],
             ],
             'metadata' => [
@@ -172,7 +167,7 @@ class PaymentController extends Controller
                 'plan_id' => $plan->id,
             ],
             'notification_url' => config('services.mercadopago.webhook_url'),
-            'date_of_expiration' => $expiration,
+            'date_of_expiration' => $expiration->format('Y-m-d\TH:i:s.vP'),
         ];
 
         $response = Http::withToken($token)
@@ -183,147 +178,40 @@ class PaymentController extends Controller
             ->post('https://api.mercadopago.com/v1/payments', $payload);
 
         if (!$response->ok()) {
-            $errorData = $response->json();
             Log::error('Erro ao gerar Pix Mercado Pago', [
                 'status' => $response->status(),
-                'response' => $errorData,
-                'raw_response' => $response->body(),
+                'response' => $response->json(),
             ]);
 
-            return [
-                'error' => 'pix_generation_failed',
-                'message' => data_get(
-                    $errorData,
-                    'message',
-                    'A operadora recusou o pagamento. Verifique seus dados ou tente mais tarde.'
-                ),
-            ];
+            return ['error' => 'pix_generation_failed'];
         }
 
         $payment = $response->json();
 
-
-
-        $qrCodeBase64 = data_get($payment, 'point_of_interaction.transaction_data.qr_code_base64');
-
-
-
-        // Valida se o QR Code foi realmente retornado na resposta da API
-
-        if (!$qrCodeBase64) {
-
-            Log::error('PIX gerado sem qr_code_base64 na resposta da API', [
-
-                'payment_response' => $payment,
-
-                'tenant_id' => $tenant->id,
-
-            ]);
-
-
-
-            return [
-
-                'error' => 'pix_generation_failed',
-
-                'message' => 'Não foi possível obter o QR Code da operadora. Por favor, tente novamente em alguns instantes.',
-
-            ];
+        if (!data_get($payment, 'point_of_interaction.transaction_data.qr_code_base64')) {
+            Log::error('Pix sem QR Code', ['payment' => $payment]);
+            return ['error' => 'pix_generation_failed'];
         }
 
-
-
-        // Verifica se o pagamento foi criado, mas rejeitado imediatamente (ex: alto risco)
-
-        if (data_get($payment, 'status') === 'rejected') {
-
-            Log::warning('Pagamento recusado pela operadora (Mercado Pago)', [
-
-                'payment_id' => data_get($payment, 'id'),
-
-                'status' => data_get($payment, 'status'),
-
-                'status_detail' => data_get($payment, 'status_detail'),
-
-                'tenant_id' => $tenant->id,
-
-            ]);
-
-
-
-            return [
-
-                'error' => 'payment_rejected',
-
-                'message' => 'A operadora recusou o pagamento. Verifique os dados ou tente com um valor maior.',
-
-            ];
-        }
-
-
-
-                Payment::updateOrCreate(
-
-
-
-                    [
-
-
-
-                        'payment_id' => (string) $payment['id'], // Atributo para encontrar o pagamento
-
-
-
-                    ],
-
-
-
+        Payment::updateOrCreate(
+            ['idempotency_key' => $idempotencyKey],
             [
-
-
-
+                'payment_id' => (string) $payment['id'],
                 'tenant_id' => $tenant->id,
-
-
-
                 'amount' => $plan->value,
-
-
-
-                'status' => $payment['status'], // Atualiza com o status mais recente
-
-
-
-                'idempotency_key' => $idempotencyKey,
-
-
-
+                'status' => $payment['status'],
+                'expires_at' => Carbon::parse($payment['date_of_expiration']),
                 'raw_response' => $payment,
-
-
-
             ]
-
-
-
         );
 
-
-
         return [
-
             'payment_id' => $payment['id'],
-
             'qr_code' => data_get($payment, 'point_of_interaction.transaction_data.qr_code'),
-
             'qr_code_base64' => data_get(
-
                 $payment,
-
                 'point_of_interaction.transaction_data.qr_code_base64'
-
             ),
-
         ];
     }
 
@@ -332,7 +220,6 @@ class PaymentController extends Controller
     ================================ */
     public function handleWebhook(Request $request)
     {
-        // 🔐 Aceita apenas eventos de pagamento
         if ($request->input('type') !== 'payment') {
             return response()->json(['status' => 'ignored'], 200);
         }
@@ -340,7 +227,6 @@ class PaymentController extends Controller
         $paymentId = $request->input('data.id') ?? $request->input('id');
 
         if (!$paymentId) {
-            Log::warning('Webhook sem payment_id');
             return response()->json(['status' => 'ignored'], 200);
         }
 
@@ -370,30 +256,19 @@ class PaymentController extends Controller
         }
 
         $tenantId = data_get($payment, 'metadata.tenant_id');
-
-        if (!$tenantId) {
-            Log::error('Pagamento aprovado sem tenant_id', ['payment_id' => $paymentId]);
-            return response()->json(['status' => 'invalid'], 200);
-        }
-
         $tenant = Tenant::find($tenantId);
 
-        if (!$tenant) {
-            Log::error('Tenant não encontrado', ['tenant_id' => $tenantId]);
-            return response()->json(['status' => 'not_found'], 200);
-        }
-
-        if ($tenant->last_payment_id === $payment['id']) {
+        if (!$tenant || $tenant->last_payment_id === $payment['id']) {
             return response()->json(['status' => 'already_processed'], 200);
         }
 
-        $plan = Plan::find($tenant->plan);
+        $plan = Plan::find($tenant->plan_id);
 
         if (
             !$plan ||
             (float) $payment['transaction_amount'] !== (float) $plan->value
         ) {
-            Log::warning('Valor pago divergente', [
+            Log::warning('Valor divergente', [
                 'tenant_id' => $tenant->id,
                 'expected' => $plan?->value,
                 'paid' => $payment['transaction_amount'],
@@ -407,14 +282,13 @@ class PaymentController extends Controller
             : now();
 
         $tenant->update([
-            'payment' => true,
-            'status' => 1,
             'subscription_status' => 'active',
+            'status' => 1,
             'last_payment_id' => $payment['id'],
             'expires_at' => $baseDate->addDays(30),
         ]);
 
-        Log::info('Pagamento aprovado e assinatura renovada', [
+        Log::info('Assinatura renovada', [
             'tenant_id' => $tenant->id,
             'payment_id' => $paymentId,
         ]);

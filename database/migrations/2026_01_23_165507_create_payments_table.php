@@ -17,8 +17,9 @@ return new class extends Migration
             $table->string('gateway')->default('mercadopago');
             $table->string('payment_id')->unique();
             $table->decimal('amount', 10, 2);
-            $table->string('status'); // pending | approved | cancelled | failed
-            $table->string('idempotency_key'); // pending | approved | cancelled | failed
+            $table->string('status');
+            $table->string('idempotency_key')->unique();
+            $table->timestamp('expires_at')->nullable();
             $table->json('raw_response')->nullable();
             $table->timestamps();
         });

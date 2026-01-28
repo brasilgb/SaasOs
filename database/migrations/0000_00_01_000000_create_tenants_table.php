@@ -10,10 +10,10 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    { 
+    {
         Schema::create('tenants', function (Blueprint $table) {
             $table->id();
-            $table->tinyInteger('plan');
+            $table->foreignId('plan_id')->nullable()->constrained('plans');
             $table->string('name');
             $table->string('company')->nullable();
             $table->string('cnpj');
@@ -29,7 +29,6 @@ return new class extends Migration
             $table->string('number', 50)->nullable();
             $table->integer('status');
             $table->string('subscription_status')->default('active');
-            $table->boolean('payment')->nullable();
             $table->text('observations')->nullable();
             $table->timestamp('expires_at')->nullable();
             $table->string('last_payment_id')->nullable();
