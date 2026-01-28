@@ -200,133 +200,131 @@ class PaymentController extends Controller
             ];
         }
 
-                        $payment = $response->json();
+        $payment = $response->json();
 
-                
 
-                        $qrCodeBase64 = data_get($payment, 'point_of_interaction.transaction_data.qr_code_base64');
 
-                
+        $qrCodeBase64 = data_get($payment, 'point_of_interaction.transaction_data.qr_code_base64');
 
-                        // Valida se o QR Code foi realmente retornado na resposta da API
 
-                        if (!$qrCodeBase64) {
 
-                            Log::error('PIX gerado sem qr_code_base64 na resposta da API', [
+        // Valida se o QR Code foi realmente retornado na resposta da API
 
-                                'payment_response' => $payment,
+        if (!$qrCodeBase64) {
 
-                                'tenant_id' => $tenant->id,
+            Log::error('PIX gerado sem qr_code_base64 na resposta da API', [
 
-                            ]);
+                'payment_response' => $payment,
 
-                
+                'tenant_id' => $tenant->id,
 
-                            return [
+            ]);
 
-                                'error' => 'pix_generation_failed',
 
-                                'message' => 'Não foi possível obter o QR Code da operadora. Por favor, tente novamente em alguns instantes.',
 
-                            ];
+            return [
 
-                        }
+                'error' => 'pix_generation_failed',
 
-                
+                'message' => 'Não foi possível obter o QR Code da operadora. Por favor, tente novamente em alguns instantes.',
 
-                        // Verifica se o pagamento foi criado, mas rejeitado imediatamente (ex: alto risco)
+            ];
+        }
 
-                        if (data_get($payment, 'status') === 'rejected') {
 
-                    Log::warning('Pagamento recusado pela operadora (Mercado Pago)', [
 
-                        'payment_id' => data_get($payment, 'id'),
+        // Verifica se o pagamento foi criado, mas rejeitado imediatamente (ex: alto risco)
 
-                        'status' => data_get($payment, 'status'),
+        if (data_get($payment, 'status') === 'rejected') {
 
-                        'status_detail' => data_get($payment, 'status_detail'),
+            Log::warning('Pagamento recusado pela operadora (Mercado Pago)', [
 
-                        'tenant_id' => $tenant->id,
+                'payment_id' => data_get($payment, 'id'),
 
-                    ]);
+                'status' => data_get($payment, 'status'),
 
-        
+                'status_detail' => data_get($payment, 'status_detail'),
 
-                    return [
+                'tenant_id' => $tenant->id,
 
-                        'error' => 'payment_rejected',
+            ]);
 
-                        'message' => 'A operadora recusou o pagamento. Verifique os dados ou tente com um valor maior.',
 
-                    ];
 
-                }
+            return [
 
-        
+                'error' => 'payment_rejected',
 
-                        Payment::updateOrCreate(
+                'message' => 'A operadora recusou o pagamento. Verifique os dados ou tente com um valor maior.',
 
-        
+            ];
+        }
 
-                            [
 
-        
 
-                                'payment_id' => $payment['id'], // Atributo para encontrar o pagamento
+                Payment::updateOrCreate(
 
-        
 
-                            ],
 
-        
+                    [
 
-                            [
 
-        
 
-                                'tenant_id' => $tenant->id,
+                        'payment_id' => (string) $payment['id'], // Atributo para encontrar o pagamento
 
-        
 
-                                'amount' => $plan->value,
 
-        
+                    ],
 
-                                'status' => $payment['status'], // Atualiza com o status mais recente
 
-        
 
-                                'idempotency_key' => $idempotencyKey,
+            [
 
-        
 
-                                'raw_response' => $payment,
 
-        
+                'tenant_id' => $tenant->id,
 
-                            ]
 
-        
 
-                        );
+                'amount' => $plan->value,
 
-        
 
-                return [
 
-                    'payment_id' => $payment['id'],
+                'status' => $payment['status'], // Atualiza com o status mais recente
 
-                    'qr_code' => data_get($payment, 'point_of_interaction.transaction_data.qr_code'),
 
-                    'qr_code_base64' => data_get(
 
-                        $payment,
+                'idempotency_key' => $idempotencyKey,
 
-                        'point_of_interaction.transaction_data.qr_code_base64'
 
-                    ),
 
-                ];
+                'raw_response' => $payment,
+
+
+
+            ]
+
+
+
+        );
+
+
+
+        return [
+
+            'payment_id' => $payment['id'],
+
+            'qr_code' => data_get($payment, 'point_of_interaction.transaction_data.qr_code'),
+
+            'qr_code_base64' => data_get(
+
+                $payment,
+
+                'point_of_interaction.transaction_data.qr_code_base64'
+
+            ),
+
+        ];
     }
 
     /* ===============================
@@ -358,7 +356,7 @@ class PaymentController extends Controller
 
         $payment = $response->json();
 
-        $localPayment = Payment::where('payment_id', $paymentId)->first();
+        $localPayment = Payment::where('payment_id', (string) $paymentId)->first();
 
         if ($localPayment) {
             $localPayment->update([
@@ -385,7 +383,7 @@ class PaymentController extends Controller
             return response()->json(['status' => 'not_found'], 200);
         }
 
-        if ($tenant->last_payment_id === $paymentId) {
+        if ($tenant->last_payment_id === $payment['id']) {
             return response()->json(['status' => 'already_processed'], 200);
         }
 
@@ -412,7 +410,7 @@ class PaymentController extends Controller
             'payment' => true,
             'status' => 1,
             'subscription_status' => 'active',
-            'last_payment_id' => $paymentId,
+            'last_payment_id' => $payment['id'],
             'expires_at' => $baseDate->addDays(30),
         ]);
 

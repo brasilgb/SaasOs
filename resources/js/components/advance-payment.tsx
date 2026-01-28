@@ -80,7 +80,7 @@ export function AdvancePayment() {
             }, 300);
         } else {
             setLoading(true);
-            setPlans(plansData);
+            setPlans(plansData as Plan[]);
             setLoading(false);
         }
     }, [open, plansData]);
