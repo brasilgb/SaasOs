@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Pencil, Plus, Save } from "lucide-react"
 import { useForm } from "@inertiajs/react"
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toastSuccess } from "@/components/app-toast-messages"
 
 export default function EditChecklist({ equipments, checklist }: any) {

@@ -2,8 +2,8 @@ import { Breadcrumbs } from '@/components/breadcrumbs'
 import { Icon } from '@/components/icon';
 import AppLayout from '@/layouts/app-layout'
 import { BreadcrumbItem } from '@/types';
-import { Head, Link, usePage } from '@inertiajs/react'
-import { Calendar, Edit, Pencil, Plus, Users, Wrench } from 'lucide-react';
+import { Head, Link } from '@inertiajs/react'
+import { Calendar, Edit, Plus, Users, Wrench } from 'lucide-react';
 import moment from 'moment'
 import {
   Table,
@@ -18,7 +18,6 @@ import { Button } from '@/components/ui/button';
 import InputSearch from '@/components/inputSearch';
 import ActionDelete from '@/components/action-delete';
 import { maskCpfCnpj, maskPhone, unMask } from '@/Utils/mask';
-import AlertSuccess from '@/components/app-alert-success';
 import AppPagination from '@/components/app-pagination';
 
 const breadcrumbs: BreadcrumbItem[] = [

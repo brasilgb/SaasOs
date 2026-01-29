@@ -2,7 +2,7 @@ import { Breadcrumbs } from '@/components/breadcrumbs'
 import { Icon } from '@/components/icon';
 import AppLayout from '@/layouts/app-layout'
 import { BreadcrumbItem } from '@/types';
-import { Head, usePage } from '@inertiajs/react'
+import { Head } from '@inertiajs/react'
 import { PackagePlus } from 'lucide-react';
 import moment from 'moment'
 import {

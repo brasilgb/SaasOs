@@ -3,15 +3,8 @@ import { Icon } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/layouts/app-layout";
 import { BreadcrumbItem } from "@/types";
-import { Head, Link, useForm, usePage } from "@inertiajs/react";
-import { ArrowLeft, PackagePlus, Save } from "lucide-react";
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label";
-import CreatableSelect from 'react-select/creatable';
-import Select from 'react-select';
-import InputError from "@/components/input-error";
-import { useEffect, useState } from "react";
-import { maskMoney, maskMoneyDot, unMask } from "@/Utils/mask";
+import { Head, Link } from "@inertiajs/react";
+import { ArrowLeft, PackagePlus } from "lucide-react";
 import BudgetForm from "./budget-form";
 
 // Definição de tipo para as opções

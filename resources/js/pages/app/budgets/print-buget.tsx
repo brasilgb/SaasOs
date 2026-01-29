@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { pdf } from '@react-pdf/renderer'; // Importe a função 'pdf'
 import { BudgetPDF } from './BudgetPDF'; // Importe o componente que criamos
 import { Button } from '@/components/ui/button';

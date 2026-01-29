@@ -8,7 +8,6 @@ import { Cog, Save } from "lucide-react";
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label";
 import { maskCep, maskCnpj, maskPhone, unMask } from "@/Utils/mask";
-import AlertSuccess from "@/components/app-alert-success";
 import { toastSuccess, toastWarning } from "@/components/app-toast-messages";
 
 const breadcrumbs: BreadcrumbItem[] = [
