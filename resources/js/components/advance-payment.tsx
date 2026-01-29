@@ -24,6 +24,7 @@ export function AdvancePayment() {
     const plansData: Plan[] = props.plansData || [];
 
     const flash = props.flash || {};
+console.log(flash);
 
     const [open, setOpen] = useState(false);
     const [view, setView] = useState<'plans' | 'payment'>('plans');
