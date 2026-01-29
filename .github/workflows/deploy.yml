@@ -18,7 +18,7 @@ jobs:
       - name: 🐘 Configurar PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2' # Verifique a versão do PHP na sua HostGator
+          php-version: '8.3' # Verifique a versão do PHP na sua HostGator
 
       # 3. Instala dependências do Laravel (pasta vendor)
       - name: 📦 Instalar Dependências PHP
@@ -28,7 +28,7 @@ jobs:
       - name: 🟢 Configurar Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22'
 
       # 5. Compila o Front-end (React)
       - name: 🔨 Build do React/Inertia
