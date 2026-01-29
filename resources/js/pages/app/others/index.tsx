@@ -65,7 +65,6 @@ const { auth } = usePage().props as any;
                         license={auth?.plan}
                         time_remaining={time_remaining}
                     />
-
                 </div>
 
                 <div className="space-y-6">
