@@ -33,8 +33,8 @@ jobs:
       # 5. Compila o Front-end (React)
       - name: 🔨 Build do React/Inertia
         run: |
-          npm ci
-          npm run build
+          yarn install --frozen-lockfile
+          yarn build
 
       # 6. Envia os arquivos para a HostGator via FTP
       - name: 📂 Enviar arquivos via FTP
