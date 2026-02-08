@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Mail\UserRegisteredMail;
 use App\Models\App\Company;
 use App\Models\Tenant;
 use App\Models\User;
@@ -16,6 +17,7 @@ use Carbon\Carbon;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class RegisteredUserController extends Controller
 {
@@ -86,6 +88,7 @@ class RegisteredUserController extends Controller
          * 🏢 TENANT NORMAL (TRIAL)
          * ======================================================
          */
+
         DB::transaction(function () use ($request, &$user) {
 
             $tenant = Tenant::create([
@@ -96,9 +99,9 @@ class RegisteredUserController extends Controller
                 'phone' => $request->phone,
                 'whatsapp' => $request->whatsapp,
                 'status' => 1,
-                'plan_id' => null,
+                'plan_id' => 1,
                 'subscription_status' => 'active',
-                'expires_at' => Carbon::now()->addDays(7),
+                'expires_at' => Carbon::now()->addDays(30),
             ]);
 
             Company::create([
@@ -125,12 +128,15 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
         Auth::login($user);
+        if ($user instanceof User) {
+            Mail::to($request->email)->send(new UserRegisteredMail($user));
+        }
 
         return redirect()
             ->route('app.dashboard')
             ->with(
                 'success',
-                'Conta criada com sucesso! Você possui 7 dias de acesso para testes.'
+                'Conta criada com sucesso! Você possui 30 dias de acesso para testes.'
             );
     }
 }

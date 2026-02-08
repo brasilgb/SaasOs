@@ -24,7 +24,7 @@ export default function AuthSimpleLayout({ children, title, description, width =
             {/* Dark Overlay */}
             <div className="absolute inset-0 bg-linear-to-br from-black/75 via-black/80 to-black/75" />
 
-            <Card className={`absolute border-border/50 shadow-2xl bg-background/50 backdrop-blur-md ${width} md:p-8 p-4`}>
+            <Card className={`absolute border-border/50 shadow-2xl bg-background backdrop-blur-md ${width} md:p-8 p-4`}>
                 {/* Logo */}
                 <div className="top-8 left-8 z-10 flex flex-col items-center gap-3">
                     <Link href={route('home')} className="flex flex-col items-center gap-2 font-medium">
