@@ -80,9 +80,9 @@ export default function PrintLabels({ data }: any) {
                         <View style={styles.section}>
                             {data?.map((item: any) => (
                                 <View key={item.order} style={styles.etiqueta} wrap={false} >
-                                    <View style={styles.textxs}><Text>{item.order}</Text></View>
-                                    <View style={styles.textmd}><Text>{maskPhone(item.telephone)}</Text></View>
                                     <View style={styles.textxs}><Text>{item.company}</Text></View>
+                                    <View style={styles.textmd}><Text>{item.order}</Text></View>
+                                    <View style={styles.textxs}><Text>{maskPhone(item.telephone)}</Text></View>
                                 </View>
                             ))}
                         </View>

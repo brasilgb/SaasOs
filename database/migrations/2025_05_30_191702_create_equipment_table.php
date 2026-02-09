@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('tenant_id')->nullable()->constrained()->onDelete('cascade');
             $table->integer('equipment_number');
             $table->string('equipment');
+            $table->boolean('chart');
             $table->timestamps();
         });
     }

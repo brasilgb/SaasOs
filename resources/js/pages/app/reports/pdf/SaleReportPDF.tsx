@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export default function SalesReportPDF({ data, dateRange }: any) {
+export default function SalesReportPDF({ data, dateRange, company }: any) {
   const totalGeral = data.reduce(
     (acc: number, sale: any) => acc + Number(sale.total_amount || 0),
     0
@@ -50,7 +50,7 @@ export default function SalesReportPDF({ data, dateRange }: any) {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        <Text style={styles.title}>Minha Empresa</Text>
+        <Text style={styles.title}>{company}</Text>
         <Text style={styles.subtitle}>Relatório de Vendas</Text>
         <Text style={styles.headerInfo}>
           Período: {moment(dateRange.from).format("DD/MM/YYYY")} -{" "}
@@ -75,7 +75,7 @@ export default function SalesReportPDF({ data, dateRange }: any) {
             <Text style={styles.colDate}>
               {moment(sale.created_at).format("DD/MM/YYYY")}
             </Text>
-            <Text style={styles.colDate}>{sale.status}</Text>
+            <Text style={styles.colDate}>{sale.status === 'cancelled' ? 'Cancelada' : 'Completa'}</Text>
             <Text style={styles.colRight}>
               R$ {maskMoney(String(sale.total_amount))}
             </Text>

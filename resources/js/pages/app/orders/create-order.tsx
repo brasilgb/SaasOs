@@ -62,7 +62,7 @@ export default function CreateOrder({ customers, equipments }: any) {
     e.preventDefault();
     post(route('app.orders.store'), {
       onSuccess: () => {
-        toastSuccess("Sucesso", "Cadastro realizado com sucesso")
+        toastSuccess("Sucesso", "Ordem de serviço gerada com sucesso")
         reset()
       },
     });

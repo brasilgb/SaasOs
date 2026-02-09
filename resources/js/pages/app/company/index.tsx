@@ -22,7 +22,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Company({ company }: any) {
-    const { flash } = usePage().props as any;
 
     const { data, setData, patch, progress, processing, errors } = useForm({
         shortname: company?.shortname,

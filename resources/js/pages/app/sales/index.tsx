@@ -41,6 +41,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Sales({ sales }: any) {
   const { auth } = usePage().props as any;
   const companyData = auth?.user?.tenant;
+  const acessDenied = auth?.user?.roles === 9 || auth?.user?.roles === 1 ? true : false;
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSale, setSelectedSale] = useState(null);
@@ -169,7 +170,7 @@ export default function Sales({ sales }: any) {
                     <TableCell className='flex justify-end gap-2'>
 
                       {sale.status === 'completed' && (
-                        <ActionCancelSale saleId={sale.id} />
+                        <ActionCancelSale saleId={sale.id} disabled={acessDenied} />
                       )}
 
                       {sale.status === 'cancelled' && (

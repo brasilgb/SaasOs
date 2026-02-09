@@ -83,7 +83,7 @@ const STATUS_MAP: Record<number, string> = {
   8: "Entregue ao Cliente",
 };
 
-export default function OrderReportPDF({ data, dateRange }: any) {
+export default function OrderReportPDF({ data, dateRange, company }: any) {
   const totalGeral = data.reduce(
     (acc: any, order: any) =>
       acc + (Number(order.parts_value) + Number(order.service_value)),
@@ -94,7 +94,7 @@ export default function OrderReportPDF({ data, dateRange }: any) {
     <Document>
       <Page size="A4" style={styles.page}>
         {/* Cabeçalho */}
-        <Text style={styles.title}>Minha Empresa</Text>
+        <Text style={styles.title}>{company}</Text>
         <Text style={styles.subtitle}>Relatório de Ordens de Serviço</Text>
         <Text style={styles.headerInfo}>
           Período: {moment(dateRange.from).format("DD/MM/YYYY")} -{" "}

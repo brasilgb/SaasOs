@@ -17,5 +17,10 @@ class Part extends Model
                     ->using(OrderPart::class)
                     ->withPivot('quantity');
     }
+
+    public function part_movements()
+    {
+        return $this->hasMany(PartMovement::class, 'part_id');
+    }
     
 }

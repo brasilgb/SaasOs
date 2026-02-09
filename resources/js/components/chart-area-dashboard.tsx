@@ -32,31 +32,11 @@ import { connectBackend } from "@/Utils/connectApi"
 
 export const description = "Gráfico de área interativo"
 
-const chartConfig = {
-  visitors: {
-    label: "Visitors",
-  },
-  desktop: {
-    label: "Desktop",
-    color: "var(--chart-1)",
-  },
-  mobile: {
-    label: "Mobile",
-    color: "var(--chart-2)",
-  },
-  notebook: {
-    label: "Notebook",
-    color: "var(--chart-3)",
-  },
-} satisfies ChartConfig
-
 export function ChartAreaDashboard() {
   const isMobile = useIsMobile()
   const [timeRange, setTimeRange] = React.useState("7")
   const [chartData, setChartData] = React.useState([])
-
-
-
+  const [lines, setLines] = React.useState([])
 
   React.useEffect(() => {
     if (isMobile) {
@@ -67,10 +47,24 @@ export function ChartAreaDashboard() {
   useEffect(() => {
     const chartForDays = async () => {
       const response = await connectBackend.get(`chartEquipments/${timeRange}`);
-      setChartData(response.data);
+      setChartData(response.data.data);
+      setLines(response.data.lines)
     }
     chartForDays();
   }, [timeRange]);
+
+  const chartConfig = React.useMemo(() => {
+    const config: ChartConfig = {}
+
+    lines.forEach((line: any, index: number) => {
+      config[line.key] = {
+        label: line.label,
+        color: `var(--chart-${index + 1})`,
+      }
+    })
+
+    return config
+  }, [lines])
 
   return (
     <Card className="@container/card">
@@ -123,42 +117,27 @@ export function ChartAreaDashboard() {
         >
           <AreaChart data={chartData}>
             <defs>
-              <linearGradient id="fillDesktop" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="5%"
-                  stopColor="var(--color-desktop)"
-                  stopOpacity={1.0}
-                />
-                <stop
-                  offset="95%"
-                  stopColor="var(--color-desktop)"
-                  stopOpacity={0.1}
-                />
-              </linearGradient>
-              <linearGradient id="fillMobile" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="5%"
-                  stopColor="var(--color-mobile)"
-                  stopOpacity={0.8}
-                />
-                <stop
-                  offset="95%"
-                  stopColor="var(--color-mobile)"
-                  stopOpacity={0.1}
-                />
-              </linearGradient>
-              <linearGradient id="fillNotebook" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="5%"
-                  stopColor="var(--color-notebook)"
-                  stopOpacity={0.8}
-                />
-                <stop
-                  offset="95%"
-                  stopColor="var(--color-notebook)"
-                  stopOpacity={0.1}
-                />
-              </linearGradient>
+              {lines.map((line: any, index: number) => (
+                <linearGradient
+                  key={line.key}
+                  id={`fill-${line.key}`}
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop
+                    offset="5%"
+                    stopColor={`var(--chart-${index + 1})`}
+                    stopOpacity={0.8}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor={`var(--chart-${index + 1})`}
+                    stopOpacity={0.1}
+                  />
+                </linearGradient>
+              ))}
             </defs>
             <CartesianGrid vertical={false} />
             <XAxis
@@ -190,30 +169,17 @@ export function ChartAreaDashboard() {
                 />
               }
             />
-            <Area
-              dataKey="mobile"
-              type="natural"
-              fill="url(#fillMobile)"
-              stroke="var(--color-mobile)"
-              stackId="a"
-              dot={true}
-            />
-            <Area
-              dataKey="desktop"
-              type="natural"
-              fill="url(#fillDesktop)"
-              stroke="var(--color-desktop)"
-              stackId="a"
-              dot={true}
-            />
-            <Area
-              dataKey="notebook"
-              type="natural"
-              fill="url(#fillNotebook)"
-              stroke="var(--color-notebook)"
-              stackId="a"
-              dot={true}
-            />
+            {lines.map((line: any, index: number) => (
+              <Area
+                key={line.key}
+                dataKey={line.key}
+                type="natural"
+                fill={`url(#fill-${line.key})`}
+                stroke={`var(--chart-${index + 1})`}
+                stackId="a"
+                dot
+              />
+            ))}
           </AreaChart>
         </ChartContainer>
       </CardContent>

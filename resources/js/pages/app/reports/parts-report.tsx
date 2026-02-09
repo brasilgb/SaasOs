@@ -4,14 +4,14 @@ import { Loader2, FileText } from "lucide-react";
 import moment from "moment";
 import { pdf } from "@react-pdf/renderer"; // componente do PDF
 import { router } from "@inertiajs/react";
-import CustomerReportPDF from "./pdf/CustomerReportPDF";
+import PartReportPDF from "./pdf/PartReportPDF";
 
 interface DateRange {
   from?: Date;
   to?: Date;
 }
 
-export default function OrdersReport({ dateRange, company }: { dateRange?: DateRange, company: any }) {
+export default function PartsReport({ dateRange, company }: { dateRange?: DateRange, company: string }) {
   const [loading, setLoading] = useState(false);
 
   async function handleGeneratePDF() {
@@ -21,7 +21,7 @@ export default function OrdersReport({ dateRange, company }: { dateRange?: DateR
     router.post(
       route("app.reports.store"),
       {
-        type: "customers",
+        type: "parts",
         from: moment(dateRange.from).format("YYYY-MM-DD"),
         to: moment(dateRange.to).format("YYYY-MM-DD"),
       },
@@ -33,7 +33,7 @@ export default function OrdersReport({ dateRange, company }: { dateRange?: DateR
 
           // Gera o PDF no frontend
           const blob = await pdf(
-            <CustomerReportPDF data={reportData} dateRange={dateRange} company={company} />
+            <PartReportPDF data={reportData} dateRange={dateRange} company={company} />
           ).toBlob();
 
           const url = URL.createObjectURL(blob);
@@ -62,7 +62,7 @@ export default function OrdersReport({ dateRange, company }: { dateRange?: DateR
         ) : (
           <>
             <FileText className="mr-2 size-4" />
-            Clientes cadastrados
+            Produtos e Peças
           </>
         )}
       </Button>

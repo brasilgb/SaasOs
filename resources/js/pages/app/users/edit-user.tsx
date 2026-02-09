@@ -60,7 +60,10 @@ export default function CreateUser({ user }: any) {
   const changeRoles = (selected: any) => {
     setData('roles', selected?.value);
   };
-
+  const optionsRolesUser = rolesUser.filter((role: any) => role.label !== 'RootSystem' && role.label !== 'RootApp').map((role: any) => ({
+    value: role.value,
+    label: role.label,
+  }));
   const defaultStatus = rolesUser?.filter((o: any) => o.value == user?.roles).map((opt: any) => ({ value: opt.label, label: opt.label }));
 
   return (
@@ -200,7 +203,7 @@ export default function CreateUser({ user }: any) {
                   isDisabled={data.roles === 9 ? true : false}
                   menuPosition='fixed'
                   defaultValue={defaultStatus}
-                  options={rolesUser}
+                  options={optionsRolesUser}
                   onChange={changeRoles}
                   placeholder="Selecione o recebedor"
                   className="shadow-xs p-0 border text-gray-700 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-9"

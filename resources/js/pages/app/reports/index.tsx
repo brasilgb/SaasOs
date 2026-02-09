@@ -4,7 +4,7 @@ import { Icon } from "@/components/icon";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import AppLayout from "@/layouts/app-layout";
 import { BreadcrumbItem } from "@/types";
-import { Head } from "@inertiajs/react";
+import { Head, usePage } from "@inertiajs/react";
 import { FileTextIcon } from "lucide-react";
 import moment from "moment";
 import { useState } from "react";
@@ -12,6 +12,7 @@ import CustomersReport from "./customers-report";
 import OrdersReport from "./orders-report";
 import SchedulesReport from "./schedules-report";
 import SalesReport from "./sales-report";
+import PartsReport from "./parts-report";
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -24,19 +25,12 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-export default function Sales({ sales }: any) {
-
+export default function Parts() {
+const { company } = usePage().props as any;
   const [dateRange, setDateRange] = useState<any>({
     from: new Date(),
     to: new Date(),
   });
-
-  const handleReportCustomer = () => {
-    const formattedDateFrom = moment(dateRange.from).format('YYYY-MM-DD');
-    const formattedDateTo = moment(dateRange.to).format('YYYY-MM-DD');
-    console.log('Relatório de clientes', formattedDateFrom, formattedDateTo);
-  }
-
 
   return (
     <AppLayout>
@@ -60,10 +54,11 @@ export default function Sales({ sales }: any) {
             <DatePicker mode={'range'} setDate={setDateRange} date={dateRange} />
           </CardContent>
           <CardContent className="flex flex-wrap items-start justify-start gap-4">
-            <OrdersReport dateRange={dateRange} />
-            <CustomersReport dateRange={dateRange} />
-            <SchedulesReport dateRange={dateRange} />
-            <SalesReport dateRange={dateRange} />
+            <OrdersReport dateRange={dateRange} company={company?.companyname} />
+            <CustomersReport dateRange={dateRange} company={company?.companyname} />
+            <SchedulesReport dateRange={dateRange} company={company?.companyname} />
+            <SalesReport dateRange={dateRange} company={company?.companyname} />
+            <PartsReport dateRange={dateRange} company={company?.companyname} />
           </CardContent>
 
         </Card>

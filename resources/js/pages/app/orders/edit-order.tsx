@@ -95,7 +95,7 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
     e.preventDefault();
     patch(route('app.orders.update', order.id), {
       onSuccess: () => {
-        toastSuccess("Sucesso", "Edição realizada com sucesso")
+        toastSuccess("Sucesso", "Ordem de serviço alterada com sucesso")
         setPartsData([]);
       },
     });
@@ -551,7 +551,6 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
               </Button>
             </div>
           </form>
-
         </div>
       </div>
     </AppLayout>

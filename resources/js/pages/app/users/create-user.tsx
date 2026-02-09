@@ -61,6 +61,12 @@ export default function CreateUser() {
     setData('roles', selected?.value);
   };
 
+  const optionsRolesUser = rolesUser.filter((role: any) => role.label !== 'RootSystem' && role.label !== 'RootApp').map((role: any) => ({
+    value: role.value,
+    label: role.label,
+  }));
+
+
   return (
     <AppLayout>
       <Head title="Usuários" />
@@ -135,6 +141,7 @@ export default function CreateUser() {
                   type="text"
                   value={data.whatsapp}
                   onChange={(e) => setData('whatsapp', e.target.value)}
+                  maxLength={13}
                 />
                 {errors.whatsapp && <div className="text-red-500 text-sm">{errors.whatsapp}</div>}
               </div>
@@ -194,7 +201,7 @@ export default function CreateUser() {
               <div className=" grid gap-2">
                 <Label htmlFor="recipient">Funções do usuário</Label>
                 <Select
-                  options={rolesUser}
+                  options={optionsRolesUser}
                   onChange={changeRoles}
                   placeholder="Selecione o recebedor"
                   className="shadow-xs p-0 border text-gray-700 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-9"

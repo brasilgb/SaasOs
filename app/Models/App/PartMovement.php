@@ -14,7 +14,7 @@ class PartMovement extends Model
 
     public function part()
     {
-        return $this->belongsTo(Part::class);
+        return $this->belongsTo(Part::class, 'part_id');
     }
 
     public function order()

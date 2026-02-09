@@ -13,12 +13,16 @@ import { Label } from "@/components/ui/label"
 import { Plus, Save } from "lucide-react"
 import { useForm } from "@inertiajs/react"
 import { toastSuccess } from "@/components/app-toast-messages"
+import { Switch } from "@/components/ui/switch"
 
-export default function CreateEquipment() {
+export default function CreateEquipment({ equipmentLength }: any) {
     const [open, setOpen] = useState(false)
-
+    
+    const isDisabled = equipmentLength > 2 ? true : false;
+    
     const { data, setData, processing, post, errors, reset } = useForm({
         equipment: '',
+        chart: false
     });
 
     const handleSubmit = (e: any) => {
@@ -32,6 +36,7 @@ export default function CreateEquipment() {
         });
 
     }
+
     return (
         <div>
             <Dialog open={open} onOpenChange={setOpen}>
@@ -56,6 +61,17 @@ export default function CreateEquipment() {
                                 />
                                 {errors.equipment && <div className="text-red-500 text-sm">{errors.equipment}</div>}
                             </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="chart">Adicionar ao gráfico do dashboard (max:. 3)</Label>
+                                <Switch
+                                    disabled={isDisabled}
+                                    id="chart"
+                                    checked={data.chart}
+                                    onCheckedChange={(checked: any) => setData('chart', checked)}
+                                />
+                            </div>
+
                         </div>
 
                         <DialogFooter className="gap-2">

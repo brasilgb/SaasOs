@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button"
 import { useForm } from "@inertiajs/react"
 import { Ban } from "lucide-react"
 
-export default function ActionCancelSale({ saleId }: { saleId: number }) {
+export default function ActionCancelSale({ saleId, disabled }: { saleId: number, disabled: boolean }) {
   const { post, processing } = useForm()
 
   const handleCancel = () => {
@@ -25,7 +25,7 @@ export default function ActionCancelSale({ saleId }: { saleId: number }) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive" size="icon" title="Cancelar Venda">
+        <Button variant="destructive" size="icon" title="Cancelar Venda" disabled={!disabled}>
           <Ban className="h-4 w-4" />
         </Button>
       </AlertDialogTrigger>

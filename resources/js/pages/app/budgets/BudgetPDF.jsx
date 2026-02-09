@@ -71,14 +71,16 @@ const styles = StyleSheet.create({
   },
   detailItem: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-start',
     paddingVertical: 2,
   },
   label: {
+
     fontWeight: 'bold',
     color: '#555',
   },
   value: {
+    marginLeft: 5,
     color: '#000',
   },
 
@@ -159,7 +161,7 @@ export const BudgetPDF = ({ company, budget }) => {
           </View>
           <View style={styles.detailItem}>
             <Text style={styles.label}>Tempo Estimado(Hs):</Text>
-            <Text style={styles.value}>{estimated_time}</Text>
+            <Text style={styles.value}>{estimated_time} Hs</Text>
           </View>
         </View>
 
@@ -199,7 +201,7 @@ export const BudgetPDF = ({ company, budget }) => {
           <Text style={{ fontWeight: 'bold', marginBottom: 5 }}>Observações:</Text>
           <Text>{obsText}</Text>
         </View>
-        <View style={{paddingVertical: 5}}>
+        <View style={{ paddingVertical: 5 }}>
           <Text style={{ fontSize: 8 }}>Orçamento gerado em {moment(created_at).format("DD/MM/YYYY")}, este orçamento é válido por {validity} dias.</Text>
         </View>
       </Page>

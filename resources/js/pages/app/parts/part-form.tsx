@@ -79,7 +79,7 @@ export default function PartForm({ categories, initialData }: PartFormProps) {
                     label: parts.category,
                     value: parts.category,
                 };
-
+ 
                 setDisableInput(true);
                 setSelectedCategory(option);
 

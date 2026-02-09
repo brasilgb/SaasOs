@@ -5,6 +5,7 @@ namespace App\Http\Controllers\App;
 use App\Http\Controllers\Controller;
 use App\Models\App\Customer;
 use App\Models\App\Order;
+use App\Models\App\Part;
 use App\Models\App\Sale;
 use App\Models\App\Schedule;
 use Carbon\Carbon;
@@ -45,6 +46,12 @@ class ReportController extends Controller
 
             case 'sales':
                 $data = Sale::with('customer')
+                    ->whereBetween('created_at', [$from, $to])
+                    ->get();
+                break;
+
+            case 'parts':
+                $data = Part::with('part_movements')
                     ->whereBetween('created_at', [$from, $to])
                     ->get();
                 break;

@@ -2,7 +2,7 @@ import React from "react";
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import moment from "moment";
 import "moment/dist/locale/pt-br";
-import { maskCpfCnpj, maskMoney, maskPhone } from "@/Utils/mask";
+import { maskCpfCnpj, maskPhone } from "@/Utils/mask";
 
 moment.locale("pt-br");
 
@@ -72,13 +72,13 @@ const styles = StyleSheet.create({
   },
 });
 
-export default function CustomerReportPDF({ data, dateRange }: any) {
+export default function CustomerReportPDF({ data, dateRange, company }: any) {
 
   return (
     <Document>
       <Page size="A4" style={styles.page}>
         {/* Cabeçalho */}
-        <Text style={styles.title}>Minha Empresa</Text>
+        <Text style={styles.title}>{company}</Text>
         <Text style={styles.subtitle}>Relatório de Clientes</Text>
         <Text style={styles.headerInfo}>
           Período: {moment(dateRange.from).format("DD/MM/YYYY")} -{" "}

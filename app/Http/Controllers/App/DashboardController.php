@@ -5,6 +5,7 @@ namespace App\Http\Controllers\App;
 use App\Http\Controllers\Controller;
 use App\Models\Admin\Plan;
 use App\Models\App\Customer;
+use App\Models\App\Equipment;
 use App\Models\App\Message;
 use App\Models\App\Order;
 use App\Models\App\Other;
@@ -50,16 +51,32 @@ class DashboardController extends Controller
 
     public function chartEquipments($timerange)
     {
-        $chartequipments = Order::select(
-            DB::raw('DATE(created_at) as date'),
-            DB::raw('SUM(CASE WHEN equipment_id = 1 THEN 1 ELSE 0 END) as mobile'),
-            DB::raw('SUM(CASE WHEN equipment_id = 2 THEN 1 ELSE 0 END) as desktop'),
-            DB::raw('SUM(CASE WHEN equipment_id = 3 THEN 1 ELSE 0 END) as notebook')
-        )
+        $equipments = Equipment::where('chart', 1)
+            ->limit(3)
+            ->get();
+
+        $selects = [
+            DB::raw('DATE(created_at) as date')
+        ];
+
+        foreach ($equipments as $equipment) {
+            $selects[] = DB::raw(
+                "SUM(CASE WHEN equipment_id = {$equipment->id} THEN 1 ELSE 0 END) as eq_{$equipment->id}"
+            );
+        }
+
+        $chart = Order::select($selects)
             ->where('created_at', '>=', Carbon::now()->subDays($timerange))
             ->groupBy('date')
-            ->orderBy('date', 'desc')
+            ->orderBy('date')
             ->get();
-        return response()->json($chartequipments);
+
+        return response()->json([
+            'lines' => $equipments->map(fn($e) => [
+                'key'   => "eq_{$e->id}",
+                'label' => $e->equipment,
+            ]),
+            'data' => $chart
+        ]);
     }
 }

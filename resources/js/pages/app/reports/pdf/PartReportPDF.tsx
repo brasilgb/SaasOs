@@ -53,10 +53,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
   },
   colSmall: { width: "8%", paddingVertical: 2, textAlign: "center" },
-  colMedium: { width: "15%", paddingVertical: 2, textAlign: "left" },
+  colMedium: { width: "18%", paddingVertical: 2, textAlign: "left" },
   colLarge: { width: "22%", paddingVertical: 2, textAlign: "left" },
   col: { flex: 1, textAlign: "left", paddingVertical: 2 },
-  colRight: { width: "10%", paddingVertical: 2, textAlign: "right" },
+  colRight: { width: "8%", paddingVertical: 2, textAlign: "right" },
   footer: {
     marginTop: 14,
     borderTop: "1px solid #AAA",
@@ -72,48 +72,44 @@ const styles = StyleSheet.create({
   },
 });
 
-const STATUS_MAP: Record<number, string> = {
-  1: "Ordem Aberta",
-  2: "Em atendimento",
-  3: "Fechada"
-}
-
-export default function SchedulesReportPDF({ data, dateRange, company }: any) {
+export default function PartReportPDF({ data, dateRange, company }: any) {
 
   return (
     <Document>
       <Page size="A4" style={styles.page}>
         {/* Cabeçalho */}
         <Text style={styles.title}>{company}</Text>
-        <Text style={styles.subtitle}>Relatório de Clientes</Text>
+        <Text style={styles.subtitle}>Relatório de movimento de produtos e peças</Text>
         <Text style={styles.headerInfo}>
           Período: {moment(dateRange.from).format("DD/MM/YYYY")} -{" "}
           {moment(dateRange.to).format("DD/MM/YYYY")} {"\n"}
           Emitido em: {moment().format("DD/MM/YYYY HH:mm")}
         </Text>
 
-        {/* Tabela 	Cliente	Horário da visita	Serviço	Status	Técnico	Solicitação*/}
+        {/* Tabela */}
         <View style={styles.tableContainer}>
           <View style={styles.tableHeader}>
             <Text style={styles.colSmall}>#</Text>
-            <Text style={styles.colLarge}>Cliente</Text>
-            <Text style={styles.colMedium}>Visita</Text>
-            <Text style={styles.colMedium}>Serviço</Text>
-            <Text style={styles.colMedium}>Status</Text>
-            <Text style={styles.colMedium}>Técnico</Text>
-            <Text style={styles.colRight}>Solicitação</Text>
+            <Text style={styles.colSmall}>Ref.</Text>
+            <Text style={styles.colLarge}>Nome</Text>
+            <Text style={styles.colMedium}>Fabricante</Text>
+            <Text style={styles.colSmall}>Quant.</Text>
+            <Text style={styles.colSmall}>Mín.</Text>
+            <Text style={styles.colSmall}>Compra</Text>
+            <Text style={styles.colSmall}>Venda</Text>
+            <Text style={styles.colRight}>Mov.</Text>
           </View>
 
           {data.map((customer: any) => (
             <View key={customer.id} style={styles.tableRow}>
-              <Text style={styles.colSmall}>{customer.schedules_number}</Text>
-              <Text style={styles.colLarge}>{customer.customer.name}</Text>
-              <Text style={styles.colMedium}>{moment(customer.schedules).format("DD/MM/YYYY HH:mm")}</Text>
-              <Text style={styles.colMedium}>{customer.service}</Text>
-              <Text style={styles.colMedium}>
-                {STATUS_MAP[customer.status] || "—"}
-              </Text>
-              <Text style={styles.colMedium}>{customer.user.name}</Text>
+              <Text style={styles.colSmall}>{customer.part_number}</Text>
+              <Text style={styles.colSmall}>{customer.reference_number}</Text>
+              <Text style={styles.colLarge}>{customer.name}</Text>
+              <Text style={styles.colMedium}>{customer.manufacturer}</Text>
+              <Text style={styles.colSmall}>{customer.quantity}</Text>
+              <Text style={styles.colSmall}>{customer.minimum_stock_level}</Text>
+              <Text style={styles.colSmall}>{maskMoney(customer.cost_price)}</Text>
+              <Text style={styles.colSmall}>{maskMoney(customer.sale_price)}</Text>
               <Text style={styles.colRight}>
                 {moment(customer.created_at).format("DD/MM/YYYY")}
               </Text>

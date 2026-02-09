@@ -11,7 +11,7 @@ interface DateRange {
   to?: Date;
 }
 
-export default function SalesReport({ dateRange }: { dateRange?: DateRange }) {
+export default function SalesReport({ dateRange, company }: { dateRange?: DateRange, company: string }) {
   const [loading, setLoading] = useState(false);
 
   async function handleGeneratePDF() {
@@ -33,7 +33,7 @@ export default function SalesReport({ dateRange }: { dateRange?: DateRange }) {
 
           // Gera o PDF no frontend
           const blob = await pdf(
-            <SalesReportPDF data={reportData} dateRange={dateRange} />
+            <SalesReportPDF data={reportData} dateRange={dateRange} company={company} />
           ).toBlob();
 
           const url = URL.createObjectURL(blob);

@@ -33,6 +33,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function Equipment({ equipments }: any) {
 
+  const equipmentLength = equipments.data.filter((eq: any) => eq.chart === 1).length;
+
   return (
     <AppLayout>
       <Head title="Equipamentos" />
@@ -51,7 +53,7 @@ export default function Equipment({ equipments }: any) {
           <InputSearch placeholder="Buscar equipamento" url="app.register-equipments.index" />
         </div>
         <div className='w-full flex justify-end'>
-          <CreateEquipment />
+          <CreateEquipment equipmentLength={equipmentLength} />
         </div>
       </div>
 
@@ -74,7 +76,7 @@ export default function Equipment({ equipments }: any) {
                     <TableCell className="font-medium">{equipment.equipment}</TableCell>
                     <TableCell>{moment(equipment.created_at).format("DD/MM/YYYY")}</TableCell>
                     <TableCell className='flex justify-end gap-2'>
-                      <EditEquipment equipment={equipment} />
+                      <EditEquipment equipment={equipment} equipmentLength={equipmentLength} />
                       <ActionDelete title={'esta marca'} url={'app.register-equipments.destroy'} param={equipment.id} />
 
                     </TableCell>

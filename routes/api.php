@@ -47,5 +47,5 @@ Route::post('/upload', [ImageController::class, 'upload'])->name('upload');
 
 Route::post('/loginuser', [UserController::class, 'loginuser'])->name('loginuser');
 Route::get('/logoutuser', [UserController::class, 'logoutuser'])->name('logoutuser');
-Route::get('/getparts/{part_number}', [PartController::class, 'getPartsForPartNumber'])->name('getparts');
+Route::get('/getparts/{reference_number}', [PartController::class, 'getPartsForPartNumber'])->name('getparts');
 Route::post('/webhook/mercadopago', [PaymentController::class, 'handleWebhook'])->name('webhook.mercadopago');
