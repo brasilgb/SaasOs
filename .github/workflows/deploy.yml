@@ -45,7 +45,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           # Mude abaixo para a pasta onde seu site vive na HostGator
           # Geralmente é ./public_html/ ou ./public_html/seusite/
-          server-dir: ./public_html/ 
+          server-dir: ./public_html/sigmaos/
           
           # O que NÃO enviar (para economizar tempo e espaço)
           exclude: |
@@ -54,4 +54,6 @@ jobs:
             **/node_modules/**
             **/tests/**
             .env.example
+            .env
+            public/build
             README.md
