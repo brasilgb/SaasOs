@@ -51,7 +51,7 @@ export default function EditTenant({ plans, tenant }: any) {
         street: tenant.street,
         complement: tenant.complement,
         number: tenant.number,
-        plan: tenant.plan,
+        plan_id: tenant.plan_id,
         status: tenant.status,
         observations: tenant.observations,
     });
@@ -80,14 +80,14 @@ export default function EditTenant({ plans, tenant }: any) {
     };
 
     const changePlan = (selected: any) => {
-        setData('plan', selected?.value);
+        setData('plan_id', selected?.value);
     };
 
     const changeStatus = (selected: any) => {
         setData('status', selected?.value);
     };
 
-    const defaultPlan = allPlans?.filter((o: any) => o.value == tenant?.plan).map((opt: any) => ({ value: opt.value, label: opt.label }));
+    const defaultPlan = allPlans?.filter((o: any) => o.value == tenant?.plan_id).map((opt: any) => ({ value: opt.value, label: opt.label }));
     const defaultStatusSaas = statusSaas?.filter((o: any) => o.value == tenant?.status).map((opt: any) => ({ value: opt.value, label: opt.label }));
 
     return (
@@ -302,7 +302,7 @@ export default function EditTenant({ plans, tenant }: any) {
                                         }),
                                     }}
                                 />
-                                <InputError className="mt-2" message={errors.plan} />
+                                <InputError className="mt-2" message={errors.plan_id} />
                             </div>
 
                             <div className="md:col-span-2 grid gap-2">

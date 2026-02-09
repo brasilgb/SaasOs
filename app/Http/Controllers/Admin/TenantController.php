@@ -8,6 +8,7 @@ use App\Http\Requests\Admin\TenantRequest;
 use Illuminate\Http\RedirectResponse;
 use App\Models\Admin\Plan;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 
 class TenantController extends Controller
@@ -27,6 +28,7 @@ class TenantController extends Controller
     public function create()
     {
         $plans = Plan::get();
+        // Mail::to($request->email)->send(new UserRegisteredMail($user));
         return Inertia::render('admin/tenants/create-tenant', ['plans' => $plans]);
     }
 
