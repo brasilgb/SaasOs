@@ -8,6 +8,7 @@ export function Hero() {
   return (
     <section className="relative overflow-hidden border-b border-border bg-background py-20 sm:py-32">
       <div className="container mx-auto px-4">
+        <Badge variant={'destructive'}>Estamos em teste, logo estará liberado para uso</Badge>
         <div className="mx-auto max-w-4xl text-center">
           <Badge variant="secondary" className="mb-6 text-sm">
             <span className="mr-2 inline-block h-2 w-2 rounded-full bg-accent"></span>

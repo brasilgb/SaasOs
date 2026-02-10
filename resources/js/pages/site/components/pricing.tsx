@@ -6,7 +6,7 @@ import { Check } from "lucide-react"
 const plans = [
   {
     name: "Mensal",
-    price: "R$ 49,00",
+    price: "R$ 49,90",
     period: "/mês",
     description: "Pagamento mensal com flexibilidade total",
     features: [
