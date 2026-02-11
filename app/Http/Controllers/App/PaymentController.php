@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use MercadoPago\Client\Payment\PaymentClient;
+use MercadoPago\Client\Common\RequestOptions; // Adicione esta linha
 use MercadoPago\MercadoPagoConfig;
 
 class PaymentController extends Controller
@@ -25,30 +26,33 @@ class PaymentController extends Controller
 
             $client = new PaymentClient();
             $webhookToken = config('services.mercadopago.webhook_token') ?? env('MP_WEBHOOK_TOKEN', 'default_token');
-            $idempotencyKey = Str::uuid()->toString();
-            // Criação do payload PIX
-            $payment = $client->create([
+
+            $options = new RequestOptions();
+            $options->setCustomHeaders(["x-idempotency-key" => Str::uuid()->toString()]);
+
+            // 2. Montar o payload do pagamento (sem a chave "headers")
+            $paymentRequest = [
                 "transaction_amount" => (float) $plan->value,
                 "description" => "Assinatura " . $plan->name . " - " . $tenant->name,
                 "payment_method_id" => "pix",
                 "payer" => [
                     "email" => $tenant->email,
-                    "first_name" => $tenant->name,
+                    "first_name" => explode(' ', trim($tenant->name))[0], // Apenas o primeiro nome evita erros de validação
                     "identification" => [
-                        "type" => "CNPJ", // Ou CPF dependendo da sua lógica
-                        "number" => preg_replace('/[^0-9]/', '', $tenant->cnpj)
+                        "type" => strlen(preg_replace('/\D/', '', $tenant->cnpj)) > 11 ? "CNPJ" : "CPF",
+                        "number" => preg_replace('/\D/', '', $tenant->cnpj)
                     ]
                 ],
-                // IMPORTANTE: Referência para identificar no Webhook
                 "external_reference" => json_encode([
                     'tenant_id' => $tenant->id,
                     'plan_id' => $plan->id
                 ]),
-                "notification_url" => route('webhook.mercadopago', ['token' => $webhookToken]),
-                "headers" => [
-                    "X-Idempotency-Key" => $idempotencyKey,
-                ],
-            ]);
+                // Garantir HTTPS na URL de notificação para evitar rejeição em produção
+                "notification_url" => str_replace('http://', 'https://', route('webhook.mercadopago', ['token' => $webhookToken])),
+            ];
+
+            // 3. O segredo: Passar o $requestOptions como SEGUNDO parâmetro
+            $payment = $client->create($paymentRequest, $options);
 
             return response()->json([
                 'qr_code' => $payment->point_of_interaction->transaction_data->qr_code_base64,
@@ -56,8 +60,16 @@ class PaymentController extends Controller
                 'payment_id' => $payment->id
             ]);
         } catch (\MercadoPago\Exceptions\MPApiException $e) {
-            Log::error("Detalhes da API Mercado Pago: " . json_encode($e->getApiResponse()->getContent()));
-            return response()->json(['error' => 'Falha na comunicação com o provedor'], 500);
+            $content = $e->getApiResponse()->getContent();
+            Log::error("Detalhes da API Mercado Pago: " . json_encode($content));
+
+            return response()->json([
+                'error' => 'Falha na comunicação com o provedor',
+                'details' => $content['message'] ?? 'Erro desconhecido'
+            ], 500);
+        } catch (\Exception $e) {
+            Log::error("Erro Geral no Pagamento: " . $e->getMessage());
+            return response()->json(['error' => 'Erro interno ao processar pagamento'], 500);
         }
     }
 }
