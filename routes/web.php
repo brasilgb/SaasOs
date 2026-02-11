@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\App\PaymentController;
+use App\Http\Controllers\App\SubscriptionController;
 use App\Http\Controllers\Site\HomeController;
 use Illuminate\Support\Facades\Route;
 
@@ -8,37 +9,24 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 
 /*
 |--------------------------------------------------------------------------
-| Assinatura / Pagamentos
+| Assinatura e Pagamentos
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth'])
-    ->prefix('subscription')
-    ->group(function () {
+Route::middleware(['auth'])->group(function () {
+    // Tela de bloqueio
+    Route::get('/subscription/blocked', [SubscriptionController::class, 'blocked'])
+        ->name('subscription.blocked');
+    
+    // Rota para checagem via Polling (AJAX)
+    Route::get('/api/subscription/check', [SubscriptionController::class, 'checkStatus'])
+        ->name('subscription.check_status');
 
-        Route::get('/expired', [PaymentController::class, 'expired'])
-            ->name('subscription.expired');
+    // Rota que gera o PIX (já criada anteriormente, mas reforçando)
+    Route::post('/subscription/pay', [PaymentController::class, 'generatePix'])
+        ->name('subscription.pay');
 
-        Route::get('/pay-in-advance', [PaymentController::class, 'payIn-advance']);
-
-        Route::post('/select-plan', [PaymentController::class, 'selectPlan'])
-            ->name('payment.select-plan');
-    });
-
-/*
-|--------------------------------------------------------------------------
-| Polling PIX (não bloqueia por assinatura)
-|--------------------------------------------------------------------------
-*/
-Route::middleware(['auth'])
-    ->get('/payment-status/{paymentId}', [PaymentController::class, 'paymentStatus'])
-    ->name('payment.status');
-
-/*
-|--------------------------------------------------------------------------
-| Webhook Mercado Pago
-|--------------------------------------------------------------------------
-*/
-Route::post('/webhook/mercadopago', [PaymentController::class, 'handleWebhook'])
-    ->name('webhook.mercadopago');
+        Route::post('/subscription/generate-pix', [PaymentController::class, 'generatePix'])
+    ->name('subscription.generate_pix');
+});
 
 require __DIR__ . '/auth.php';

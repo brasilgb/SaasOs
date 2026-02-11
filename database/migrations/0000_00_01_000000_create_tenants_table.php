@@ -13,13 +13,18 @@ return new class extends Migration
     {
         Schema::create('tenants', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('plan_id')->nullable()->constrained('plans');
+
+            $table->foreignId('plan_id')
+                ->nullable()
+                ->constrained('plans');
+
             $table->string('name');
             $table->string('company')->nullable();
             $table->string('cnpj');
             $table->string('email');
             $table->string('phone')->nullable();
             $table->string('whatsapp')->nullable();
+
             $table->string('zip_code', 50)->nullable();
             $table->string('state', 50)->nullable();
             $table->string('city', 50)->nullable();
@@ -27,11 +32,16 @@ return new class extends Migration
             $table->string('street', 50)->nullable();
             $table->string('complement', 50)->nullable();
             $table->string('number', 50)->nullable();
-            $table->integer('status');
+
+            $table->tinyInteger('status')->default(1);
             $table->string('subscription_status')->default('active');
+
             $table->text('observations')->nullable();
+
+            // Pagamentos
             $table->timestamp('expires_at')->nullable();
-            $table->string('last_payment_id')->nullable();
+            $table->string('last_payment_id', 100)->nullable();
+
             $table->timestamps();
         });
     }

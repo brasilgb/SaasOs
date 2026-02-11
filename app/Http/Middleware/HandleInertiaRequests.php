@@ -13,7 +13,6 @@ use App\Models\App\Equipment;
 use App\Models\App\Customer;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
 
@@ -49,29 +48,30 @@ class HandleInertiaRequests extends Middleware
     {
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
+        $user = $request->user();
+        // Carregamos o tenant apenas se o usuário estiver logado
+        $tenant = $user ? $user->tenant : null;
+
         return [
             ...parent::share($request),
-            'flash' => [
-                'message' => fn() => $request->session()->get('success'),
-                'error' => fn() => $request->session()->get('error'),
-                'payment_id' => fn() => $request->session()->get('payment_id'),
-                'qr_code' => fn() => $request->session()->get('qr_code'),
-                'qr_code_base64' => fn() => $request->session()->get('qr_code_base64'),
+            'subscription' => [
+                'is_expired' => $user && $tenant->expires_at ? $tenant->expires_at->isPast() : false,
+                'days_remaining' => $user && $tenant->grace_days_remaining,
+                'plan_name' => $user && $tenant->plan->name ?? 'Nenhum',
             ],
-            'company' => $request->user() ? Company::first(['shortname', 'logo', 'companyname', 'cnpj']) : [],
-            'setting' => $request->user() ? Setting::first(['name', 'logo']) : [],
-            'whatsapp' => $request->user() ? WhatsappMessage::first() : [],
-            'plansData' => $request->user() ? Plan::where('value', '>', 0)->get() : [],
-            'othersetting' => $request->user() ? Other::first() : [],
-            'notifications' => $request->user() ? Message::where('recipient_id', $request->user()->id)->where('status', '0')->count() : '0',
-            'equipments' => $request->user() ? Equipment::get() : [],
-            'customers' => $request->user() ? Customer::get() : [],
-            'technicals' => $request->user() ? User::where('roles', 3)->orWhere('roles', 1)->where('status', 1)->get() : [],
+            'company' => $user ? Company::first(['shortname', 'logo', 'companyname', 'cnpj']) : [],
+            'setting' => $user ? Setting::first(['name', 'logo']) : [],
+            'whatsapp' => $user ? WhatsappMessage::first() : [],
+            'othersetting' => $user ? Other::first() : [],
+            'notifications' => $user ? Message::where('recipient_id', $user->id)->where('status', '0')->count() : '0',
+            'equipments' => $user ? Equipment::get() : [],
+            'customers' => $user ? Customer::get() : [],
+            'technicals' => $user ? User::where('roles', 3)->orWhere('roles', 1)->where('status', 1)->get() : [],
             'name' => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
+            'plans' => $tenant ? Plan::all() : [],
             'auth' => [
-                'plan' => $request->user()?->tenant ? Plan::where('id', $request->user()->tenant->plan)->first()?->name : null,
-                'user' => $request->user(),
+                'user' => $user,
             ],
             'ziggy' => fn(): array => [
                 ...(new Ziggy)->toArray(),

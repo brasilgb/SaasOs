@@ -2,7 +2,7 @@
 
 use App\Http\Middleware\AdminAccessMiddleware;
 use App\Http\Middleware\AppAccessMiddleware;
-use App\Http\Middleware\CheckSubscription;
+use App\Http\Middleware\CheckSubscriptionStatus;
 use App\Http\Middleware\Cors;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
@@ -28,7 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
             Route::middleware('web')
                 ->group(base_path('routes/web.php'));
 
-            Route::middleware(['web', 'auth', 'app', 'subscribed'])
+            Route::middleware(['web', 'auth', 'app', 'check.subscription'])
                 ->prefix('app')
                 ->name('app.')
                 ->group(base_path('routes/app.php'));
@@ -44,13 +44,17 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => AdminAccessMiddleware::class,
             'app' => AppAccessMiddleware::class,
-            'subscribed' => CheckSubscription::class,
+            'check.subscription' => CheckSubscriptionStatus::class,
         ]);
         $middleware->web(append: [
             HandleAppearance::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
             Cors::class,
+        ]);
+        // Adicionando exceção de CSRF para o Webhook do Mercado Pago
+        $middleware->validateCsrfTokens(except: [
+            'api/webhooks/mercadopago/*',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

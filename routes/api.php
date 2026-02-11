@@ -8,9 +8,9 @@ use App\Http\Controllers\App\EQModelController;
 use App\Http\Controllers\App\ImageController;
 use App\Http\Controllers\App\OrderController;
 use App\Http\Controllers\App\PartController;
-use App\Http\Controllers\App\PaymentController;
 use App\Http\Controllers\App\ServiceController;
 use App\Http\Controllers\App\UserController;
+use App\Http\Controllers\App\WebhookController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -24,6 +24,8 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
+// routes/api.php (Lembre-se de excluir essa rota da verificação CSRF no VerifyCsrfToken.php)
+Route::post('/webhooks/mercadopago/{token}', [WebhookController::class, 'handle'])->name('webhook.mercadopago');
 
 Route::get('/ordercli/{customer}', [OrderController::class, 'getOrderCli'])->name('ordercli');
 Route::get('/allorder', [OrderController::class, 'allOrder'])->name('allorder');
@@ -48,4 +50,3 @@ Route::post('/upload', [ImageController::class, 'upload'])->name('upload');
 Route::post('/loginuser', [UserController::class, 'loginuser'])->name('loginuser');
 Route::get('/logoutuser', [UserController::class, 'logoutuser'])->name('logoutuser');
 Route::get('/getparts/{reference_number}', [PartController::class, 'getPartsForPartNumber'])->name('getparts');
-Route::post('/webhook/mercadopago', [PaymentController::class, 'handleWebhook'])->name('webhook.mercadopago');

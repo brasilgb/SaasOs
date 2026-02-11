@@ -1,20 +1,25 @@
 import { ChevronRight, type LucideIcon } from "lucide-react"
-
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
 import {
-  SidebarGroup,
-  SidebarGroupLabel,
   SidebarMenu,
+  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  useSidebar, // Importante para detectar o estado
 } from "@/components/ui/sidebar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Link } from "@inertiajs/react"
 
 export default function NavMainCollapsible({
@@ -32,9 +37,42 @@ export default function NavMainCollapsible({
     }[]
   }[]
 }) {
+  const { state } = useSidebar()
+  const isCollapsed = state === "collapsed"
+
   return (
-      <SidebarMenu>
-        {items.map((item) => (
+    <SidebarMenu>
+      {items.map((item) => {
+        // Se estiver colapsado e tiver sub-itens, usamos DropdownMenu (flutuante)
+        if (isCollapsed && item.items?.length) {
+          return (
+            <SidebarMenuItem key={item.title}>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <SidebarMenuButton tooltip={item.title} isActive={item.isActive}>
+                    {item.icon && <item.icon />}
+                    <span>{item.title}</span>
+                  </SidebarMenuButton>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent side="right" align="start" className="w-48">
+                  {item.items.map((subItem) => (
+                    <DropdownMenuItem key={subItem.title} asChild>
+                      <Link 
+                        href={subItem.url}
+                        className={route().current(subItem.active ?? '') ? "bg-accent text-accent-foreground" : ""}
+                      >
+                        {subItem.title}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </SidebarMenuItem>
+          )
+        }
+
+        // Se estiver aberto, mantemos o comportamento de Collapsible (sanfona)
+        return (
           <Collapsible
             key={item.title}
             asChild
@@ -67,7 +105,8 @@ export default function NavMainCollapsible({
               </CollapsibleContent>
             </SidebarMenuItem>
           </Collapsible>
-        ))}
-      </SidebarMenu>
+        )
+      })}
+    </SidebarMenu>
   )
 }

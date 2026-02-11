@@ -1,5 +1,5 @@
 import { SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuItem } from '@/components/ui/sidebar';
-import { AdvancePayment } from '@/components/advance-payment';
+
 
 import { type ComponentPropsWithoutRef } from 'react';
 
@@ -12,7 +12,7 @@ export function NavFooter({
             <SidebarGroupContent>
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <AdvancePayment />
+                        {import.meta.env.VITE_APP_VERSION}
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarGroupContent>

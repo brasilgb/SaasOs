@@ -35,7 +35,7 @@ return [
         ],
     ],
     'mercadopago' => [
-        'token' => env('MERCADO_PAGO_TOKEN'),
-        'webhook_url' => env('MERCADOPAGO_WEBHOOK_URL'),
+        'token' => env('MP_ACCESS_TOKEN'),
+        'webhook_token' => env('MP_WEBHOOK_TOKEN'),
     ],
 ];
