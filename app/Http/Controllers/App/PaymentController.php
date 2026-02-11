@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 use MercadoPago\Client\Payment\PaymentClient;
 use MercadoPago\Client\Common\RequestOptions; // Adicione esta linha
 use MercadoPago\MercadoPagoConfig;
-
+use Illuminate\Support\Facades\Http;
 class PaymentController extends Controller
 {
     public function __construct()
@@ -18,8 +18,10 @@ class PaymentController extends Controller
         MercadoPagoConfig::setAccessToken(env('MP_ACCESS_TOKEN'));
     }
 
+    
     public function generatePix(Request $request)
     {
+
         try {
             $tenant = auth()->user()->tenant;
             $plan = Plan::findOrFail($request->plan_id);
