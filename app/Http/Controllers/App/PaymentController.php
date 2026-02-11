@@ -24,7 +24,7 @@ class PaymentController extends Controller
 
             $client = new PaymentClient();
             $webhookToken = config('services.mercadopago.webhook_token') ?? env('MP_WEBHOOK_TOKEN', 'default_token');
-
+            $idempotencyKey = Str::uuid()->toString();
             // Criação do payload PIX
             $payment = $client->create([
                 "transaction_amount" => (float) $plan->value,
@@ -43,7 +43,10 @@ class PaymentController extends Controller
                     'tenant_id' => $tenant->id,
                     'plan_id' => $plan->id
                 ]),
-                "notification_url" => route('webhook.mercadopago', ['token' => $webhookToken]) // Deve ser URL pública (use Ngrok em dev)
+                "notification_url" => route('webhook.mercadopago', ['token' => $webhookToken]),
+                "headers" => [
+                    "X-Idempotency-Key" => $idempotencyKey,
+                ],
             ]);
 
             return response()->json([
