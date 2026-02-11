@@ -16,7 +16,7 @@ class SubscriptionController extends Controller
         // Segurança: Se o usuário NÃO estiver bloqueado nem expirado há > 3 dias, manda pro dashboard
         // Isso previne que alguém acesse a url /subscription/blocked manualmente estando ativo
         if ($tenant->subscription_status === 'active' || $tenant->plan_id == 2) {
-            return redirect()->route('dashboard');
+            return redirect()->route('app.dashboard');
         }
 
         // Busca apenas planos pagos (Exclui Trial e Cortesia)

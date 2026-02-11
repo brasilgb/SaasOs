@@ -23,13 +23,8 @@ export default function Blocked({ plans, tenant }: any) {
                     if (response.data.status === 'active') {
                         // 1. Limpa o intervalo imediatamente
                         clearInterval(interval);
-
-                        // 2. Feedback visual opcional
-                        alert('Pagamento confirmado! Redirecionando...');
-
-                        // 3. Força o recarregamento total ou navegação do Inertia
                         // window.location.reload() é mais seguro para resetar todos os middlewares
-                        window.location.href = route('dashboard');
+                        window.location.href = route('app.dashboard');
                     }
                 } catch (error) {
                     console.error("Erro ao verificar status do pagamento", error);

@@ -48,8 +48,7 @@ export default function SubscriptionModal() {
                     const response = await axios.get(route('subscription.check_status'));
                     if (response.data.status === 'active') {
                         clearInterval(interval);
-                        alert('Pagamento confirmado! Redirecionando...');
-                        window.location.href = route('dashboard');
+                        window.location.href = route('app.dashboard');
                     }
                 } catch (error) {
                     console.error("Erro ao verificar status", error);
