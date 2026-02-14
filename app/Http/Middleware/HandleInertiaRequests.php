@@ -25,7 +25,6 @@ class HandleInertiaRequests extends Middleware
      *
      * @var string
      */
-    protected $rootView = 'app';
 
     /**
      * Determines the current asset version.
@@ -45,45 +44,80 @@ class HandleInertiaRequests extends Middleware
      * @return array<string, mixed>
      */
     public function share(Request $request): array
-    {
-        [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
+{
+    [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
-        $user = $request->user();
-        // Carregamos o tenant apenas se o usuário estiver logado
-        $tenant = $user ? $user->tenant : null;
+    $user = $request->user();
+    $tenant = $user?->tenant;
 
-        return [
-            ...parent::share($request),
-            'subscription' => [
-                'is_expired' => $user && $tenant->expires_at ? $tenant->expires_at->isPast() : false,
-                'days_remaining' => $user && $tenant->grace_days_remaining,
-                'plan_name' => $user && $tenant->plan->name ?? 'Nenhum',
-            ],
-            'company' => $user ? Company::first(['shortname', 'logo', 'companyname', 'cnpj']) : [],
-            'setting' => $user ? Setting::first(['name', 'logo']) : [],
-            'whatsapp' => $user ? WhatsappMessage::first() : [],
-            'othersetting' => $user ? Other::first() : [],
-            'notifications' => $user ? Message::where('recipient_id', $user->id)->where('status', '0')->count() : '0',
-            'equipments' => $user ? Equipment::get() : [],
-            'customers' => $user ? Customer::get() : [],
-            'technicals' => $user ? User::where('roles', 3)->orWhere('roles', 1)->where('status', 1)->get() : [],
-            'name' => config('app.name'),
-            'quote' => ['message' => trim($message), 'author' => trim($author)],
-            'plans' => $tenant ? Plan::all() : [],
-            'auth' => [
-                'user' => $user,
-            ],
-            'ziggy' => fn(): array => [
-                ...(new Ziggy)->toArray(),
-                'url' => config('app.url'),
-                'location' => $request->url(),
-                'query' => $request->query(),
-            ],
-            'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
-            'app' => [
-                'name' => config('app.name'),
-                'url' => config('app.url'),
-            ],
-        ];
+    $subscription = null;
+
+    if ($user) {
+        if ($user->roles === 1) { // ajuste se root for outro valor
+            $subscription = [
+                'is_expired' => false,
+                'days_remaining' => null,
+                'plan_name' => 'SaaS Root',
+            ];
+        } else {
+            $subscription = [
+                'is_expired' => $tenant?->expires_at?->isPast() ?? false,
+                'days_remaining' => $tenant?->grace_days_remaining ?? null,
+                'plan_name' => $tenant?->plan?->name ?? 'Nenhum',
+            ];
+        }
     }
+
+    return [
+        ...parent::share($request),
+
+        'auth' => [
+            'user' => $user,
+        ],
+
+        'subscription' => $subscription,
+
+        'company' => $user ? Company::first(['shortname', 'logo', 'companyname', 'cnpj']) : null,
+        'setting' => $user ? Setting::first(['name', 'logo']) : null,
+        'whatsapp' => $user ? WhatsappMessage::first() : null,
+        'othersetting' => $user ? Other::first() : null,
+
+        'notifications' => $user
+            ? Message::where('recipient_id', $user->id)->where('status', '0')->count()
+            : 0,
+
+        'equipments' => $user ? Equipment::all() : [],
+        'customers' => $user ? Customer::all() : [],
+
+        'technicals' => $user
+            ? User::whereIn('roles', [1, 3])->where('status', 1)->get()
+            : [],
+
+        'plans' => $tenant ? Plan::all() : [],
+
+        'name' => config('app.name'),
+
+        'quote' => [
+            'message' => trim($message),
+            'author' => trim($author),
+        ],
+
+        'ziggy' => fn () => [
+            ...(new Ziggy)->toArray(),
+            'url' => config('app.url'),
+            'location' => $request->url(),
+            'query' => $request->query(),
+        ],
+
+        'sidebarOpen' =>
+            ! $request->hasCookie('sidebar_state') ||
+            $request->cookie('sidebar_state') === 'true',
+
+        'app' => [
+            'name' => config('app.name'),
+            'url' => config('app.url'),
+        ],
+    ];
+}
+
 }

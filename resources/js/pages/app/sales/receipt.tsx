@@ -28,7 +28,7 @@ const Receipt = forwardRef<HTMLDivElement, Props>(
         className="bg-white text-black font-mono mx-auto"
         style={{ width: widths[paper] }}
       >
-        <div className="p-2 text-[12px]">
+        <div className="p-4 text-[12px]">
 
           <div className="text-center font-bold uppercase">
             {companyData?.company}
