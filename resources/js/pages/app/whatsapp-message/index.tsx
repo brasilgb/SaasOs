@@ -26,7 +26,7 @@ export default function WhatsappMessage({ whatsappmessage }: any) {
     const { data, setData, patch, progress, processing, errors } = useForm({
         generatedbudget: whatsappmessage?.generatedbudget,
         servicecompleted: whatsappmessage?.servicecompleted,
-        defaultmessage: whatsappmessage?.defaultmessage,
+        feedback: whatsappmessage?.feedback,
     });
 
     const handleSubmit = (e: any) => {
@@ -81,11 +81,11 @@ export default function WhatsappMessage({ whatsappmessage }: any) {
                             </div>
 
                             <div className="md:col-span-2 grid gap-2">
-                                <Label htmlFor="defaultmessage">Mensagem padrão</Label>
+                                <Label htmlFor="feedback">Feedback ao cliente</Label>
                                 <Textarea
-                                    id="defaultmessage"
-                                    value={data.defaultmessage}
-                                    onChange={(e) => setData('defaultmessage', e.target.value)}
+                                    id="feedback"
+                                    value={data.feedback}
+                                    onChange={(e) => setData('feedback', e.target.value)}
                                 />
                             </div>
 

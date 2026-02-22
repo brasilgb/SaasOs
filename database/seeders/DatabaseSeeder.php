@@ -23,9 +23,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Popula os planos primeiro
-        $this->call(PlanSeeder::class);
-
         // 1. Crie alguns Tenants para sua plataforma
         $tenants = Tenant::factory(5)->create();
 
@@ -66,22 +63,22 @@ class DatabaseSeeder extends Seeder
             // Crie Agendamentos (Schedules) PARA ESTE TENANT
             Schedule::factory(30)->create([
                 'tenant_id' => $tenant->id,
-                'customer_id' => fn () => $customers->random()->id,
-                'user_id' => fn () => $users->random()->id,
+                'customer_id' => fn() => $customers->random()->id,
+                'user_id' => fn() => $users->random()->id,
             ]);
 
             // Crie Vendas (Sales) PARA ESTE TENANT
             // A SaleFactory já cuida de criar os SaleItems
             Sale::factory(40)->create([
                 'tenant_id' => $tenant->id,
-                'customer_id' => fn () => $customers->random()->id,
+                'customer_id' => fn() => $customers->random()->id,
             ]);
 
             // Crie Mensagens (Messages) PARA ESTE TENANT
             Message::factory(15)->create([
                 'tenant_id' => $tenant->id,
-                'sender_id' => fn () => $users->random()->id,
-                'recipient_id' => fn () => $users->random()->id,
+                'sender_id' => fn() => $users->random()->id,
+                'recipient_id' => fn() => $users->random()->id,
             ]);
         });
     }

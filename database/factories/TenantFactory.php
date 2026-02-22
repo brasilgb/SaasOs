@@ -15,7 +15,7 @@ class TenantFactory extends Factory
     {
         $faker = FakerFactory::create('pt_BR');
         return [
-            'plan' => fn () => Plan::inRandomOrder()->first()->id,
+            'plan_id' => 1,
             'name' => $this->faker->name,
             'company' => $this->faker->unique()->company,
             'cnpj' => $faker->unique()->cnpj, // Gera um CNPJ com 14 dígitos
@@ -30,9 +30,10 @@ class TenantFactory extends Factory
             'complement' => $this->faker->secondaryAddress,
             'number' => $this->faker->buildingNumber,
             'status' => 1, // Assumindo 1 como 'ativo'
-            'payment' => $this->faker->boolean,
-            'observations' => $this->faker->sentence,
+            'subscription_status' => '',
+            'last_payment_id' => '',
             'expires_at' => $this->faker->dateTimeBetween('+1 month', '+1 year'),
+            'observations' => $this->faker->sentence,
         ];
     }
 }

@@ -52,7 +52,7 @@ export interface User {
 export interface Customer {
     id: number;
     name: string;
-    cpf: string;
+    cpfcnpj: string;
     birth: string;
     email: string;
     zipcode: string;

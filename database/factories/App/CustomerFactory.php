@@ -18,11 +18,12 @@ class CustomerFactory extends Factory
         $faker = FakerFactory::create('pt_BR');
 
         return [
-            'name' => $faker->name,
-            "cpf" => $faker->cpf(),
+            "customer_number" => null,
+            "name" => $faker->name,
+            "cpfcnpj" => $faker->cpf(),
             "birth" => $faker->date('Y-m-d'),
             'email' => $faker->unique()->safeEmail,
-            "cep" => $faker->postcode(),
+            "zipcode" => $faker->postcode(),
             "state" => $faker->state,
             "city" => $faker->city,
             "district" => $faker->citySuffix,
@@ -31,11 +32,21 @@ class CustomerFactory extends Factory
             "number" => $faker->buildingNumber,
             'phone' => $faker->phoneNumber,
             "contactname" => $faker->name,
-            "whatsapp" => $faker->phoneNumber,
+            "whatsapp" => '5551995862789',
             "contactphone" => $faker->phoneNumber,
             "observations" => $faker->sentence
         ];
     }
+    
+        public function configure()
+        {
+            return $this->afterCreating(function (Customer $customer) {
+                // Aqui o ID já existe
+                $customer->update([
+                    'customer_number' => $customer->id
+                ]);
+            });
+        }
 
     /**
      * Configura a factory para um tenant específico, garantindo que

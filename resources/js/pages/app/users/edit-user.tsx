@@ -198,7 +198,7 @@ export default function CreateUser({ user }: any) {
 
             <div className="grid md:grid-cols-2 gap-4 mt-4">
               <div className=" grid gap-2">
-                <Label htmlFor="recipient">Funções do usuário {data.roles}</Label>
+                <Label htmlFor="recipient">Funções do usuário</Label>
                 <Select
                   isDisabled={data.roles === 9 ? true : false}
                   menuPosition='fixed'

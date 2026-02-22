@@ -144,7 +144,7 @@ const handleSubmit = (e: React.FormEvent) => {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="shortname">Nome curto</Label>
+                                <Label htmlFor="shortname">Nome curto (para etiqueta)</Label>
                                 <Input
                                     type="text"
                                     id="shortname"

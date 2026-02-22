@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('customers', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tenant_id')->nullable()->constrained()->onDelete('cascade');
+            $table->foreignId('tenant_id')->constrained()->onDelete('cascade');
             $table->integer('customer_number');
             $table->string('name');
-            $table->string('cpf', 50)->nullable();
+            $table->string('cpfcnpj', 50);
             $table->date('birth')->nullable();
             $table->string('email', 50)->nullable();
             $table->string('zipcode', 20)->nullable();
@@ -28,10 +28,11 @@ return new class extends Migration
             $table->integer('number')->nullable();
             $table->string('phone', 20)->nullable();
             $table->string('contactname', 50)->nullable();
-            $table->string('whatsapp', 50)->nullable();
+            $table->string('whatsapp')->nullable();
             $table->string('contactphone', 20)->nullable();
             $table->text('observations')->nullable();
             $table->timestamps();
+            $table->unique(['tenant_id', 'cpfcnpj']);
         });
     }
 

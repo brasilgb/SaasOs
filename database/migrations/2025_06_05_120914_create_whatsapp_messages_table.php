@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('tenant_id')->nullable()->constrained()->onDelete('cascade');
             $table->text('generatedbudget')->nullable();
             $table->text('servicecompleted')->nullable();
-            $table->text('defaultmessage')->nullable();
+            $table->text('feedback')->nullable();
             $table->timestamps();
         });
     }

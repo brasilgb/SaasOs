@@ -16,7 +16,6 @@ use App\Http\Controllers\App\MessageController;
 use App\Http\Controllers\App\OrderController;
 use App\Http\Controllers\App\PartController;
 use App\Http\Controllers\App\ReportController;
-use App\Http\Controllers\App\Reports\SalesReportController;
 use App\Http\Controllers\App\SaleController;
 use App\Http\Controllers\App\ScheduleController;
 use App\Http\Controllers\App\ServiceController;
@@ -29,6 +28,7 @@ Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 Route::get('/chartEquipments/{timerange}', [DashboardController::class, 'chartEquipments'])->name('chartEquipments');
 
 Route::resource('customers', CustomerController::class);
+Route::post('customers/import-customer', [CustomerController::class, 'ImportCustomer'])->name('import.customer');
 Route::resource('messages', MessageController::class);
 Route::patch('messages/{message}/read', [MessageController::class, 'read'])->name('messages.read');
 Route::get('orders/feedback', [OrderController::class, 'getFeedback'])->name('orders.feedback');

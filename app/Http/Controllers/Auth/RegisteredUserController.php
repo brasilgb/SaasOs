@@ -128,14 +128,14 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
         Auth::login($user);
-        // if ($user instanceof User) {
-        //     Mail::to($request->email)->send(new UserRegisteredMail($user));
-        // }
+        if ($user instanceof User) {
+            Mail::to($request->email)->send(new UserRegisteredMail($user));
+        }
 
         return redirect()
             ->route('app.dashboard')
             ->with(
-                'success',
+                'message',
                 'Conta criada com sucesso! Você possui 30 dias de acesso para testes.'
             );
     }

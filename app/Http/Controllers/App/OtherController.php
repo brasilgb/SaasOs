@@ -22,13 +22,11 @@ class OtherController extends Controller
         }
         $query = Other::orderBy("id", "DESC")->first();
         $othersettings = Other::where("id", $query->id)->first();
-        $customers = Customer::get(["id", "name", "cpf", "email"]);
-        $orders = Order::get();
         $company = Company::first();
         $expiresAt = Carbon::parse(Tenant::first()->expires_at);
         $diff = Carbon::now()->diff($expiresAt);
         $time_remaining = ', restante ' . $diff->days . ' dias e ' . $diff->h . ' horas';
-        return Inertia::render('app/others/index', ['othersettings' => $othersettings, 'customers' => $customers, 'orders' => $orders, 'company' => $company, 'time_remaining' => $time_remaining]);
+        return Inertia::render('app/others/index', ['othersettings' => $othersettings, 'company' => $company, 'time_remaining' => $time_remaining]);
     }
 
     /**

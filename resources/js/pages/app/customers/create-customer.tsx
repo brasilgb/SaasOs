@@ -5,7 +5,7 @@ import AppLayout from "@/layouts/app-layout";
 import { BreadcrumbItem } from "@/types";
 import { Head, Link } from "@inertiajs/react";
 import { ArrowLeft, Users } from "lucide-react";
-import CustomerForm from "./customer-form.tsx";
+import CustomerForm from "./customer-form";
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -49,6 +49,7 @@ export default function CreateCustomer() {
           </Button>
         </div>
         <div>
+          
         </div>
       </div>
 

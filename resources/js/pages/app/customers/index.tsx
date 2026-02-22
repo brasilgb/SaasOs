@@ -2,8 +2,8 @@ import { Breadcrumbs } from '@/components/breadcrumbs'
 import { Icon } from '@/components/icon';
 import AppLayout from '@/layouts/app-layout'
 import { BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/react'
-import { Calendar, Edit, Plus, Users, Wrench } from 'lucide-react';
+import { Head, Link, usePage } from '@inertiajs/react'
+import { Calendar, Edit, Plus, Upload, Users, Wrench } from 'lucide-react';
 import moment from 'moment'
 import {
   Table,
@@ -19,6 +19,9 @@ import InputSearch from '@/components/inputSearch';
 import ActionDelete from '@/components/action-delete';
 import { maskCpfCnpj, maskPhone, unMask } from '@/Utils/mask';
 import AppPagination from '@/components/app-pagination';
+import ImportCustomersModal from './import-customers-modal';
+import { useEffect, useState } from 'react';
+import { toastSuccess, toastWarning } from '@/components/app-toast-messages';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -32,6 +35,20 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Customers({ customers }: any) {
+  const { flash } = usePage().props as any;
+  const [modalAberto, setModalAberto] = useState(false);
+
+  useEffect(() => {
+    // Se houver mensagem de sucesso
+    if (flash.message) {
+      toastSuccess(flash.message);
+    }
+
+    // Se houver erros de validação (ex: arquivo inválido)
+    if (flash.error) {
+      toastWarning(flash.error);
+    }
+  }, [flash]);
 
   return (
     <AppLayout>
@@ -50,7 +67,14 @@ export default function Customers({ customers }: any) {
         <div className='w-full'>
           <InputSearch placeholder="Pesquisar cliente por nome ou cpf/cnpj" url="app.customers.index" />
         </div>
-        <div className='w-full flex justify-end'>
+        <div className='w-full flex justify-end gap-2'>
+          <Button
+            onClick={() => setModalAberto(true)}
+            className="bg-green-600 hover:bg-green-700 text-white"
+          >
+            <Upload className='h-4 w-4' />
+            <span>CSV</span>
+          </Button>
           <Button variant={'default'} asChild>
             <Link
               href={route('app.customers.create')}
@@ -63,6 +87,10 @@ export default function Customers({ customers }: any) {
       </div>
 
       <div className='p-4'>
+        <ImportCustomersModal
+          isOpen={modalAberto}
+          onClose={() => setModalAberto(false)}
+        />
         <div className='border rounded-lg'>
           <Table>
             <TableHeader>
@@ -70,7 +98,7 @@ export default function Customers({ customers }: any) {
                 <TableHead>#</TableHead>
                 <TableHead>Nome</TableHead>
                 <TableHead>Email</TableHead>
-                <TableHead>CPF</TableHead>
+                <TableHead>CPF/CNPJ</TableHead>
                 <TableHead>Telefone</TableHead>
                 <TableHead>Cadastro</TableHead>
                 <TableHead></TableHead>

@@ -80,8 +80,9 @@ export default function CreateChecklist({ equipments }: any) {
 
                         <div className="grid gap-4 py-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="checklist">Checklist *</Label>
+                                <Label htmlFor="checklist">Checklist (separar com vírgula)</Label>
                                 <Input
+                                    placeholder="Check1, Check2, Check3"
                                     id="checklist"
                                     value={data.checklist}
                                     onChange={(e) => setData("checklist", e.target.value)}
