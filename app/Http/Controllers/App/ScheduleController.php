@@ -37,7 +37,7 @@ class ScheduleController extends Controller
                 $q->where('id', 'like', '%' . $search . '%')
                     ->orWhereHas('customer', function ($subQuery) use ($search) {
                         $subQuery->where('name', 'like', "%$search%")
-                            ->orWhere('cpf', 'like', '%' . $search . '%');
+                            ->orWhere('cpfcnpj', 'like', '%' . $search . '%');
                     });
             });
         }

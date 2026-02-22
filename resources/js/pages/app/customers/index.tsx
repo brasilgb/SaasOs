@@ -46,7 +46,8 @@ export default function Customers({ customers }: any) {
 
     // Se houver erros de validação (ex: arquivo inválido)
     if (flash.error) {
-      toastWarning(flash.error);
+      console.log(flash.error)
+      toastWarning('Erro ao salvar csv');
     }
   }, [flash]);
 
@@ -111,7 +112,7 @@ export default function Customers({ customers }: any) {
                     <TableCell>{customer.customer_number}</TableCell>
                     <TableCell>{customer.name}</TableCell>
                     <TableCell>{customer.email}</TableCell>
-                    <TableCell>{maskCpfCnpj(unMask(customer.cpf))}</TableCell>
+                    <TableCell>{maskCpfCnpj(unMask(customer.cpfcnpj))}</TableCell>
                     <TableCell>{maskPhone(unMask(customer.phone))}</TableCell>
                     <TableCell>{moment(customer.created_at).format("DD/MM/YYYY")}</TableCell>
                     <TableCell className='flex justify-end gap-2'>

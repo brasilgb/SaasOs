@@ -61,7 +61,7 @@ function ReceiptCopy({ order, company, type, receipt, checklist, qrcode }: { ord
                     </div>
                     <div className="grid md:grid-cols-1 gap-1 text-[10px]">
                         <p>
-                            <span className="font-medium">CPF/CNPJ:</span> {order?.customer?.cpf}
+                            <span className="font-medium">CPF/CNPJ:</span> {order?.customer?.cpfcnpj}
                         </p>
                         <p>
                             <span className="font-medium">Telefone:</span> {order?.customer?.phone}

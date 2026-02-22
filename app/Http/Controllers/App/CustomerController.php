@@ -15,78 +15,77 @@ class CustomerController extends Controller
 {
 
     public function ImportCustomer(Request $request)
-{
-    try {
-        // Validação inicial do arquivo
-        $request->validate([
-            'arquivo' => 'required|mimes:csv,txt|max:2048' // Adicionado limite de 2MB por segurança
-        ], [
-            'arquivo.required' => 'Por favor, selecione um arquivo.',
-            'arquivo.mimes' => 'O arquivo deve ser do tipo CSV ou TXT.',
-        ]);
+    {
+        try {
+            // Validação inicial do arquivo
+            $request->validate([
+                'arquivo' => 'required|mimes:csv,txt|max:2048' // Adicionado limite de 2MB por segurança
+            ], [
+                'arquivo.required' => 'Por favor, selecione um arquivo.',
+                'arquivo.mimes' => 'O arquivo deve ser do tipo CSV ou TXT.',
+            ]);
 
-        $tenantId = Auth::user()->tenant_id;
-        $path = $request->file('arquivo')->getRealPath();
-        $file = fopen($path, 'r');
+            $tenantId = Auth::user()->tenant_id;
+            $path = $request->file('arquivo')->getRealPath();
+            $file = fopen($path, 'r');
 
-        // Pula o cabeçalho
-        fgetcsv($file, 1000, ";");
+            // Pula o cabeçalho
+            fgetcsv($file, 1000, ";");
 
-        $ultimoNumero = \App\Models\App\Customer::where('tenant_id', $tenantId)
-            ->max('customer_number') ?? 0;
+            $ultimoNumero = \App\Models\App\Customer::where('tenant_id', $tenantId)
+                ->max('customer_number') ?? 0;
 
-        $dadosParaInserir = [];
+            $dadosParaInserir = [];
 
-        while (($linha = fgetcsv($file, 1000, ";")) !== FALSE) {
-            // Ajustado: Pula se o nome estiver vazio (índice 0 na sua nova lógica)
-            if (empty($linha[0])) continue; 
+            while (($linha = fgetcsv($file, 1000, ";")) !== FALSE) {
+                // Ajustado: Pula se o nome estiver vazio (índice 0 na sua nova lógica)
+                if (empty($linha[0])) continue;
 
-            $ultimoNumero++;
+                $ultimoNumero++;
 
-            $dadosParaInserir[] = [
-                'tenant_id'       => $tenantId,
-                'customer_number' => $ultimoNumero,
-                'name'            => $linha[0],
-                'cpfcnpj'         => $linha[1] ?? null,
-                'birth'           => !empty($linha[2]) ? $linha[2] : null,
-                'email'           => $linha[3] ?: null,
-                'zipcode'         => $linha[4] ?: null,
-                'state'           => $linha[5] ?: null,
-                'city'            => $linha[6] ?: null,
-                'district'        => $linha[7] ?: null,
-                'street'          => $linha[8] ?: null,
-                'complement'      => $linha[9] ?: null,
-                'number'          => $linha[10] ?: null,
-                'phone'           => $linha[11] ?? 'Sem telefone',
-                'contactname'     => $linha[12] ?: null,
-                'whatsapp'        => $linha[13] ?: null,
-                'contactphone'    => $linha[14] ?: null,
-                'observations'    => $linha[15] ?: null,
-                'created_at'      => now(),
-                'updated_at'      => now(),
-            ];
+                $dadosParaInserir[] = [
+                    'tenant_id'       => $tenantId,
+                    'customer_number' => $ultimoNumero,
+                    'name'            => $linha[0],
+                    'cpfcnpj'         => $linha[1] ?? null,
+                    'birth'           => !empty($linha[2]) ? $linha[2] : null,
+                    'email'           => $linha[3] ?: null,
+                    'zipcode'         => $linha[4] ?: null,
+                    'state'           => $linha[5] ?: null,
+                    'city'            => $linha[6] ?: null,
+                    'district'        => $linha[7] ?: null,
+                    'street'          => $linha[8] ?: null,
+                    'complement'      => $linha[9] ?: null,
+                    'number'          => $linha[10] ?: null,
+                    'phone'           => $linha[11] ?? 'Sem telefone',
+                    'contactname'     => $linha[12] ?: null,
+                    'whatsapp'        => $linha[13] ?: null,
+                    'contactphone'    => $linha[14] ?: null,
+                    'observations'    => $linha[15] ?: null,
+                    'created_at'      => now(),
+                    'updated_at'      => now(),
+                ];
 
-            if (count($dadosParaInserir) >= 500) {
-                \App\Models\App\Customer::insertOrIgnore($dadosParaInserir);
-                $dadosParaInserir = [];
+                if (count($dadosParaInserir) >= 500) {
+                    \App\Models\App\Customer::insertOrIgnore($dadosParaInserir);
+                    $dadosParaInserir = [];
+                }
             }
+
+            // CORRIGIDO: Usar insertOrIgnore também aqui fora para evitar erro no último lote
+            if (!empty($dadosParaInserir)) {
+                \App\Models\App\Customer::insertOrIgnore($dadosParaInserir);
+            }
+
+            fclose($file);
+
+            return redirect()->back()->with('message', 'Importação concluída com sucesso!');
+        } catch (\Exception $e) {
+            // Retorna o erro real para o Toaster mostrar
+            // Em produção, você pode trocar $e->getMessage() por uma frase genérica
+            return redirect()->back()->with('error', 'Falha na importação: ' . $e->getMessage());
         }
-
-        // CORRIGIDO: Usar insertOrIgnore também aqui fora para evitar erro no último lote
-        if (!empty($dadosParaInserir)) {
-            \App\Models\App\Customer::insertOrIgnore($dadosParaInserir);
-        }
-
-        fclose($file);
-
-        return redirect()->back()->with('message', 'Importação concluída com sucesso!');
-
-    } catch (\Exception $e) {
-        // Retorna o erro real para o Toaster mostrar
-        // Em produção, você pode trocar $e->getMessage() por uma frase genérica
-        return redirect()->back()->with('error', 'Falha na importação: ' . $e->getMessage());
     }
-}
 
     public function getClientes()
     {
@@ -108,7 +107,7 @@ class CustomerController extends Controller
 
         if ($search) {
             $query->where('name', 'like', '%' . $search . '%')
-                ->orWhere('cpf', 'like', '%' . $search . '%');
+                ->orWhere('cpfcnpj', 'like', '%' . $search . '%');
         }
 
         $customers = $query->paginate(11);

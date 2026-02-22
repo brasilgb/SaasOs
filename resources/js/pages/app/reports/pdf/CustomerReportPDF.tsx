@@ -1,7 +1,6 @@
 import React from "react";
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import moment from "moment";
-import "moment/dist/locale/pt-br";
 import { maskCpfCnpj, maskPhone } from "@/Utils/mask";
 
 moment.locale("pt-br");
@@ -102,7 +101,7 @@ export default function CustomerReportPDF({ data, dateRange, company }: any) {
               <Text style={styles.colSmall}>{customer.customer_number}</Text>
               <Text style={styles.colLarge}>{customer.name}</Text>
               <Text style={styles.colMedium}>{customer.email}</Text>
-              <Text style={styles.colMedium}>{maskCpfCnpj(customer.cpf)}</Text>
+              <Text style={styles.colMedium}>{maskCpfCnpj(customer.cpfcnpj)}</Text>
               <Text style={styles.colMedium}>{maskPhone(customer.phone)}</Text>
               <Text style={styles.colRight}>
                 {moment(customer.created_at).format("DD/MM/YYYY")}
