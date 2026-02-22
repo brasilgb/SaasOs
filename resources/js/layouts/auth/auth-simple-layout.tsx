@@ -24,7 +24,7 @@ export default function AuthSimpleLayout({ children, title, description, width =
             {/* Dark Overlay */}
             <div className="absolute inset-0 bg-linear-to-br from-black/75 via-black/80 to-black/75" />
 
-            <Card className={`absolute border-border/50 shadow-2xl bg-background backdrop-blur-md ${width} md:p-8 p-4`}>
+            <Card className={`relative z-10 border-border/50 shadow-2xl bg-background/95 backdrop-blur-md ${width} flex flex-col max-h-[90vh]`}>
                 {/* Logo */}
                 <div className="top-8 left-8 z-10 flex flex-col items-center gap-3">
                     <Link href={route('home')} className="flex flex-col items-center gap-2 font-medium">
@@ -34,7 +34,6 @@ export default function AuthSimpleLayout({ children, title, description, width =
                         <span className="sr-only">{title}</span>
                     </Link>
 
-
                     <CardHeader className="space-y-1 w-full">
                         <CardTitle className="text-2xl font-bold text-balance text-center">{title}</CardTitle>
                         <CardDescription className="text-base text-balance text-center">
@@ -42,9 +41,8 @@ export default function AuthSimpleLayout({ children, title, description, width =
                         </CardDescription>
                     </CardHeader>
                 </div>
-
                 {/* Content */}
-                <div className="relative z-10 w-full max-w-md">
+                <div className="relative z-10 w-full overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-border">
                     {children}
                 </div>
             </Card>

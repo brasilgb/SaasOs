@@ -41,7 +41,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
     return (
         <AuthLayout title="Bem vindo de volta" description="Entre com suas credenciais para acessar o sistema">
             <Head title="Conecte-se" />
-                <form className="flex flex-col gap-6" onSubmit={submit}>
+                <form className="flex flex-col gap-6 pl-2" onSubmit={submit}>
                     <div className="grid gap-6">
                         <div className="grid gap-2">
                             <Label htmlFor="email">E-mail</Label>

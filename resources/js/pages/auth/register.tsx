@@ -47,7 +47,7 @@ export default function Register() {
     return (
         <AuthLayout width='md:min-w-4xl !px-0' title="Criar uma conta" description="Digite seus dados abaixo para criar sua conta">
             <Head title="Criar uma conta" />
-            <div className='overflow-y-auto md:min-w-4xl px-4'>
+            <div className='overflow-y-auto md:min-w-4xl px-4 max-h-[80vh] px-4 scrollbar-hide hover:scrollbar-default'>
                 <form className="flex flex-col gap-6" onSubmit={submit}>
                     <div className="grid gap-6 md:grid-cols-3">
 
@@ -199,7 +199,6 @@ export default function Register() {
                             "Cadastrar"
                         )}
                     </Button>
-
 
                     <div className="text-muted-foreground text-center text-sm">
                         Já tem uma conta?{' '}

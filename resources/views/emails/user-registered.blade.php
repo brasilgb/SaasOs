@@ -126,9 +126,22 @@
                 de forma simples, rápida e segura.
             </p>
 
+            <p>
             <a href="{{ config('app.url') }}" class="btn">
                 Acessar o sistema
             </a>
+        </p>
+        <p>
+
+            <a
+    href="{{ asset('apk/sigmaup-image-upload.apk') }}"
+    download="sigmaup-image-upload.apk"
+    class="text-blue-600 hover:underline flex items-center gap-2"
+>
+    Baixar aplicativo para upload de imagens
+</a>
+
+        </p>
         </div>
 
         <div class="footer">

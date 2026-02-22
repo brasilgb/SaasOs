@@ -68,7 +68,16 @@ export default function Orders({ orders, whats, feedback }: any) {
                 <div className='w-full flex justify-end'>
                     <SelectFilter dataStatus={statusServico} url="app.orders.index" />
                 </div>
-                <div className='w-full flex justify-end'>
+                <div className='w-full flex justify-end gap-4'>
+                    <Button variant={'default'} asChild>
+                        <a
+                            href={'/apk/sigmaup-image-upload.apk'}
+                            download="sigmaup-image-upload.apk"
+                        >
+                            <Plus className='h-4 w-4' />
+                            <span>APP Upload Images</span>
+                        </a>
+                    </Button>
                     <Button variant={'default'} asChild>
                         <Link
                             href={route('app.orders.create')}
