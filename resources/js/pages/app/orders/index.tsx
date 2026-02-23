@@ -23,9 +23,8 @@ import SelectFilter from '@/components/SelectFilter';
 import { Switch } from '@/components/ui/switch';
 import { maskPhone } from '@/Utils/mask';
 import { statusServico } from '@/Utils/dataSelect';
-import { TemplateSenderWhatsapp } from '@/components/template-sender-whatsapp';
-import { getGreeting } from '@/components/greeting';
 import { StatusBadge } from '@/components/StatusBadge';
+import { WhatsAppButton } from '@/components/WhatsAppButtonProps';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -135,14 +134,16 @@ export default function Orders({ orders, whats, feedback }: any) {
                                         </TableCell>
                                         <TableCell className='flex justify-end gap-2'>
 
-                                            <TemplateSenderWhatsapp
+                                            <WhatsAppButton
                                                 phone={order.customer.whatsapp}
-                                                template={`${order.service_status == '7' ? whats?.servicecompleted : order.service_status == '3' ? whats?.generatedbudget : "Olá, cliente!"}`}
-                                                data={{
-                                                    greeting: getGreeting(),
-                                                    name: order.customer.name,
-                                                    os: order.order_number,
-                                                    value: `${order.service_status == '7' ? order?.service_cost : order.service_status == '3' ? order?.budget_value : "0,00"}`
+                                                customerName={order.customer.name}
+                                                orderNumber={order.order_number}
+                                                status={order.service_status}
+                                                feedback={feedback?.some((feed: any) => feed.order_number === order.order_number)}
+                                                whats={{
+                                                    generatedbudget: whats?.generatedbudget,
+                                                    servicecompleted: whats?.servicecompleted,
+                                                    feedback: whats?.feedback
                                                 }}
                                             />
 

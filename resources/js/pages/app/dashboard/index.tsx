@@ -10,7 +10,7 @@ import { ChartAreaDashboard } from '@/components/chart-area-dashboard';
 import { SalesProducts } from '@/components/sales-products';
 import AlertSuccess from '@/components/app-alert-success';
 
-export default function Dashboard({ reloadKey, orders, acount, chartequipments, parts, customers, others, }: any) {
+export default function Dashboard({ reloadKey, orders, acount, parts, customers, others, }: any) {
 
     const { flash } = usePage().props as any;
 
