@@ -50,13 +50,13 @@ const features = [
   },
   {
     icon: MessageSquare,
-    title: "Chat da Equipe",
+    title: "Mensagens em Equipe",
     description: "Mensagens internas para comunicação rápida entre técnicos, atendentes e gestores.",
   },
   {
     icon: Smartphone,
     title: "App Android",
-    description: "Aplicativo mobile para técnicos registrarem fotos e informações direto do campo.",
+    description: "Aplicativo mobile para registrar equipamentos quando necessário.",
   },
   {
     icon: FileText,
@@ -65,7 +65,7 @@ const features = [
   },
   {
     icon: Printer,
-    title: "Impressões Profissionais",
+    title: "Impressões de Recibos",
     description: "Recibos de entrada, orçamentos, entregas e etiquetas personalizadas para equipamentos.",
   },
   {
@@ -85,7 +85,7 @@ const features = [
   },
   {
     icon: BookOpen,
-    title: "Manuais e Tutoriais em Vídeo",
+    title: "Manuais em Vídeo",
     description: "Acesso completo a documentação detalhada e vídeos tutoriais para facilitar o uso de todas as funcionalidades.",
   },
   {
