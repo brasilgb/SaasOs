@@ -56,7 +56,7 @@ const features = [
   {
     icon: Smartphone,
     title: "App Android",
-    description: "Aplicativo mobile para registrar equipamentos quando necessário.",
+    description: "Aplicativo mobile para registrar imagens de equipamentos quando necessário.",
   },
   {
     icon: FileText,
