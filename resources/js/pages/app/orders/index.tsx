@@ -82,7 +82,7 @@ export default function Orders({ orders, whats, feedback }: any) {
                             href={route('app.orders.create')}
                         >
                             <Plus className='h-4 w-4' />
-                            <span>Ordem</span>
+                            <span>Nova Ordem</span>
                         </Link>
                     </Button>
                 </div>
@@ -143,7 +143,8 @@ export default function Orders({ orders, whats, feedback }: any) {
                                                 whats={{
                                                     generatedbudget: whats?.generatedbudget,
                                                     servicecompleted: whats?.servicecompleted,
-                                                    feedback: whats?.feedback
+                                                    feedback: whats?.feedback,
+                                                    tracking_token: order?.tracking_token
                                                 }}
                                             />
 

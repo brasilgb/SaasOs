@@ -25,7 +25,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Others({ othersettings, company, time_remaining }: any) {
-const { auth } = usePage().props as any;
+    const { auth } = usePage().props as any;
     const [uploading, setUploading] = useState<string>('');
     const { data, setData, put, processing } = useForm({
         navigation: othersettings?.navigation,
@@ -45,7 +45,7 @@ const { auth } = usePage().props as any;
 
     return (
         <AppLayout>
-            
+
             <Head title="Outras configurações" />
             <div className='flex items-center justify-between h-16 px-4'>
                 <div className='flex items-center gap-2'>
@@ -87,7 +87,7 @@ const { auth } = usePage().props as any;
                             />
                         </div>
                     </div> */}
-                    <div className="space-y-6 mt-6">
+                    {/* <div className="space-y-6 mt-6">
                         <HeadingSmall title="Habilitar cadastro e utilização de estoque de peças e/ou produtos " description="Habilita a opções de cadastro e a utilização de inserção de peças e/ou produtos nas ordens de serviço. Padrão inserção manual do nome e valor." />
                         <div className="grid gap-2">
                             <Switch
@@ -96,7 +96,7 @@ const { auth } = usePage().props as any;
                                 onCheckedChange={(checked: any) => setData('enableparts', checked)}
                             />
                         </div>
-                    </div>
+                    </div> */}
                     <div className="space-y-6 mt-6">
                         <HeadingSmall title="Habilitar a venda de peças e/ou produtos" description="Habilitar a venda de peças e/ou produtos avulsos ou para usuários específicos, com ajuste de estoque." />
                         <div className="grid gap-2">

@@ -2,10 +2,12 @@
 
 use App\Http\Controllers\App\PaymentController;
 use App\Http\Controllers\App\SubscriptionController;
+use App\Http\Controllers\OsController;
 use App\Http\Controllers\Site\HomeController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/os/{token}', [OsController::class, 'index']);
 
 /*
 |--------------------------------------------------------------------------

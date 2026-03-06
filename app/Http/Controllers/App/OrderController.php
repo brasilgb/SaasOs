@@ -14,6 +14,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Str;
 
 class OrderController extends Controller
 {
@@ -119,6 +120,7 @@ class OrderController extends Controller
         $data = $request->all();
         $request->validated();
         $data['order_number'] = Order::exists() ? Order::latest()->first()->order_number + 1 : 1;
+        $data['tracking_token'] = Str::uuid();
         Order::create($data);
         return redirect()->route('app.orders.index')->with('success',  'Ordem cadastrada com sucesso');
     }
@@ -163,12 +165,10 @@ class OrderController extends Controller
             "budget_description" => $data['budget_description'], // descrição do orçamento
             "budget_value" => $data['budget_value'], // valor do orçamento
             "services_performed" => $data['services_performed'], // servicos executados
-            "parts" => $data['parts'],
             "parts_value" => $data['parts_value'],
             "service_value" => $data['service_value'],
             "service_cost" => $data['service_cost'], // custo
             "delivery_date" => $data['delivery_date'], // $data de entrega
-            "responsible_technician" => $data['responsible_technician'],
             "service_status" => $data['service_status'],
             "delivery_forecast" => $data['delivery_forecast'], // previsao de entrega
             "observations" => $data['observations'],

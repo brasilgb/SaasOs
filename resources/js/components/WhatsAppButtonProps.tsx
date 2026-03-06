@@ -11,6 +11,7 @@ type WhatsAppButtonProps = {
         generatedbudget?: string;
         servicecompleted?: string;
         feedback?: string;
+        tracking_token?: string;
     };
 
     className?: string;
@@ -31,9 +32,11 @@ const buildMessage = ({
     whats,
 }: Omit<WhatsAppButtonProps, "phone" | "className">) => {
     const greeting = getGreeting();
+    const orderOpened = `Acompanhe o status de  sua ordem de serviço em https://sigmaos.com.br/os/${whats?.tracking_token}`
 
-    console.log('status', status);
-
+    if (status === 1) {
+        return `${greeting}, ${customerName}!\n\n${orderOpened}`;
+    }
     // prioridade: feedback > status
     if (feedback && whats?.feedback) {
         return `${greeting}, ${customerName}!\n\n${whats.feedback}`;

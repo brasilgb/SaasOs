@@ -39,7 +39,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function EditOrder({ customers, order, technicals, equipments, parts, orderparts }: any) {
 
   const { ziggy, othersetting } = usePage().props as any;
-  const disableParts = !othersetting?.enableparts ? 'parts' : '';
   const { page, oc } = (ziggy as any).query
   const [partsData, setPartsData] = useState<any>([]);
 
@@ -170,7 +169,7 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
   }
 
   const handleRemovePart = (partId: any) => {
-    setPartsData((  currentLocalParts: any) => currentLocalParts.filter((part: any) => part.id !== partId));
+    setPartsData((currentLocalParts: any) => currentLocalParts.filter((part: any) => part.id !== partId));
   };
 
   const combinedParts = [
@@ -211,8 +210,7 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
           </Button>
         </div>
         <div>
-          {!disableParts &&
-            <AddPartsModal onSubmit={handleModalSubmit} parts={parts} />}
+            <AddPartsModal onSubmit={handleModalSubmit} parts={parts} />
         </div>
       </div>
 
@@ -382,7 +380,7 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
               </div>
             </div>
 
-            {combinedParts.length > 0 && othersetting?.enableparts > 0 &&
+            {combinedParts.length > 0 &&
               <Card className="p-4 mb-4">
                 <CardTitle className="border-b pb-2">Peças adicionadas</CardTitle>
                 <CardContent className="flex items-center justify-start gap-4 flex-wrap">
@@ -400,43 +398,18 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
               </Card>
             }
 
-            <div className={`grid ${othersetting?.enableparts ? 'md:grid-cols-3' : 'md:grid-cols-5'} gap-4 mt-4`}>
+            <div className='grid md:grid-cols-3 gap-4 mt-4'>
 
-              {!othersetting?.enableparts &&
-                <>
-                  <div className="grid gap-2 md:col-span-2">
-                    <Label htmlFor="parts">Peças adicionadas</Label>
-                    <Input
-                      type="text"
-                      id="parts"
-                      value={data.parts}
-                      onChange={(e) => setData('parts', e.target.value)}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="parts_value">Valor das peças</Label>
-                    <Input
-                      type="text"
-                      id="parts_value"
-                      value={maskMoney(data.parts_value.toString())}
-                      onChange={(e) => setData('parts_value', e.target.value)}
-                    />
-                  </div>
-                </>
-              }
-
-              {othersetting?.enableparts > 0 &&
-                <div className="grid gap-2">
-                  <Label htmlFor="parts_value">Valor das peças</Label>
-                  <Input
-                    type="text"
-                    id="parts_value"
-                    value={maskMoney(data.parts_value)}
-                    onChange={(e) => setData('parts_value', e.target.value)}
-                    required
-                  />
-                </div>
-              }
+              <div className="grid gap-2">
+                <Label htmlFor="parts_value">Valor das peças</Label>
+                <Input
+                  type="text"
+                  id="parts_value"
+                  value={maskMoney(data.parts_value)}
+                  onChange={(e) => setData('parts_value', e.target.value)}
+                  required
+                />
+              </div>
 
               <div className="grid gap-2">
                 <Label htmlFor="service_value">Valor do serviço</Label>

@@ -128,9 +128,9 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
         Auth::login($user);
-        if ($user instanceof User) {
-            Mail::to($request->email)->send(new UserRegisteredMail($user));
-        }
+        // if ($user instanceof User) {
+        //     Mail::to($request->email)->send(new UserRegisteredMail($user));
+        // }
 
         return redirect()
             ->route('app.dashboard')
