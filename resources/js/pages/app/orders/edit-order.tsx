@@ -94,7 +94,7 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    
+
     patch(route('app.orders.update', order.id), {
       onSuccess: () => {
         toastSuccess("Sucesso", "Ordem de serviço alterada com sucesso")
@@ -217,7 +217,7 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
             </Link>
           </Button>
         </div>
-        <div className="flex items-center justify-end gap-4">
+        <div className="flex items-center justify-end gap-2">
           {(order.service_status === 6 || order.service_status === 7) && (
 
             <Button
@@ -225,7 +225,7 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
               className="py-2 rounded-lg text-sm font-medium"
             >
               <FileTextIcon className="h-4 w-4" />
-              Emitir Nota Fiscal
+              Emitir NFSe
             </Button>
           )}
           <AddPartsModal onSubmit={handleModalSubmit} parts={parts} />
@@ -255,6 +255,11 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
                       border: 'none',
                       background: 'transparent',
                       paddingBottom: '2px',
+                    }),
+                    singleValue: (base) => ({
+                      ...base,
+                      color: "#ebebeb", // cinza escuro (igual input padrão)
+                      fontSize: "14px",
                     }),
                     dropdownIndicator: (base) => ({
                       ...base,
@@ -286,6 +291,11 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
                       border: 'none',
                       background: 'transparent',
                       paddingBottom: '2px',
+                    }),
+                    singleValue: (base) => ({
+                      ...base,
+                      color: "#ebebeb", // cinza escuro (igual input padrão)
+                      fontSize: "14px",
                     }),
                     dropdownIndicator: (base) => ({
                       ...base,
@@ -469,6 +479,11 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
                       background: 'transparent',
                       paddingBottom: '2px',
                     }),
+                    singleValue: (base) => ({
+                      ...base,
+                      color: "#ebebeb", // cinza escuro (igual input padrão)
+                      fontSize: "14px",
+                    }),
                     dropdownIndicator: (base) => ({
                       ...base,
 
@@ -499,6 +514,11 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
                       border: 'none',
                       background: 'transparent',
                       paddingBottom: '2px',
+                    }),
+                    singleValue: (base) => ({
+                      ...base,
+                      color: "#ebebeb", // cinza escuro (igual input padrão)
+                      fontSize: "14px",
                     }),
                     dropdownIndicator: (base) => ({
                       ...base,

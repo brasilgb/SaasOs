@@ -118,7 +118,7 @@ export default function BudgetForm({ initialData, budgets }: BudgetFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
-
+ 
       {/* Linha 1 */}
       <div className="grid md:grid-cols-3 gap-4">
         <div className="grid gap-2">
@@ -135,7 +135,7 @@ export default function BudgetForm({ initialData, budgets }: BudgetFormProps) {
           />
           <InputError message={errors.category} />
         </div>
-
+ 
         <div className="grid gap-2">
           <Label>Serviço</Label>
           <Input value={data.service} onChange={e => setData("service", e.target.value)} />

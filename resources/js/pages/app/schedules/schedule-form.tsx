@@ -96,6 +96,11 @@ export default function ScheduleForm({ customers, initialData, technicals }: Sch
                 background: 'transparent',
                 paddingBottom: '2px',
               }),
+              singleValue: (base) => ({
+                ...base,
+                color: "#ebebeb", // cinza escuro (igual input padrão)
+                fontSize: "14px",
+              }),
               dropdownIndicator: (base) => ({
                 ...base,
 
@@ -163,6 +168,11 @@ export default function ScheduleForm({ customers, initialData, technicals }: Sch
                 background: 'transparent',
                 paddingBottom: '2px',
               }),
+              singleValue: (base) => ({
+                ...base,
+                color: "#ebebeb", // cinza escuro (igual input padrão)
+                fontSize: "14px",
+              }),
               dropdownIndicator: (base) => ({
                 ...base,
 
@@ -192,6 +202,11 @@ export default function ScheduleForm({ customers, initialData, technicals }: Sch
                 border: 'none',
                 background: 'transparent',
                 paddingBottom: '2px',
+              }),
+              singleValue: (base) => ({
+                ...base,
+                color: "#ebebeb", // cinza escuro (igual input padrão)
+                fontSize: "14px",
               }),
               dropdownIndicator: (base) => ({
                 ...base,

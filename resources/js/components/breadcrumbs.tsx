@@ -7,27 +7,35 @@ export function Breadcrumbs({ breadcrumbs }: { breadcrumbs: BreadcrumbItemType[]
     return (
         <>
             {breadcrumbs.length > 0 && (
-                <Breadcrumb>
-                    <BreadcrumbList>
-                        {breadcrumbs.map((item, index) => {
-                            const isLast = index === breadcrumbs.length - 1;
-                            return (
-                                <Fragment key={index}>
-                                    <BreadcrumbItem>
-                                        {isLast ? (
-                                            <BreadcrumbPage>{item.title}</BreadcrumbPage>
-                                        ) : (
-                                            <BreadcrumbLink asChild>
-                                                <Link href={item.href}>{item.title}</Link>
-                                            </BreadcrumbLink>
-                                        )}
-                                    </BreadcrumbItem>
-                                    {!isLast && <BreadcrumbSeparator />}
-                                </Fragment>
-                            );
-                        })}
-                    </BreadcrumbList>
-                </Breadcrumb>
+                <div className="w-full overflow-x-auto">
+                    <Breadcrumb>
+                        <BreadcrumbList className="flex-nowrap whitespace-nowrap">
+                            {breadcrumbs.map((item, index) => {
+                                const isLast = index === breadcrumbs.length - 1;
+
+                                return (
+                                    <Fragment key={index}>
+                                        <BreadcrumbItem>
+                                            {isLast ? (
+                                                <BreadcrumbPage className="text-sm">
+                                                    {item.title}
+                                                </BreadcrumbPage>
+                                            ) : (
+                                                <BreadcrumbLink asChild>
+                                                    <Link href={item.href} className="text-sm">
+                                                        {item.title}
+                                                    </Link>
+                                                </BreadcrumbLink>
+                                            )}
+                                        </BreadcrumbItem>
+
+                                        {!isLast && <BreadcrumbSeparator />}
+                                    </Fragment>
+                                );
+                            })}
+                        </BreadcrumbList>
+                    </Breadcrumb>
+                </div>
             )}
         </>
     );

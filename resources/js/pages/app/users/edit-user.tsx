@@ -216,6 +216,11 @@ export default function CreateUser({ user }: any) {
                       background: 'transparent',
                       paddingBottom: '2px',
                     }),
+                    singleValue: (base) => ({
+                      ...base,
+                      color: "#ebebeb", // cinza escuro (igual input padrão)
+                      fontSize: "14px",
+                    }),
                     dropdownIndicator: (base) => ({
                       ...base,
 

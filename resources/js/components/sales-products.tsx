@@ -324,7 +324,7 @@ export function SalesProducts({ parts, customers }: SalesProductsProps) {
                                 <p className="col-span-4 text-red-500 text-xs text-right">{errors.customer_id}</p>
                             )}
                         </div>
-                        <div className='grid grid-cols-5 md:gap-4'>
+                        <div className='grid grid-cols-1 sm:grid-cols-5 gap-2 sm:gap-4'>
                             <div className="items-center gap-4 col-span-2">
                                 <Label htmlFor="part_id" className="text-right mb-1">
                                     Selecione o Produto
@@ -369,7 +369,7 @@ export function SalesProducts({ parts, customers }: SalesProductsProps) {
                                         type="number"
                                         value={data.quantity}
                                         onChange={e => setData('quantity', parseInt(e.target.value, 10) || 1)}
-                                        className="col-span-3"
+                                        className="w-full col-span-3"
                                     />
                                 </div>
                                 <div className='h-4'>
@@ -385,7 +385,7 @@ export function SalesProducts({ parts, customers }: SalesProductsProps) {
                             </div>
                         </div>
                     </div>
-                    <div className="items-center gap-4">
+                    <div className="flex justify-between items-center mb-2">
                         <div className='flex items-center justify-between'>
                             <div className='flex items-center justify-start gap-4'>
                                 {selectedPart &&

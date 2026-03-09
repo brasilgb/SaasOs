@@ -49,15 +49,15 @@ export default function Schedules({ schedules }: any) {
         </div>
       </div>
 
-      <div className='flex items-center justify-between p-4'>
+      <div className="flex w-full flex-col gap-2 md:w-auto md:flex-row md:justify-end px-2">
         <div className='w-full'>
           <InputSearch placeholder="Buscar por número, nome do cliente ecpf/cnpj" url="app.schedules.index" />
         </div>
-        <div className='w-full flex justify-end'>
+        <div className='w-full md:w-auto'>
           <SelectFilter dataStatus={statusAgenda} url="app.schedules.index" noOrder />
         </div>
         <div className='w-full flex justify-end'>
-          <Button variant={'default'} asChild>
+          <Button variant={'default'} asChild className="w-full md:w-auto">
             <Link
               href={route('app.schedules.create')}
             >

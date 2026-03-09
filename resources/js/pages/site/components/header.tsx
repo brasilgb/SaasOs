@@ -100,6 +100,32 @@ export function Header() {
               Contato
             </a>
           </nav>
+          <div className="border-t pt-4 flex flex-col gap-3">
+            {auth?.user ? (
+              <Link
+                href={route(`${auth?.user?.tenant_id === null ? 'admin.dashboard' : 'app.dashboard'}`)}
+                onClick={handleLinkClick}
+              >
+                <Button className="w-full">
+                  {auth.user.name}
+                </Button>
+              </Link>
+            ) : (
+              <>
+                <Link href={route('login')} onClick={handleLinkClick}>
+                  <Button variant="outline" className="w-full">
+                    Entrar
+                  </Button>
+                </Link>
+
+                <Link href={route('register')} onClick={handleLinkClick}>
+                  <Button className="w-full">
+                    Começar Grátis
+                  </Button>
+                </Link>
+              </>
+            )}
+          </div>
         </div>
       )}
     </header>

@@ -108,8 +108,7 @@ export default function CreateOrder({ customers, equipments }: any) {
             </Link>
           </Button>
         </div>
-        <div>
-        </div>
+
       </div>
 
       <div className='p-4'>
@@ -124,7 +123,7 @@ export default function CreateOrder({ customers, equipments }: any) {
                   options={optionsCustomer}
                   onChange={changeCustomer}
                   placeholder="Selecione o cliente"
-                  className="shadow-xs p-0 border text-gray-700 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-9"
+                  className="shadow-xs p-0 border text-gray-500 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-9"
                   styles={{
                     control: (baseStyles, state) => ({
                       ...baseStyles,
@@ -133,6 +132,11 @@ export default function CreateOrder({ customers, equipments }: any) {
                       border: 'none',
                       background: 'transparent',
                       paddingBottom: '2px',
+                    }),
+                    singleValue: (base) => ({
+                      ...base,
+                      color: "#ebebeb", // cinza escuro (igual input padrão)
+                      fontSize: "14px",
                     }),
                     dropdownIndicator: (base) => ({
                       ...base,
@@ -163,6 +167,11 @@ export default function CreateOrder({ customers, equipments }: any) {
                       border: 'none',
                       background: 'transparent',
                       paddingBottom: '2px',
+                    }),
+                    singleValue: (base) => ({
+                      ...base,
+                      color: "#ebebeb", // cinza escuro (igual input padrão)
+                      fontSize: "14px",
                     }),
                     dropdownIndicator: (base) => ({
                       ...base,
@@ -292,6 +301,11 @@ export default function CreateOrder({ customers, equipments }: any) {
                       border: 'none',
                       background: 'transparent',
                       paddingBottom: '2px',
+                    }),
+                    singleValue: (base) => ({
+                      ...base,
+                      color: "#ebebeb", // cinza escuro (igual input padrão)
+                      fontSize: "14px",
                     }),
                     dropdownIndicator: (base) => ({
                       ...base,

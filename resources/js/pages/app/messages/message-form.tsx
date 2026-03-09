@@ -94,6 +94,11 @@ export default function MessageForm({ users, initialData }: MessageFormProps) {
                 background: 'transparent',
                 paddingBottom: '2px',
               }),
+              singleValue: (base) => ({
+                ...base,
+                color: "#ebebeb", // cinza escuro (igual input padrão)
+                fontSize: "14px",
+              }),
               dropdownIndicator: (base) => ({
                 ...base,
 

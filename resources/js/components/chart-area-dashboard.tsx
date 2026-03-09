@@ -27,42 +27,44 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@/components/ui/toggle-group"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { connectBackend } from "@/Utils/connectApi"
 
 export const description = "Gráfico de área interativo"
 
 export function ChartAreaDashboard() {
   const isMobile = useIsMobile()
-  const [timeRange, setTimeRange] = React.useState("7")
-  const [chartData, setChartData] = React.useState([])
-  const [lines, setLines] = React.useState([])
+  const [timeRange, setTimeRange] = useState(isMobile ? "7" : "30")
+  const [chartData, setChartData] = useState([])
+  const [lines, setLines] = useState([])
 
   React.useEffect(() => {
     if (isMobile) {
-      setTimeRange("30")
+      setTimeRange("7")
     }
   }, [isMobile])
 
   useEffect(() => {
     const chartForDays = async () => {
-      const response = await connectBackend.get(`chartEquipments/${timeRange}`);
-      setChartData(response.data.data);
-      setLines(response.data.lines)
+      try {
+        const response = await connectBackend.get(`chartEquipments/${timeRange}`);
+        setChartData(response.data.data);
+        setLines(response.data.lines)
+      } catch (error) {
+        console.error("Erro ao carregar dados do gráfico", error);
+      }
     }
     chartForDays();
   }, [timeRange]);
 
   const chartConfig = React.useMemo(() => {
     const config: ChartConfig = {}
-
     lines.forEach((line: any, index: number) => {
       config[line.key] = {
         label: line.label,
         color: `var(--chart-${index + 1})`,
       }
     })
-
     return config
   }, [lines])
 
@@ -84,8 +86,8 @@ export function ChartAreaDashboard() {
             variant="outline"
             className="hidden *:data-[slot=toggle-group-item]:px-4! @[767px]/card:flex"
           >
-            <ToggleGroupItem value="7">Últimos 7 dias</ToggleGroupItem>
-            <ToggleGroupItem value="30">Últimos 07 dias</ToggleGroupItem>
+            <ToggleGroupItem value="7">Últimos 07 dias</ToggleGroupItem>
+            <ToggleGroupItem value="30">Últimos 30 dias</ToggleGroupItem>
             <ToggleGroupItem value="60">Últimos 60 dias</ToggleGroupItem>
           </ToggleGroup>
           <Select value={timeRange} onValueChange={setTimeRange}>
@@ -98,10 +100,10 @@ export function ChartAreaDashboard() {
             </SelectTrigger>
             <SelectContent className="rounded-xl">
               <SelectItem value="7" className="rounded-lg">
-                Últimos 7 dias
+                Últimos 07 dias
               </SelectItem>
               <SelectItem value="30" className="rounded-lg">
-                Últimos 07 dias
+                Últimos 30 dias
               </SelectItem>
               <SelectItem value="60" className="rounded-lg">
                 Últimos 60 dias
@@ -171,9 +173,10 @@ export function ChartAreaDashboard() {
             />
             {lines.map((line: any, index: number) => (
               <Area
+                type="monotone"
+                animationDuration={500}
                 key={line.key}
                 dataKey={line.key}
-                type="natural"
                 fill={`url(#fill-${line.key})`}
                 stroke={`var(--chart-${index + 1})`}
                 stackId="a"

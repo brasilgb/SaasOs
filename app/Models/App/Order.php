@@ -42,4 +42,9 @@ class Order extends Model
             ->withPivot('quantity')
             ->withTimestamps();
     }
+
+    public function statusHistory()
+    {
+        return $this->hasMany(OrderStatusHistory::class)->latest();
+    }
 }

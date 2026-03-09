@@ -63,32 +63,46 @@ export default function Orders({ orders, whats, feedback }: any) {
                 </div>
             </div>
 
-            <div className='flex items-center justify-between p-4'>
-                <div className='w-full'>
-                    <InputSearch placeholder="Buscar ordem por número, nome do cliente ou cpf/cnpj" url="app.orders.index" />
+            <div className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
+
+                {/* Busca */}
+                <div className="w-full md:max-w-sm">
+                    <InputSearch
+                        placeholder="Buscar ordem por número, nome do cliente ou cpf/cnpj"
+                        url="app.orders.index"
+                    />
                 </div>
-                <div className='w-full flex justify-end'>
-                    <SelectFilter dataStatus={statusServico} url="app.orders.index" />
+
+                {/* Filtro */}
+                <div className="w-full md:w-auto">
+                    <SelectFilter
+                        dataStatus={statusServico}
+                        url="app.orders.index"
+                    />
                 </div>
-                <div className='w-full flex justify-end gap-4'>
-                    <Button variant={'default'} asChild>
+
+                {/* Botões */}
+                <div className="flex w-full flex-col gap-2 md:w-auto md:flex-row md:justify-end">
+
+                    <Button variant="default" asChild className="w-full md:w-auto">
                         <a
-                            href={'/apk/sigmaup-image-upload.apk'}
+                            href="/apk/sigmaup-image-upload.apk"
                             download="sigmaup-image-upload.apk"
                         >
-                            <Plus className='h-4 w-4' />
+                            <Plus className="h-4 w-4 mr-1" />
                             <span>APP Upload Images</span>
                         </a>
                     </Button>
-                    <Button variant={'default'} asChild>
-                        <Link
-                            href={route('app.orders.create')}
-                        >
-                            <Plus className='h-4 w-4' />
+
+                    <Button variant="default" asChild className="w-full md:w-auto">
+                        <Link href={route('app.orders.create')}>
+                            <Plus className="h-4 w-4 mr-1" />
                             <span>Nova Ordem</span>
                         </Link>
                     </Button>
+
                 </div>
+
             </div>
 
             <div className='p-4'>
@@ -139,7 +153,7 @@ export default function Orders({ orders, whats, feedback }: any) {
                                             {(order.service_status === 6 || order.service_status === 7) && (
 
                                                 <Button
-                                                title='Emitir Nota Fiscal'
+                                                    title='Emitir Nota Fiscal'
                                                     onClick={() => setOpenInvoiceModal(true)}
                                                     className="py-2 rounded-lg text-sm font-medium"
                                                 >

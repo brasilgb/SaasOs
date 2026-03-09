@@ -7,12 +7,14 @@ use App\Http\Controllers\Controller;
 use App\Models\App\Customer;
 use App\Models\App\Equipment;
 use App\Models\App\Order;
+use App\Models\App\OrderStatusHistory;
 use App\Models\App\Part;
 use App\Models\User;
 use App\Models\App\WhatsappMessage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
 
@@ -166,8 +168,10 @@ class OrderController extends Controller
      */
     public function update(OrderRequest $request, Order $order): RedirectResponse
     {
+
         $data = $request->all();
         $request->validated();
+        $oldStatus = $order->service_status;
         $order->update([
             "customer_id" => $data['customer_id'],
             "equipment_id" => $data['equipment_id'], // equipamento
@@ -196,6 +200,26 @@ class OrderController extends Controller
             }
             // 2. Sincroniza as peças à Ordem de Serviço usando a tabela pivô
             $order->orderParts()->sync($partsToSync);
+        }
+
+        $notes = [
+            1 => "Ordem Aberta",
+            2 => "Ordem Fechada",
+            3 => "Orçamento Gerado",
+            4 => "Orçamento Aprovado",
+            5 => "Reparo em andamento",
+            6 => "Serviço concluído",
+            7 => "Cliente avisado / aguardando retirada",
+            8 => "Entregue ao cliente",
+        ];
+
+        if ($data['service_status'] != $oldStatus) {
+            OrderStatusHistory::create([
+                'order_id' => $order->id,
+                'status' => $data['service_status'],
+                'changed_by' => Auth::id(),
+                'note' => $notes[$data['service_status']] ?? null
+            ]);
         }
 
         return redirect()->route('app.orders.show', ['order' => $order->id])->with('success', 'Ordem atualizada com sucesso');
