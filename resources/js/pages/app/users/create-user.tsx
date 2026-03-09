@@ -86,7 +86,7 @@ export default function CreateUser() {
             <Link
               href={route('app.users.index')}
             >
-              <ArrowLeft h-4 w-4 />
+              <ArrowLeft className="h-4 w-4" />
               <span>Voltar</span>
             </Link>
           </Button>

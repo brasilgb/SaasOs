@@ -1,11 +1,11 @@
 const statusServico = [
-    { value: "1", label: "Ordem Aberta" },
-    { value: "2", label: "Ordem Fechada" },
-    { value: "3", label: "Orçamento Gerado" },
-    { value: "4", label: "Orçamento Aprovado" },
-    { value: "5", label: "Executando reparo" },
-    { value: "6", label: "(CA)Serviço concluído" },
-    { value: "7", label: "(CN)Serviço concluído" },
+    { value: "1", label: "Ordem aberta" },
+    { value: "1", label: "Ordem fechada" },
+    { value: "3", label: "Orçamento gerado" },
+    { value: "4", label: "Orçamento aprovado" },
+    { value: "5", label: "Reparo em andamento" },
+    { value: "6", label: "Serviço concluído" },
+    { value: "7", label: "Cliente avisado / aguardando retirada" },
     { value: "8", label: "Entregue ao cliente" },
 ];
 
@@ -68,10 +68,10 @@ const statusSaas = [
 ];
 
 const warrantyOptions = [
-  { value: '1', label: '1 mês' },
-  { value: '3', label: '3 meses' },
-  { value: '6', label: '6 meses' },
-  { value: '12', label: '12 meses' },
+    { value: '1', label: '1 mês' },
+    { value: '3', label: '3 meses' },
+    { value: '6', label: '6 meses' },
+    { value: '12', label: '12 meses' },
 ];
 
 export {

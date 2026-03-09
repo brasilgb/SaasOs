@@ -11,7 +11,7 @@ class OsController extends Controller
 {
     public function index($token)
     {
-        $order = Order::where('tracking_token', $token)->with('equipment')->firstOrFail();
+        $order = Order::where('tracking_token', $token)->with('equipment')->with('customer')->firstOrFail();
         return Inertia::render('app/serviceorders/index', ['order' => $order]);
     }
 }

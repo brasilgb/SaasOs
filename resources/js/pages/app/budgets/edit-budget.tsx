@@ -49,7 +49,7 @@ export default function EditBudget({ budgets, budget }: any) {
             <Link
               href={route('app.budgets.index')}
             >
-              <ArrowLeft h-4 w-4 />
+              <ArrowLeft className="h-4 w-4" />
               <span>Voltar</span>
             </Link>
           </Button>

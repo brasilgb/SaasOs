@@ -3,7 +3,7 @@ import { Icon } from '@/components/icon';
 import AppLayout from '@/layouts/app-layout'
 import { BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react'
-import { Edit, ImageUp, Pencil, Plus, Wrench } from 'lucide-react';
+import { Edit, FileTextIcon, ImageUp, Pencil, Plus, Wrench } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     Table,
@@ -25,6 +25,8 @@ import { maskPhone } from '@/Utils/mask';
 import { statusServico } from '@/Utils/dataSelect';
 import { StatusBadge } from '@/components/StatusBadge';
 import { WhatsAppButton } from '@/components/WhatsAppButtonProps';
+import { useState } from 'react';
+import InvoiceModal from '@/components/Modals/InvoiceModal';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -40,16 +42,17 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Orders({ orders, whats, feedback }: any) {
     const { ziggy } = usePage().props as any;
     const { cl, init } = (ziggy as any).query
+    const [openInvoiceModal, setOpenInvoiceModal] = useState(false);
 
     const handleFeedbackCheck = (value: number, id: number) => {
         const newValue = value === 1 ? 0 : 1;
         router.get(route('app.orders.feedback', { "feedback": newValue, "orderid": id }))
     }
-
     return (
         <AppLayout>
 
             <Head title="Ordens" />
+
             <div className='flex items-center justify-between h-16 px-4'>
                 <div className='flex items-center gap-2'>
                     <Icon iconNode={Wrench} className='w-8 h-8' />
@@ -133,6 +136,22 @@ export default function Orders({ orders, whats, feedback }: any) {
                                             />
                                         </TableCell>
                                         <TableCell className='flex justify-end gap-2'>
+                                            {(order.service_status === 6 || order.service_status === 7) && (
+
+                                                <Button
+                                                title='Emitir Nota Fiscal'
+                                                    onClick={() => setOpenInvoiceModal(true)}
+                                                    className="py-2 rounded-lg text-sm font-medium"
+                                                >
+                                                    <FileTextIcon className="h-4 w-4" />
+                                                    NFSe
+                                                </Button>
+                                            )}
+                                            <InvoiceModal
+                                                open={openInvoiceModal}
+                                                onClose={() => setOpenInvoiceModal(false)}
+                                                order={order}
+                                            />
 
                                             <WhatsAppButton
                                                 phone={order.customer.whatsapp}
@@ -165,6 +184,7 @@ export default function Orders({ orders, whats, feedback }: any) {
 
                                         </TableCell>
                                     </TableRow>
+
                                 ))
                                 : (
                                     <TableRow>

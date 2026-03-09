@@ -94,7 +94,7 @@ export default function CreateUser({ user, tenants }: any) {
             <Link
               href={route('admin.users.index')}
             >
-              <ArrowLeft h-4 w-4 />
+              <ArrowLeft className="h-4 w-4" />
               <span>Voltar</span>
             </Link>
           </Button>

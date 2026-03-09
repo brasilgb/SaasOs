@@ -3,15 +3,14 @@ import { Icon } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/layouts/app-layout";
 import { BreadcrumbItem } from "@/types";
-import { Head, Link, router, useForm, usePage } from "@inertiajs/react";
-import { ArrowLeft, Save, Wrench, X } from "lucide-react";
+import { Head, Link, useForm, usePage } from "@inertiajs/react";
+import { ArrowLeft, FileTextIcon, Save, Wrench, X } from "lucide-react";
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { statusServico } from "@/Utils/dataSelect";
 import Select from 'react-select';
 import InputError from "@/components/input-error";
-import AlertSuccess from "@/components/app-alert-success";
 import { useEffect, useState } from "react";
 import { maskMoney, maskMoneyDot } from "@/Utils/mask";
 import moment from "moment";
@@ -20,6 +19,7 @@ import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toastSuccess } from "@/components/app-toast-messages";
 import { DatePicker } from "@/components/date-picker";
+import InvoiceModal from "@/components/Modals/InvoiceModal";
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -60,6 +60,7 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
   const { data, post, setData, patch, progress, processing, reset, errors } = useForm({
     customer_id: order?.customer_id,
     equipment_id: order?.equipment_id, // equipamento
+    user_id: order?.user_id,
     model: order?.model,
     password: order?.password,
     defect: order?.defect,
@@ -72,13 +73,14 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
     parts_value: order.parts_value,
     service_value: order.service_value,
     service_cost: order.service_cost, // custo
-    delivery_date: order.delivery_date, // data de entrega
-    responsible_technician: order.responsible_technician,
+    delivery_date: order.delivery_date,
     service_status: order?.service_status,
     delivery_forecast: order?.delivery_forecast, // previsao de entrega
     observations: order?.observations,
     allparts: '',
   });
+
+  const [openInvoiceModal, setOpenInvoiceModal] = useState(false);
 
   const handleModalSubmit = (modalParts: any) => {
     setPartsData((currentLocalParts: any) => {
@@ -92,6 +94,7 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
+    
     patch(route('app.orders.update', order.id), {
       onSuccess: () => {
         toastSuccess("Sucesso", "Ordem de serviço alterada com sucesso")
@@ -147,13 +150,13 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
   };
 
   const changeResponsibleTechnician = (selected: any) => {
-    setData('responsible_technician', selected?.value);
+    setData('user_id', selected?.value);
   };
 
   const defaultCustomer = optionsCustomer?.filter((o: any) => o.value == order?.customer_id).map((opt: any) => ({ value: opt.value, label: opt.label }));
   const defaultEquipament = optionsEquipment?.filter((o: any) => o.value == order?.equipment_id).map((opt: any) => ({ value: opt.value, label: opt.label }));
   const statusDefault = statusServico?.filter((o: any) => o.value == order?.service_status).map((opt: any) => ({ value: opt.value, label: opt.label }));
-  const defaultTechnical = optionsTechnical?.filter((o: any) => o.value == order?.responsible_technician).map((opt: any) => ({ value: opt.value, label: opt.label }));
+  const defaultTechnical = optionsTechnical?.filter((o: any) => o.value == order?.user_id).map((opt: any) => ({ value: opt.value, label: opt.label }));
 
   const handleRemovePartsOrder = (e: any, id: number) => {
     e.preventDefault();
@@ -188,6 +191,11 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
     <AppLayout>
 
       <Head title="Ordens" />
+      <InvoiceModal
+        open={openInvoiceModal}
+        onClose={() => setOpenInvoiceModal(false)}
+        order={order}
+      />
       <div className='flex items-center justify-between h-16 px-4'>
         <div className='flex items-center gap-2'>
           <Icon iconNode={Wrench} className='w-8 h-8' />
@@ -204,13 +212,23 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
             <Link
               href={route('app.orders.index', { page: page, oc: oc })}
             >
-              <ArrowLeft h-4 w-4 />
+              <ArrowLeft className="h-4 w-4" />
               <span>Voltar</span>
             </Link>
           </Button>
         </div>
-        <div>
-            <AddPartsModal onSubmit={handleModalSubmit} parts={parts} />
+        <div className="flex items-center justify-end gap-4">
+          {(order.service_status === 6 || order.service_status === 7) && (
+
+            <Button
+              onClick={() => setOpenInvoiceModal(true)}
+              className="py-2 rounded-lg text-sm font-medium"
+            >
+              <FileTextIcon className="h-4 w-4" />
+              Emitir Nota Fiscal
+            </Button>
+          )}
+          <AddPartsModal onSubmit={handleModalSubmit} parts={parts} />
         </div>
       </div>
 
@@ -461,7 +479,7 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
                     }),
                   }}
                 />
-                {errors.responsible_technician && <div className="text-red-500 text-sm">{errors.responsible_technician}</div>}
+                {errors.user_id && <div className="text-red-500 text-sm">{errors.user_id}</div>}
               </div>
 
               <div className="grid gap-2">

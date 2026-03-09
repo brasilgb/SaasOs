@@ -110,7 +110,7 @@ export default function EditTenant({ plans, tenant }: any) {
                         <Link
                             href={route('admin.tenants.index')}
                         >
-                            <ArrowLeft h-4 w-4 />
+                            <ArrowLeft className="h-4 w-4" />
                             <span>Voltar</span>
                         </Link>
                     </Button>

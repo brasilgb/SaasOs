@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Select from 'react-select';
 import { useForm, usePage } from '@inertiajs/react';
-import { Printer, FileText, Loader2, ShoppingCartIcon, Trash2 } from 'lucide-react'; // Adicionado Trash2 para remover item
+import { Printer, FileText, Loader2, ShoppingCartIcon, Trash2, FileTextIcon } from 'lucide-react'; // Adicionado Trash2 para remover item
 import { maskMoney } from '@/Utils/mask';
 import { pdf } from '@react-pdf/renderer';
 import SaleReceiptPDF from './SaleReceiptPDF';
@@ -22,6 +22,8 @@ import { apios } from '@/Utils/connectApi';
 import Receipt from '@/pages/app/sales/receipt';
 import { useReactToPrint } from "react-to-print"
 import { usePaperSize } from '@/hooks/usePaperSize';
+import InvoiceModal from './Modals/InvoiceModal';
+import SaleInvoiceModal from './Modals/SaleInvoiceModal';
 
 interface Part {
     id: number;
@@ -48,18 +50,20 @@ interface CartItem extends Part {
 }
 
 export function SalesProducts({ parts, customers }: SalesProductsProps) {
-        const { auth } = usePage().props as any;
-        const companyData = auth?.user?.tenant;
-        
+    const { auth } = usePage().props as any;
+    const companyData = auth?.user?.tenant;
+
     const [selectedPart, setSelectedPart] = useState<Part | null>(null);
     const [open, setOpen] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
     const [cartItems, setCartItems] = useState<CartItem[]>([]); // New state for cart items
     const [saleCompleted, setSaleCompleted] = useState(false);
     const [saleData, setSaleData] = useState<any>([]);
+    const [nfSales, setNfSales] = useState<any>([]);
 
     const [isPrintingThermal, setIsPrintingThermal] = useState(false);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+    const [openInvoiceModal, setOpenInvoiceModal] = useState(false);
 
     const receiptRef = useRef<HTMLDivElement>(null);
 
@@ -90,56 +94,56 @@ export function SalesProducts({ parts, customers }: SalesProductsProps) {
     }, [cartItems]);
 
     const addToCart = () => {
-    if (selectedPart && data.quantity > 0) {
-        // 1. Verifica se o item já está no carrinho
-        const existingItemIndex = cartItems.findIndex(item => item.id === selectedPart.id);
-        
-        // 2. Calcula quanto já tem no carrinho desse item
-        const quantityInCart = existingItemIndex > -1 ? cartItems[existingItemIndex].selected_quantity : 0;
-        
-        // 3. Validação REAL de estoque (Carrinho + O que está tentando adicionar agora)
-        if ((quantityInCart + data.quantity) > selectedPart.quantity) {
-            alert(`Estoque insuficiente. Você já tem ${quantityInCart} no carrinho e o estoque total é ${selectedPart.quantity}.`);
-            return;
+        if (selectedPart && data.quantity > 0) {
+            // 1. Verifica se o item já está no carrinho
+            const existingItemIndex = cartItems.findIndex(item => item.id === selectedPart.id);
+
+            // 2. Calcula quanto já tem no carrinho desse item
+            const quantityInCart = existingItemIndex > -1 ? cartItems[existingItemIndex].selected_quantity : 0;
+
+            // 3. Validação REAL de estoque (Carrinho + O que está tentando adicionar agora)
+            if ((quantityInCart + data.quantity) > selectedPart.quantity) {
+                alert(`Estoque insuficiente. Você já tem ${quantityInCart} no carrinho e o estoque total é ${selectedPart.quantity}.`);
+                return;
+            }
+
+            if (existingItemIndex > -1) {
+                // ATUALIZAR ITEM EXISTENTE
+                const updatedCart = cartItems.map((item, index) =>
+                    index === existingItemIndex
+                        ? { ...item, selected_quantity: item.selected_quantity + data.quantity }
+                        : item
+                );
+                setCartItems(updatedCart);
+            } else {
+                // ADICIONAR NOVO ITEM
+
+                // AQUI ESTÁ O TRUQUE: 
+                // Separamos a 'quantity' (que é estoque) do resto dos dados
+                const { quantity: stockQuantity, ...partDetails } = selectedPart;
+
+                const newItem: CartItem = {
+                    ...partDetails, // Copia id, name, price... (SEM o quantity do estoque)
+                    cartItemId: Date.now().toString(),
+                    selected_quantity: data.quantity, // Esta é a quantidade vendida
+
+                    // Opcional: Se sua interface TypeScript exigir 'quantity', 
+                    // você pode recolocar, mas sabendo que é o estoque.
+                    // O ideal é usar apenas 'selected_quantity' para venda.
+                    quantity: stockQuantity,
+                    stock_quantity: selectedPart.quantity
+                };
+                setCartItems(prevItems => [...prevItems, newItem]);
+            }
+
+            // Reset inputs
+            setSelectedPart(null);
+            setData(prevData => ({ ...prevData, part_id: '', quantity: 1 }));
+
+        } else if (selectedPart && data.quantity > selectedPart.quantity) {
+            alert('Quantidade maior que o estoque disponível.');
         }
-
-        if (existingItemIndex > -1) {
-            // ATUALIZAR ITEM EXISTENTE
-            const updatedCart = cartItems.map((item, index) =>
-                index === existingItemIndex
-                    ? { ...item, selected_quantity: item.selected_quantity + data.quantity }
-                    : item
-            );
-            setCartItems(updatedCart);
-        } else {
-            // ADICIONAR NOVO ITEM
-            
-            // AQUI ESTÁ O TRUQUE: 
-            // Separamos a 'quantity' (que é estoque) do resto dos dados
-            const { quantity: stockQuantity, ...partDetails } = selectedPart;
-
-            const newItem: CartItem = {
-                ...partDetails, // Copia id, name, price... (SEM o quantity do estoque)
-                cartItemId: Date.now().toString(),
-                selected_quantity: data.quantity, // Esta é a quantidade vendida
-
-                // Opcional: Se sua interface TypeScript exigir 'quantity', 
-                // você pode recolocar, mas sabendo que é o estoque.
-                // O ideal é usar apenas 'selected_quantity' para venda.
-                quantity: stockQuantity,
-               stock_quantity: selectedPart.quantity
-            };
-            setCartItems(prevItems => [...prevItems, newItem]);
-        }
-
-        // Reset inputs
-        setSelectedPart(null);
-        setData(prevData => ({ ...prevData, part_id: '', quantity: 1 }));
-        
-    } else if (selectedPart && data.quantity > selectedPart.quantity) {
-         alert('Quantidade maior que o estoque disponível.');
-    }
-};
+    };
 
     const removeFromCart = (cartItemId: string) => {
         setCartItems(prevItems => prevItems.filter(item => item.cartItemId !== cartItemId));
@@ -210,6 +214,7 @@ export function SalesProducts({ parts, customers }: SalesProductsProps) {
 
     const selectedOptionParts = optionsParts.find(option => option.value === data.part_id) || null;
     const selectedOptionCustomers = optionsCustomers.find(option => option.value === data.customer_id) || null;
+    const nfCustomer = customers?.filter((cust: any, idx: number) => cust.id === data.customer_id) || null
 
     const cartTotal = cartItems.reduce((sum, item) => sum + (Number(item.sale_price) * item.selected_quantity), 0);
 
@@ -230,12 +235,12 @@ export function SalesProducts({ parts, customers }: SalesProductsProps) {
     });
 
     // 2. Função para Recibo A4 (PDF)
+    const customerNameForPDF = selectedOptionCustomers?.label || 'Consumidor Final';
     const handleGeneratePDF = async () => {
         if (cartItems.length === 0) return;
 
         setIsGeneratingPdf(true);
         try {
-            const customerNameForPDF = selectedOptionCustomers?.label || 'Consumidor Final';
 
             // Gera o blob do PDF
             const blob = await pdf(
@@ -247,7 +252,7 @@ export function SalesProducts({ parts, customers }: SalesProductsProps) {
                     company={companyData}
                 />
             ).toBlob();
- 
+
             const url = URL.createObjectURL(blob);
             window.open(url, "_blank"); // Abre em nova aba para imprimir
         } catch (error) {
@@ -257,6 +262,13 @@ export function SalesProducts({ parts, customers }: SalesProductsProps) {
             setIsGeneratingPdf(false);
         }
     };
+
+    const dataSalesTotal = {
+        customer: nfCustomer,
+        items: cartItems,
+        total: String(cartTotal),
+        numberSale: saleData
+    }
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -270,6 +282,11 @@ export function SalesProducts({ parts, customers }: SalesProductsProps) {
                         Registre uma nova venda.
                     </DialogDescription>
                 </DialogHeader>
+                <SaleInvoiceModal
+                    open={openInvoiceModal}
+                    onClose={() => setOpenInvoiceModal(false)}
+                    sale={dataSalesTotal}
+                />
                 <form onSubmit={handleSubmit} autoComplete="off">
                     {successMessage && <p className="text-green-500 mb-4 text-center">{successMessage}</p>}
                     <div className="grid gap-4 py-4">
@@ -426,6 +443,16 @@ export function SalesProducts({ parts, customers }: SalesProductsProps) {
                                 {/* Botão Nova Venda */}
                                 <Button type="button" variant="secondary" onClick={handleNewSale}>
                                     Nova Venda
+                                </Button>
+
+                                {/* Botão emitir nota fiscal */}
+                                <Button
+                                    type="button"
+                                    onClick={() => setOpenInvoiceModal(true)}
+                                    className="py-2 rounded-lg text-sm font-medium"
+                                >
+                                    <FileTextIcon className="h-4 w-4" />
+                                    Emitir NFE
                                 </Button>
 
                                 {/* Botão 1: Cupom Não Fiscal (Térmica) */}

@@ -9,11 +9,11 @@ const statusOrdemByValue = (value: any) => {
         case 4:
             return "Orçamento Aprovado";
         case 5:
-            return "Executando reparo";
+            return "Reparo em andamento";
         case 6:
-            return "(CA)Serviço concluído";
+            return "Serviço concluído";
         case 7:
-            return "(CN)Serviço concluído";
+            return "Cliente avisado / aguardando retirada";
         case 8:
             return "Entregue ao cliente";
     }

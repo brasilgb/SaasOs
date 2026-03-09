@@ -103,7 +103,7 @@ export default function CreateOrder({ customers, equipments }: any) {
             <Link
               href={route('app.orders.index')}
             >
-              <ArrowLeft h-4 w-4 />
+              <ArrowLeft className="h-4 w-4" />
               <span>Voltar</span>
             </Link>
           </Button>

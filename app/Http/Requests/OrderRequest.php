@@ -25,7 +25,7 @@ class OrderRequest extends FormRequest
             'customer_id' => 'nullable',
             'equipment_id' => 'required',
             'defect' => 'required',
-            'responsible_technician'   => ($this->getMethod() == 'POST') ? '' : 'required',
+            'user_id'   => ($this->getMethod() == 'POST') ? '' : 'required',
         ];
     }
 
@@ -35,7 +35,7 @@ class OrderRequest extends FormRequest
             'customer_id' => 'cliente',
             'equipment_id' => 'equipamento',
             'defect' => 'defeito',
-            'responsible_technician' => 'técnico',
+            'user_id' => 'técnico',
         ];
     }
 }

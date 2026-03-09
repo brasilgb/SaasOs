@@ -130,13 +130,27 @@ class OrderController extends Controller
      */
     public function show(Order $order)
     {
+        $order->load([
+            'customer',
+            'orderParts'
+        ]);
+
         $equipments = Equipment::get();
         $customers = Customer::get();
         $parts = Part::get();
-        $technicals = User::where('roles', 3)->orWhere('roles', 1)->where('status', 1)->get();
-        $orderparts = $order->orderParts;
 
-        return Inertia::render('app/orders/edit-order', ['order' => $order, 'orderparts' => $orderparts, 'customers' => $customers, 'technicals' => $technicals, 'equipments' => $equipments, 'parts' => $parts]);
+        $technicals = User::where('roles', 3)
+            ->orWhere('roles', 1)
+            ->where('status', 1)
+            ->get();
+
+        return Inertia::render('app/orders/edit-order', [
+            'order' => $order,
+            'customers' => $customers,
+            'technicals' => $technicals,
+            'equipments' => $equipments,
+            'parts' => $parts
+        ]);
     }
 
     /**
@@ -157,6 +171,7 @@ class OrderController extends Controller
         $order->update([
             "customer_id" => $data['customer_id'],
             "equipment_id" => $data['equipment_id'], // equipamento
+            "user_id" => $data['user_id'], // equipamento
             "model" => $data['model'],
             "password" => $data['password'],
             "defect" => $data['defect'],
