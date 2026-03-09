@@ -61,6 +61,7 @@ const baixarExemplo = () => {
 
                 <form onSubmit={submit}>
                     <div className="mb-4">
+                        <p className='text-sm text-red-400 italic pb-1'>Delimitadores aceitos ( vírgula ,) ( ponto e vírgula ; ) ( pipe | )</p>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                             Selecione o arquivo .csv
                         </label>

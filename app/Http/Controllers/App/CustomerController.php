@@ -14,78 +14,90 @@ use Inertia\Inertia;
 class CustomerController extends Controller
 {
 
-    public function ImportCustomer(Request $request)
-    {
-        try {
-            // Validação inicial do arquivo
-            $request->validate([
-                'arquivo' => 'required|mimes:csv,txt|max:2048' // Adicionado limite de 2MB por segurança
-            ], [
-                'arquivo.required' => 'Por favor, selecione um arquivo.',
-                'arquivo.mimes' => 'O arquivo deve ser do tipo CSV ou TXT.',
-            ]);
+public function ImportCustomer(Request $request)
+{
+    try {
+        $request->validate([
+            'arquivo' => 'required|mimes:csv,txt|max:2048'
+        ], [
+            'arquivo.required' => 'Por favor, selecione um arquivo.',
+            'arquivo.mimes' => 'O arquivo deve ser do tipo CSV ou TXT.',
+        ]);
 
-            $tenantId = Auth::user()->tenant_id;
-            $path = $request->file('arquivo')->getRealPath();
-            $file = fopen($path, 'r');
+        $tenantId = Auth::user()->tenant_id;
+        $path = $request->file('arquivo')->getRealPath();
+        $file = fopen($path, 'r');
 
-            // Pula o cabeçalho
-            fgetcsv($file, 1000, ";");
+        // Detectar delimitador automaticamente
+        $firstLine = fgets($file);
+        rewind($file);
 
-            $ultimoNumero = \App\Models\App\Customer::where('tenant_id', $tenantId)
-                ->max('customer_number') ?? 0;
+        $delimiters = [",", ";", "|"];
+        $delimiter = ",";
 
-            $dadosParaInserir = [];
-
-            while (($linha = fgetcsv($file, 1000, ";")) !== FALSE) {
-                // Ajustado: Pula se o nome estiver vazio (índice 0 na sua nova lógica)
-                if (empty($linha[0])) continue;
-
-                $ultimoNumero++;
-
-                $dadosParaInserir[] = [
-                    'tenant_id'       => $tenantId,
-                    'customer_number' => $ultimoNumero,
-                    'name'            => $linha[0],
-                    'cpfcnpj'         => $linha[1] ?? null,
-                    'birth'           => !empty($linha[2]) ? $linha[2] : null,
-                    'email'           => $linha[3] ?: null,
-                    'zipcode'         => $linha[4] ?: null,
-                    'state'           => $linha[5] ?: null,
-                    'city'            => $linha[6] ?: null,
-                    'district'        => $linha[7] ?: null,
-                    'street'          => $linha[8] ?: null,
-                    'complement'      => $linha[9] ?: null,
-                    'number'          => $linha[10] ?: null,
-                    'phone'           => $linha[11] ?? 'Sem telefone',
-                    'contactname'     => $linha[12] ?: null,
-                    'whatsapp'        => $linha[13] ?: null,
-                    'contactphone'    => $linha[14] ?: null,
-                    'observations'    => $linha[15] ?: null,
-                    'created_at'      => now(),
-                    'updated_at'      => now(),
-                ];
-
-                if (count($dadosParaInserir) >= 500) {
-                    \App\Models\App\Customer::insertOrIgnore($dadosParaInserir);
-                    $dadosParaInserir = [];
-                }
+        $maxCount = 0;
+        foreach ($delimiters as $d) {
+            $count = substr_count($firstLine, $d);
+            if ($count > $maxCount) {
+                $maxCount = $count;
+                $delimiter = $d;
             }
-
-            // CORRIGIDO: Usar insertOrIgnore também aqui fora para evitar erro no último lote
-            if (!empty($dadosParaInserir)) {
-                \App\Models\App\Customer::insertOrIgnore($dadosParaInserir);
-            }
-
-            fclose($file);
-
-            return redirect()->back()->with('message', 'Importação concluída com sucesso!');
-        } catch (\Exception $e) {
-            // Retorna o erro real para o Toaster mostrar
-            // Em produção, você pode trocar $e->getMessage() por uma frase genérica
-            return redirect()->back()->with('error', 'Falha na importação: ' . $e->getMessage());
         }
+
+        // Pula cabeçalho
+        fgetcsv($file, 1000, $delimiter);
+
+        $ultimoNumero = \App\Models\App\Customer::where('tenant_id', $tenantId)
+            ->max('customer_number') ?? 0;
+
+        $dadosParaInserir = [];
+
+        while (($linha = fgetcsv($file, 1000, $delimiter)) !== false) {
+
+            if (empty($linha[0])) continue;
+
+            $ultimoNumero++;
+
+            $dadosParaInserir[] = [
+                'tenant_id'       => $tenantId,
+                'customer_number' => $ultimoNumero,
+                'name'            => $linha[0],
+                'cpfcnpj'         => $linha[1] ?? null,
+                'birth'           => $linha[2] ?? null,
+                'email'           => $linha[3] ?? null,
+                'zipcode'         => $linha[4] ?? null,
+                'state'           => $linha[5] ?? null,
+                'city'            => $linha[6] ?? null,
+                'district'        => $linha[7] ?? null,
+                'street'          => $linha[8] ?? null,
+                'complement'      => $linha[9] ?? null,
+                'number'          => $linha[10] ?? null,
+                'phone'           => $linha[11] ?? null,
+                'contactname'     => $linha[12] ?? null,
+                'whatsapp'        => $linha[13] ?? null,
+                'contactphone'    => $linha[14] ?? null,
+                'observations'    => $linha[15] ?? null,
+                'created_at'      => now(),
+                'updated_at'      => now(),
+            ];
+
+            if (count($dadosParaInserir) >= 500) {
+                \App\Models\App\Customer::insertOrIgnore($dadosParaInserir);
+                $dadosParaInserir = [];
+            }
+        }
+
+        if (!empty($dadosParaInserir)) {
+            \App\Models\App\Customer::insertOrIgnore($dadosParaInserir);
+        }
+
+        fclose($file);
+
+        return redirect()->back()->with('message', 'Importação concluída com sucesso!');
+    } catch (\Exception $e) {
+        return redirect()->back()->with('error', 'Falha na importação: ' . $e->getMessage());
     }
+}
 
     public function getClientes()
     {
