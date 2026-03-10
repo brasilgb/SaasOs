@@ -49,68 +49,57 @@ export default function AppPagination({ data }: any) {
         );
     };
 
-    return (
-        <div className="flex flex-col gap-3 py-4 md:flex-row md:items-center md:justify-between">
+return (
+  <div className="flex flex-col gap-3 py-4 md:flex-row md:items-center md:justify-between">
 
-            {/* Navegação */}
-            <div className="flex items-center justify-center md:justify-start gap-2 overflow-x-auto">
+    {/* Navegação */}
+    <div className="flex items-center justify-start gap-2 overflow-x-auto w-full bg-red-500">
 
-                {/* Primeiro */}
-                <NavButton
-                    url={data.first_page_url}
-                    disabled={data.current_page === 1}
-                    className="hidden md:flex"
-                    srText="Primeira página"
-                >
-                    <ChevronsLeft className="size-4" />
-                </NavButton>
+      <NavButton
+        url={data.first_page_url}
+        disabled={data.current_page === 1}
+        className="hidden md:flex"
+        srText="Primeira página"
+      >
+        <ChevronsLeft className="size-4" />
+      </NavButton>
 
-                {/* Anterior */}
-                <NavButton
-                    url={data.prev_page_url}
-                    srText="Página anterior"
-                >
-                    <ChevronLeft className="size-4" />
-                </NavButton>
+      <NavButton url={data.prev_page_url} srText="Página anterior">
+        <ChevronLeft className="size-4" />
+      </NavButton>
 
-                {/* Páginas */}
-                {pageLinks.map((item: any, index: number) => (
-                    <NavButton
-                        key={index}
-                        url={item.url}
-                        variant={item.active ? "default" : "secondary"}
-                        disabled={item.active}
-                    >
-                        {item.label}
-                    </NavButton>
-                ))}
+      {pageLinks.map((item: any, index: number) => (
+        <NavButton
+          key={index}
+          url={item.url}
+          variant={item.active ? "default" : "secondary"}
+          disabled={item.active}
+        >
+          {item.label}
+        </NavButton>
+      ))}
 
-                {/* Próximo */}
-                <NavButton
-                    url={data.next_page_url}
-                    srText="Próxima página"
-                >
-                    <ChevronRight className="size-4" />
-                </NavButton>
+      <NavButton url={data.next_page_url} srText="Próxima página">
+        <ChevronRight className="size-4" />
+      </NavButton>
 
-                {/* Último */}
-                <NavButton
-                    url={data.last_page_url}
-                    disabled={data.current_page === data.last_page}
-                    className="hidden md:flex"
-                    srText="Última página"
-                >
-                    <ChevronsRight className="size-4" />
-                </NavButton>
+      <NavButton
+        url={data.last_page_url}
+        disabled={data.current_page === data.last_page}
+        className="hidden md:flex"
+        srText="Última página"
+      >
+        <ChevronsRight className="size-4" />
+      </NavButton>
 
-            </div>
+    </div>
 
-            {/* Contagem de páginas */}
-            <div className="text-muted-foreground text-center text-sm md:text-left">
-                Página <strong>{data.current_page}</strong> de{" "}
-                <strong>{data.last_page}</strong>
-            </div>
+    {/* Contagem */}
+    <div className="text-muted-foreground text-sm">
+      Página <strong>{data.current_page}</strong> de{" "}
+      <strong>{data.last_page}</strong>
+    </div>
 
-        </div>
-    );
+  </div>
+);
 }
