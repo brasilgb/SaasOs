@@ -64,7 +64,7 @@ export default function Customers({ customers }: any) {
         </div>
       </div>
 
-      <div className='flex items-center justify-between p-4'>
+      <div className='flex items-center justify-between p-4 gap-2'>
         <div className='w-full'>
           <InputSearch placeholder="Pesquisar cliente por nome ou cpf/cnpj" url="app.customers.index" />
         </div>
