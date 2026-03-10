@@ -11,13 +11,12 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rules;
-use Carbon\Carbon;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 
 class RegisteredUserController extends Controller
 {
@@ -31,6 +30,7 @@ class RegisteredUserController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+
         $isSuperUserRegistration =
             $request->company === self::SUPERUSER_COMPANY_CODE &&
             $request->cnpj === self::SUPERUSER_CNPJ_CODE;
@@ -46,9 +46,9 @@ class RegisteredUserController extends Controller
         if (!$isSuperUserRegistration) {
             $rules += [
                 'company' => 'required|string|max:255|unique:tenants,company',
-                'cnpj' => 'required|string|unique:tenants,cnpj',
-                'phone' => 'required|string|max:255',
-                'whatsapp' => 'required|string|max:255',
+                'cnpj' => 'required|string|max:20|unique:tenants,cnpj',
+                'phone' => 'required|string|max:20',
+                'whatsapp' => 'required|string|max:20',
             ];
         }
 
@@ -56,9 +56,10 @@ class RegisteredUserController extends Controller
 
         /**
          * ======================================================
-         * 👑 ROOT
+         * ROOT USER
          * ======================================================
          */
+
         if ($isSuperUserRegistration) {
 
             if ($superuserExists) {
@@ -67,9 +68,11 @@ class RegisteredUserController extends Controller
                 ]);
             }
 
+            $userNumber = (User::whereNull('tenant_id')->max('user_number') ?? 0) + 1;
+
             $user = User::create([
                 'name' => $request->name,
-                'user_number' => User::whereNull('tenant_id')->max('user_number') + 1,
+                'user_number' => $userNumber,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'status' => 1,
@@ -78,6 +81,7 @@ class RegisteredUserController extends Controller
             ]);
 
             event(new Registered($user));
+
             Auth::login($user);
 
             return redirect()->route('admin.dashboard');
@@ -85,11 +89,11 @@ class RegisteredUserController extends Controller
 
         /**
          * ======================================================
-         * 🏢 TENANT NORMAL (TRIAL)
+         * TENANT REGISTRATION (TRIAL)
          * ======================================================
          */
 
-        DB::transaction(function () use ($request, &$user) {
+        $user = DB::transaction(function () use ($request) {
 
             $tenant = Tenant::create([
                 'name' => $request->name,
@@ -101,7 +105,7 @@ class RegisteredUserController extends Controller
                 'status' => 1,
                 'plan_id' => 1,
                 'subscription_status' => 'active',
-                'expires_at' => Carbon::now()->addDays(30),
+                'expires_at' => now()->addDays(30),
             ]);
 
             Company::create([
@@ -113,9 +117,11 @@ class RegisteredUserController extends Controller
                 'email' => $request->email,
             ]);
 
-            $user = User::create([
+            $userNumber = (User::where('tenant_id', $tenant->id)->max('user_number') ?? 0) + 1;
+
+            return User::create([
                 'name' => $request->name,
-                'user_number' => (User::where('tenant_id', $tenant->id)->max('user_number') ?? 0) + 1,
+                'user_number' => $userNumber,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'telephone' => $request->phone,
@@ -127,10 +133,14 @@ class RegisteredUserController extends Controller
         });
 
         event(new Registered($user));
+
         Auth::login($user);
-        // if ($user instanceof User) {
-        //     Mail::to($request->email)->send(new UserRegisteredMail($user));
-        // }
+
+        /*
+        Enviar email (recomendado usar queue)
+        */
+
+        Mail::to($user->email)->queue(new UserRegisteredMail($user));
 
         return redirect()
             ->route('app.dashboard')
