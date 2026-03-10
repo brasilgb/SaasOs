@@ -5,13 +5,18 @@ import { Link } from "@inertiajs/react";
 export default function AppPagination({ data }: any) {
     if (!data || !data.links) return null;
 
-    // Filtra para mostrar apenas os links numéricos das páginas
     const pageLinks = data.links.filter((link: any) => !isNaN(link.label));
 
-    // Componente interno para evitar repetição de lógica de botão
-    const NavButton = ({ url, children, disabled, variant = "outline", className = "", srText = "" }: any) => {
+    const NavButton = ({
+        url,
+        children,
+        disabled,
+        variant = "outline",
+        className = "",
+        srText = "",
+    }: any) => {
         const isButtonDisabled = !url || disabled;
-        
+
         const content = (
             <>
                 {srText && <span className="sr-only">{srText}</span>}
@@ -21,45 +26,54 @@ export default function AppPagination({ data }: any) {
 
         if (isButtonDisabled) {
             return (
-                <Button variant={variant} size="icon" className={`size-8 ${className}`} disabled>
+                <Button
+                    variant={variant}
+                    size="icon"
+                    className={`size-8 ${className}`}
+                    disabled
+                >
                     {content}
                 </Button>
             );
         }
 
         return (
-            <Button variant={variant} size="icon" className={`size-8 ${className}`} asChild>
+            <Button
+                variant={variant}
+                size="icon"
+                className={`size-8 ${className}`}
+                asChild
+            >
                 <Link href={url}>{content}</Link>
             </Button>
         );
     };
 
     return (
-        <div className="flex items-center justify-end space-x-2 py-4">
-            <div className="text-muted-foreground flex-1 text-sm">
-                Página <strong>{data.current_page}</strong> de <strong>{data.last_page}</strong>
-            </div>
+        <div className="flex flex-col gap-3 py-4 md:flex-row md:items-center md:justify-between">
 
-            <div className="flex items-center space-x-2">
+            {/* Navegação */}
+            <div className="flex items-center justify-center md:justify-start gap-2 overflow-x-auto">
+
                 {/* Primeiro */}
-                <NavButton 
-                    url={data.first_page_url} 
+                <NavButton
+                    url={data.first_page_url}
                     disabled={data.current_page === 1}
-                    className="hidden lg:flex"
+                    className="hidden md:flex"
                     srText="Primeira página"
                 >
                     <ChevronsLeft className="size-4" />
                 </NavButton>
 
                 {/* Anterior */}
-                <NavButton 
-                    url={data.prev_page_url} 
+                <NavButton
+                    url={data.prev_page_url}
                     srText="Página anterior"
                 >
                     <ChevronLeft className="size-4" />
                 </NavButton>
 
-                {/* Números das Páginas */}
+                {/* Páginas */}
                 {pageLinks.map((item: any, index: number) => (
                     <NavButton
                         key={index}
@@ -72,23 +86,31 @@ export default function AppPagination({ data }: any) {
                 ))}
 
                 {/* Próximo */}
-                <NavButton 
-                    url={data.next_page_url} 
+                <NavButton
+                    url={data.next_page_url}
                     srText="Próxima página"
                 >
                     <ChevronRight className="size-4" />
                 </NavButton>
 
                 {/* Último */}
-                <NavButton 
-                    url={data.last_page_url} 
+                <NavButton
+                    url={data.last_page_url}
                     disabled={data.current_page === data.last_page}
-                    className="hidden lg:flex"
+                    className="hidden md:flex"
                     srText="Última página"
                 >
                     <ChevronsRight className="size-4" />
                 </NavButton>
+
             </div>
+
+            {/* Contagem de páginas */}
+            <div className="text-muted-foreground text-center text-sm md:text-left">
+                Página <strong>{data.current_page}</strong> de{" "}
+                <strong>{data.last_page}</strong>
+            </div>
+
         </div>
     );
 }
