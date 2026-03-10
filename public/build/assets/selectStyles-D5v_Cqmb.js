@@ -1,0 +1,1 @@
+const n={control:(o,e)=>({...o,fontSize:"14px",boxShadow:"none",border:"none",background:"transparent",paddingBottom:"2px"}),singleValue:o=>({...o,color:"#ebebeb",fontSize:"14px"}),dropdownIndicator:o=>({...o}),menuList:o=>({...o,fontSize:"14px"})};export{n as s};
