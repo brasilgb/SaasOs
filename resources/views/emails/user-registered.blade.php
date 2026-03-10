@@ -88,17 +88,13 @@
                             <table width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0;font-size:14px;">
 
                                 <tr>
-                                    <td style="padding:8px 0;">✅ Cadastrar os dados de sua empresa</td>
+                                    <td style="padding:8px 0;">✅ Em configurações cadastrar os dados de sua empresa</td>
                                 </tr>
                                 <tr>
-                                    <td style="padding:8px 0;">✅ Adicionar um equipamento</td>
+                                    <td style="padding:8px 0;">✅ Em configurações tipo de equipamento</td>
                                 </tr>
                                 <tr>
                                     <td style="padding:8px 0;">✅ Cadastrar seu primeiro cliente</td>
-                                </tr>
-
-                                <tr>
-                                    <td style="padding:8px 0;">✅ Adicionar um equipamento</td>
                                 </tr>
 
                                 <tr>
@@ -127,7 +123,7 @@ Acessar o sistema
 </v:roundrect>
 <![endif]-->
 
-                                        <!--[if !mso]><!-- -->
+                                        <!--[if !mso]> -->
 
                                         <a href="{{ config('app.url') }}"
                                             style="background:#2563eb;border-radius:6px;color:#ffffff;display:inline-block;font-size:15px;font-weight:bold;padding:14px 28px;text-decoration:none;">
@@ -140,7 +136,7 @@ Acessar o sistema
                             </table>
 
                             <p style="font-size:14px;margin-top:10px;">
-                               Baixe o aplicativo para envio de imagens:
+                                Baixe o aplicativo para envio de imagens:
                             </p>
 
                             <p style="margin-top:6px;">

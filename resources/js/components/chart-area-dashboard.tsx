@@ -34,15 +34,9 @@ export const description = "Gráfico de área interativo"
 
 export function ChartAreaDashboard() {
   const isMobile = useIsMobile()
-  const [timeRange, setTimeRange] = useState(isMobile ? "7" : "30")
+  const [timeRange, setTimeRange] = useState("7")
   const [chartData, setChartData] = useState([])
   const [lines, setLines] = useState([])
-
-  React.useEffect(() => {
-    if (isMobile) {
-      setTimeRange("7")
-    }
-  }, [isMobile])
 
   useEffect(() => {
     const chartForDays = async () => {
