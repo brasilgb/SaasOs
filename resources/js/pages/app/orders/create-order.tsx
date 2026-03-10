@@ -84,6 +84,12 @@ export default function CreateOrder({ customers, equipments }: any) {
     setData('service_status', selected?.value);
   };
 
+  const handleFocus = () => {
+    if (data.budget_value === "0,00") {
+      setData("budget_value", "")
+    }
+  }
+
   return (
     <AppLayout>
       <Head title="Ordens" />
@@ -281,6 +287,7 @@ export default function CreateOrder({ customers, equipments }: any) {
                   id="budget_value"
                   value={maskMoney(data.budget_value)}
                   onChange={(e) => setData('budget_value', e.target.value)}
+                  onFocus={handleFocus}
                 />
               </div>
 

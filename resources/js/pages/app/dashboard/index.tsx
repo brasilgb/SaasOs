@@ -6,9 +6,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardDescription } from '@/components/ui/card';
-import { ChartAreaDashboard } from '@/components/chart-area-dashboard';
+import { ChartAreaDashboard } from '@/components/Charts/chart-area-dashboard';
 import { SalesProducts } from '@/components/sales-products';
 import AlertSuccess from '@/components/app-alert-success';
+import ChartFluxoOrders from '@/components/Charts/chart-fluxo-orders';
 
 export default function Dashboard({ reloadKey, orders, acount, parts, customers, others, }: any) {
 
@@ -157,7 +158,12 @@ export default function Dashboard({ reloadKey, orders, acount, parts, customers,
                         </Tabs>
                     </div>
                     <div className='mt-4'>
-                        <ChartAreaDashboard />
+                        <div>
+                            <ChartAreaDashboard />
+                        </div>
+                        <div className='mt-4'>
+                            <ChartFluxoOrders orders={orders = []} />
+                        </div>
                     </div>
                 </div>
             </div>

@@ -53,7 +53,7 @@ return (
   <div className="flex flex-col gap-3 py-4 md:flex-row md:items-center md:justify-between">
 
     {/* Navegação */}
-    <div className="flex items-center justify-start gap-2 overflow-x-auto w-full bg-red-500">
+    <div className="flex items-center justify-start gap-2 overflow-x-auto w-full">
 
       <NavButton
         url={data.first_page_url}

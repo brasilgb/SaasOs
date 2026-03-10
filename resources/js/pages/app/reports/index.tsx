@@ -13,6 +13,9 @@ import OrdersReport from "./orders-report";
 import SchedulesReport from "./schedules-report";
 import SalesReport from "./sales-report";
 import PartsReport from "./parts-report";
+import OrdersStatistics from "./order-statistics";
+import OrdersDaily from "./orders-daily";
+import TechnicianProductivity from "./technician-productivity";
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -54,7 +57,10 @@ const { company } = usePage().props as any;
             <DatePicker mode={'range'} setDate={setDateRange} date={dateRange} />
           </CardContent>
           <CardContent className="flex flex-wrap items-start justify-start gap-4">
+            <TechnicianProductivity dateRange={dateRange} company={company?.companyname} />
             <OrdersReport dateRange={dateRange} company={company?.companyname} />
+            <OrdersStatistics dateRange={dateRange} company={company?.companyname} />
+            <OrdersDaily dateRange={dateRange} company={company?.companyname} />
             <CustomersReport dateRange={dateRange} company={company?.companyname} />
             <SchedulesReport dateRange={dateRange} company={company?.companyname} />
             <SalesReport dateRange={dateRange} company={company?.companyname} />
