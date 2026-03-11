@@ -1,205 +1,148 @@
 import * as React from "react"
-import {
-    LineChart,
-    Line,
-    CartesianGrid,
-    XAxis,
-    Tooltip,
-    Legend,
-    ResponsiveContainer
-} from "recharts"
-
-import moment from "moment"
-
+import { LineChart, Line, XAxis, CartesianGrid } from "recharts"
+import { useEffect, useState } from "react"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { connectBackend } from "@/Utils/connectApi"
 
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-    CardAction
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card"
 
 import {
-    ToggleGroup,
-    ToggleGroupItem
-} from "@/components/ui/toggle-group"
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart"
 
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue
-} from "@/components/ui/select"
+export default function ChartFluxoOrders({ timerange}: any) {
 
-export default function ChartFluxoOrders({ orders }: any) {
+  const isMobile = useIsMobile()
 
-    const isMobile = useIsMobile()
-    const [timeRange, setTimeRange] = React.useState("7")
+  const [orders, setOrders] = useState([])
 
-    const chartData = React.useMemo(() => {
+      useEffect(() => {
+        const getOrders = async () => {
+          try {
+            const response = await connectBackend.get(`fluxsOrders/${timerange}`);
+            setOrders(response.data);
+          } catch (error) {
+            console.error("Erro ao carregar dados do gráfico Fluxo de ordens", error);
+          }
+        }
+        getOrders();
+      }, [timerange]);
 
-        const chartMap: any = {}
 
-        const filteredOrders = orders.filter((order: any) => {
+  const chartConfig = {
+    entradas: {
+      label: "Entradas",
+      color: "var(--chart-1)",
+    },
+    concluidos: {
+      label: "Concluídos",
+      color: "var(--chart-2)",
+    },
+    entregues: {
+      label: "Entregues",
+      color: "var(--chart-3)",
+    },
+  }
 
-            const days = moment().diff(moment(order.created_at), "days")
 
-            return days <= Number(timeRange)
+  return (
+    <Card className="@container/card">
 
-        })
+      <CardHeader>
 
-        filteredOrders.forEach((order: any) => {
+        <CardTitle>Fluxo de Ordens Últimos • {timerange} dias</CardTitle>
 
-            let key
-            let sortDate
+        <CardDescription>
+          <span className="hidden @[540px]/card:block">
+            Entradas x Concluídos x Entregues
+          </span>
+        </CardDescription>
+      </CardHeader>
 
-            if (timeRange === "60") {
+      <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
 
-                key = `Sem ${moment(order.created_at).week()}`
-                sortDate = moment(order.created_at).startOf("week")
+        <ChartContainer
+          config={chartConfig}
+          className="aspect-auto h-[200px] w-full"
+        >
+          <LineChart data={orders}>
+          <CartesianGrid vertical={false} strokeDasharray="3 3" />
 
-            } else {
+            <XAxis
+              dataKey="period"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              minTickGap={32}
+              tickFormatter={(value) => {
 
-                key = moment(order.created_at).format("DD/MM")
-                sortDate = moment(order.created_at)
+                  const date = new Date(value)
+                  
+                  return date.toLocaleDateString("pt-BR", {
+                      day: "2-digit",
+                      month: "2-digit",
+                    })
+                    
+                }}
+            />
 
-            }
+            <ChartTooltip
+              cursor={false}
+              defaultIndex={isMobile ? -1 : 10}
+              content={
+                <ChartTooltipContent
+                  labelFormatter={(value) => {
+                    return new Date(value).toLocaleDateString("pt-BR", {
+                      day: "2-digit",
+                      month: "2-digit",
+                    })
+                  }}
+                  indicator="dot"
+                />
+              }
+            />
 
-            if (!chartMap[key]) {
-                chartMap[key] = {
-                    period: key,
-                    sortDate,
-                    entradas: 0,
-                    concluidos: 0,
-                    entregues: 0
-                }
-            }
+            <Line
+              type="monotone"
+              dataKey="entradas"
+              stroke="var(--chart-1)"
+              strokeWidth={2}
+              dot={false}
+              activeDot={{ r: 4 }}
+            />
 
-            chartMap[key].entradas += 1
+            <Line
+              type="monotone"
+              dataKey="concluidos"
+              stroke="var(--chart-2)"
+              strokeWidth={2}
+              dot={false}
+              activeDot={{ r: 4 }}
+            />
 
-            if (order.service_status === 6 || order.service_status === 7) {
-                chartMap[key].concluidos += 1
-            }
+            <Line
+              type="monotone"
+              dataKey="entregues"
+              stroke="var(--chart-3)"
+              strokeWidth={2}
+              dot={false}
+              activeDot={{ r: 4 }}
+            />
 
-            if (order.service_status === 8) {
-                chartMap[key].entregues += 1
-            }
+          </LineChart>
 
-        })
+        </ChartContainer>
 
-        return Object.values(chartMap).sort(
-            (a: any, b: any) => a.sortDate - b.sortDate
-        )
+      </CardContent>
 
-    }, [orders, timeRange])
-
-    return (
-
-        <Card className="@container/card">
-
-            <CardHeader>
-                <CardTitle>Fluxo de Ordens</CardTitle>
-                <CardDescription>
-                    <span className="hidden @[540px]/card:block">
-                        Entradas x Concluídos x Entregues
-                    </span>
-
-                    <span className="@[540px]/card:hidden">
-                        Fluxo de OS
-                    </span>
-
-                </CardDescription>
-                <CardAction>
-
-                    {/* Desktop */}
-                    <ToggleGroup
-                        type="single"
-                        value={timeRange}
-                        onValueChange={(value) => value && setTimeRange(value)}
-                        variant="outline"
-                        className="hidden *:data-[slot=toggle-group-item]:px-4! @[767px]/card:flex"
-                    >
-
-                        <ToggleGroupItem value="7">
-                            Últimos 07 dias
-                        </ToggleGroupItem>
-
-                        <ToggleGroupItem value="30">
-                            Últimos 30 dias
-                        </ToggleGroupItem>
-
-                        <ToggleGroupItem value="60">
-                            Últimos 60 dias
-                        </ToggleGroupItem>
-
-                    </ToggleGroup>
-
-                    {/* Mobile */}
-                    <Select value={timeRange} onValueChange={setTimeRange}>
-                        <SelectTrigger
-                            className="flex w-40 @[767px]/card:hidden"
-                            size="sm"
-                        >
-                            <SelectValue placeholder="Últimos 60 dias" />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-xl">
-                            <SelectItem value="7" className="rounded-lg">
-                                Últimos 07 dias
-                            </SelectItem>
-
-                            <SelectItem value="30" className="rounded-lg">
-                                Últimos 30 dias
-                            </SelectItem>
-
-                            <SelectItem value="60" className="rounded-lg">
-                                Últimos 60 dias
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
-                </CardAction>
-            </CardHeader>
-            <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={chartData}>
-                        <XAxis dataKey="period" />
-                        <Tooltip />
-                        <Legend />
-
-                        <Line
-                            type="monotone"
-                            dataKey="entradas"
-                            stroke="#1a9cd9"
-                            strokeWidth={2}
-                            name="Entradas"
-                            dot={false}
-                        />
-
-                        <Line
-                            type="monotone"
-                            dataKey="concluidos"
-                            stroke="#16a34a"
-                            strokeWidth={2}
-                            name="Concluídos"
-                            dot={false}
-                        />
-
-                        <Line
-                            type="monotone"
-                            dataKey="entregues"
-                            stroke="#f59e0b"
-                            strokeWidth={2}
-                            name="Entregues"
-                            dot={false}
-                        />
-
-                    </LineChart>
-                </ResponsiveContainer>
-            </CardContent>
-        </Card>
-
-    )
+    </Card>
+  )
 }

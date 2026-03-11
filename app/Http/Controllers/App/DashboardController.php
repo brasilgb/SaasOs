@@ -12,8 +12,8 @@ use App\Models\App\Other;
 use App\Models\App\Schedule;
 use App\Models\App\Part;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
@@ -51,6 +51,9 @@ class DashboardController extends Controller
 
     public function chartEquipments($timerange)
     {
+        $start = Carbon::now()->subDays($timerange)->startOfDay();
+        $end = Carbon::now()->endOfDay();
+
         $equipments = Equipment::where('chart', 1)
             ->limit(3)
             ->get();
@@ -65,18 +68,224 @@ class DashboardController extends Controller
             );
         }
 
-        $chart = Order::select($selects)
-            ->where('created_at', '>=', Carbon::now()->subDays($timerange))
+        $orders = Order::select($selects)
+            ->whereBetween('created_at', [$start, $end])
             ->groupBy('date')
             ->orderBy('date')
-            ->get();
+            ->get()
+            ->keyBy('date');
+
+        $result = [];
+
+        for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
+
+            $key = $date->format('Y-m-d');
+
+            $row = [
+                'date' => $date->format('Y-m-d')
+            ];
+
+            foreach ($equipments as $equipment) {
+
+                $field = "eq_{$equipment->id}";
+
+                $row[$field] = $orders[$key]->$field ?? 0;
+            }
+
+            $result[] = $row;
+        }
 
         return response()->json([
             'lines' => $equipments->map(fn($e) => [
                 'key'   => "eq_{$e->id}",
                 'label' => $e->equipment,
             ]),
-            'data' => $chart
+            'data' => $result
         ]);
     }
+
+    public function fluxsOrders($timerange)
+    {
+        $start = Carbon::now()->subDays($timerange)->startOfDay();
+        $end = Carbon::now()->endOfDay();
+
+        $orders = Order::selectRaw("
+            DATE(created_at) as date,
+            COUNT(*) as entradas,
+            SUM(CASE WHEN service_status IN (6,7) THEN 1 ELSE 0 END) as concluidos,
+            SUM(CASE WHEN service_status = 8 THEN 1 ELSE 0 END) as entregues
+        ")
+            ->whereBetween('created_at', [$start, $end])
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get()
+            ->keyBy('date');
+
+        $result = [];
+
+        for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
+
+            $key = $date->format('Y-m-d');
+            $data = $orders->get($key);
+
+            $result[] = [
+                'period' => $date->format('Y-m-d'),
+                'entradas' => $data->entradas ?? 0,
+                'concluidos' => $data->concluidos ?? 0,
+                'entregues' => $data->entregues ?? 0
+            ];
+        }
+
+        return response()->json($result);
+    }
+
+    public function metricsSystem($timerange)
+    {
+        $startDate = now()->subDays($timerange);
+
+        return response()->json([
+
+            'customers' => Customer::where('created_at', '>=', $startDate)->count(),
+
+            'orders' => Order::where('created_at', '>=', $startDate)->count(),
+
+            'schedules' => Schedule::where('created_at', '>=', $startDate)->count(),
+
+            'messages' => Message::where('created_at', '>=', $startDate)->count(),
+
+            'parts' => Part::where('created_at', '>=', $startDate)->count(),
+        ]);
+    }
+
+    public function kpisFinancialOrder($timeRange)
+    {
+        $startDate = now()->subDays($timeRange)->startOfDay();
+        $endDate = now()->endOfDay();
+        $today = now()->startOfDay();
+
+        // ===== RANGE =====
+        $rangeService = Order::where('service_status', 8)
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->sum('service_value');
+
+        $rangeParts = Order::where('service_status', 8)
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->sum('parts_value');
+
+        $rangeTotal = $rangeService + $rangeParts;
+
+        // ===== TODAY =====
+        $todayService = Order::where('service_status', 8)
+            ->whereDate('created_at', $today)
+            ->sum('service_value');
+
+        $todayParts = Order::where('service_status', 8)
+            ->whereDate('created_at', $today)
+            ->sum('parts_value');
+
+        $todayTotal = $todayService + $todayParts;
+
+        // ===== ORDERS =====
+        $ordersCount = Order::where('service_status', 8)
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->count();
+
+        // ===== MÉDIA DIÁRIA =====
+        $dailyAverageService = $timeRange > 0 ? $rangeService / $timeRange : 0;
+        $dailyAverageParts = $timeRange > 0 ? $rangeParts / $timeRange : 0;
+        $dailyAverageTotal = $dailyAverageService + $dailyAverageParts;
+
+        // ===== TICKET MÉDIO =====
+        $averageTicketService = $ordersCount > 0 ? $rangeService / $ordersCount : 0;
+        $averageTicketParts = $ordersCount > 0 ? $rangeParts / $ordersCount : 0;
+        $averageTicketTotal = $averageTicketService + $averageTicketParts;
+
+        return response()->json([
+            'range' => $timeRange,
+            'kpis' => [
+
+                'today_revenue' => [
+                    'services' => $todayService,
+                    'parts' => $todayParts,
+                    'total' => $todayTotal
+                ],
+
+                'range_revenue' => [
+                    'services' => $rangeService,
+                    'parts' => $rangeParts,
+                    'total' => $rangeTotal
+                ],
+
+                'daily_average' => [
+                    'services' => $dailyAverageService,
+                    'parts' => $dailyAverageParts,
+                    'total' => $dailyAverageTotal
+                ],
+
+                'average_ticket' => [
+                    'services' => $averageTicketService,
+                    'parts' => $averageTicketParts,
+                    'total' => $averageTicketTotal
+                ],
+
+                'orders_count' => $ordersCount
+            ]
+        ]);
+    }
+
+    public function financialRevenueChart($timeRange)
+{
+    $startDate = now()->subDays($timeRange)->startOfDay();
+    $endDate = now()->endOfDay();
+
+    $orders = Order::select(
+            DB::raw('DATE(created_at) as date'),
+            DB::raw('SUM(service_value) as services'),
+            DB::raw('SUM(parts_value) as parts'),
+            DB::raw('SUM(service_value + parts_value) as total')
+        )
+        ->where('service_status', 8)
+        ->whereBetween('created_at', [$startDate, $endDate])
+        ->groupBy('date')
+        ->pluck('total','date')
+        ->toArray();
+
+    $services = Order::select(
+            DB::raw('DATE(created_at) as date'),
+            DB::raw('SUM(service_value) as value')
+        )
+        ->where('service_status', 8)
+        ->whereBetween('created_at', [$startDate, $endDate])
+        ->groupBy('date')
+        ->pluck('value','date')
+        ->toArray();
+
+    $parts = Order::select(
+            DB::raw('DATE(created_at) as date'),
+            DB::raw('SUM(parts_value) as value')
+        )
+        ->where('service_status', 8)
+        ->whereBetween('created_at', [$startDate, $endDate])
+        ->groupBy('date')
+        ->pluck('value','date')
+        ->toArray();
+
+    $period = CarbonPeriod::create($startDate, $endDate);
+
+    $data = [];
+
+    foreach ($period as $date) {
+
+        $d = $date->format('Y-m-d');
+
+        $data[] = [
+            'date' => $d,
+            'services' => $services[$d] ?? 0,
+            'parts' => $parts[$d] ?? 0,
+            'total' => $orders[$d] ?? 0,
+        ];
+    }
+
+    return response()->json($data);
+}
 }

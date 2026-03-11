@@ -26,6 +26,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 Route::get('/chartEquipments/{timerange}', [DashboardController::class, 'chartEquipments'])->name('chartEquipments');
+Route::get('/fluxsOrders/{timerange}', [DashboardController::class, 'fluxsOrders'])->name('fluxsOrders');
+Route::get('/dashboardData/{timerange}', [DashboardController::class, 'dashboardData'])->name('dashboardData');
+Route::get('/metricsSystem/{timerange}', [DashboardController::class, 'metricsSystem'])->name('metricsSystem');
+Route::get('/kpisFinancialOrder/{timerange}', [DashboardController::class, 'kpisFinancialOrder'])->name('kpisFinancialOrder');
+Route::get('/financialRevenueChart/{timerange}', [DashboardController::class, 'financialRevenueChart'])->name('financialRevenueChart');
 
 Route::resource('customers', CustomerController::class);
 Route::post('customers/import-customer', [CustomerController::class, 'ImportCustomer'])->name('import.customer');
