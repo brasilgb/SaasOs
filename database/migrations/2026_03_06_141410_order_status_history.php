@@ -16,7 +16,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('order_id')->constrained()->cascadeOnDelete();
             $table->tinyInteger('status');
-            $table->varchar('note');
+            $table->string('note');
             $table->foreignId('changed_by')->nullable()->constrained('users');
             $table->timestamps();
         });
