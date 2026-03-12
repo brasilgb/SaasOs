@@ -19,14 +19,14 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->get('q');
+        $search = $request->search;
         $query = User::orderBy('id', 'DESC');
         if ($search) {
             $query->where('name', 'like', '%' . $search . '%');
         }
-        $users = $query->paginate(12);
+        $users = $query->paginate(12)->withQueryString();
         $firstAdminId = User::where('roles', 9)->orderBy('id', 'asc')->value('id');
-        return Inertia::render('app/users/index', ['users' => $users, 'firstAdminId' => $firstAdminId]);
+        return Inertia::render('app/users/index', ['users' => $users, 'firstAdminId' => $firstAdminId, 'search' => $search]);
     }
 
     /**
@@ -55,17 +55,25 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(User $user)
+    public function show(User $user, Request $request)
     {
-        return Inertia::render('app/users/edit-user', ['user' => $user]);
+        return Inertia::render('app/users/edit-user', [
+            'user' => $user,
+            'page' => $request->page,
+            'search' => $request->search
+        ]);
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(User $user)
+    public function edit(User $user, Request $request)
     {
-        return redirect()->route('app.users.show', ['user' => $user->id]);
+        return redirect()->route('app.users.show', [
+            'user' => $user->id,
+            'page' => $request->page,
+            'search' => $request->search
+        ]);
     }
 
     /**
@@ -113,11 +121,12 @@ class UserController extends Controller
         ]);
     }
 
-    public function logoutuser(){
+    public function logoutuser()
+    {
         Auth::user()->tokens()->delete();
 
         return response()->json([
-          "message"=>"logged out"
+            "message" => "logged out"
         ]);
     }
 }

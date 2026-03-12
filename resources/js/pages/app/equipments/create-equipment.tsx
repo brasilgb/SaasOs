@@ -43,7 +43,7 @@ export default function CreateEquipment({ equipmentLength }: any) {
                 <DialogTrigger asChild>
                     <Button className="gap-2">
                         <Plus className="h-4 w-4" />
-                        Equipamento
+                        <span>Novo Equipamento</span>
                     </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[500px]">

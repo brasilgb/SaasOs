@@ -32,7 +32,7 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-export default function CreateUser({ user }: any) {
+export default function CreateUser({ user, page, search }: any) {
   const [showPassword, setShowPassword] = useState<boolean>(false)
   const { auth } = usePage().props as any;
 
@@ -84,7 +84,7 @@ export default function CreateUser({ user }: any) {
         <div>
           <Button variant={'default'} asChild>
             <Link
-              href={route('app.users.index')}
+              href={route('app.users.index', { page: page, search: search})}
             >
               <ArrowLeft className="h-4 w-4" />
               <span>Voltar</span>

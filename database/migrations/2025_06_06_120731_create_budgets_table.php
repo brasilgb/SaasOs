@@ -12,9 +12,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('tenant_id')->nullable()->constrained()->onDelete('cascade');
             $table->bigInteger('budget_number');              // budget_number
-            $table->string('category', 50);                   // categoria
-            $table->string('service', 150);                   // servico
+            $table->foreignId('equipment_id')->constrained()->onDelete('cascade'); // equipamento
             $table->string('model')->nullable();              // modelo
+            $table->string('service', 150);                   // servico
             $table->text('description')->nullable();          // descricao
             $table->string('estimated_time', 50)->nullable(); // tempo_estimado
             $table->decimal('part_value', 10, 2)->nullable(); // valor_peca

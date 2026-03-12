@@ -17,7 +17,7 @@ class FeatureController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->get('q');
+        $search = $request->search;
 
         $query = Feature::orderBy('id', 'DESC');
 

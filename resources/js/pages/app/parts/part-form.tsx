@@ -6,12 +6,14 @@ import { Label } from "@/components/ui/label";
 import { maskMoney, maskMoneyDot, unMask } from "@/Utils/mask";
 import { Switch } from "@/components/ui/switch";
 import { useEffect, useState } from "react";
-import {apios} from "@/Utils/connectApi";
+import { apios } from "@/Utils/connectApi";
 import CreatableSelect from "react-select/creatable";
 import InputError from "@/components/input-error";
 import selectStyles from "@/Utils/selectStyles";
 import { OptionType } from "@/types";
 import { toastSuccess } from "@/components/app-toast-messages";
+import { partsType } from "@/Utils/dataSelect";
+import Select from 'react-select';
 
 interface PartFormProps {
     categories: any;
@@ -29,6 +31,7 @@ export default function PartForm({ categories, initialData }: PartFormProps) {
 
     const { data, setData, post, patch, progress, processing, reset, errors } = useForm({
         category: initialData?.category ?? "",
+        type: initialData?.type ?? "",
         reference_number: initialData?.reference_number ?? "",
         name: initialData?.name ?? "",
         description: initialData?.description ?? "",
@@ -79,13 +82,14 @@ export default function PartForm({ categories, initialData }: PartFormProps) {
                     label: parts.category,
                     value: parts.category,
                 };
- 
+
                 setDisableInput(true);
                 setSelectedCategory(option);
 
                 setData(data => ({
                     ...data,
                     category: parts.category,
+                    type: parts.type,
                     name: parts.name,
                     description: parts.description,
                     manufacturer: parts.manufacturer,
@@ -134,10 +138,52 @@ export default function PartForm({ categories, initialData }: PartFormProps) {
         setData("category", value)
     }
 
+    const changePartsType = (option: OptionType | null) => {
+        setData('type', option ? option.value : "")
+    }
+
+    const defaultPartsType = partsType?.filter((part: any) => (Number(part.value) === initialData?.type))
+
     return (
 
         <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
-            <div className="grid md:grid-cols-6 gap-4 mt-4">
+            <div className="grid md:grid-cols-7 gap-4 mt-4">
+
+                <div className="grid gap-2">
+                    <Label htmlFor="equipment">Tipo de Registro</Label>
+                    <Select
+                        menuPosition='fixed'
+                        defaultValue={defaultPartsType}
+                        options={partsType}
+                        onChange={changePartsType}
+                        placeholder="Selecione o tipo de registro"
+                        className="shadow-xs p-0 border text-gray-700 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-9"
+                        styles={{
+                            control: (baseStyles, state) => ({
+                                ...baseStyles,
+                                fontSize: '14px',
+                                boxShadow: 'none',
+                                border: 'none',
+                                background: 'transparent',
+                                paddingBottom: '2px',
+                            }),
+                            singleValue: (base) => ({
+                                ...base,
+                                color: "#ebebeb", // cinza escuro (igual input padrão)
+                                fontSize: "14px",
+                            }),
+                            dropdownIndicator: (base) => ({
+                                ...base,
+
+                            }),
+                            menuList: (base) => ({
+                                ...base,
+                                fontSize: '14px',
+                            }),
+                        }}
+                    />
+                    {errors.type && <div className="text-red-500 text-sm">{errors.type}</div>}
+                </div>
 
                 <div className="grid gap-2">
                     <Label>Categoria (ou criar nova)</Label>
@@ -283,11 +329,18 @@ export default function PartForm({ categories, initialData }: PartFormProps) {
 
             <div className="grid gap-2">
                 <Label htmlFor="status">Status da Peça</Label>
-                <Switch
-                    id="status"
-                    checked={data.status}
-                    onCheckedChange={(checked: any) => setData('status', checked)}
-                />
+
+                <div className="flex items-center gap-3">
+                    <Switch
+                        id="status"
+                        checked={data.status}
+                        onCheckedChange={(checked) => setData("status", checked)}
+                    />
+
+                    <span className="text-sm text-muted-foreground">
+                        {data.status ? "Ativa" : "Inativa"}
+                    </span>
+                </div>
             </div>
 
             <div className="flex justify-end">

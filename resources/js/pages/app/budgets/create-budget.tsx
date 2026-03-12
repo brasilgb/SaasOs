@@ -22,7 +22,7 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-export default function CreateBudget({ budgets }: any) {
+export default function CreateBudget({ budgets, equipments }: any) {
 
   return (
     <AppLayout>
@@ -55,7 +55,7 @@ export default function CreateBudget({ budgets }: any) {
       <div className='p-4'>
         <div className='border rounded-lg p-2'>
 
-          <BudgetForm budgets={budgets} />
+          <BudgetForm budgets={budgets} equipments={equipments} />
 
         </div>
       </div >

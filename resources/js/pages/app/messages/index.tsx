@@ -34,7 +34,7 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-export default function Messages({ messages }: any) {
+export default function Messages({ messages, search }: any) {
   const { auth } = usePage().props as any;
   return (
     <AppLayout>
@@ -60,7 +60,7 @@ export default function Messages({ messages }: any) {
               href={route('app.messages.create')}
             >
               <Plus className='h-4 w-4' />
-              <span>Mensagem</span>
+              <span>Nova Mensagem</span>
             </Link>
           </Button>
         </div>
@@ -93,7 +93,7 @@ export default function Messages({ messages }: any) {
                     <TableCell className='flex justify-end gap-2'>
                       {message.sender_id == auth.user.id 
                         ? <Button asChild size="icon" className="bg-orange-500 hover:bg-orange-600 text-white">
-                          <Link href={route("app.messages.edit", message.id)}>
+                          <Link href={route("app.messages.edit", message.id)} data={{ page: messages.current_page, search: search }}>
                             {message.sender_id === auth.user.id === message.status ? <Eye /> : <Edit /> }
                           </Link>
                         </Button>

@@ -23,6 +23,8 @@ class PartRequest extends FormRequest
     {
         return [
             'reference_number' => 'required',
+            'type' => 'required',
+            'category' => 'required',
             'name' => 'required',
             'description' => 'required',
             'manufacturer' => 'required',
@@ -37,6 +39,8 @@ class PartRequest extends FormRequest
     {
         return [
             'reference_number' => 'núm. de referencia',
+            'type' => 'tpo de registro',
+            'category' => 'categoria',
             'name' => 'nome',
             'description' => 'descrição',
             'manufacturer' => 'Fabricante',

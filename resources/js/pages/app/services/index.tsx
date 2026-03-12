@@ -32,7 +32,7 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-export default function Services({ equipments, services }: any) {
+export default function Services({ equipments, services, search }: any) {
   const { flash } = usePage().props as any;
 
   return (

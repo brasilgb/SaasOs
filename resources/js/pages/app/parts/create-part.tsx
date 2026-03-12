@@ -13,7 +13,7 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: route('app.dashboard'),
     },
     {
-        title: 'Peças',
+        title: 'Peças/Produtos',
         href: route('app.parts.index'),
     },
     {
@@ -30,7 +30,7 @@ export default function CreatePart({ categories }: any) {
             <div className='flex items-center justify-between h-16 px-4'>
                 <div className='flex items-center gap-2'>
                     <Icon iconNode={MemoryStick} className='w-8 h-8' />
-                    <h2 className="text-xl font-semibold tracking-tight">Peças</h2>
+                    <h2 className="text-xl font-semibold tracking-tight">Peças/Produtos</h2>
                 </div>
                 <div>
                     <Breadcrumbs breadcrumbs={breadcrumbs} />

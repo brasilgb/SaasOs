@@ -15,7 +15,7 @@ import { useForm } from "@inertiajs/react"
 import { toastSuccess } from "@/components/app-toast-messages"
 import { Switch } from "@/components/ui/switch"
 
-export default function EditEquipment({ equipment }: any) {
+export default function EditEquipment({ equipment, page, search }: any) {
     const [open, setOpen] = useState(false)
 
     const { data, setData, processing, patch, errors } = useForm({

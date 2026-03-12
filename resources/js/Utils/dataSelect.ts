@@ -74,6 +74,11 @@ const warrantyOptions = [
     { value: '12', label: '12 meses' },
 ];
 
+const partsType = [
+    { value: '1', label: 'Peças' },
+    { value: '2', label: 'Produtos' }
+]
+
 export {
     statusServico,
     statusUser,
@@ -85,5 +90,6 @@ export {
     statusMessage,
     statusOrcamento,
     statusSaas,
-    warrantyOptions
+    warrantyOptions,
+    partsType
 };

@@ -14,7 +14,7 @@ import { Pencil, Save } from "lucide-react"
 import { useForm } from "@inertiajs/react"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-export default function EditModel({ brands, model }: any) {
+export default function EditModel({ brands, model, page, search }: any) {
     const [open, setOpen] = useState(false)
 
     const { data, setData, processing, patch, errors, reset } = useForm({

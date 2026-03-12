@@ -49,7 +49,7 @@ export default function CreateChecklist({ equipments }: any) {
                 <DialogTrigger asChild>
                     <Button className="gap-2">
                         <Plus className="h-4 w-4" />
-                        Checklist
+                        <span>Novo Checklist</span>
                     </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[500px]">

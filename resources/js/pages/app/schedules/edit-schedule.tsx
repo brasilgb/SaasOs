@@ -3,15 +3,8 @@ import { Icon } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/layouts/app-layout";
 import { BreadcrumbItem } from "@/types";
-import { Head, Link, useForm, usePage } from "@inertiajs/react";
-import { ArrowLeft, Calendar, Save } from "lucide-react";
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import Select from 'react-select';
-import InputError from "@/components/input-error";
-import { statusAgenda } from "@/Utils/dataSelect";
-import AlertSuccess from "@/components/app-alert-success";
+import { Head, Link } from "@inertiajs/react";
+import { ArrowLeft, Calendar } from "lucide-react";
 import ScheduleForm from "./schedule-form";
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -29,7 +22,7 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-export default function EditSchedule({ customers, schedule, technicals }: any) {
+export default function EditSchedule({ customers, schedule, technicals, page, search }: any) {
 
   return (
     <AppLayout>
@@ -48,7 +41,7 @@ export default function EditSchedule({ customers, schedule, technicals }: any) {
         <div>
           <Button variant={'default'} asChild>
             <Link
-              href={route('app.schedules.index')}
+              href={route('app.schedules.index', { page: page, search: search})}
             >
               <ArrowLeft className="h-4 w-4" />
               <span>Voltar</span>

@@ -26,7 +26,7 @@ class BrandController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->get('q');
+        $search = $request->search;
         $query = Brand::orderBy('id', 'DESC');
         if ($search) {
             $query->where('brand', 'like', '%' . $search . '%');

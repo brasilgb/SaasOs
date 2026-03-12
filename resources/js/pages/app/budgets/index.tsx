@@ -32,7 +32,7 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-export default function CheckList({ budgets, company }: any) {
+export default function CheckList({ budgets, company, search }: any) {
 
   return (
     <AppLayout>
@@ -49,7 +49,7 @@ export default function CheckList({ budgets, company }: any) {
 
       <div className='flex items-center justify-between p-4'>
         <div className='w-full'>
-          <InputSearch placeholder="Pesquisar por categoria" url="app.budgets.index" />
+          <InputSearch placeholder="Pesquisar por por serviço" url="app.budgets.index" />
         </div>
         <div className='w-full flex justify-end'>
           <Button variant={'default'} asChild>
@@ -57,7 +57,7 @@ export default function CheckList({ budgets, company }: any) {
               href={route('app.budgets.create')}
             >
               <Plus className='h-4 w-4' />
-              <span>Orçamento</span>
+              <span>Novo Orçamento</span>
             </Link>
           </Button>
         </div>
@@ -71,7 +71,8 @@ export default function CheckList({ budgets, company }: any) {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[100px]">#</TableHead>
-                <TableHead>Categoria</TableHead>
+                <TableHead>Equipamento</TableHead>
+                <TableHead>Modelo</TableHead>
                 <TableHead>Serviço</TableHead>
                 <TableHead>Tempo Estimado</TableHead>
                 <TableHead>Validade(dias)</TableHead>
@@ -85,7 +86,8 @@ export default function CheckList({ budgets, company }: any) {
                 budgets?.data?.map((budget: any) => (
                   <TableRow key={budget.id}>
                     <TableCell>{budget.budget_number}</TableCell>
-                    <TableCell>{budget.category}</TableCell>
+                    <TableCell>{budget.equipment.equipment}</TableCell>
+                    <TableCell>{budget.model}</TableCell>
                     <TableCell>{budget.service}</TableCell>
                     <TableCell>{budget.estimated_time}</TableCell>
                     <TableCell>{budget.validity}</TableCell>
@@ -94,7 +96,7 @@ export default function CheckList({ budgets, company }: any) {
                     <TableCell className='flex justify-end gap-2'>
                       <PrintBudget company={company} budget={budget} />
                       <Button asChild size="icon" className="bg-orange-500 hover:bg-orange-600 text-white">
-                        <Link href={route('app.budgets.edit', budget.id)}>
+                        <Link href={route('app.budgets.edit', budget.id)} data={{ page: budgets.current_page, search: search }}>
                           <Edit />
                         </Link>
                       </Button>
@@ -106,7 +108,7 @@ export default function CheckList({ budgets, company }: any) {
                 ))
                 : (
                   <TableRow>
-                    <TableCell colSpan={8} className='h-16 w-full flex items-center justify-center'>
+                    <TableCell colSpan={9} className='h-16 w-full flex items-center justify-center'>
                       Não há dados a serem mostrados no momento.
                     </TableCell>
                   </TableRow>
@@ -115,7 +117,7 @@ export default function CheckList({ budgets, company }: any) {
             </TableBody>
             <TableFooter>
               <TableRow>
-                <TableCell colSpan={8}>
+                <TableCell colSpan={9}>
                   <AppPagination data={budgets} />
                 </TableCell>
               </TableRow>

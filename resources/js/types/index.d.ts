@@ -118,7 +118,7 @@ export interface Message {
 
 export interface Budget {
     id: number;
-    category: string;
+    equipment_id: string;
     service: string;
     model: string;
     description: string;

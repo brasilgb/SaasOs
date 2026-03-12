@@ -15,7 +15,7 @@ class SaleController extends Controller
 
     public function index(Request $request)
     {
-        $search = $request->get('q');
+        $search = $request->search;
         $query = Sale::with('customer')->with('items.part')->orderBy('id', 'DESC');
 
         if ($search) {

@@ -16,19 +16,27 @@ import selectStyles from "@/Utils/selectStyles"
 interface BudgetFormProps {
   initialData?: Budget;
   budgets: Budget[];
+  equipments: any;
 }
 
-export default function BudgetForm({ initialData, budgets }: BudgetFormProps) {
+export default function BudgetForm({ initialData, budgets, equipments }: BudgetFormProps) {
   const isEdit = !!initialData
-  const initialCategoryOptions: OptionType[] = budgets?.map((bud: any) => ({
+
+  const initialModelOptions: OptionType[] = budgets?.map((bud: any) => ({
     value: bud,
     label: bud,
   }));
+
+  const optionsEquipment = equipments?.map((equipment: any) => ({
+    value: equipment.id,
+    label: equipment.equipment,
+  }));
+
   /* =========================
      FORM STATE (INERTIA)
   ========================= */
   const { data, setData, post, patch, processing, reset, errors } = useForm({
-    category: initialData?.category ?? "",
+    equipment_id: initialData?.equipment_id ?? "",
     service: initialData?.service ?? "",
     model: initialData?.model ?? "",
     description: initialData?.description ?? "",
@@ -44,17 +52,19 @@ export default function BudgetForm({ initialData, budgets }: BudgetFormProps) {
   /* =========================
      SELECT OPTIONS
   ========================= */
-  const [categoryOptions, setCategoryOptions] =
-    useState<OptionType[]>(initialCategoryOptions)
+  const [modelOptions, setModelOptions] =
+    useState<OptionType[]>(initialModelOptions)
 
-  const defaultCategory =
-    categoryOptions.find(o => o.value === initialData?.category) ?? null
+  const defaultModel =
+    modelOptions.find(o => o.value === initialData?.model) ?? null
 
   const defaultWarranty =
     warrantyOptions.find(o => o.value === initialData?.warranty) ?? null
+  const defaultEquipament =
+    optionsEquipment?.filter((o: any) => o.value == initialData?.equipment_id).map((opt: any) => ({ value: opt.value, label: opt.label }));
 
-  const [selectedCategory, setSelectedCategory] =
-    useState<OptionType | null>(defaultCategory)
+  const [selectedModel, setSelectedModel] =
+    useState<OptionType | null>(defaultModel)
 
   const [selectedWarranty, setSelectedWarranty] =
     useState<OptionType | null>(defaultWarranty)
@@ -86,7 +96,7 @@ export default function BudgetForm({ initialData, budgets }: BudgetFormProps) {
         onSuccess: () => {
           toastSuccess("Sucesso", "Orçamento criado com sucesso")
           reset()
-          setSelectedCategory(null)
+          setSelectedModel(null)
           setSelectedWarranty(null)
         },
       })
@@ -96,16 +106,16 @@ export default function BudgetForm({ initialData, budgets }: BudgetFormProps) {
   /* =========================
      SELECT HANDLERS
   ========================= */
-  const changeCategory = (option: OptionType | null) => {
-    setSelectedCategory(option)
-    setData("category", option?.value ?? "")
+  const changeModel = (option: OptionType | null) => {
+    setSelectedModel(option)
+    setData("model", option?.value ?? "")
   }
 
-  const createCategory = (value: string) => {
+  const createModel = (value: string) => {
     const option = { label: value, value }
-    setCategoryOptions(prev => [...prev, option])
-    setSelectedCategory(option)
-    setData("category", value)
+    setModelOptions(prev => [...prev, option])
+    setSelectedModel(option)
+    setData("model", value)
   }
 
   const changeWarranty = (option: OptionType | null) => {
@@ -113,39 +123,81 @@ export default function BudgetForm({ initialData, budgets }: BudgetFormProps) {
     setData("warranty", option?.value ?? "")
   }
 
+  const changeEquipment = (selected: any) => {
+    setData('equipment_id', selected?.value);
+  };
+
   const textareaClass =
     "flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
- 
+
       {/* Linha 1 */}
       <div className="grid md:grid-cols-3 gap-4">
         <div className="grid gap-2">
-          <Label>Categoria do Orçamento</Label>
+          <Label htmlFor="equipment">Equipamento</Label>
+          <Select
+            menuPosition='fixed'
+            defaultValue={defaultEquipament}
+            options={optionsEquipment}
+            onChange={changeEquipment}
+            placeholder="Selecione o equipamento"
+            className="shadow-xs p-0 border text-gray-700 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-9"
+            styles={{
+              control: (baseStyles, state) => ({
+                ...baseStyles,
+                fontSize: '14px',
+                boxShadow: 'none',
+                border: 'none',
+                background: 'transparent',
+                paddingBottom: '2px',
+              }),
+              singleValue: (base) => ({
+                ...base,
+                color: "#ebebeb", // cinza escuro (igual input padrão)
+                fontSize: "14px",
+              }),
+              dropdownIndicator: (base) => ({
+                ...base,
+
+              }),
+              menuList: (base) => ({
+                ...base,
+                fontSize: '14px',
+              }),
+            }}
+          />
+          {errors.equipment_id && <div className="text-red-500 text-sm">{errors.equipment_id}</div>}
+        </div>
+
+        <div className="grid gap-2">
+          <Label>Modelo</Label>
           <CreatableSelect
-            value={selectedCategory}
-            options={categoryOptions}
-            onChange={changeCategory}
-            onCreateOption={createCategory}
+            value={selectedModel}
+            options={modelOptions}
+            onChange={changeModel}
+            onCreateOption={createModel}
             isClearable
             styles={selectStyles}
             placeholder="Selecione ou digite a nova"
             className="shadow-xs p-0 border text-gray-700 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-9"
           />
-          <InputError message={errors.category} />
+          <InputError message={errors.model} />
         </div>
- 
+
         <div className="grid gap-2">
           <Label>Serviço</Label>
           <Input value={data.service} onChange={e => setData("service", e.target.value)} />
           <InputError message={errors.service} />
         </div>
 
-        <div className="grid gap-2">
-          <Label>Modelo</Label>
-          <Input value={data.model} onChange={e => setData("model", e.target.value)} />
-        </div>
+      </div>
+
+      <div className="grid gap-2">
+        <Label>Descrição</Label>
+        <textarea className={textareaClass} value={data.description} onChange={e => setData("description", e.target.value)} />
+        <InputError message={errors.description} />
       </div>
 
       {/* Linha 2 */}
@@ -199,11 +251,6 @@ export default function BudgetForm({ initialData, budgets }: BudgetFormProps) {
 
       {/* Textareas */}
       <div className="grid gap-4">
-        <div className="grid gap-2">
-          <Label>Descrição</Label>
-          <textarea className={textareaClass} value={data.description} onChange={e => setData("description", e.target.value)} />
-          <InputError message={errors.description} />
-        </div>
 
         <div className="grid gap-2">
           <Label>Observações</Label>

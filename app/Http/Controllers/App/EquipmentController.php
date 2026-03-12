@@ -16,7 +16,7 @@ class EquipmentController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->get('q');
+        $search = $request->search;
         $query = Equipment::orderBy('id', 'DESC');
         if ($search) {
             $query->where('equipment', 'like', '%' . $search . '%');

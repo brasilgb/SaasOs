@@ -32,7 +32,7 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-export default function Models({ models, brands }: any) {
+export default function Models({ models, brands, search }: any) {
   const { flash } = usePage().props as any;
 
   return (

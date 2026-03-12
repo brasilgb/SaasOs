@@ -34,7 +34,7 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-export default function Customers({ customers }: any) {
+export default function Customers({ customers, search }: any) {
   const { flash } = usePage().props as any;
   const [modalAberto, setModalAberto] = useState(false);
 
@@ -81,7 +81,7 @@ export default function Customers({ customers }: any) {
               href={route('app.customers.create')}
             >
               <Plus className='h-4 w-4' />
-              <span>Cliente</span>
+              <span>Novo Cliente</span>
             </Link>
           </Button>
         </div>
@@ -136,7 +136,7 @@ export default function Customers({ customers }: any) {
                       </Button>
 
                       <Button asChild size="icon" className="bg-orange-500 hover:bg-orange-600 text-white">
-                        <Link href={route('app.customers.edit', customer.id)}>
+                        <Link href={route('app.customers.edit', customer.id)} data={{ page: customers.current_page, search: search }}>
                           <Edit />
                         </Link>
                       </Button>

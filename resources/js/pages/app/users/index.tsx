@@ -32,7 +32,7 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-export default function Users({ users, firstAdminId }: any) {
+export default function Users({ users, firstAdminId, search }: any) {
 
   return (
     <AppLayout>
@@ -57,7 +57,7 @@ export default function Users({ users, firstAdminId }: any) {
               href={route('app.users.create')}
             >
               <Plus className='h-4 w-4' />
-              <span>Usuário</span>
+              <span>Novo Usuário</span>
             </Link>
           </Button>
         </div>
@@ -91,7 +91,7 @@ export default function Users({ users, firstAdminId }: any) {
                     <TableCell>{moment(user.created_at).format("DD/MM/YYYY")}</TableCell>
                     <TableCell className='flex justify-end gap-2'>
                       <Button asChild size="icon" className="bg-orange-500 hover:bg-orange-600 text-white">
-                        <Link href={route("app.users.edit", user.id)}>
+                        <Link href={route("app.users.edit", user.id)} data={{ page: users.current_page, search: search }}>
                           <Edit />
                         </Link>
                       </Button>

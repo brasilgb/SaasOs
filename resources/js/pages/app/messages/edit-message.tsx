@@ -29,7 +29,7 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-export default function EditMessage({ users, message }: any) {
+export default function EditMessage({ users, message, page, search }: any) {
   return (
     <AppLayout>
       <Head title="Mensagens" />
@@ -47,7 +47,7 @@ export default function EditMessage({ users, message }: any) {
         <div>
           <Button variant={'default'} asChild>
             <Link
-              href={route('app.messages.index')}
+              href={route('app.messages.index', { page: page, search: search })}
             >
               <ArrowLeft className="h-4 w-4" />
               <span>Voltar</span>

@@ -27,7 +27,7 @@ class ServiceController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->get('q');
+        $search = $request->search;
         $query = Service::with('equipment')->orderBy('id', 'DESC');
         if ($search) {
             $query->where('service', 'like', '%' . $search . '%');

@@ -31,7 +31,7 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-export default function Equipment({ equipments }: any) {
+export default function Equipment({ equipments, search }: any) {
 
   const equipmentLength = equipments.data.filter((eq: any) => eq.chart === 1).length;
 

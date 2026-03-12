@@ -19,11 +19,11 @@ class ScheduleController extends Controller
     public function index(Request $request)
     {
         $status = $request->get('status');
-        $search = $request->get('q');
+        $search = $request->search;
         $sdate = $request->get('dt');
 
         $query = Schedule::orderBy('id', 'DESC');
-        
+
         if ($status) {
             $query->where('status', $status);
         }
@@ -34,17 +34,18 @@ class ScheduleController extends Controller
 
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('id', 'like', '%' . $search . '%')
+                $q->where('service', 'like', '%' . $search . '%')
                     ->orWhereHas('customer', function ($subQuery) use ($search) {
                         $subQuery->where('name', 'like', "%$search%")
                             ->orWhere('cpfcnpj', 'like', '%' . $search . '%');
                     });
             });
         }
-        $schedules = $query->with('user','customer')->paginate(11);
+        $schedules = $query->with('user', 'customer')->paginate(11)->withQueryString();
 
         return Inertia::render('app/schedules/index', [
             'schedules' => $schedules,
+            'search' => $search
         ]);
     }
 
@@ -73,19 +74,29 @@ class ScheduleController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Schedule $schedule)
+    public function show(Schedule $schedule, Request $request)
     {
         $customers = Customer::get();
         $technicals = User::where('roles', 3)->orWhere('roles', 1)->where('status', 1)->get();
-        return Inertia::render('app/schedules/edit-schedule', ['schedule' => $schedule, 'customers' => $customers, 'technicals' => $technicals]);
+        return Inertia::render('app/schedules/edit-schedule', [
+            'schedule' => $schedule,
+            'customers' => $customers,
+            'technicals' => $technicals,
+            'page' => $request->page,
+            'search' => $request->search
+        ]);
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Schedule $schedule)
+    public function edit(Schedule $schedule, Request $request)
     {
-        return redirect()->route('app.schedules.show', ['schedule' => $schedule->id]);
+        return redirect()->route('app.schedules.show', [
+            'schedule' => $schedule->id,
+            'page' => $request->page,
+            'search' => $request->search
+        ]);
     }
 
     /**

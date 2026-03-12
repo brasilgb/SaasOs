@@ -67,17 +67,12 @@ class OrderController extends Controller
         $endDate = Carbon::now()->subDays(7)->endOfDay();
 
         $status = $request->get('status');
-        $search = $request->get('q');
-        $customer = $request->get('cl');
+        $search = $request->search;
 
         $query = Order::orderBy('id', 'DESC');
 
         if ($status) {
             $query->where('service_status', $status);
-        }
-
-        if ($customer) {
-            $query->where('customer_id', $customer);
         }
 
         if ($search) {
@@ -90,7 +85,7 @@ class OrderController extends Controller
             });
         }
 
-        $orders = $query->with('equipment', 'customer')->paginate(11);
+        $orders = $query->with('equipment', 'customer')->paginate(11)->withQueryString();
         $whats = WhatsappMessage::first();
 
         $feedbackOrders = Order::where('service_status', 8)
@@ -101,6 +96,7 @@ class OrderController extends Controller
             'orders' => $orders,
             'whats' => $whats,
             'feedback' => $feedbackOrders,
+            'search' => $request->search
         ]);
     }
 
@@ -130,7 +126,7 @@ class OrderController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Order $order)
+    public function show(Order $order, Request $request)
     {
         $order->load([
             'customer',
@@ -151,16 +147,18 @@ class OrderController extends Controller
             'customers' => $customers,
             'technicals' => $technicals,
             'equipments' => $equipments,
-            'parts' => $parts
+            'parts' => $parts,
+            'page' => $request->page, 
+            'search' => $request->search
         ]);
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Order $order)
+    public function edit(Order $order, Request $request)
     {
-        return redirect()->route('app.orders.show', ['order' => $order->id]);
+        return redirect()->route('app.orders.show', ['order' => $order->id, 'page' => $request->page, 'search' => $request->search]);
     }
 
     /**

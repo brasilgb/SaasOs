@@ -3,13 +3,8 @@ import { Icon } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/layouts/app-layout";
 import { BreadcrumbItem } from "@/types";
-import { Head, Link, useForm, usePage } from "@inertiajs/react";
-import { ArrowLeft, MemoryStick, Save } from "lucide-react";
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label";
-import { maskCep, maskCpfCnpj, maskMoney, maskMoneyDot, maskPhone, unMask } from "@/Utils/mask";
-import { Switch } from "@/components/ui/switch";
-import AlertSuccess from "@/components/app-alert-success";
+import { Head, Link } from "@inertiajs/react";
+import { ArrowLeft, MemoryStick } from "lucide-react";
 import PartForm from "./part-form";
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -18,7 +13,7 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: route('app.dashboard'),
     },
     {
-        title: 'Peças',
+        title: 'Peças/Produtos',
         href: route('app.parts.index'),
     },
     {
@@ -27,7 +22,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function EditPart({ categories, parts }: any) {
+export default function EditPart({ categories, parts, page, search }: any) {
 
     return (
         <AppLayout>
@@ -35,7 +30,7 @@ export default function EditPart({ categories, parts }: any) {
             <div className='flex items-center justify-between h-16 px-4'>
                 <div className='flex items-center gap-2'>
                     <Icon iconNode={MemoryStick} className='w-8 h-8' />
-                    <h2 className="text-xl font-semibold tracking-tight">Peças</h2>
+                    <h2 className="text-xl font-semibold tracking-tight">Peças/Produtos</h2>
                 </div>
                 <div>
                     <Breadcrumbs breadcrumbs={breadcrumbs} />
@@ -46,7 +41,7 @@ export default function EditPart({ categories, parts }: any) {
                 <div>
                     <Button variant={'default'} asChild>
                         <Link
-                            href={route('app.parts.index')}
+                            href={route('app.parts.index', { page: page, search: search})}
                         >
                             <ArrowLeft className="h-4 w-4" />
                             <span>Voltar</span>

@@ -30,14 +30,14 @@ class PartController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->get('q');
+        $search = $request->search;
         $query = Part::orderBy('id', 'DESC');
         if ($search) {
             $query->where('name', 'like', '%' . $search . '%')
                 ->orWhere('reference_number', 'like', '%' . $search . '%');
         }
-        $parts = $query->paginate(11);
-        return Inertia::render('app/parts/index', ['parts' => $parts]);
+        $parts = $query->paginate(11)->withQueryString();
+        return Inertia::render('app/parts/index', ['parts' => $parts, 'search' => $search]);
     }
 
     /**
@@ -64,6 +64,7 @@ class PartController extends Controller
                 ],
                 [
                     'part_number' => Part::exists() ? Part::latest()->first()->part_number + 1 : 1,
+                    'type' => $data['type'],
                     'category' => $data['category'],
                     'name' => $data['name'],
                     'description' => $data['description'],
@@ -97,18 +98,27 @@ class PartController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Part $part)
+    public function show(Part $part, Request $request)
     {
         $categories = Part::distinct()->pluck('category');
-        return Inertia::render('app/parts/edit-part', ['parts' => $part, 'categories' => $categories]);
+        return Inertia::render('app/parts/edit-part', [
+            'parts' => $part, 
+            'categories' => $categories,
+            'page' => $request->page,
+            'search' => $request->search
+            ]);
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Part $part)
+    public function edit(Part $part, Request $request)
     {
-        return Redirect::route('app.parts.show', ['part' => $part->id]);
+        return Redirect::route('app.parts.show', [
+            'part' => $part->id,
+            'page' => $request->page,
+            'search' => $request->search
+            ]);
     }
 
     /**

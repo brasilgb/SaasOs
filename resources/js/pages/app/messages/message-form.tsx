@@ -138,13 +138,19 @@ export default function MessageForm({ users, initialData }: MessageFormProps) {
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor="status">Status de leitura</Label>
-        <Switch
-          disabled={!isEdit}
-          id="status"
-          checked={data.status}
-          onCheckedChange={(checked: any) => setData('status', checked)}
-        />
+        <Label htmlFor="status">Status da Peça</Label>
+
+        <div className="flex items-center gap-3">
+          <Switch
+            id="status"
+            checked={data.status}
+            onCheckedChange={(checked) => setData("status", checked)}
+          />
+
+          <span className="text-sm text-muted-foreground">
+            {data.status ? "Lida" : "Não lida"}
+          </span>
+        </div>
       </div>
 
       <div className="flex justify-end">

@@ -27,7 +27,7 @@ class EQModelController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->get('q');
+        $search = $request->search;
         $query = EQModel::with('brand')->orderBy('id', 'DESC');
         if ($search) {
             $query->where('model', 'like', '%' . $search . '%');

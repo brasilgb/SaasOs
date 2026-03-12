@@ -10,4 +10,10 @@ use App\Tenantable;
 class Budget extends Model
 {
     use Tenantable;
+
+
+    public function equipment(): BelongsTo
+    {
+        return $this->belongsTo(Equipment::class);
+    }
 }

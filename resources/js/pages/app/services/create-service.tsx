@@ -48,7 +48,7 @@ export default function CreateService({ equipments }: any) {
                 <DialogTrigger asChild>
                     <Button className="gap-2">
                         <Plus className="h-4 w-4" />
-                        Serviço
+                       <span>Novo Serviço</span>
                     </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[500px]">

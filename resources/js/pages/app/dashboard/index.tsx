@@ -19,7 +19,7 @@ export default function Dashboard({ reloadKey, orders, acount, parts, customers,
             <Head title="Dashboard" />
             <div key={reloadKey}>
                 <div className='p-4'>
-                    <div className='h-16 flex items-center justify-between'>
+                    <div className='md:h-16 md:mb-0 mb-4 md:flex items-center justify-between gap-4'>
                         <div className='flex items-center gap-2'>
                             <Icon iconNode={LayoutGridIcon} className='w-8 h-8' />
                             <h2 className="text-xl font-semibold tracking-tight">Dashboard</h2>
@@ -54,7 +54,6 @@ export default function Dashboard({ reloadKey, orders, acount, parts, customers,
                                     60 dias
                                 </ToggleGroupItem>
                             </ToggleGroup>
-
 
                         </div>
                     </div>

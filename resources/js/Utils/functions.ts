@@ -69,11 +69,21 @@ const statusSaasByValue = (value: any) => {
     }
 };
 
+const typesPartsByValue = (value: any) => {
+    switch (value) {
+        case 1:
+            return 'Peças';
+        case 2:
+            return 'Produtos';
+    }
+}
+
 export {
     statusOrdemByValue,
     statusUserByValue,
     roleUserByValue,
     statusAgendaByValue,
     statusMessageByValue,
-    statusSaasByValue
+    statusSaasByValue,
+    typesPartsByValue
 };

@@ -34,7 +34,7 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-export default function Schedules({ schedules }: any) {
+export default function Schedules({ schedules, search }: any) {
 
   return (
     <AppLayout>
@@ -51,7 +51,7 @@ export default function Schedules({ schedules }: any) {
 
       <div className="flex w-full flex-col gap-2 md:w-auto md:flex-row md:justify-end px-2">
         <div className='w-full'>
-          <InputSearch placeholder="Buscar por número, nome do cliente ecpf/cnpj" url="app.schedules.index" />
+          <InputSearch placeholder="Buscar por serviço, nome do cliente ecpf/cnpj" url="app.schedules.index" />
         </div>
         <div className='w-full md:w-auto'>
           <SelectFilter dataStatus={statusAgenda} url="app.schedules.index" noOrder />
@@ -62,7 +62,7 @@ export default function Schedules({ schedules }: any) {
               href={route('app.schedules.create')}
             >
               <Plus className='h-4 w-4' />
-              <span>Agendamento</span>
+              <span>Novo Agendamento</span>
             </Link>
           </Button>
         </div>
@@ -105,7 +105,7 @@ export default function Schedules({ schedules }: any) {
                       </Button>
 
                       <Button asChild size="icon" className="bg-orange-500 hover:bg-orange-600 text-white">
-                        <Link href={route("app.schedules.edit", schedule.id)}>
+                        <Link href={route("app.schedules.edit", schedule.id)} data={{ page: schedules.current_page, 'search': search}}>
                           <Edit />
                         </Link>
                       </Button>

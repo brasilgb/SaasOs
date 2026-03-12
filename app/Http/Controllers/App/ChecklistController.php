@@ -17,7 +17,7 @@ class ChecklistController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->get('q');
+        $search = $request->search;
         $query = Checklist::with('equipment')->orderBy('id', 'DESC');
         if ($search) {
             $query->where(function ($q) use ($search) {

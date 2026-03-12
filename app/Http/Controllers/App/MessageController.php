@@ -18,7 +18,7 @@ class MessageController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->get('q');
+        $search = $request->search;
         $sdate = $request->get('dt');
 
         $logged = Auth::user();
@@ -34,9 +34,9 @@ class MessageController extends Controller
                     });
             });
         }
-        $messages = $query->with('sender')->with('recipient')->paginate(11);
+        $messages = $query->with('sender')->with('recipient')->paginate(11)->withQueryString();
 
-        return Inertia::render('app/messages/index', ['messages' => $messages]);
+        return Inertia::render('app/messages/index', ['messages' => $messages, 'search' => $search]);
     }
 
     /**
@@ -64,19 +64,28 @@ class MessageController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Message $message)
+    public function show(Message $message, Request $request)
     {
         $logged = Auth::user();
         $users = User::where('id', '!=', $logged->id)->get();
-        return Inertia::render('app/messages/edit-message', ['message' => $message, 'users' => $users]);
+        return Inertia::render('app/messages/edit-message', [
+            'message' => $message, 
+            'users' => $users,
+            'page' => $request->page,
+            'search' => $request->search
+            ]);
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Message $message)
+    public function edit(Message $message, Request $request)
     {
-        return redirect()->route('app.messages.show', ['message' => $message->id]);
+        return redirect()->route('app.messages.show', [
+            'message' => $message->id,
+            'page' => $request->page,
+            'search' => $request->search
+            ]);
     }
 
     /**

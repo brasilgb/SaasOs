@@ -8,6 +8,7 @@ use App\Http\Requests\BudgetsRequest;
 use App\Models\App\Brand;
 use App\Models\App\Company;
 use App\Models\App\EQModel;
+use App\Models\App\Equipment;
 use App\Models\App\Service;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -50,14 +51,14 @@ class BudgetController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->get('q');
+        $search = $request->search;
         $query = Budget::orderBy('id', 'DESC');
         if ($search) {
-            $query->where('category', 'like', '%' . $search . '%');
+            $query->where('service', 'like', '%' . $search . '%');
         }
-        $budgets = $query->paginate(12);
+        $budgets = $query->with('equipment')->paginate(12)->withQueryString();
         $company = Company::first();
-        return Inertia::render('app/budgets/index', ['budgets' => $budgets, 'company' => $company]);
+        return Inertia::render('app/budgets/index', ['budgets' => $budgets, 'company' => $company, 'search' => $search]);
     }
 
     /**
@@ -65,8 +66,9 @@ class BudgetController extends Controller
      */
     public function create()
     {
-        $budgets = Budget::distinct()->pluck('category');
-        return Inertia::render('app/budgets/create-budget', ['budgets' => $budgets]);
+        $budgets = Budget::distinct()->pluck('model');
+        $equipments = Equipment::get();
+        return Inertia::render('app/budgets/create-budget', ['equipments' => $equipments, 'budgets' => $budgets]);
     }
 
     /**
@@ -84,18 +86,29 @@ class BudgetController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Budget $budget)
+    public function show(Budget $budget, Request $request)
     {
-        $budgets = Budget::distinct()->pluck('category');
-        return Inertia::render('app/budgets/edit-budget', ['budget' => $budget, 'budgets' => $budgets]);
+        $budgets = Budget::distinct()->pluck('model');
+        $equipments = Equipment::get();
+        return Inertia::render('app/budgets/edit-budget', [
+            'budget' => $budget, 
+            'equipments' => $equipments, 
+            'budgets' => $budgets,
+            'page' => $request->page,
+            'search' => $request->search
+            ]);
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Budget $budget)
+    public function edit(Budget $budget, Request $request)
     {
-        return Redirect::route('app.budgets.show', ['budget' => $budget->id]);
+        return Redirect::route('app.budgets.show', [
+            'budget' => $budget->id,
+            'page' => $request->page,
+            'search' => $request->search
+            ]);
     }
 
     /**

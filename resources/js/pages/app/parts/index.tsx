@@ -20,6 +20,7 @@ import ActionDelete from '@/components/action-delete';
 import { Button } from '@/components/ui/button';
 import { maskMoney } from '@/Utils/mask';
 import { Badge } from '@/components/ui/badge';
+import { typesPartsByValue } from '@/Utils/functions';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -27,12 +28,12 @@ const breadcrumbs: BreadcrumbItem[] = [
     href: route('app.dashboard'),
   },
   {
-    title: 'Peças',
+    title: 'Peças/Produtos',
     href: "#",
   },
 ];
 
-export default function Parts({ parts }: any) {
+export default function Parts({ parts, search }: any) {
 
   return (
     <AppLayout>
@@ -40,7 +41,7 @@ export default function Parts({ parts }: any) {
       <div className='flex items-center justify-between h-16 px-4'>
         <div className='flex items-center gap-2'>
           <Icon iconNode={MemoryStick} className='w-8 h-8' />
-          <h2 className="text-xl font-semibold tracking-tight">Peças</h2>
+          <h2 className="text-xl font-semibold tracking-tight">Peças/Produtos</h2>
         </div>
         <div>
           <Breadcrumbs breadcrumbs={breadcrumbs} />
@@ -48,7 +49,7 @@ export default function Parts({ parts }: any) {
       </div>
       <div className='flex items-center justify-between p-4'>
         <div className='w-full'>
-          <InputSearch placeholder="Buscar peça por nome e part number" url="app.parts.index" />
+          <InputSearch placeholder="Buscar peça/produto por nome e número" url="app.parts.index" />
         </div>
         <div className='w-full flex justify-end'>
           <Button variant={'default'} asChild>
@@ -56,7 +57,7 @@ export default function Parts({ parts }: any) {
               href={route('app.parts.create')}
             >
               <Plus className='h-4 w-4' />
-              <span>Peça</span>
+              <span>Nova Peça/Produto</span>
             </Link>
           </Button>
         </div>
@@ -68,9 +69,10 @@ export default function Parts({ parts }: any) {
             <TableHeader>
               <TableRow>
                 <TableHead className="min-w-max">#</TableHead>
-                <TableHead className="min-w-max">Part Number</TableHead>
+                <TableHead className="min-w-max">N° Peça/Produto</TableHead>
+                <TableHead>Tipo</TableHead>
+                <TableHead>Categoria</TableHead>
                 <TableHead>Name</TableHead>
-                <TableHead>Fabricante</TableHead>
                 <TableHead>Valor</TableHead>
                 <TableHead>Est. mínimo</TableHead>
                 <TableHead>Estoque</TableHead>
@@ -85,7 +87,8 @@ export default function Parts({ parts }: any) {
                     <TableCell>{part.part_number}</TableCell>
                     <TableCell>{part.reference_number}</TableCell>
                     <TableCell className="font-medium">{part.name}</TableCell>
-                    <TableCell>{part.manufacturer}</TableCell>
+                    <TableCell>{typesPartsByValue(part.type)}</TableCell>
+                    <TableCell>{part.category}</TableCell>
                     <TableCell>{maskMoney(part.sale_price)}</TableCell>
                     <TableCell>
                       {part.minimum_stock_level}
@@ -101,7 +104,7 @@ export default function Parts({ parts }: any) {
                     <TableCell className='flex justify-end gap-2'>
 
                       <Button asChild size="icon" className="bg-orange-500 hover:bg-orange-600 text-white">
-                        <Link href={route('app.parts.edit', part.id)}>
+                        <Link href={route('app.parts.edit', part.id)} data={{ page: parts.current_page, search: search }}>
                           <Edit />
                         </Link>
                       </Button>
@@ -113,7 +116,7 @@ export default function Parts({ parts }: any) {
                 ))
                 : (
                   <TableRow>
-                    <TableCell colSpan={9} className='h-16 w-full flex items-center justify-center'>
+                    <TableCell colSpan={10} className='h-16 w-full flex items-center justify-center'>
                       Não há dados a serem mostrados no momento.
                     </TableCell>
                   </TableRow>
@@ -122,7 +125,7 @@ export default function Parts({ parts }: any) {
             </TableBody>
             <TableFooter>
               <TableRow>
-                <TableCell colSpan={9}>
+                <TableCell colSpan={10}>
                   <AppPagination data={parts} />
                 </TableCell>
               </TableRow>

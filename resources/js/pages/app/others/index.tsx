@@ -77,34 +77,18 @@ export default function Others({ othersettings, company, time_remaining }: any) 
                     {uploading && <AlertSuccess message={uploading} className='!p-0' />}
                 </div> */}
                 <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
-                    {/* <div className="space-y-6 mt-6">
-                        <HeadingSmall title="Configuração de navegação" description="Altere entre o menu de navegação lateral Sidebar e a barra de navegação no topo." />
-                        <div className="grid gap-2">
-                            <Switch
-                                id="navigation"
-                                checked={data.navigation}
-                                onCheckedChange={(checked: any) => setData('navigation', checked)}
-                            />
-                        </div>
-                    </div> */}
-                    {/* <div className="space-y-6 mt-6">
-                        <HeadingSmall title="Habilitar cadastro e utilização de estoque de peças e/ou produtos " description="Habilita a opções de cadastro e a utilização de inserção de peças e/ou produtos nas ordens de serviço. Padrão inserção manual do nome e valor." />
-                        <div className="grid gap-2">
-                            <Switch
-                                id="enableparts"
-                                checked={data.enableparts}
-                                onCheckedChange={(checked: any) => setData('enableparts', checked)}
-                            />
-                        </div>
-                    </div> */}
                     <div className="space-y-6 mt-6">
                         <HeadingSmall title="Habilitar a venda de peças e/ou produtos" description="Habilitar a venda de peças e/ou produtos avulsos ou para usuários específicos, com ajuste de estoque." />
-                        <div className="grid gap-2">
+                        <div className="flex items-center gap-3">
                             <Switch
-                                id="enablesales"
+                                id="status"
                                 checked={data.enablesales}
-                                onCheckedChange={(checked: any) => setData('enablesales', checked)}
+                                onCheckedChange={(checked) => setData("enablesales", checked)}
                             />
+
+                            <span className="text-sm text-muted-foreground">
+                                {data.enablesales ? "Habilitado" : "Desabilitado"}
+                            </span>
                         </div>
                     </div>
                     <div className="flex justify-end">

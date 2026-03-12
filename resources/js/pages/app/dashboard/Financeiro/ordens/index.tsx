@@ -35,7 +35,7 @@ export default function FinanceiroOrders({ timerange }: any) {
 
     return (
         <div>
-            <div className='grid grid-cols-4 gap-4'>
+            <div className='grid md:grid-cols-4 gap-4'>
 
                 <KpiFinancial
                     title="Faturamento - Diário"

@@ -18,7 +18,7 @@ class PeriodController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->get('q');
+        $search = $request->search;
 
         $query = Period::orderBy('id', 'DESC');
 

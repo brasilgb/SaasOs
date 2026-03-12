@@ -39,15 +39,15 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Orders({ orders, whats, feedback }: any) {
-    const { ziggy } = usePage().props as any;
-    const { cl, init } = (ziggy as any).query
+export default function Orders({ orders, whats, feedback, search }: any) {
+
     const [openInvoiceModal, setOpenInvoiceModal] = useState(false);
 
     const handleFeedbackCheck = (value: number, id: number) => {
         const newValue = value === 1 ? 0 : 1;
         router.get(route('app.orders.feedback', { "feedback": newValue, "orderid": id }))
     }
+
     return (
         <AppLayout>
 
@@ -189,7 +189,7 @@ export default function Orders({ orders, whats, feedback }: any) {
                                             </Button>
 
                                             <Button asChild size="icon" className="bg-orange-500 hover:bg-orange-600 text-white">
-                                                <Link href={route('app.orders.edit', order.id)} data={{ page: orders.current_page, cl: cl, init: init ?? init }} >
+                                                <Link href={route('app.orders.edit', order.id)} data={{ page: orders.current_page, search: search }} >
                                                     <Edit />
                                                 </Link>
                                             </Button>

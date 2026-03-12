@@ -11,7 +11,7 @@ interface SearchProps {
 
 export default function InputSearch({ placeholder, url, date }: SearchProps) {
     const { data, setData, post, get, processing, errors } = useForm({
-        q: "",
+        search: "",
     });
 
     function handleSubmit(e: any) {
@@ -27,8 +27,8 @@ export default function InputSearch({ placeholder, url, date }: SearchProps) {
                 <Input
                 className="w-full"
                     name="search"
-                    value={data.q}
-                    onChange={(e) => setData("q", e.target.value)}
+                    value={data.search}
+                    onChange={(e) => setData("search", e.target.value)}
                     type={date ? "date" : "search"}
                     placeholder={placeholder}
                     autoComplete="off"

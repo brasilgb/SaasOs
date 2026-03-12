@@ -36,10 +36,9 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-export default function EditOrder({ customers, order, technicals, equipments, parts, orderparts }: any) {
+export default function EditOrder({ customers, order, technicals, equipments, parts, orderparts, page, search }: any) {
 
-  const { ziggy, othersetting } = usePage().props as any;
-  const { page, oc } = (ziggy as any).query
+  const { othersetting } = usePage().props as any;
   const [partsData, setPartsData] = useState<any>([]);
 
   const optionsCustomer = customers.map((customer: any) => ({
@@ -210,7 +209,7 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
         <div>
           <Button variant={'default'} asChild>
             <Link
-              href={route('app.orders.index', { page: page, oc: oc })}
+              href={route('app.orders.index', { page: page, search: search })}
             >
               <ArrowLeft className="h-4 w-4" />
               <span>Voltar</span>

@@ -28,7 +28,7 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-export default function EditBudget({ budgets, budget }: any) {
+export default function EditBudget({ budgets, budget, equipments, page, search }: any) {
 
   return (
     <AppLayout>
@@ -47,7 +47,7 @@ export default function EditBudget({ budgets, budget }: any) {
         <div>
           <Button variant={'default'} asChild>
             <Link
-              href={route('app.budgets.index')}
+              href={route('app.budgets.index',  { page: page, search: search })}
             >
               <ArrowLeft className="h-4 w-4" />
               <span>Voltar</span>
@@ -61,7 +61,7 @@ export default function EditBudget({ budgets, budget }: any) {
       <div className='p-4'>
         <div className='border rounded-lg p-2'>
 
-          <BudgetForm initialData={budget} budgets={budgets} />
+          <BudgetForm initialData={budget} budgets={budgets} equipments={equipments} />
 
         </div>
       </div >

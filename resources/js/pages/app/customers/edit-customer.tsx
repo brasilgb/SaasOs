@@ -22,7 +22,7 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-export default function EditCustomer({ customer }: any) {
+export default function EditCustomer({ customer, page, search }: any) {
 
   return (
     <AppLayout>
@@ -41,7 +41,7 @@ export default function EditCustomer({ customer }: any) {
         <div>
           <Button variant={'default'} asChild>
             <Link
-              href={route('app.customers.index')}
+              href={route('app.customers.index', { page: page, search: search })}
             >
               <ArrowLeft className="h-4 w-4" />
               <span>Voltar</span>
