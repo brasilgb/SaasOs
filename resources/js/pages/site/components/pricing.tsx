@@ -6,46 +6,46 @@ import { Check } from "lucide-react"
 const plans = [
   {
     name: "Mensal",
-    price: "R$ 49,90",
-    period: "/mês",
-    description: "Pagamento mensal com flexibilidade total",
+    price: "R$49,90",
+    period: "por mês",
+    description: "Ideal para começar",
     features: [
       "Todos os recursos incluídos",
-      "App Android para upload de imagens",
       "Usuários ilimitados",
+      "Aplicativo Android",
       "Suporte prioritário",
       "Atualizações automáticas",
-      "Backup diário dos dados",
+      "Backup diário",
     ],
   },
   {
     name: "Trimestral",
-    price: "R$ 132,30",
-    period: "/trimestre",
-    description: "Economize 10% no plano trimestral",
-    popular: false,
+    price: "R$132,30",
+    period: "a cada 3 meses",
+    description: "Economize pagando antecipado",
     features: [
       "Todos os recursos incluídos",
-      "App Android para upload de imagens",
       "Usuários ilimitados",
+      "Aplicativo Android",
       "Suporte prioritário",
       "Atualizações automáticas",
-      "Backup diário dos dados",
+      "Backup diário",
       "10% de desconto",
     ],
   },
   {
     name: "Semestral",
-    price: "R$ 246,96",
-    period: "/semestre",
-    description: "Melhor custo-benefício com 16% de economia",
+    price: "R$246,96",
+    period: "a cada 6 meses",
+    description: "Melhor custo-benefício",
+    popular: true,
     features: [
       "Todos os recursos incluídos",
-      "App Android para upload de imagens",
       "Usuários ilimitados",
+      "Aplicativo Android",
       "Suporte prioritário",
       "Atualizações automáticas",
-      "Backup diário dos dados",
+      "Backup diário",
       "16% de desconto",
     ],
   },
@@ -54,74 +54,102 @@ const plans = [
 export function Pricing() {
   return (
     <section id="precos" className="py-20 sm:py-32 bg-background">
-      <div className="container mx-auto px-4">
+
+      <div className="max-w-7xl mx-auto px-4">
+
         <div className="mx-auto max-w-2xl text-center mb-16">
-          <h2 className="text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+
+          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
             Preços simples e transparentes
           </h2>
-          <p className="mt-4 text-pretty text-lg text-muted-foreground">
-            Teste grátis por 30 dias. Sem cartão de crédito. Cancele quando quiser.
+
+          <p className="mt-4 text-lg text-muted-foreground">
+            Teste gratuito por 30 dias. Sem cartão de crédito.
           </p>
+
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-3 lg:gap-6 max-w-6xl mx-auto">
+        <div className="grid gap-8 lg:grid-cols-3 max-w-6xl mx-auto">
+
           {plans.map((plan, index) => (
             <Card
               key={index}
-              className={`relative border-border bg-card ${
+              className={`relative transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
                 plan.popular ? "border-2 border-primary shadow-xl scale-105" : ""
               }`}
             >
+
               {plan.popular && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                  <span className="inline-flex items-center rounded-full bg-primary px-4 py-1 text-sm font-semibold text-primary-foreground">
-                    Mais Popular
+                  <span className="rounded-full bg-primary px-4 py-1 text-sm font-semibold text-primary-foreground">
+                    Mais popular
                   </span>
                 </div>
               )}
 
-              <CardHeader className="text-center pb-8 pt-8">
-                <CardTitle className="text-2xl text-card-foreground">{plan.name}</CardTitle>
-                <CardDescription className="text-muted-foreground mt-2">{plan.description}</CardDescription>
+              <CardHeader className="text-center pt-8 pb-6">
+
+                <CardTitle className="text-2xl">
+                  {plan.name}
+                </CardTitle>
+
+                <CardDescription className="mt-2">
+                  {plan.description}
+                </CardDescription>
+
                 <div className="mt-6">
-                  <span className="text-5xl font-bold text-foreground">{plan.price}</span>
-                  <span className="text-muted-foreground">{plan.period}</span>
+
+                  <div className="text-5xl font-bold">
+                    {plan.price}
+                  </div>
+
+                  <div className="text-muted-foreground mt-1">
+                    {plan.period}
+                  </div>
+
                 </div>
+
               </CardHeader>
 
               <CardContent className="space-y-4">
+
                 {plan.features.map((feature, featureIndex) => (
                   <div key={featureIndex} className="flex items-start gap-3">
-                    <Check className="h-5 w-5 text-accent shrink-0 mt-0.5" />
-                    <span className="text-sm text-card-foreground leading-relaxed">{feature}</span>
+
+                    <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+
+                    <span className="text-sm leading-relaxed">
+                      {feature}
+                    </span>
+
                   </div>
                 ))}
+
               </CardContent>
 
               <CardFooter className="pt-6">
-                <Link
-                href={route('register')}
-                >
-                <Button
-                  className={`w-full ${
-                    plan.popular
-                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                      : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                  }`}
-                  size="lg"
-                >
-                  Começar teste grátis
-                </Button>
+
+                <Link href={route("register")} className="w-full">
+
+                  <Button size="lg" className="w-full">
+                    Começar teste grátis
+                  </Button>
+
                 </Link>
+
               </CardFooter>
+
             </Card>
           ))}
+
         </div>
 
         <p className="text-center text-sm text-muted-foreground mt-12">
-          Todos os planos incluem 30 dias de teste gratuito. Sem compromisso, cancele a qualquer momento.
+          Teste gratuito por 30 dias. Sem compromisso.
         </p>
+
       </div>
+
     </section>
   )
 }

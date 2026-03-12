@@ -234,58 +234,58 @@ class DashboardController extends Controller
     }
 
     public function financialRevenueChart($timeRange)
-{
-    $startDate = now()->subDays($timeRange)->startOfDay();
-    $endDate = now()->endOfDay();
+    {
+        $startDate = now()->subDays($timeRange)->startOfDay();
+        $endDate = now()->endOfDay();
 
-    $orders = Order::select(
+        $orders = Order::select(
             DB::raw('DATE(created_at) as date'),
             DB::raw('SUM(service_value) as services'),
             DB::raw('SUM(parts_value) as parts'),
             DB::raw('SUM(service_value + parts_value) as total')
         )
-        ->where('service_status', 8)
-        ->whereBetween('created_at', [$startDate, $endDate])
-        ->groupBy('date')
-        ->pluck('total','date')
-        ->toArray();
+            ->where('service_status', 8)
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->groupBy('date')
+            ->pluck('total', 'date')
+            ->toArray();
 
-    $services = Order::select(
+        $services = Order::select(
             DB::raw('DATE(created_at) as date'),
             DB::raw('SUM(service_value) as value')
         )
-        ->where('service_status', 8)
-        ->whereBetween('created_at', [$startDate, $endDate])
-        ->groupBy('date')
-        ->pluck('value','date')
-        ->toArray();
+            ->where('service_status', 8)
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->groupBy('date')
+            ->pluck('value', 'date')
+            ->toArray();
 
-    $parts = Order::select(
+        $parts = Order::select(
             DB::raw('DATE(created_at) as date'),
             DB::raw('SUM(parts_value) as value')
         )
-        ->where('service_status', 8)
-        ->whereBetween('created_at', [$startDate, $endDate])
-        ->groupBy('date')
-        ->pluck('value','date')
-        ->toArray();
+            ->where('service_status', 8)
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->groupBy('date')
+            ->pluck('value', 'date')
+            ->toArray();
 
-    $period = CarbonPeriod::create($startDate, $endDate);
+        $period = CarbonPeriod::create($startDate, $endDate);
 
-    $data = [];
+        $data = [];
 
-    foreach ($period as $date) {
+        foreach ($period as $date) {
 
-        $d = $date->format('Y-m-d');
+            $d = $date->format('Y-m-d');
 
-        $data[] = [
-            'date' => $d,
-            'services' => $services[$d] ?? 0,
-            'parts' => $parts[$d] ?? 0,
-            'total' => $orders[$d] ?? 0,
-        ];
+            $data[] = [
+                'date' => $d,
+                'services' => $services[$d] ?? 0,
+                'parts' => $parts[$d] ?? 0,
+                'total' => $orders[$d] ?? 0,
+            ];
+        }
+
+        return response()->json($data);
     }
-
-    return response()->json($data);
-}
 }
