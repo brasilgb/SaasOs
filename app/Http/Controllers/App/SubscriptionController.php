@@ -11,7 +11,7 @@ class SubscriptionController extends Controller
     // Renderiza a tela de bloqueio
     public function blocked()
     {
-        $tenant = auth()->user()->tenant;
+        $tenant = auth()->user()->tenant; 
 
         // Segurança: Se o usuário NÃO estiver bloqueado nem expirado há > 3 dias, manda pro dashboard
         // Isso previne que alguém acesse a url /subscription/blocked manualmente estando ativo

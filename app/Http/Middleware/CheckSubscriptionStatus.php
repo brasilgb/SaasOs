@@ -11,62 +11,68 @@ class CheckSubscriptionStatus
 {
     public function handle(Request $request, Closure $next)
     {
-        $tenant = auth()->user()->tenant; // Assumindo relação User -> Tenant
+        $tenant = auth()->user()->tenant;
 
         if (!$tenant) {
             return $next($request);
         }
 
-        // 1. Plano Cortesia (ID 2) - Bypass total
+        // Plano Cortesia bypass
         if ($tenant->plan_id == 2) {
             return $next($request);
         }
 
-        // Verificação de Datas
         $expiresAt = Carbon::parse($tenant->expires_at);
-        $now = Carbon::now();
+        $graceLimit = $expiresAt->copy()->addDays(3);
+        $now = now();
 
-        // Se ainda não expirou
+        // 1️⃣ Assinatura ativa
         if ($expiresAt->isFuture()) {
+
+            if ($tenant->subscription_status !== 'active') {
+                $tenant->update([
+                    'subscription_status' => 'active'
+                ]);
+            }
+
             return $next($request);
         }
 
-        // Se expirou, calcula dias de atraso
-        $daysOverdue = floor($expiresAt->diffInDays(now()));
+        // 2️⃣ Grace period (até 3 dias)
+        if ($now->lessThanOrEqualTo($graceLimit)) {
 
-        // 2. Período de Graça (até 3 dias)
-        if ($daysOverdue <= 3) {
-            // Compartilha flag com Inertia para abrir o Modal, mas PERMITE o acesso
+            $daysOverdue = $expiresAt->diffInDays($now);
+
             Inertia::share('subscription_alert', [
                 'status' => 'grace_period',
                 'days_overdue' => $daysOverdue,
                 'message' => 'Sua assinatura venceu. Regularize para evitar bloqueio.'
             ]);
 
-            // Atualiza status no banco se necessário (opcional aqui para não onerar)
-            if ($tenant->subscription_status !== 'expirado') {
-                $tenant->update(['subscription_status' => 'expirado']);
+            if ($tenant->subscription_status !== 'expired') {
+                $tenant->update([
+                    'subscription_status' => 'expired'
+                ]);
             }
 
             return $next($request);
         }
 
-        // No Middleware:
-        $limitDate = $expiresAt->copy()->addDays(3);
-
-        if (now()->greaterThan($limitDate)) {
-            return redirect()->route('subscription.blocked');
-        }
-
-        // 3. Bloqueio Total (> 3 dias)
-        // Se a rota já for a de bloqueio ou pagamento, permite passar para não gerar loop
-        if ($request->routeIs('subscription.blocked') || $request->routeIs('subscription.pay') || $request->routeIs('logout')) {
+        // 3️⃣ Bloqueio total
+        if (
+            $request->routeIs('subscription.blocked') ||
+            $request->routeIs('subscription.pay') ||
+            $request->routeIs('logout')
+        ) {
             return $next($request);
         }
 
-        $tenant->update(['subscription_status' => 'bloqueado']);
+        if ($tenant->subscription_status !== 'blocked') {
+            $tenant->update([
+                'subscription_status' => 'blocked'
+            ]);
+        }
 
-        // Redireciona para tela de bloqueio
         return redirect()->route('subscription.blocked');
     }
 }

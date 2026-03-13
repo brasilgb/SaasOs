@@ -10,7 +10,6 @@ use Illuminate\Support\Str;
 use MercadoPago\Client\Payment\PaymentClient;
 use MercadoPago\Client\Common\RequestOptions; // Adicione esta linha
 use MercadoPago\MercadoPagoConfig;
-use Illuminate\Support\Facades\Http;
 class PaymentController extends Controller
 {
     public function __construct()

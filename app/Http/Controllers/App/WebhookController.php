@@ -49,7 +49,7 @@ class WebhookController extends Controller
             return response()->json(['status' => 'processed_not_approved']);
 
         } catch (\Exception $e) {
-            Log::error('Erro ao processar Webhook MP: ' . $e->getMessage());
+            Log::error('Erro ao processar Webhook MP: ' . $e->getMessage()); 
             return response()->json(['error' => 'Internal Server Error'], 500);
         }
     }
