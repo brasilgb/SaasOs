@@ -6,13 +6,14 @@ const sections = [
   { id: "descricao", title: "1. Descrição do serviço" },
   { id: "cadastro", title: "2. Cadastro de conta" },
   { id: "responsabilidade", title: "3. Responsabilidade do usuário" },
-  { id: "disponibilidade", title: "4. Disponibilidade do serviço" },
-  { id: "propriedade", title: "5. Propriedade intelectual" },
-  { id: "cancelamento", title: "6. Cancelamento e suspensão" },
-  { id: "responsabilidade-limitada", title: "7. Limitação de responsabilidade" },
-  { id: "alteracoes", title: "8. Alterações nos termos" },
-  { id: "legislacao", title: "9. Legislação aplicável" },
-  { id: "contato", title: "10. Contato" },
+  { id: "notas-fiscais", title: "4. Emissão de notas fiscais" },
+  { id: "disponibilidade", title: "5. Disponibilidade do serviço" },
+  { id: "propriedade", title: "6. Propriedade intelectual" },
+  { id: "cancelamento", title: "7. Cancelamento e suspensão" },
+  { id: "responsabilidade-limitada", title: "8. Limitação de responsabilidade" },
+  { id: "alteracoes", title: "9. Alterações nos termos" },
+  { id: "legislacao", title: "10. Legislação aplicável" },
+  { id: "contato", title: "11. Contato" },
 ];
 
 export default function Terms() {
@@ -24,6 +25,7 @@ export default function Terms() {
   );
 
   return (
+
     <LegalLayout>
 
       <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-12">
@@ -62,10 +64,19 @@ export default function Terms() {
 
         </aside>
 
-
         {/* CONTEÚDO */}
 
-        <article className="max-w-[72ch] text-base leading-relaxed text-muted-foreground">
+        <article
+          className="
+          max-w-[72ch]
+          text-[15px]
+          leading-7
+          text-muted-foreground
+          [&>p]:mb-6
+          [&>ul]:mb-8
+          [&>ul]:space-y-2
+        "
+        >
 
           <h1 className="text-3xl font-semibold tracking-tight text-foreground mb-6">
             Termos de Uso – SigmaOS
@@ -75,7 +86,7 @@ export default function Terms() {
             Última atualização: 12 de março de 2026
           </p>
 
-          <p className="mb-10">
+          <p>
             Estes Termos de Uso regulam a utilização da plataforma SigmaOS.
             Ao utilizar o sistema, o usuário declara que leu, compreendeu
             e concorda com os presentes termos.
@@ -84,23 +95,20 @@ export default function Terms() {
 
           {/* DESCRIÇÃO */}
 
-          <h2
-            id="descricao"
-            className="scroll-mt-28 text-xl font-semibold text-foreground mt-14 mb-4 border-b border-border pb-2"
-          >
+          <h2 id="descricao" className="scroll-mt-28 text-xl font-semibold text-foreground mt-16 mb-5 border-b border-border pb-2">
             1. Descrição do serviço
           </h2>
 
-          <p className="mb-4">
+          <p>
             O SigmaOS é uma plataforma online de gestão de ordens de serviço
             destinada a empresas de manutenção e assistência técnica.
           </p>
 
-          <p className="mb-3">
+          <p>
             A plataforma permite:
           </p>
 
-          <ul className="list-disc pl-6 space-y-1 mb-10">
+          <ul className="list-disc pl-6">
             <li>Cadastro de clientes</li>
             <li>Registro de equipamentos</li>
             <li>Gerenciamento de ordens de serviço</li>
@@ -111,23 +119,20 @@ export default function Terms() {
 
           {/* CADASTRO */}
 
-          <h2
-            id="cadastro"
-            className="scroll-mt-28 text-xl font-semibold text-foreground mt-14 mb-4 border-b border-border pb-2"
-          >
+          <h2 id="cadastro" className="scroll-mt-28 text-xl font-semibold text-foreground mt-16 mb-5 border-b border-border pb-2">
             2. Cadastro de conta
           </h2>
 
-          <p className="mb-4">
+          <p>
             Para utilizar o sistema, o usuário deve fornecer informações
-            verdadeiras e atualizadas.
+            verdadeiras, completas e atualizadas.
           </p>
 
-          <p className="mb-3">
+          <p>
             O usuário é responsável por:
           </p>
 
-          <ul className="list-disc pl-6 space-y-1 mb-10">
+          <ul className="list-disc pl-6">
             <li>Manter a confidencialidade de suas credenciais</li>
             <li>Todas as atividades realizadas em sua conta</li>
           </ul>
@@ -135,48 +140,71 @@ export default function Terms() {
 
           {/* RESPONSABILIDADE */}
 
-          <h2
-            id="responsabilidade"
-            className="scroll-mt-28 text-xl font-semibold text-foreground mt-14 mb-4 border-b border-border pb-2"
-          >
+          <h2 id="responsabilidade" className="scroll-mt-28 text-xl font-semibold text-foreground mt-16 mb-5 border-b border-border pb-2">
             3. Responsabilidade do usuário
           </h2>
 
-          <p className="mb-3">
+          <p>
             O usuário concorda em não utilizar o sistema para:
           </p>
 
-          <ul className="list-disc pl-6 space-y-1 mb-6">
+          <ul className="list-disc pl-6">
             <li>Atividades ilegais</li>
             <li>Envio de conteúdo malicioso</li>
             <li>Tentativa de acesso não autorizado</li>
             <li>Violação de direitos de terceiros</li>
           </ul>
 
-          <p className="mb-10">
-            O usuário é responsável pelos dados cadastrados na plataforma.
+          <p>
+            O usuário é responsável pela veracidade, legalidade e
+            integridade dos dados inseridos na plataforma,
+            incluindo informações de clientes, equipamentos,
+            ordens de serviço e registros operacionais.
+          </p>
+
+
+          {/* NOTAS FISCAIS */}
+
+          <h2 id="notas-fiscais" className="scroll-mt-28 text-xl font-semibold text-foreground mt-16 mb-5 border-b border-border pb-2">
+            4. Emissão de notas fiscais
+          </h2>
+
+          <p>
+            O SigmaOS é uma plataforma de gestão operacional e não realiza
+            a emissão direta de documentos fiscais como Nota Fiscal de
+            Serviço (NFS-e) ou Nota Fiscal Eletrônica (NF-e).
+          </p>
+
+          <p>
+            O sistema pode disponibilizar links ou integrações que
+            direcionem o usuário para sistemas externos de emissão fiscal
+            mantidos por terceiros ou por órgãos governamentais.
+          </p>
+
+          <p>
+            A responsabilidade pela correta emissão de notas fiscais,
+            cumprimento de obrigações tributárias e envio de informações
+            aos órgãos competentes é exclusivamente do usuário.
           </p>
 
 
           {/* DISPONIBILIDADE */}
 
-          <h2
-            id="disponibilidade"
-            className="scroll-mt-28 text-xl font-semibold text-foreground mt-14 mb-4 border-b border-border pb-2"
-          >
-            4. Disponibilidade do serviço
+          <h2 id="disponibilidade" className="scroll-mt-28 text-xl font-semibold text-foreground mt-16 mb-5 border-b border-border pb-2">
+            5. Disponibilidade do serviço
           </h2>
 
-          <p className="mb-4">
+          <p>
             Nos esforçamos para manter o sistema disponível continuamente.
           </p>
 
-          <p className="mb-3">
-            Entretanto, o sistema pode ficar indisponível em casos de:
+          <p>
+            Entretanto, o serviço poderá ficar temporariamente
+            indisponível em situações como:
           </p>
 
-          <ul className="list-disc pl-6 space-y-1 mb-10">
-            <li>Manutenção técnica</li>
+          <ul className="list-disc pl-6">
+            <li>Manutenção técnica programada</li>
             <li>Falhas de infraestrutura</li>
             <li>Eventos fora de nosso controle</li>
           </ul>
@@ -184,14 +212,11 @@ export default function Terms() {
 
           {/* PROPRIEDADE */}
 
-          <h2
-            id="propriedade"
-            className="scroll-mt-28 text-xl font-semibold text-foreground mt-14 mb-4 border-b border-border pb-2"
-          >
-            5. Propriedade intelectual
+          <h2 id="propriedade" className="scroll-mt-28 text-xl font-semibold text-foreground mt-16 mb-5 border-b border-border pb-2">
+            6. Propriedade intelectual
           </h2>
 
-          <p className="mb-10">
+          <p>
             Todo o conteúdo da plataforma, incluindo software,
             design, logotipo e funcionalidades, é propriedade
             do SigmaOS e protegido por leis de propriedade intelectual.
@@ -200,18 +225,15 @@ export default function Terms() {
 
           {/* CANCELAMENTO */}
 
-          <h2
-            id="cancelamento"
-            className="scroll-mt-28 text-xl font-semibold text-foreground mt-14 mb-4 border-b border-border pb-2"
-          >
-            6. Cancelamento e suspensão
+          <h2 id="cancelamento" className="scroll-mt-28 text-xl font-semibold text-foreground mt-16 mb-5 border-b border-border pb-2">
+            7. Cancelamento e suspensão
           </h2>
 
-          <p className="mb-3">
+          <p>
             Reservamo-nos o direito de suspender ou cancelar contas que:
           </p>
 
-          <ul className="list-disc pl-6 space-y-1 mb-10">
+          <ul className="list-disc pl-6">
             <li>Violem estes termos</li>
             <li>Utilizem o sistema de forma abusiva</li>
             <li>Comprometam a segurança da plataforma</li>
@@ -220,29 +242,24 @@ export default function Terms() {
 
           {/* RESPONSABILIDADE LIMITADA */}
 
-          <h2
-            id="responsabilidade-limitada"
-            className="scroll-mt-28 text-xl font-semibold text-foreground mt-14 mb-4 border-b border-border pb-2"
-          >
-            7. Limitação de responsabilidade
+          <h2 id="responsabilidade-limitada" className="scroll-mt-28 text-xl font-semibold text-foreground mt-16 mb-5 border-b border-border pb-2">
+            8. Limitação de responsabilidade
           </h2>
 
-          <ul className="list-disc pl-6 space-y-1 mb-10">
-            <li>Perda de dados causada por uso indevido</li>
-            <li>Danos indiretos decorrentes do uso da plataforma</li>
+          <ul className="list-disc pl-6">
+            <li>Perda de dados causada por uso indevido da plataforma</li>
+            <li>Danos indiretos ou lucros cessantes decorrentes do uso do sistema</li>
+            <li>Falhas em serviços ou integrações de terceiros</li>
           </ul>
 
 
           {/* ALTERAÇÕES */}
 
-          <h2
-            id="alteracoes"
-            className="scroll-mt-28 text-xl font-semibold text-foreground mt-14 mb-4 border-b border-border pb-2"
-          >
-            8. Alterações nos termos
+          <h2 id="alteracoes" className="scroll-mt-28 text-xl font-semibold text-foreground mt-16 mb-5 border-b border-border pb-2">
+            9. Alterações nos termos
           </h2>
 
-          <p className="mb-10">
+          <p>
             Estes Termos de Uso podem ser modificados a qualquer momento.
             O uso contínuo da plataforma após alterações implica
             concordância com os novos termos.
@@ -251,14 +268,11 @@ export default function Terms() {
 
           {/* LEGISLAÇÃO */}
 
-          <h2
-            id="legislacao"
-            className="scroll-mt-28 text-xl font-semibold text-foreground mt-14 mb-4 border-b border-border pb-2"
-          >
-            9. Legislação aplicável
+          <h2 id="legislacao" className="scroll-mt-28 text-xl font-semibold text-foreground mt-16 mb-5 border-b border-border pb-2">
+            10. Legislação aplicável
           </h2>
 
-          <p className="mb-10">
+          <p>
             Estes termos são regidos pelas leis da
             República Federativa do Brasil.
           </p>
@@ -266,11 +280,8 @@ export default function Terms() {
 
           {/* CONTATO */}
 
-          <h2
-            id="contato"
-            className="scroll-mt-28 text-xl font-semibold text-foreground mt-14 mb-4 border-b border-border pb-2"
-          >
-            10. Contato
+          <h2 id="contato" className="scroll-mt-28 text-xl font-semibold text-foreground mt-16 mb-5 border-b border-border pb-2">
+            11. Contato
           </h2>
 
           <p>

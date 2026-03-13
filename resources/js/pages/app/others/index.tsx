@@ -26,13 +26,15 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function Others({ othersettings, company, time_remaining }: any) {
     const { auth } = usePage().props as any;
-    const [uploading, setUploading] = useState<string>('');
+    console.log('auth', auth.user.tenant.plan.name);
+
     const { data, setData, put, processing } = useForm({
         navigation: othersettings?.navigation,
         budget: othersettings?.budget,
         enableparts: othersettings?.enableparts,
         enablesales: othersettings?.enablesales,
     });
+
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
@@ -62,7 +64,7 @@ export default function Others({ othersettings, company, time_remaining }: any) 
                     <HeadingSmall
                         title="Licença de uso do sistema"
                         description={`Este software é licenciado para a empresa ${company?.companyname}, CNPJ: ${maskCpfCnpj(company?.cnpj)}. Localizada na ${company?.street}, ${company?.number}, ${company?.district}, ${company?.city} - ${company?.state}.`}
-                        license={auth?.plan}
+                        license={auth.user.tenant.plan.name}
                         time_remaining={time_remaining}
                     />
                 </div>

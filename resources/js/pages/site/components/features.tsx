@@ -15,7 +15,10 @@ import {
   FileSpreadsheet,
   ShoppingCart,
   BookOpen,
+  Eye,
+  ChartLine,
 } from "lucide-react"
+import { LineChart } from "recharts"
 
 const features = [
   {
@@ -32,6 +35,12 @@ const features = [
     icon: ClipboardList,
     title: "Ordens de Serviço",
     description: "Controle completo de ordens com status, fotos e histórico detalhado.",
+  },
+  {
+    icon: Eye,
+    title: "Acompanhamento da Ordem de Serviço",
+    description:
+      "Envie um link para que o cliente acompanhe o status da ordem de serviço em uma página exclusiva.",
   },
   {
     icon: FileSpreadsheet,
@@ -79,6 +88,12 @@ const features = [
     description: "Analise desempenho, vendas e serviços com relatórios completos.",
   },
   {
+    icon: ChartLine,
+    title: "Dashboard com KPIs e Gráficos",
+    description:
+      "Visualize faturamento, ordens de serviço, clientes e desempenho do negócio em gráficos claros e indicadores em tempo real.",
+  },
+  {
     icon: Tag,
     title: "Etiquetas Inteligentes",
     description: "Identifique equipamentos rapidamente com etiquetas personalizadas.",
@@ -110,7 +125,9 @@ export function Features() {
           <p className="mt-4 text-lg text-muted-foreground">
             Ferramentas completas para organizar clientes, serviços, estoque e equipe em um único sistema.
           </p>
-
+          <p className="mt-3 text-xs text-muted-foreground">
+            A emissão de notas fiscais é realizada por sistemas externos.
+          </p>
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

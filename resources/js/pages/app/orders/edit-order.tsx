@@ -2,7 +2,7 @@ import { Breadcrumbs } from "@/components/breadcrumbs";
 import { Icon } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/layouts/app-layout";
-import { BreadcrumbItem } from "@/types";
+import { BreadcrumbItem, OptionType } from "@/types";
 import { Head, Link, useForm, usePage } from "@inertiajs/react";
 import { ArrowLeft, FileTextIcon, Save, Wrench, X } from "lucide-react";
 import { Input } from "@/components/ui/input"
@@ -20,6 +20,8 @@ import { Badge } from "@/components/ui/badge";
 import { toastSuccess } from "@/components/app-toast-messages";
 import { DatePicker } from "@/components/date-picker";
 import InvoiceModal from "@/components/Modals/InvoiceModal";
+import CreatableSelect from "react-select/creatable";
+import selectStyles from "@/Utils/selectStyles";
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -36,10 +38,21 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-export default function EditOrder({ customers, order, technicals, equipments, parts, orderparts, page, search }: any) {
+export default function EditOrder({ customers, order, technicals, equipments, parts, orderparts, page, search, models }: any) {
 
   const { othersetting } = usePage().props as any;
   const [partsData, setPartsData] = useState<any>([]);
+
+const initialModelOptions = models.map((model: any) => ({
+  value: model,
+  label: model,
+}))
+
+const defaultModel =
+  initialModelOptions.find((o: any) => o.value === order?.model) || null
+
+const [modelOptions, setModelOptions] = useState<OptionType[]>(initialModelOptions)
+const [selectedModel, setSelectedModel] = useState<OptionType | null>(defaultModel)
 
   const optionsCustomer = customers.map((customer: any) => ({
     value: customer.id,
@@ -186,6 +199,20 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
     }))
   ];
 
+  
+  const changeModel = (option: OptionType | null) => {
+    setSelectedModel(option)
+    setData("model", option?.value ?? "")
+  }
+
+  const createModel = (value: string) => {
+    const option = { label: value, value }
+    setModelOptions(prev => [...prev, option])
+    setSelectedModel(option)
+    setData("model", value)
+  }
+
+  
   return (
     <AppLayout>
 
@@ -310,14 +337,18 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
               </div>
 
               <div className="md:col-span-2 grid gap-2">
-                <Label htmlFor="model">Modelo</Label>
-                <Input
-                  type="text"
-                  id="model"
-                  value={data.model}
-                  onChange={(e) => setData('model', e.target.value)}
+                <Label>Marca e Modelo</Label>
+                <CreatableSelect
+                  value={selectedModel}
+                  options={modelOptions}
+                  onChange={changeModel}
+                  onCreateOption={createModel}
+                  isClearable
+                  styles={selectStyles}
+                  placeholder="Selecione ou digite a nova"
+                  className="shadow-xs p-0 border text-gray-700 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-9"
                 />
-                {errors.model && <div className="text-red-500 text-sm">{errors.model}</div>}
+                <InputError message={errors.model} />
               </div>
 
               <div className="grid gap-2">

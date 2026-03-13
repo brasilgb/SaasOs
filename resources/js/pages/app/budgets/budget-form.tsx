@@ -172,7 +172,7 @@ export default function BudgetForm({ initialData, budgets, equipments }: BudgetF
         </div>
 
         <div className="grid gap-2">
-          <Label>Modelo</Label>
+          <Label>Marca e Modelo</Label>
           <CreatableSelect
             value={selectedModel}
             options={modelOptions}

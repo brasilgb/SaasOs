@@ -107,7 +107,8 @@ class OrderController extends Controller
     {
         $equipments = Equipment::get();
         $customers = Customer::get();
-        return Inertia::render('app/orders/create-order', ['customers' => $customers, 'equipments' => $equipments]);
+        $models = Order::distinct()->pluck('model');
+        return Inertia::render('app/orders/create-order', ['customers' => $customers, 'equipments' => $equipments, 'models' => $models]);
     }
 
     /**
@@ -141,14 +142,15 @@ class OrderController extends Controller
             ->orWhere('roles', 1)
             ->where('status', 1)
             ->get();
-
+        $models = Order::distinct()->pluck('model');
         return Inertia::render('app/orders/edit-order', [
             'order' => $order,
             'customers' => $customers,
             'technicals' => $technicals,
             'equipments' => $equipments,
             'parts' => $parts,
-            'page' => $request->page, 
+            'models' => $models,
+            'page' => $request->page,
             'search' => $request->search
         ]);
     }

@@ -1,10 +1,8 @@
 <?php
 
-use App\Http\Controllers\App\BrandController;
 use App\Http\Controllers\App\BudgetController;
 use App\Http\Controllers\App\CompanyController;
 use App\Http\Controllers\App\CustomerController;
-use App\Http\Controllers\App\EQModelController;
 use App\Http\Controllers\App\ImageController;
 use App\Http\Controllers\App\OrderController;
 use App\Http\Controllers\App\PartController;
@@ -36,10 +34,6 @@ Route::get('/clientes', [CustomerController::class, 'getClientes']);
 Route::post('/orcamentos', [BudgetController::class, 'getOrcamentos']);
 
 Route::post('/servicos', [ServiceController::class, 'getServicos']);
-
-Route::get('/marcas', [BrandController::class, 'getMarcas']);
-
-Route::post('/modelos', [EQModelController::class, 'getModelos']);
 
 Route::get('/empresa', [CompanyController::class, 'getEmpresaInfo']);
 

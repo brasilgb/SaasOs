@@ -1,6 +1,4 @@
 <?php
-
-use App\Http\Controllers\App\BrandController;
 use App\Http\Controllers\App\BudgetController;
 use App\Http\Controllers\App\ChecklistController;
 use App\Http\Controllers\App\CompanyController;
@@ -8,7 +6,6 @@ use App\Http\Controllers\App\OtherController;
 use App\Http\Controllers\App\ReceiptController;
 use App\Http\Controllers\App\LabelPrintingController;
 use App\Http\Controllers\App\EquipmentController;
-use App\Http\Controllers\App\EQModelController;
 use App\Http\Controllers\App\ImageController;
 use App\Http\Controllers\App\CustomerController;
 use App\Http\Controllers\App\DashboardController;
@@ -21,7 +18,6 @@ use App\Http\Controllers\App\ScheduleController;
 use App\Http\Controllers\App\ServiceController;
 use App\Http\Controllers\App\UserController;
 use App\Http\Controllers\App\WhatsappMessageController;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
@@ -43,9 +39,7 @@ Route::resource('services', ServiceController::class);
 Route::resource('users', UserController::class);
 Route::resource('budgets', BudgetController::class);
 Route::resource('whatsapp-messages', WhatsappMessageController::class);
-Route::resource('register-brands', BrandController::class)->parameters(['register-brands' => 'brand']);
 Route::resource('register-equipments', EquipmentController::class)->parameters(['register-equipments' => 'equipment']);
-Route::resource('register-models', EQModelController::class)->parameters(['register-models' => 'eQModel']);
 Route::resource('register-services', ServiceController::class)->parameters(['register-services' => 'service']);
 Route::resource('register-checklists', ChecklistController::class)->parameters(['register-checklists' => 'checklist']);
 Route::get('images', [ImageController::class, 'index'])->name('images.index');

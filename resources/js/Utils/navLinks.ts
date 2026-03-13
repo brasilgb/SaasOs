@@ -133,39 +133,6 @@ const mainConfItems = [
     }
 ];
 
-const mainRegisterItems = [
-    {
-        title: "Cadastros",
-        url: "#",
-        icon: PackagePlus,
-        items: [
-            {
-                title: 'Cadastrar marcas',
-                url: route('app.register-brands.index'),
-                icon: Copyright,
-                active: 'app.register-brands.*',
-            },
-            {
-                title: 'Cadastrar modelos',
-                url: route('app.register-models.index'),
-                icon: Sparkles,
-                active: 'app.register-models.*',
-            },
-            {
-                title: 'Cadastrar serviços',
-                url: route('app.register-services.index'),
-                icon: Wrench,
-                active: 'app.register-services.*',
-            },
-            {
-                title: 'Cadastrar orçamentos',
-                url: route('app.budgets.index'),
-                icon: Blocks,
-                active: 'app.register-budgets.*',
-            },
-        ]
-    }
-];
 
 const mainAdminItems = [
     {
@@ -230,4 +197,4 @@ const footerNavItems: NavItem[] = [
     },
 ];
 
-export { mainNavItems, mainUserItems ,mainConfItems, mainRegisterItems,footerNavItems, mainAdminItems, mainPlansItems};
+export { mainNavItems, mainUserItems ,mainConfItems,footerNavItems, mainAdminItems, mainPlansItems};
