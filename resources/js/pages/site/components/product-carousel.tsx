@@ -108,7 +108,7 @@ export function ProductCarousel() {
               />
 
               {/* Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent flex flex-col justify-end p-6 sm:p-8">
+              <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/30 to-transparent flex flex-col justify-end p-6 sm:p-8">
 
                 <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-2">
                   {product.title}

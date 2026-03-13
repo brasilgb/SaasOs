@@ -50,7 +50,7 @@ class RegisteredUserController extends Controller
                 'status' => 1,
                 'plan_id' => 1,
                 'subscription_status' => 'active',
-                'expires_at' => now()->addDays(30),
+                'expires_at' => now()->addDays(14),
             ]);
 
             Company::create([
@@ -85,7 +85,7 @@ class RegisteredUserController extends Controller
             ->route('app.dashboard')
             ->with(
                 'message',
-                'Conta criada com sucesso! Você possui 30 dias de acesso para testes.'
+                'Conta criada com sucesso! Você possui 14 dias de acesso grátis para testes.'
             );
     }
 }
