@@ -75,13 +75,13 @@ export function Footer() {
               </li>
 
               <li>
-                <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                <a href="/termos" className="text-muted-foreground hover:text-foreground transition-colors">
                   Termos de uso
                 </a>
               </li>
 
               <li>
-                <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                <a href="/privacidade" className="text-muted-foreground hover:text-foreground transition-colors">
                   Política de privacidade
                 </a>
               </li>

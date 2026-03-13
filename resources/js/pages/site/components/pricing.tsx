@@ -6,8 +6,8 @@ import { Check } from "lucide-react"
 const plans = [
   {
     name: "Mensal",
-    price: "R$49,90",
-    period: "por mês",
+    price: "R$59",
+    period: "/mês",
     description: "Ideal para começar",
     features: [
       "Todos os recursos incluídos",
@@ -20,9 +20,10 @@ const plans = [
   },
   {
     name: "Trimestral",
-    price: "R$132,30",
+    price: "R$159",
     period: "a cada 3 meses",
     description: "Economize pagando antecipado",
+    savings: "Economize R$18",
     features: [
       "Todos os recursos incluídos",
       "Usuários ilimitados",
@@ -35,9 +36,11 @@ const plans = [
   },
   {
     name: "Semestral",
-    price: "R$246,96",
+    price: "R$297",
     period: "a cada 6 meses",
+    monthlyEquivalent: "equivalente a R$49,50/mês",
     description: "Melhor custo-benefício",
+    savings: "Economize R$57",
     popular: true,
     features: [
       "Todos os recursos incluídos",
@@ -64,7 +67,7 @@ export function Pricing() {
           </h2>
 
           <p className="mt-4 text-lg text-muted-foreground">
-            Teste gratuito por 30 dias. Sem cartão de crédito.
+            Teste gratuito por 14 dias. Sem cartão de crédito.
           </p>
 
         </div>
@@ -107,6 +110,20 @@ export function Pricing() {
                     {plan.period}
                   </div>
 
+                  {plan.monthlyEquivalent && (
+                    <div className="text-sm text-muted-foreground mt-2">
+                      {plan.monthlyEquivalent}
+                    </div>
+                  )}
+
+                  {plan.savings && (
+                    <div className="mt-3">
+                      <span className="text-xs font-medium bg-green-500/10 text-green-600 px-2 py-1 rounded-md">
+                        {plan.savings}
+                      </span>
+                    </div>
+                  )}
+
                 </div>
 
               </CardHeader>
@@ -132,7 +149,7 @@ export function Pricing() {
                 <Link href={route("register")} className="w-full">
 
                   <Button size="lg" className="w-full">
-                    Começar teste grátis
+                    Testar grátis por 14 dias
                   </Button>
 
                 </Link>
@@ -145,7 +162,7 @@ export function Pricing() {
         </div>
 
         <p className="text-center text-sm text-muted-foreground mt-12">
-          Teste gratuito por 30 dias. Sem compromisso.
+          Teste gratuito por 14 dias • Sem cartão de crédito • Cancelamento a qualquer momento
         </p>
 
       </div>

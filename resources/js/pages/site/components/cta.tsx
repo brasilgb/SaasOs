@@ -16,7 +16,7 @@ export function CTA() {
 
           <p className="mt-6 text-lg leading-relaxed opacity-90">
             Simplifique suas ordens de serviço, controle de peças e atendimento ao cliente.
-            Teste o SigmaOs gratuitamente por 30 dias.
+            Teste o SigmaOs gratuitamente por 14 dias.
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">

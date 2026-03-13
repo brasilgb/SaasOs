@@ -10,11 +10,11 @@ use Inertia\Inertia;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/os/{token}', [OsController::class, 'index']);
 Route::get('/privacidade', function () {
-    return Inertia::render('/privacy/index');
+    return Inertia::render('site/privacy/index');
 });
 
 Route::get('/termos', function () {
-    return Inertia::render('/terms/index');
+    return Inertia::render('site/terms/index');
 });
 /*
 |--------------------------------------------------------------------------
