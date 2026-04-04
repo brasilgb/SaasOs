@@ -9,7 +9,7 @@ import {
     SidebarMenuSubItem,
     useSidebar,
 } from '@/components/ui/sidebar';
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { ChevronRight, type LucideIcon } from 'lucide-react';
 
 export default function NavMainCollapsible({
@@ -24,17 +24,26 @@ export default function NavMainCollapsible({
             title: string;
             url: string;
             active?: string;
+            permission?: string;
         }[];
     }[];
 }) {
     const { state } = useSidebar();
     const isCollapsed = state === 'collapsed';
+    const { auth } = usePage<{ auth?: { permissions?: string[] } }>().props;
+    const permissions = auth?.permissions ?? [];
 
     return (
         <SidebarMenu>
             {items.map((item) => {
+                const visibleSubItems = item.items?.filter((subItem) => !subItem.permission || permissions.includes(subItem.permission)) ?? [];
+
+                if (visibleSubItems.length === 0) {
+                    return null;
+                }
+
                 // Se estiver colapsado e tiver sub-itens, usamos DropdownMenu (flutuante)
-                if (isCollapsed && item.items?.length) {
+                if (isCollapsed && visibleSubItems.length) {
                     return (
                         <SidebarMenuItem key={item.title}>
                             <DropdownMenu>
@@ -45,7 +54,7 @@ export default function NavMainCollapsible({
                                     </SidebarMenuButton>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent side="right" align="start" className="w-48">
-                                    {item.items.map((subItem) => (
+                                    {visibleSubItems.map((subItem) => (
                                         <DropdownMenuItem key={subItem.title} asChild>
                                             <Link
                                                 href={subItem.url}
@@ -74,7 +83,7 @@ export default function NavMainCollapsible({
                             </CollapsibleTrigger>
                             <CollapsibleContent>
                                 <SidebarMenuSub>
-                                    {item.items?.map((subItem) => (
+                                    {visibleSubItems.map((subItem) => (
                                         <SidebarMenuSubItem key={subItem.title}>
                                             <SidebarMenuSubButton asChild isActive={route().current(subItem.active ?? '')}>
                                                 <Link href={subItem.url}>

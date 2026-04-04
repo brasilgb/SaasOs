@@ -19,7 +19,7 @@ export const APP_STATUS_CONFIGS = {
         99: { label: 'RootSystem', color: 'bg-green-100 text-green-700 border-green-200' },
         9: { label: 'RootApp', color: 'bg-rose-600 text-white border-rose-700' },
         1: { label: 'Administrador', color: 'bg-violet-100 text-violet-700 border-violet-200' },
-        2: { label: 'Usuário', color: 'bg-blue-100 text-blue-700 border-blue-200' },
+        2: { label: 'Operador/Atendente', color: 'bg-blue-100 text-blue-700 border-blue-200' },
         3: { label: 'Técnico', color: 'bg-cyan-100 text-cyan-700 border-cyan-200' },
     },
     agenda: {

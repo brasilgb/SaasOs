@@ -25,7 +25,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Services({ equipments, services, search }: any) {
-    const { flash } = usePage().props as any;
+    const { flash, auth } = usePage().props as any;
+    const canManageServices = auth?.permissions?.includes('settings');
 
     return (
         <AppLayout>
@@ -45,7 +46,7 @@ export default function Services({ equipments, services, search }: any) {
                     <InputSearch placeholder="Buscar serviço" url="app.register-services.index" />
                 </div>
                 <div className="flex w-full justify-end">
-                    <CreateService equipments={equipments} />
+                    {canManageServices && <CreateService equipments={equipments} />}
                 </div>
             </div>
 
@@ -70,8 +71,10 @@ export default function Services({ equipments, services, search }: any) {
                                         <TableCell className="font-medium">{service.service}</TableCell>
                                         <TableCell>{moment(service.created_at).format('DD/MM/YYYY')}</TableCell>
                                         <TableCell className="flex justify-end gap-2">
-                                            <EditService service={service} equipments={equipments} />
-                                            <ActionDelete title={'este serviço'} url={'app.register-services.destroy'} param={service.id} />
+                                            {canManageServices && <EditService service={service} equipments={equipments} />}
+                                            {canManageServices && (
+                                                <ActionDelete title={'este serviço'} url={'app.register-services.destroy'} param={service.id} />
+                                            )}
                                         </TableCell>
                                     </TableRow>
                                 ))

@@ -14,11 +14,18 @@ use Inertia\Inertia;
 
 class UserController extends Controller
 {
+    private function authorizeUsersAccess(): void
+    {
+        abort_unless(Auth::user()?->hasPermission('users'), 403);
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
+        $this->authorizeUsersAccess();
+
         $search = $request->search;
         $query = User::orderBy('id', 'DESC');
         if ($search) {
@@ -35,6 +42,8 @@ class UserController extends Controller
      */
     public function create()
     {
+        $this->authorizeUsersAccess();
+
         return Inertia::render('app/users/create-user');
     }
 
@@ -43,6 +52,8 @@ class UserController extends Controller
      */
     public function store(UserRequest $request): RedirectResponse
     {
+        $this->authorizeUsersAccess();
+
         $data = $request->all();
         $request->validated();
         $data['password'] = Hash::make($request->password);
@@ -59,6 +70,8 @@ class UserController extends Controller
      */
     public function show(User $user, Request $request)
     {
+        $this->authorizeUsersAccess();
+
         return Inertia::render('app/users/edit-user', [
             'user' => $user,
             'page' => $request->page,
@@ -71,6 +84,8 @@ class UserController extends Controller
      */
     public function edit(User $user, Request $request)
     {
+        $this->authorizeUsersAccess();
+
         return redirect()->route('app.users.show', [
             'user' => $user->id,
             'page' => $request->page,
@@ -83,6 +98,8 @@ class UserController extends Controller
      */
     public function update(UserRequest $request, User $user): RedirectResponse
     {
+        $this->authorizeUsersAccess();
+
         $data = $request->all();
         $request->validated();
         $data['password'] = $request->password ? Hash::make($request->password) : $user->password;
@@ -98,6 +115,8 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
+        $this->authorizeUsersAccess();
+
         $user->delete();
 
         return redirect()->route('app.users.index')->with('success', 'Usuário excluido com sucesso!');

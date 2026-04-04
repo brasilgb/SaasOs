@@ -8,15 +8,23 @@ use App\Models\App\Checklist;
 use App\Models\App\Equipment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class ChecklistController extends Controller
 {
+    private function authorizeChecklistAccess(): void
+    {
+        abort_unless(Auth::user()?->hasPermission('register_checklists'), 403);
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
+        $this->authorizeChecklistAccess();
+
         $search = $request->search;
         $query = Checklist::with('equipment')->orderBy('id', 'DESC');
         if ($search) {
@@ -46,6 +54,8 @@ class ChecklistController extends Controller
      */
     public function store(ChecklistRequest $request): RedirectResponse
     {
+        $this->authorizeChecklistAccess();
+
         $data = $request->all();
         $request->validated();
         $data['checklist_number'] = Checklist::exists() ? Checklist::latest()->first()->checklist_number + 1 : 1;
@@ -75,6 +85,8 @@ class ChecklistController extends Controller
      */
     public function update(ChecklistRequest $request, Checklist $checklist): RedirectResponse
     {
+        $this->authorizeChecklistAccess();
+
         $data = $request->all();
         $request->validated();
         $checklist->update($data);
@@ -87,6 +99,8 @@ class ChecklistController extends Controller
      */
     public function destroy(Checklist $checklist): RedirectResponse
     {
+        $this->authorizeChecklistAccess();
+
         $checklist->delete();
 
         return redirect()->route('app.register-checklists.index')->with('success', 'Checklist excluido com sucesso!');

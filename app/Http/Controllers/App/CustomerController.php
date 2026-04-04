@@ -14,6 +14,11 @@ use Inertia\Inertia;
 
 class CustomerController extends Controller
 {
+    private function authorizeCustomersAccess(): void
+    {
+        abort_unless(Auth::user()?->hasPermission('customers'), 403);
+    }
+
     // public function ImportCustomer(Request $request)
     // {
     //     try {
@@ -85,6 +90,8 @@ class CustomerController extends Controller
 
     public function ImportCustomer(Request $request)
     {
+        $this->authorizeCustomersAccess();
+
         ini_set('max_execution_time', 300); // 5 minutos
         ini_set('memory_limit', '512M');
 
@@ -183,6 +190,8 @@ class CustomerController extends Controller
 
     public function getClientes()
     {
+        $this->authorizeCustomersAccess();
+
         $clientes = Customer::get();
 
         return [
@@ -196,6 +205,8 @@ class CustomerController extends Controller
      */
     public function index(Request $request)
     {
+        $this->authorizeCustomersAccess();
+
         $search = $request->search;
 
         $query = Customer::orderBy('id', 'DESC');
@@ -216,6 +227,8 @@ class CustomerController extends Controller
      */
     public function create()
     {
+        $this->authorizeCustomersAccess();
+
         return Inertia::render('app/customers/create-customer');
     }
 
@@ -224,6 +237,8 @@ class CustomerController extends Controller
      */
     public function store(CustomerRequest $request): RedirectResponse
     {
+        $this->authorizeCustomersAccess();
+
         $data = $request->all();
         $request->validated();
         $data['customer_number'] = Customer::exists() ? Customer::latest()->first()->customer_number + 1 : 1;
@@ -237,6 +252,8 @@ class CustomerController extends Controller
      */
     public function show(Customer $customer, Request $request)
     {
+        $this->authorizeCustomersAccess();
+
         return Inertia::render('app/customers/edit-customer', [
             'customer' => $customer,
             'page' => $request->page,
@@ -249,6 +266,8 @@ class CustomerController extends Controller
      */
     public function edit(Customer $customer, Request $request)
     {
+        $this->authorizeCustomersAccess();
+
         return Redirect::route('app.customers.show', [
             'customer' => $customer->id,
             'page' => $request->page,
@@ -261,6 +280,8 @@ class CustomerController extends Controller
      */
     public function update(CustomerRequest $request, Customer $customer): RedirectResponse
     {
+        $this->authorizeCustomersAccess();
+
         $data = $request->all();
         $request->validated();
         $customer->update($data);
@@ -273,6 +294,8 @@ class CustomerController extends Controller
      */
     public function destroy(Customer $customer)
     {
+        $this->authorizeCustomersAccess();
+
         $customer->delete();
 
         return redirect()->route('app.customers.index')->with('success', 'Cliente excluido com sucesso!');

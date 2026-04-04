@@ -46,12 +46,17 @@ type AppHeaderPageProps = SharedData & {
         budget?: boolean;
         enableparts?: boolean;
     };
+    auth: {
+        user: SharedData['auth']['user'];
+        permissions?: string[];
+    };
 };
 
 export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     const page = usePage<AppHeaderPageProps>();
     const { auth, othersetting } = page.props;
     const disableParts = !othersetting?.enableparts ? 'parts' : '';
+    const permissions = auth?.permissions ?? [];
     const getInitials = useInitials();
 
     return (
@@ -76,7 +81,8 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                         <div className="flex flex-col space-y-4">
                                             {mainNavItems.map(
                                                 (item) =>
-                                                    item.enabled !== disableParts && (
+                                                    item.enabled !== disableParts &&
+                                                    (!item.permission || permissions.includes(item.permission)) && (
                                                         <Link key={item.title} href={item.href} className="flex items-center space-x-2 font-medium">
                                                             {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
                                                             <span>{item.title}</span>
@@ -85,12 +91,15 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                             )}
                                         </div>
                                         <div className="flex flex-col space-y-4">
-                                            {mainUserItems.map((item) => (
-                                                <Link key={item.title} href={item.href} className="flex items-center space-x-2 font-medium">
-                                                    {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
-                                                    <span>{item.title}</span>
-                                                </Link>
-                                            ))}
+                                            {mainUserItems.map(
+                                                (item) =>
+                                                    (!item.permission || permissions.includes(item.permission)) && (
+                                                        <Link key={item.title} href={item.href} className="flex items-center space-x-2 font-medium">
+                                                            {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
+                                                            <span>{item.title}</span>
+                                                        </Link>
+                                                    ),
+                                            )}
                                         </div>
 
                                         <div className="flex flex-col space-y-4">
@@ -123,7 +132,8 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                             <NavigationMenuList className="flex h-full items-stretch space-x-2">
                                 {mainNavItems.map(
                                     (item, index) =>
-                                        item.enabled !== disableParts && (
+                                        item.enabled !== disableParts &&
+                                        (!item.permission || permissions.includes(item.permission)) && (
                                             <NavigationMenuItem key={index} className="relative flex h-full items-center">
                                                 <Link
                                                     href={item.href}
@@ -146,38 +156,48 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
 
                             <NavigationMenuList className="flex h-full items-stretch space-x-2">
                                 <NavigationMenuItem className="relative z-50 flex h-full items-center">
-                                    {mainConfItems.map((item, index) => (
-                                        <div key={`${item.title}-${index}`}>
-                                            <NavigationMenuTrigger className="flex items-center space-x-2 font-medium">
-                                                {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
-                                                <span>{item.title}</span>
-                                            </NavigationMenuTrigger>
-                                            <NavigationMenuContent key={index}>
-                                                <ul className="grid w-[220px] gap-4">
-                                                    {item.items.map((subItems, index) => (
-                                                        <li key={`${subItems.title}-${index}`}>
-                                                            <NavigationMenuItem key={index} className="relative flex h-full items-center">
-                                                                <Link
-                                                                    href={subItems.url}
-                                                                    className={cn(
-                                                                        navigationMenuTriggerStyle(),
-                                                                        page.url === subItems.url && activeItemStyles,
-                                                                        'h-9 cursor-pointer px-3',
+                                    {mainConfItems.map((item, index) => {
+                                        const visibleItems = item.items.filter(
+                                            (subItems) => !subItems.permission || permissions.includes(subItems.permission),
+                                        );
+
+                                        if (visibleItems.length === 0) {
+                                            return null;
+                                        }
+
+                                        return (
+                                            <div key={`${item.title}-${index}`}>
+                                                <NavigationMenuTrigger className="flex items-center space-x-2 font-medium">
+                                                    {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
+                                                    <span>{item.title}</span>
+                                                </NavigationMenuTrigger>
+                                                <NavigationMenuContent key={index}>
+                                                    <ul className="grid w-[220px] gap-4">
+                                                        {visibleItems.map((subItems, index) => (
+                                                            <li key={`${subItems.title}-${index}`}>
+                                                                <NavigationMenuItem key={index} className="relative flex h-full items-center">
+                                                                    <Link
+                                                                        href={subItems.url}
+                                                                        className={cn(
+                                                                            navigationMenuTriggerStyle(),
+                                                                            page.url === subItems.url && activeItemStyles,
+                                                                            'h-9 cursor-pointer px-3',
+                                                                        )}
+                                                                    >
+                                                                        {subItems.icon && <Icon iconNode={subItems.icon} className="mr-2 h-4 w-4" />}
+                                                                        {subItems.title}
+                                                                    </Link>
+                                                                    {page.url === subItems.url && (
+                                                                        <div className="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-black dark:bg-white"></div>
                                                                     )}
-                                                                >
-                                                                    {subItems.icon && <Icon iconNode={subItems.icon} className="mr-2 h-4 w-4" />}
-                                                                    {subItems.title}
-                                                                </Link>
-                                                                {page.url === subItems.url && (
-                                                                    <div className="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-black dark:bg-white"></div>
-                                                                )}
-                                                            </NavigationMenuItem>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </NavigationMenuContent>
-                                        </div>
-                                    ))}
+                                                                </NavigationMenuItem>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </NavigationMenuContent>
+                                            </div>
+                                        );
+                                    })}
                                 </NavigationMenuItem>
                             </NavigationMenuList>
 
@@ -223,24 +243,27 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                             )}
 
                             <NavigationMenuList className="flex h-full items-stretch space-x-2">
-                                {mainUserItems.map((item, index) => (
-                                    <NavigationMenuItem key={index} className="relative flex h-full items-center">
-                                        <Link
-                                            href={item.href}
-                                            className={cn(
-                                                navigationMenuTriggerStyle(),
-                                                page.url === item.href && activeItemStyles,
-                                                'h-9 cursor-pointer px-3',
-                                            )}
-                                        >
-                                            {item.icon && <Icon iconNode={item.icon} className="mr-2 h-4 w-4" />}
-                                            {item.title}
-                                        </Link>
-                                        {page.url === item.href && (
-                                            <div className="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-black dark:bg-white"></div>
-                                        )}
-                                    </NavigationMenuItem>
-                                ))}
+                                {mainUserItems.map(
+                                    (item, index) =>
+                                        (!item.permission || permissions.includes(item.permission)) && (
+                                            <NavigationMenuItem key={index} className="relative flex h-full items-center">
+                                                <Link
+                                                    href={item.href}
+                                                    className={cn(
+                                                        navigationMenuTriggerStyle(),
+                                                        page.url === item.href && activeItemStyles,
+                                                        'h-9 cursor-pointer px-3',
+                                                    )}
+                                                >
+                                                    {item.icon && <Icon iconNode={item.icon} className="mr-2 h-4 w-4" />}
+                                                    {item.title}
+                                                </Link>
+                                                {page.url === item.href && (
+                                                    <div className="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-black dark:bg-white"></div>
+                                                )}
+                                            </NavigationMenuItem>
+                                        ),
+                                )}
                             </NavigationMenuList>
                         </NavigationMenu>
                     </div>

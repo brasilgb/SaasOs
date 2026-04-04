@@ -27,8 +27,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Customers({ customers, search }: any) {
-    const { flash } = usePage().props as any;
+    const { flash, auth } = usePage().props as any;
     const [modalAberto, setModalAberto] = useState(false);
+    const canManageCustomers = auth?.permissions?.includes('customers');
 
     useEffect(() => {
         // Se houver mensagem de sucesso
@@ -61,16 +62,20 @@ export default function Customers({ customers, search }: any) {
                     <InputSearch placeholder="Pesquisar cliente por nome ou cpf/cnpj" url="app.customers.index" />
                 </div>
                 <div className="flex w-full justify-between gap-2 md:justify-end">
-                    <Button onClick={() => setModalAberto(true)} className="bg-green-600 text-white hover:bg-green-700">
-                        <Upload className="h-4 w-4" />
-                        <span>CSV</span>
-                    </Button>
-                    <Button variant={'default'} asChild>
-                        <Link href={route('app.customers.create')}>
-                            <Plus className="h-4 w-4" />
-                            <span>Novo Cliente</span>
-                        </Link>
-                    </Button>
+                    {canManageCustomers && (
+                        <Button onClick={() => setModalAberto(true)} className="bg-green-600 text-white hover:bg-green-700">
+                            <Upload className="h-4 w-4" />
+                            <span>CSV</span>
+                        </Button>
+                    )}
+                    {canManageCustomers && (
+                        <Button variant={'default'} asChild>
+                            <Link href={route('app.customers.create')}>
+                                <Plus className="h-4 w-4" />
+                                <span>Novo Cliente</span>
+                            </Link>
+                        </Button>
+                    )}
                 </div>
             </div>
 
@@ -126,16 +131,20 @@ export default function Customers({ customers, search }: any) {
                                                 </Link>
                                             </Button>
 
-                                            <Button asChild size="icon" className="bg-orange-500 text-white hover:bg-orange-600">
-                                                <Link
-                                                    href={route('app.customers.edit', customer.id)}
-                                                    data={{ page: customers.current_page, search: search }}
-                                                >
-                                                    <Edit />
-                                                </Link>
-                                            </Button>
+                                            {canManageCustomers && (
+                                                <Button asChild size="icon" className="bg-orange-500 text-white hover:bg-orange-600">
+                                                    <Link
+                                                        href={route('app.customers.edit', customer.id)}
+                                                        data={{ page: customers.current_page, search: search }}
+                                                    >
+                                                        <Edit />
+                                                    </Link>
+                                                </Button>
+                                            )}
 
-                                            <ActionDelete title={'este cliente'} url={'app.customers.destroy'} param={customer.id} />
+                                            {canManageCustomers && (
+                                                <ActionDelete title={'este cliente'} url={'app.customers.destroy'} param={customer.id} />
+                                            )}
                                         </TableCell>
                                     </TableRow>
                                 ))

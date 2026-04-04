@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, Table
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { maskMoney } from '@/Utils/mask';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { Check, Edit, MemoryStick, Plus, X } from 'lucide-react';
 import moment from 'moment';
 
@@ -25,6 +25,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Parts({ parts, search }: any) {
+    const { auth } = usePage<{ auth?: { permissions?: string[] } }>().props;
+    const canManageParts = auth?.permissions?.includes('parts');
+
     return (
         <AppLayout>
             <Head title="Peças" />
@@ -42,12 +45,14 @@ export default function Parts({ parts, search }: any) {
                     <InputSearch placeholder="Buscar peça/produto por nome e número" url="app.parts.index" />
                 </div>
                 <div className="flex w-full justify-end">
-                    <Button variant={'default'} asChild>
-                        <Link href={route('app.parts.create')} className="w-full md:w-auto">
-                            <Plus className="h-4 w-4" />
-                            <span>Nova Peça/Produto</span>
-                        </Link>
-                    </Button>
+                    {canManageParts && (
+                        <Button variant={'default'} asChild>
+                            <Link href={route('app.parts.create')} className="w-full md:w-auto">
+                                <Plus className="h-4 w-4" />
+                                <span>Nova Peça/Produto</span>
+                            </Link>
+                        </Button>
+                    )}
                 </div>
             </div>
 
@@ -99,13 +104,15 @@ export default function Parts({ parts, search }: any) {
                                         <TableCell>{moment(part.created_at).format('DD/MM/YYYY')}</TableCell>
 
                                         <TableCell className="flex justify-end gap-2">
-                                            <Button asChild size="icon" className="bg-orange-500 text-white hover:bg-orange-600">
-                                                <Link href={route('app.parts.edit', part.id)} data={{ page: parts.current_page, search: search }}>
-                                                    <Edit />
-                                                </Link>
-                                            </Button>
+                                            {canManageParts && (
+                                                <Button asChild size="icon" className="bg-orange-500 text-white hover:bg-orange-600">
+                                                    <Link href={route('app.parts.edit', part.id)} data={{ page: parts.current_page, search: search }}>
+                                                        <Edit />
+                                                    </Link>
+                                                </Button>
+                                            )}
 
-                                            <ActionDelete title={'esta peça'} url={'app.parts.destroy'} param={part.id} />
+                                            {canManageParts && <ActionDelete title={'esta peça'} url={'app.parts.destroy'} param={part.id} />}
                                         </TableCell>
                                     </TableRow>
                                 ))

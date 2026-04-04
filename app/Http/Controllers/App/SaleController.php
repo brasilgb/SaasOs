@@ -7,13 +7,21 @@ use App\Models\App\Part;
 use App\Models\App\Sale;
 use App\Models\App\SaleItem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class SaleController extends Controller
 {
+    private function authorizeSalesAccess(): void
+    {
+        abort_unless(Auth::user()?->hasPermission('sales'), 403);
+    }
+
     public function index(Request $request)
     {
+        $this->authorizeSalesAccess();
+
         $search = $request->search;
         $query = Sale::with('customer')->with('items.part')->orderBy('id', 'DESC');
 
@@ -32,6 +40,8 @@ class SaleController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorizeSalesAccess();
+
         $request->validate([
             'customer_id' => 'nullable|exists:customers,id',
             'total_amount' => 'required|numeric',
@@ -88,6 +98,8 @@ class SaleController extends Controller
 
     public function cancel(Sale $sale)
     {
+        $this->authorizeSalesAccess();
+
         if ($sale->status === 'cancelled') {
             return back()->with('error', 'Venda já está cancelada.');
         }
@@ -111,6 +123,8 @@ class SaleController extends Controller
 
     public function destroy(Sale $sale)
     {
+        $this->authorizeSalesAccess();
+
         try {
             DB::beginTransaction();
 

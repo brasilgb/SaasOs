@@ -10,17 +10,27 @@ use App\Models\App\Sale;
 use App\Models\App\Schedule;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class ReportController extends Controller
 {
+    private function authorizeReportsAccess(): void
+    {
+        abort_unless(Auth::user()?->hasPermission('reports'), 403);
+    }
+
     public function index(Request $request)
     {
+        $this->authorizeReportsAccess();
+
         return Inertia::render('app/reports/index');
     }
 
     public function store(Request $request)
     {
+        $this->authorizeReportsAccess();
+
         $type = $request->input('type');
         $from = Carbon::parse($request->input('from'))->startOfDay();
         $to = Carbon::parse($request->input('to'))->endOfDay();

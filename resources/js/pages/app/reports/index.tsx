@@ -28,11 +28,17 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Parts() {
-    const { company } = usePage().props as any;
+    const { company, auth } = usePage().props as any;
     const [dateRange, setDateRange] = useState<any>({
         from: new Date(),
         to: new Date(),
     });
+    const permissions = auth?.permissions ?? [];
+    const canViewOrders = permissions.includes('orders');
+    const canViewCustomers = permissions.includes('customers');
+    const canViewSchedules = permissions.includes('schedules');
+    const canViewSales = permissions.includes('sales');
+    const canViewParts = permissions.includes('parts');
 
     return (
         <AppLayout>
@@ -56,37 +62,53 @@ export default function Parts() {
                         <DatePicker mode={'range'} setDate={setDateRange} date={dateRange} />
                     </CardContent>
                     <CardContent className="flex flex-wrap items-start gap-4">
-                        <div className="w-full md:w-[15.8%]">
-                            <TechnicianProductivity dateRange={dateRange} company={company} />
-                        </div>
+                        {canViewOrders && (
+                            <div className="w-full md:w-[15.8%]">
+                                <TechnicianProductivity dateRange={dateRange} company={company} />
+                            </div>
+                        )}
 
-                        <div className="w-full md:w-[15.8%]">
-                            <OrdersReport dateRange={dateRange} company={company} />
-                        </div>
+                        {canViewOrders && (
+                            <div className="w-full md:w-[15.8%]">
+                                <OrdersReport dateRange={dateRange} company={company} />
+                            </div>
+                        )}
 
-                        <div className="w-full md:w-[15.8%]">
-                            <OrdersStatistics dateRange={dateRange} company={company} />
-                        </div>
+                        {canViewOrders && (
+                            <div className="w-full md:w-[15.8%]">
+                                <OrdersStatistics dateRange={dateRange} company={company} />
+                            </div>
+                        )}
 
-                        <div className="w-full md:w-[15.8%]">
-                            <OrdersDaily dateRange={dateRange} company={company} />
-                        </div>
+                        {canViewOrders && (
+                            <div className="w-full md:w-[15.8%]">
+                                <OrdersDaily dateRange={dateRange} company={company} />
+                            </div>
+                        )}
 
-                        <div className="w-full md:w-[15.8%]">
-                            <CustomersReport dateRange={dateRange} company={company} />
-                        </div>
+                        {canViewCustomers && (
+                            <div className="w-full md:w-[15.8%]">
+                                <CustomersReport dateRange={dateRange} company={company} />
+                            </div>
+                        )}
 
-                        <div className="w-full md:w-[15.8%]">
-                            <SchedulesReport dateRange={dateRange} company={company} />
-                        </div>
+                        {canViewSchedules && (
+                            <div className="w-full md:w-[15.8%]">
+                                <SchedulesReport dateRange={dateRange} company={company} />
+                            </div>
+                        )}
 
-                        <div className="w-full md:w-[15.8%]">
-                            <SalesReport dateRange={dateRange} company={company} />
-                        </div>
+                        {canViewSales && (
+                            <div className="w-full md:w-[15.8%]">
+                                <SalesReport dateRange={dateRange} company={company} />
+                            </div>
+                        )}
 
-                        <div className="w-full md:w-[15.8%]">
-                            <PartsReport dateRange={dateRange} company={company} />
-                        </div>
+                        {canViewParts && (
+                            <div className="w-full md:w-[15.8%]">
+                                <PartsReport dateRange={dateRange} company={company} />
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             </div>

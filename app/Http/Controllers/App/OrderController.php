@@ -20,16 +20,56 @@ use Inertia\Inertia;
 
 class OrderController extends Controller
 {
+    private function authorizeOrdersAccess(): void
+    {
+        abort_unless(Auth::user()?->hasPermission('orders'), 403);
+    }
+
+    private function canManageOrders(): bool
+    {
+        $user = Auth::user();
+
+        return $user?->hasPermission('orders') && ! $user->isTechnician();
+    }
+
+    private function canAccessOrder(Order $order): bool
+    {
+        $user = Auth::user();
+
+        if (! $user?->hasPermission('orders')) {
+            return false;
+        }
+
+        if (! $user->isTechnician()) {
+            return true;
+        }
+
+        return (int) $order->user_id === (int) $user->id;
+    }
+
+    private function scopeOrdersQuery($query)
+    {
+        $user = Auth::user();
+
+        if ($user?->isTechnician()) {
+            $query->where('user_id', $user->id);
+        }
+
+        return $query;
+    }
+
     // Display and linting order for id
     public function allOrder()
     {
+        $this->authorizeOrdersAccess();
+
         $dashData = [
-            'numorder' => count(Order::get()),
-            'numabertas' => count(Order::where('service_status', 1)->get()), // aberta
-            'numgerados' => count(Order::where('service_status', 3)->get()), // orc. gerado
-            'numaprovados' => count(Order::where('service_status', 4)->get()), // orc. aprovado
-            'numconcluidosca' => count(Order::where('service_status', 9)->get()), // concluido cli nao avisado
-            'numconcluidoscn' => count(Order::where('service_status', 7)->get()), // concluido cli avisado
+            'numorder' => $this->scopeOrdersQuery(Order::query())->count(),
+            'numabertas' => $this->scopeOrdersQuery(Order::where('service_status', 1))->count(), // aberta
+            'numgerados' => $this->scopeOrdersQuery(Order::where('service_status', 3))->count(), // orc. gerado
+            'numaprovados' => $this->scopeOrdersQuery(Order::where('service_status', 4))->count(), // orc. aprovado
+            'numconcluidosca' => $this->scopeOrdersQuery(Order::where('service_status', 9))->count(), // concluido cli nao avisado
+            'numconcluidoscn' => $this->scopeOrdersQuery(Order::where('service_status', 7))->count(), // concluido cli avisado
         ];
 
         return [
@@ -41,7 +81,9 @@ class OrderController extends Controller
     // Display and linting order for id
     public function getOrder($order)
     {
-        $query = Order::where('order_number', $order)->with('customer')->with('equipment')->get();
+        $this->authorizeOrdersAccess();
+
+        $query = $this->scopeOrdersQuery(Order::where('order_number', $order))->with('customer')->with('equipment')->get();
 
         return [
             'success' => true,
@@ -52,7 +94,9 @@ class OrderController extends Controller
     // Display and listing customers for id order
     public function getOrderCli($customer)
     {
-        $query = Order::where('customer_id', $customer)->with('customer')->with('equipment')->get();
+        $this->authorizeOrdersAccess();
+
+        $query = $this->scopeOrdersQuery(Order::where('customer_id', $customer))->with('customer')->with('equipment')->get();
 
         return [
             'success' => true,
@@ -65,6 +109,8 @@ class OrderController extends Controller
      */
     public function index(Request $request)
     {
+        $this->authorizeOrdersAccess();
+
         $startDate = Carbon::now()->subDays(10)->startOfDay();
         $endDate = Carbon::now()->subDays(7)->endOfDay();
 
@@ -72,7 +118,7 @@ class OrderController extends Controller
         $search = $request->search;
         $filter = $request->filter;
 
-        $query = Order::orderBy('id', 'DESC');
+        $query = $this->scopeOrdersQuery(Order::query())->orderBy('id', 'DESC');
 
         if ($status) {
             $query->where('service_status', $status);
@@ -122,6 +168,8 @@ class OrderController extends Controller
      */
     public function create()
     {
+        abort_unless($this->canManageOrders(), 403);
+
         $equipments = Equipment::get();
         $customers = Customer::get();
         $models = Order::distinct()->pluck('model');
@@ -134,6 +182,8 @@ class OrderController extends Controller
      */
     public function store(OrderRequest $request): RedirectResponse
     {
+        abort_unless($this->canManageOrders(), 403);
+
         $data = $request->all();
         $request->validated();
         $data['order_number'] = Order::exists() ? Order::latest()->first()->order_number + 1 : 1;
@@ -148,6 +198,8 @@ class OrderController extends Controller
      */
     public function show(Order $order, Request $request)
     {
+        abort_unless($this->canAccessOrder($order), 403);
+
         $order->load([
             'customer',
             'orderParts',
@@ -181,6 +233,8 @@ class OrderController extends Controller
      */
     public function edit(Order $order, Request $request)
     {
+        abort_unless($this->canAccessOrder($order), 403);
+
         return redirect()->route('app.orders.show', ['order' => $order->id, 'page' => $request->page, 'search' => $request->search]);
     }
 
@@ -189,6 +243,8 @@ class OrderController extends Controller
      */
     public function update(OrderRequest $request, Order $order): RedirectResponse
     {
+        abort_unless($this->canAccessOrder($order), 403);
+
         $data = $request->all();
         $request->validated();
         $oldStatus = $order->service_status;
@@ -252,6 +308,8 @@ class OrderController extends Controller
      */
     public function destroy(Order $order)
     {
+        abort_unless($this->canManageOrders() && $this->canAccessOrder($order), 403);
+
         $order->delete();
         $order->orderParts()->detach();
 
@@ -260,12 +318,15 @@ class OrderController extends Controller
 
     public function removePart(Request $request)
     {
+        abort_unless($this->canManageOrders(), 403);
+
         $validatedData = $request->validate([
             'order_id' => 'required|integer|exists:orders,id',
             'part_id' => 'required|integer|exists:parts,id',
         ]);
 
         $order = Order::find($validatedData['order_id']);
+        abort_unless($order && $this->canAccessOrder($order), 403);
         // 1. Desvincula a peça da Ordem de Serviço na tabela pivô
         $order->orderParts()->detach($validatedData['part_id']);
         $order->update(['parts_value' => 0, 'service_value' => 0, 'service_cost' => 0]);
@@ -276,9 +337,13 @@ class OrderController extends Controller
 
     public function getFeedback(Request $request)
     {
+        abort_unless($this->canManageOrders(), 403);
+
         $feedback = $request->get('feedback');
         $orderid = $request->get('orderid');
-        Order::where('id', $orderid)->update(['feedback' => $feedback]);
+        $order = Order::findOrFail($orderid);
+        abort_unless($this->canAccessOrder($order), 403);
+        $order->update(['feedback' => $feedback]);
         response()->json([
             'success' => true,
         ]);

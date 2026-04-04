@@ -9,12 +9,20 @@ use App\Models\Tenant;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class OtherController extends Controller
 {
+    private function authorizeOtherSettingsAccess(): void
+    {
+        abort_unless(Auth::user()?->hasPermission('other_settings'), 403);
+    }
+
     public function index()
     {
+        $this->authorizeOtherSettingsAccess();
+
         if (Other::get()->isEmpty()) {
             Other::create();
         }
@@ -33,6 +41,8 @@ class OtherController extends Controller
      */
     public function update(Request $request, Other $other): RedirectResponse
     {
+        $this->authorizeOtherSettingsAccess();
+
         $data = $request->all();
         $other->update($data);
 

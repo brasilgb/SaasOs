@@ -24,6 +24,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function Others({ othersettings, company, time_remaining }: any) {
     const { auth } = usePage().props as any;
+    const canManageOtherSettings = auth?.permissions?.includes('other_settings');
 
     const { data, setData, put, processing } = useForm({
         navigation: othersettings?.navigation,
@@ -80,16 +81,23 @@ export default function Others({ othersettings, company, time_remaining }: any) 
                             description="Habilitar a venda de peças e/ou produtos avulsos ou para usuários específicos, com ajuste de estoque."
                         />
                         <div className="flex items-center gap-3">
-                            <Switch id="status" checked={data.enablesales} onCheckedChange={(checked) => setData('enablesales', checked)} />
+                            <Switch
+                                id="status"
+                                checked={data.enablesales}
+                                disabled={!canManageOtherSettings}
+                                onCheckedChange={(checked) => setData('enablesales', checked)}
+                            />
 
                             <span className="text-muted-foreground text-sm">{data.enablesales ? 'Habilitado' : 'Desabilitado'}</span>
                         </div>
                     </div>
                     <div className="flex justify-end">
-                        <Button type="submit" disabled={processing}>
-                            <Save />
-                            Salvar
-                        </Button>
+                        {canManageOtherSettings && (
+                            <Button type="submit" disabled={processing}>
+                                <Save />
+                                Salvar
+                            </Button>
+                        )}
                     </div>
                 </form>
             </div>

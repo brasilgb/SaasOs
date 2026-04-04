@@ -8,6 +8,8 @@ export interface OptionType {
 
 export interface Auth {
     user: User;
+    role?: string;
+    permissions?: string[];
 }
 
 export interface BreadcrumbItem {
@@ -26,6 +28,7 @@ export interface NavItem {
     icon?: LucideIcon | null;
     active?: string;
     enabled?: string;
+    permission?: string;
 }
 
 export interface SharedData {

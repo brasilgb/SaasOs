@@ -7,15 +7,23 @@ use App\Http\Requests\EquipmentRequest;
 use App\Models\App\Equipment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class EquipmentController extends Controller
 {
+    private function authorizeEquipmentAccess(): void
+    {
+        abort_unless(Auth::user()?->hasPermission('register_equipments'), 403);
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
+        $this->authorizeEquipmentAccess();
+
         $search = $request->search;
         $query = Equipment::orderBy('id', 'DESC');
         if ($search) {
@@ -39,6 +47,8 @@ class EquipmentController extends Controller
      */
     public function store(EquipmentRequest $request): RedirectResponse
     {
+        $this->authorizeEquipmentAccess();
+
         $data = $request->all();
         $request->validated();
         $data['equipment_number'] = Equipment::exists() ? Equipment::latest()->first()->equipment_number + 1 : 1;
@@ -68,6 +78,8 @@ class EquipmentController extends Controller
      */
     public function update(EquipmentRequest $request, Equipment $equipment)
     {
+        $this->authorizeEquipmentAccess();
+
         $data = $request->all();
         $request->validated();
         $equipment->update($data);
@@ -80,6 +92,8 @@ class EquipmentController extends Controller
      */
     public function destroy(Equipment $equipment)
     {
+        $this->authorizeEquipmentAccess();
+
         $equipment->delete();
 
         return redirect()->route('app.register-equipments.index')->with('success', 'Marca excluida com sucesso!');

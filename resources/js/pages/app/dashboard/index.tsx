@@ -19,9 +19,10 @@ function formatDateRange(date?: Date | string) {
 }
 
 export default function Dashboard({ reloadKey, orders, acount, parts, customers, others, listSchedules }: any) {
-    const { flash } = usePage().props as any;
+    const { flash, auth } = usePage().props as any;
     const [timeRange, setTimeRange] = useState('7');
     const [dateRange, setDateRange] = useState<any>({});
+    const isTechnician = auth?.role === 'technician';
 
     const hasCustomRange = dateRange?.from && dateRange?.to;
 
@@ -58,7 +59,7 @@ export default function Dashboard({ reloadKey, orders, acount, parts, customers,
             <Head title="Dashboard" />
             <div key={reloadKey}>
                 <div className="p-4">
-                    <div className="mb-4 items-center justify-between gap-3 md:mb-0 md:flex md:h-16">
+                    <div className={isTechnician ? 'mb-4 items-center justify-between gap-3 md:flex md:h-16' : 'mb-4 items-center justify-between gap-3 md:mb-0 md:flex md:h-16'}>
                         <div className="flex items-center gap-2">
                             <Icon iconNode={LayoutGridIcon} className="h-8 w-8" />
                             <h2 className="text-xl font-semibold tracking-tight">Dashboard</h2>
@@ -94,10 +95,12 @@ export default function Dashboard({ reloadKey, orders, acount, parts, customers,
                     </div>
 
                     <Tabs defaultValue="account" className="w-full">
-                        <TabsList>
-                            <TabsTrigger value="account">Operacional</TabsTrigger>
-                            <TabsTrigger value="password">Financeiro</TabsTrigger>
-                        </TabsList>
+                        {!isTechnician && (
+                            <TabsList>
+                                <TabsTrigger value="account">Operacional</TabsTrigger>
+                                <TabsTrigger value="password">Financeiro</TabsTrigger>
+                            </TabsList>
+                        )}
                         <TabsContent value="account">
                             <OrderDashboard
                                 timerange={timerangeForRequests}
@@ -111,9 +114,11 @@ export default function Dashboard({ reloadKey, orders, acount, parts, customers,
                                 listSchedules={listSchedules}
                             />
                         </TabsContent>
-                        <TabsContent value="password">
-                            <FinanceiroOrders timerange={timerangeForRequests} dateRange={dateRange} customRange={hasCustomRange} />
-                        </TabsContent>
+                        {!isTechnician && (
+                            <TabsContent value="password">
+                                <FinanceiroOrders timerange={timerangeForRequests} dateRange={dateRange} customRange={hasCustomRange} />
+                            </TabsContent>
+                        )}
                     </Tabs>
                 </div>
             </div>

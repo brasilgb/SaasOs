@@ -31,6 +31,7 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
         active: 'app.dashboard',
         enabled: 'dashboard',
+        permission: 'dashboard',
     },
     {
         title: 'Clientes',
@@ -38,6 +39,7 @@ const mainNavItems: NavItem[] = [
         icon: Users2,
         active: 'app.customers.*',
         enabled: 'customers',
+        permission: 'customers',
     },
     {
         title: 'Ordens de serviço',
@@ -45,6 +47,7 @@ const mainNavItems: NavItem[] = [
         icon: Wrench,
         active: 'app.orders.*',
         enabled: 'orders',
+        permission: 'orders',
     },
     {
         title: 'Orçamentos',
@@ -52,6 +55,7 @@ const mainNavItems: NavItem[] = [
         icon: PackagePlus,
         active: 'app.budgets.*',
         enabled: 'budgets',
+        permission: 'budgets',
     },
     {
         title: 'Agendamentos',
@@ -59,6 +63,7 @@ const mainNavItems: NavItem[] = [
         icon: Calendar,
         active: 'app.schedules.*',
         enabled: 'schedules',
+        permission: 'schedules',
     },
     {
         title: 'Mensagens',
@@ -66,6 +71,7 @@ const mainNavItems: NavItem[] = [
         icon: MessageSquareMore,
         active: 'app.messages.*',
         enabled: 'messages',
+        permission: 'messages',
     },
     {
         title: 'Peças/Produtos',
@@ -73,6 +79,7 @@ const mainNavItems: NavItem[] = [
         icon: MemoryStick,
         active: 'app.parts.*',
         enabled: 'parts',
+        permission: 'parts',
     },
     {
         title: 'Vendas',
@@ -80,6 +87,7 @@ const mainNavItems: NavItem[] = [
         icon: ShoppingCartIcon,
         active: 'app.sales.*',
         enabled: 'sales',
+        permission: 'sales',
     },
     {
         title: 'Relatórios',
@@ -87,6 +95,7 @@ const mainNavItems: NavItem[] = [
         icon: FileTextIcon,
         active: 'app.reports.*',
         enabled: 'reports',
+        permission: 'reports',
     },
 ];
 
@@ -96,6 +105,7 @@ const mainUserItems: NavItem[] = [
         href: route('app.users.index'),
         icon: UserCog,
         active: 'app.users.*',
+        permission: 'users',
     },
 ];
 
@@ -110,42 +120,49 @@ const mainConfItems = [
                 url: route('app.company.index'),
                 icon: Building,
                 active: 'app.company.*',
+                permission: 'company',
             },
             {
                 title: 'Mensagens do Whatsapp',
                 url: route('app.whatsapp-message.index'),
                 icon: MessageCircleCode,
                 active: 'app.whatsapp-message.*',
+                permission: 'whatsapp_messages',
             },
             {
                 title: 'Impressões de recibos',
                 url: route('app.receipts.index'),
                 icon: Printer,
                 active: 'app.receipts.*',
+                permission: 'receipts',
             },
             {
                 title: 'Impressão de etiquetas',
                 url: route('app.label-printing.index'),
                 icon: Tags,
                 active: 'app.label-printing.*',
+                permission: 'label_printing',
             },
             {
                 title: 'Tipo de equipamento',
                 url: route('app.register-equipments.index'),
                 icon: Monitor,
                 active: 'app.register-equipments.*',
+                permission: 'register_equipments',
             },
             {
                 title: 'Checklist',
                 url: route('app.register-checklists.index'),
                 icon: ClipboardList,
                 active: 'app.register-checklists.*',
+                permission: 'register_checklists',
             },
             {
                 title: 'Outras configurações',
                 url: route('app.other-settings.index'),
                 icon: CogIcon,
                 active: 'app.other-settings.*',
+                permission: 'other_settings',
             },
         ],
     },

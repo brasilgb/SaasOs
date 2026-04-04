@@ -6,16 +6,22 @@ type NavMainPageProps = {
     othersetting?: {
         enablesales?: boolean;
     };
+    auth: {
+        permissions?: string[];
+    };
 };
 
 export function NavMain({ items = [] }: { items: NavItem[] }) {
-    const { othersetting } = usePage<NavMainPageProps>().props;
+    const { othersetting, auth } = usePage<NavMainPageProps>().props;
     const disableSales = !othersetting?.enablesales ? 'sales' : '';
+    const permissions = auth?.permissions ?? [];
+
     return (
         <SidebarMenu>
             {items.map(
                 (item) =>
-                    item.enabled !== disableSales && (
+                    item.enabled !== disableSales &&
+                    (!item.permission || permissions.includes(item.permission)) && (
                         <SidebarMenuItem key={item.title}>
                             <SidebarMenuButton asChild isActive={route().current(item.active ?? '')} tooltip={{ children: item.title }}>
                                 <Link href={item.href} prefetch>

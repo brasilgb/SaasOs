@@ -20,6 +20,12 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable, Tenantable;
 
+    public const ROLE_ROOT_SYSTEM = 99;
+    public const ROLE_ROOT_APP = 9;
+    public const ROLE_ADMIN = 1;
+    public const ROLE_OPERATOR = 2;
+    public const ROLE_TECHNICIAN = 3;
+
     /**
      * The attributes that are mass assignable.
      *
@@ -78,5 +84,94 @@ class User extends Authenticatable
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
+    }
+
+    public function isRoot(): bool
+    {
+        return in_array($this->roles, [self::ROLE_ROOT_SYSTEM, self::ROLE_ROOT_APP], true);
+    }
+
+    public function isAdministrator(): bool
+    {
+        return $this->roles === self::ROLE_ADMIN;
+    }
+
+    public function isOperator(): bool
+    {
+        return $this->roles === self::ROLE_OPERATOR;
+    }
+
+    public function isTechnician(): bool
+    {
+        return $this->roles === self::ROLE_TECHNICIAN;
+    }
+
+    public function roleKey(): string
+    {
+        return match ($this->roles) {
+            self::ROLE_ROOT_SYSTEM => 'root_system',
+            self::ROLE_ROOT_APP => 'root_app',
+            self::ROLE_ADMIN => 'administrator',
+            self::ROLE_OPERATOR => 'operator',
+            self::ROLE_TECHNICIAN => 'technician',
+            default => 'unknown',
+        };
+    }
+
+    public function permissions(): array
+    {
+        if ($this->isRoot() || $this->isAdministrator()) {
+            return [
+                'dashboard',
+                'customers',
+                'orders',
+                'budgets',
+                'schedules',
+                'messages',
+                'parts',
+                'sales',
+                'reports',
+                'users',
+                'settings',
+                'company',
+                'whatsapp_messages',
+                'receipts',
+                'label_printing',
+                'register_equipments',
+                'register_checklists',
+                'other_settings',
+            ];
+        }
+
+        if ($this->isOperator()) {
+            return [
+                'dashboard',
+                'customers',
+                'orders',
+                'budgets',
+                'schedules',
+                'messages',
+                'parts',
+                'sales',
+                'reports',
+                'receipts',
+            ];
+        }
+
+        if ($this->isTechnician()) {
+            return [
+                'dashboard',
+                'orders',
+                'schedules',
+                'messages',
+            ];
+        }
+
+        return [];
+    }
+
+    public function hasPermission(string $permission): bool
+    {
+        return in_array($permission, $this->permissions(), true);
     }
 }

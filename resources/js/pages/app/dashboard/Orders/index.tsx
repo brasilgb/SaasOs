@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { connectBackend } from '@/Utils/connectApi';
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { Calendar, Check, MemoryStickIcon, MessageSquareMore, Users, Wrench } from 'lucide-react';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
@@ -25,7 +25,9 @@ function formatBrDate(date: Date | string) {
 }
 
 export default function OrderDashboard({ timerange, dateRange, customRange, parts, customers, others, orders, acount, listSchedules }: any) {
+    const { auth } = usePage<{ auth?: { role?: string; permissions?: string[] } }>().props;
     const [metrics, setMetrics] = useState<any>([]);
+    const canUsePdv = auth?.permissions?.includes('sales') && auth?.role !== 'technician';
 
     useEffect(() => {
         const getOrders = async () => {
@@ -107,7 +109,7 @@ export default function OrderDashboard({ timerange, dateRange, customRange, part
             </div>
             <div className="mt-3 grid min-h-[210px] gap-3 md:grid-cols-7">
                 <div className="h-full">
-                    {others?.enablesales ? (
+                    {others?.enablesales && canUsePdv ? (
                         <div className="flex h-full flex-col gap-3">
                             <Card className="flex h-full items-center justify-center p-4">
                                 <SalesProducts parts={parts} customers={customers} iconSize={60} />

@@ -15,8 +15,15 @@ use Inertia\Inertia;
 
 class PartController extends Controller
 {
+    private function authorizePartsAccess(): void
+    {
+        abort_unless(Auth::user()?->hasPermission('parts'), 403);
+    }
+
     public function getPartsForPartNumber(Request $request)
     {
+        $this->authorizePartsAccess();
+
         $parts = Part::where('reference_number', $request->reference_number)->first();
 
         return response()->json([
@@ -30,6 +37,8 @@ class PartController extends Controller
      */
     public function index(Request $request)
     {
+        $this->authorizePartsAccess();
+
         $search = $request->search;
 
         $query = Part::orderBy('id', 'DESC');
@@ -54,6 +63,8 @@ class PartController extends Controller
      */
     public function create()
     {
+        $this->authorizePartsAccess();
+
         $categories = Part::distinct()->pluck('category');
         $manufacturers = Part::distinct()->pluck('manufacturer');
 
@@ -65,6 +76,8 @@ class PartController extends Controller
      */
     public function store(PartRequest $request): RedirectResponse
     {
+        $this->authorizePartsAccess();
+
         $data = $request->all();
         $request->validated();
         DB::transaction(function () use ($data) {
@@ -111,6 +124,8 @@ class PartController extends Controller
      */
     public function show(Part $part, Request $request)
     {
+        $this->authorizePartsAccess();
+
         $categories = Part::distinct()->pluck('category');
         $manufacturers = Part::distinct()->pluck('manufacturer');
 
@@ -128,6 +143,8 @@ class PartController extends Controller
      */
     public function edit(Part $part, Request $request)
     {
+        $this->authorizePartsAccess();
+
         return Redirect::route('app.parts.show', [
             'part' => $part->id,
             'page' => $request->page,
@@ -140,6 +157,8 @@ class PartController extends Controller
      */
     public function update(PartRequest $request, Part $part): RedirectResponse
     {
+        $this->authorizePartsAccess();
+
         $data = $request->all();
         $request->validated();
 
@@ -169,6 +188,8 @@ class PartController extends Controller
      */
     public function destroy(Part $part)
     {
+        $this->authorizePartsAccess();
+
         DB::transaction(function () use ($part) {
             PartMovement::create([
                 'part_id' => $part->id,

@@ -6,7 +6,7 @@ import InputSearch from '@/components/inputSearch';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { PackagePlus } from 'lucide-react';
 import moment from 'moment';
 import CreateChecklist from './create-checklist';
@@ -24,6 +24,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function CheckList({ equipments, checklists }: any) {
+    const { auth } = usePage<{ auth?: { permissions?: string[] } }>().props;
+    const canManageChecklists = auth?.permissions?.includes('register_checklists');
+
     return (
         <AppLayout>
             <Head title="Checklists" />
@@ -42,7 +45,7 @@ export default function CheckList({ equipments, checklists }: any) {
                     <InputSearch placeholder="Buscar checklist ou equipamento" url="app.register-checklists.index" />
                 </div>
                 <div className="flex w-full justify-end">
-                    <CreateChecklist equipments={equipments} />
+                    {canManageChecklists && <CreateChecklist equipments={equipments} />}
                 </div>
             </div>
 
@@ -67,8 +70,10 @@ export default function CheckList({ equipments, checklists }: any) {
                                         <TableCell className="font-medium">{checklist.checklist}</TableCell>
                                         <TableCell>{moment(checklist.created_at).format('DD/MM/YYYY')}</TableCell>
                                         <TableCell className="flex justify-end gap-2">
-                                            <EditChecklist checklist={checklist} equipments={equipments} />
-                                            <ActionDelete title={'este checklist'} url={'app.register-checklists.destroy'} param={checklist.id} />
+                                            {canManageChecklists && <EditChecklist checklist={checklist} equipments={equipments} />}
+                                            {canManageChecklists && (
+                                                <ActionDelete title={'este checklist'} url={'app.register-checklists.destroy'} param={checklist.id} />
+                                            )}
                                         </TableCell>
                                     </TableRow>
                                 ))

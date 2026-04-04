@@ -39,7 +39,7 @@ const roleUserByValue = (value: number) => {
         case 1:
             return 'Administrador';
         case 2:
-            return 'Usuário';
+            return 'Operador/Atendente';
         case 3:
             return 'Técnico';
     }

@@ -14,7 +14,7 @@ import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { statusServico } from '@/Utils/dataSelect';
 import { maskPhone } from '@/Utils/mask';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Edit, FileTextIcon, ImageUp, LinkIcon, Plus, Wrench, X } from 'lucide-react';
 import moment from 'moment';
 import { useState } from 'react';
@@ -32,8 +32,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Orders({ orders, whats, feedback, search, status, filter }: any) {
+    const { auth } = usePage<{ auth?: { role?: string; permissions?: string[] } }>().props;
     const [openInvoiceModal, setOpenInvoiceModal] = useState(false);
     const hasActiveFilters = Boolean(search || status || filter);
+    const canManageOrders = auth?.role !== 'technician' && auth?.permissions?.includes('orders');
 
     const handleFeedbackCheck = (value: number, id: number) => {
         const newValue = value === 1 ? 0 : 1;
@@ -89,12 +91,14 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                         </a>
                     </Button>
 
-                    <Button variant="default" asChild className="w-full md:w-auto">
-                        <Link href={route('app.orders.create')}>
-                            <Plus className="mr-1 h-4 w-4" />
-                            <span>Nova Ordem</span>
-                        </Link>
-                    </Button>
+                    {canManageOrders && (
+                        <Button variant="default" asChild className="w-full md:w-auto">
+                            <Link href={route('app.orders.create')}>
+                                <Plus className="mr-1 h-4 w-4" />
+                                <span>Nova Ordem</span>
+                            </Link>
+                        </Button>
+                    )}
                 </div>
             </div>
 
@@ -111,7 +115,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                 <TableHead>Modelo</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead>Entrega</TableHead>
-                                <TableHead>Feedback</TableHead>
+                                {canManageOrders && <TableHead>Feedback</TableHead>}
                                 <TableHead></TableHead>
                             </TableRow>
                         </TableHeader>
@@ -138,51 +142,58 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                             <StatusBadge category="ordem" value={order.service_status} />
                                         </TableCell>
                                         <TableCell>{order.delivery_date ? moment(order.delivery_date).format('DD/MM/YYYY') : ''}</TableCell>
-                                        <TableCell>
-                                            <Switch
-                                                disabled={!feedback?.some((feed: any) => feed.order_number === order.order_number)}
-                                                checked={order.feedback}
-                                                onCheckedChange={() => handleFeedbackCheck(order.feedback, order.id)}
-                                            />
-                                        </TableCell>
+                                        {canManageOrders && (
+                                            <TableCell>
+                                                <Switch
+                                                    disabled={!feedback?.some((feed: any) => feed.order_number === order.order_number)}
+                                                    checked={order.feedback}
+                                                    onCheckedChange={() => handleFeedbackCheck(order.feedback, order.id)}
+                                                />
+                                            </TableCell>
+                                        )}
                                         <TableCell className="flex justify-end gap-2">
-                                            <Button asChild>
-                                                <a
-                                                    target="_blank"
-                                                    href={route('os.token', order?.tracking_token)}
-                                                    title="Link para o cliente sobre a ordem de serviço"
-                                                    className="bg-solar-blue-primary hover:bg-solar-blue-primary/90 text-white"
-                                                >
-                                                    <LinkIcon className="h-4 w-4" />
-                                                </a>
-                                            </Button>
-                                            {(order.service_status === 6 || order.service_status === 7 || order.service_status === 8) && (
-                                                <Button
-                                                    title="Emitir Nota Fiscal"
-                                                    onClick={() => setOpenInvoiceModal(true)}
-                                                    className="rounded-lg py-2 text-sm font-medium"
-                                                >
-                                                    <FileTextIcon className="h-4 w-4" />
-                                                    NFSe
+                                            {canManageOrders && (
+                                                <Button asChild>
+                                                    <a
+                                                        target="_blank"
+                                                        href={route('os.token', order?.tracking_token)}
+                                                        title="Link para o cliente sobre a ordem de serviço"
+                                                        className="bg-solar-blue-primary hover:bg-solar-blue-primary/90 text-white"
+                                                    >
+                                                        <LinkIcon className="h-4 w-4" />
+                                                    </a>
                                                 </Button>
                                             )}
+                                            {canManageOrders &&
+                                                (order.service_status === 6 || order.service_status === 7 || order.service_status === 8) && (
+                                                    <Button
+                                                        title="Emitir Nota Fiscal"
+                                                        onClick={() => setOpenInvoiceModal(true)}
+                                                        className="rounded-lg py-2 text-sm font-medium"
+                                                    >
+                                                        <FileTextIcon className="h-4 w-4" />
+                                                        NFSe
+                                                    </Button>
+                                                )}
                                             <InvoiceModal open={openInvoiceModal} onClose={() => setOpenInvoiceModal(false)} order={order} />
 
-                                            <WhatsAppButton
-                                                phone={order.customer.whatsapp}
-                                                customerName={order.customer.name}
-                                                orderNumber={order.order_number}
-                                                status={order.service_status}
-                                                feedback={feedback?.some((feed: any) => feed.order_number === order.order_number)}
-                                                whats={{
-                                                    generatedbudget: whats?.generatedbudget,
-                                                    servicecompleted: whats?.servicecompleted,
-                                                    feedback: whats?.feedback,
-                                                    tracking_token: order?.tracking_token,
-                                                }}
-                                            />
+                                            {canManageOrders && (
+                                                <WhatsAppButton
+                                                    phone={order.customer.whatsapp}
+                                                    customerName={order.customer.name}
+                                                    orderNumber={order.order_number}
+                                                    status={order.service_status}
+                                                    feedback={feedback?.some((feed: any) => feed.order_number === order.order_number)}
+                                                    whats={{
+                                                        generatedbudget: whats?.generatedbudget,
+                                                        servicecompleted: whats?.servicecompleted,
+                                                        feedback: whats?.feedback,
+                                                        tracking_token: order?.tracking_token,
+                                                    }}
+                                                />
+                                            )}
 
-                                            <ModalReceipt orderid={order.id} />
+                                            {canManageOrders && <ModalReceipt orderid={order.id} />}
                                             <Button asChild size="icon" className="bg-fuchsia-700 text-white hover:bg-fuchsia-700">
                                                 <Link href={route('app.images.index', { or: order.id })}>
                                                     <ImageUp className="h-4 w-4" />
@@ -195,13 +206,13 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                 </Link>
                                             </Button>
 
-                                            <ActionDelete title={'esta ordem'} url={'app.orders.destroy'} param={order.id} />
+                                            {canManageOrders && <ActionDelete title={'esta ordem'} url={'app.orders.destroy'} param={order.id} />}
                                         </TableCell>
                                     </TableRow>
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={9} className="flex h-16 w-full items-center justify-center">
+                                    <TableCell colSpan={canManageOrders ? 10 : 9} className="flex h-16 w-full items-center justify-center">
                                         Não há dados a serem mostrados no momento.
                                     </TableCell>
                                 </TableRow>
@@ -209,7 +220,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                         </TableBody>
                         <TableFooter>
                             <TableRow>
-                                <TableCell colSpan={10}>
+                                <TableCell colSpan={canManageOrders ? 10 : 9}>
                                     <AppPagination data={orders} />
                                 </TableCell>
                             </TableRow>
