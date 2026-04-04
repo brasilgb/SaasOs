@@ -8,6 +8,7 @@ import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { Cog, Printer } from 'lucide-react';
+import { useMemo } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -23,22 +24,26 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function LabelPrinting({ labels }: any) {
     const { flash } = usePage().props as any;
 
-    const { data, setData, processing, post } = useForm({
+    const { data, setData } = useForm({
         initialorder: labels.id + 1,
         pages: 1,
-        finalorder: labels.id + 96,
     });
+
+    const computedFinalOrder = useMemo(() => {
+        const initial = Number(data.initialorder) || 1;
+        const pages = Math.max(1, Number(data.pages) || 1);
+
+        return initial + pages * 96 - 1;
+    }, [data.initialorder, data.pages]);
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
-        post(route('app.label-printing.store'));
-    };
+        const params = new URLSearchParams({
+            initialorder: String(data.initialorder),
+            pages: String(data.pages),
+        });
 
-    const handleLabelsTotals = () => {
-        setData((data: any) => ({ ...data, initialorder: data?.initialorder }));
-        setData((data: any) => ({ ...data, pages: data?.pages }));
-        const labelTotal = (data?.initialorder - 1 + 96) * data.pages;
-        setData((data: any) => ({ ...data, finalorder: labelTotal }));
+        window.open(`${route('app.label-printing.print')}?${params.toString()}`, '_blank', 'noopener,noreferrer');
     };
 
     return (
@@ -77,26 +82,27 @@ export default function LabelPrinting({ labels }: any) {
                         </h2>
                     </div>
 
-                    <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8" method="post" target="_blank">
+                    <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
                         <div className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
                             <div className="grid gap-2">
                                 <Label htmlFor="initialorder">Ordem inicial</Label>
                                 <Input
-                                    type="text"
+                                    type="number"
                                     id="initialorder"
                                     value={data.initialorder}
                                     onChange={(e) => setData('initialorder', e.target.value)}
+                                    min={1}
                                 />
                             </div>
 
                             <div className="grid gap-2">
                                 <Label htmlFor="pages">Número de páginas</Label>
                                 <Input
-                                    type="text"
+                                    type="number"
                                     id="pages"
                                     value={data.pages}
                                     onChange={(e: any) => setData('pages', e.target.value)}
-                                    onKeyUp={handleLabelsTotals}
+                                    min={1}
                                 />
                             </div>
 
@@ -104,15 +110,14 @@ export default function LabelPrinting({ labels }: any) {
                                 <Label htmlFor="finalorder">Ordem final</Label>
                                 <Input
                                     readOnly
-                                    type="text"
+                                    type="number"
                                     id="finalorder"
-                                    value={data.finalorder}
-                                    onChange={(e) => setData('finalorder', e.target.value)}
+                                    value={computedFinalOrder}
                                 />
                             </div>
 
                             <div className="mt-5 grid gap-2">
-                                <Button type="submit" disabled={processing}>
+                                <Button type="submit">
                                     <Printer />
                                     Imprimir
                                 </Button>

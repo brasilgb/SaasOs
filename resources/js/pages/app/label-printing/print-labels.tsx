@@ -10,17 +10,19 @@ const chunk = (array: any[], size: number) => {
 
 export default function Print({ data }: any) {
     const printRef = useRef<HTMLDivElement>(null);
-
-    const pages = chunk(data || [], 96);
+    const labels = Array.isArray(data) ? data : [];
+    const pages = chunk(labels, 96);
 
     useEffect(() => {
-        setTimeout(() => {
+        const timeout = window.setTimeout(() => {
             window.print();
         }, 300);
+
+        return () => window.clearTimeout(timeout);
     }, []);
 
     return (
-        <div ref={printRef}>
+        <div ref={printRef} className="bg-white text-black">
             {pages.map((page, pageIndex) => {
                 const rows = chunk(page, 6);
 
@@ -29,10 +31,10 @@ export default function Print({ data }: any) {
                         {rows.map((row, rowIndex) => (
                             <div key={rowIndex} className="row">
                                 {row.map((item, i) => (
-                                    <div key={i} className="etiqueta">
+                                    <div key={`${pageIndex}-${rowIndex}-${i}`} className="etiqueta">
                                         <div className="conteudo">
                                             <div className="empresa">{item.company}</div>
-                                            <div className="pedido">{item.order}</div>
+                                            <div className="pedido">OS {item.order}</div>
                                             <div className="telefone">{item.telephone}</div>
                                         </div>
                                     </div>
@@ -41,7 +43,7 @@ export default function Print({ data }: any) {
                                 {/* preencher colunas */}
                                 {row.length < 6 &&
                                     Array.from({ length: 6 - row.length }).map((_, i) => (
-                                        <div key={i} className="etiqueta" />
+                                        <div key={`empty-col-${pageIndex}-${rowIndex}-${i}`} className="etiqueta" />
                                     ))}
                             </div>
                         ))}
@@ -49,9 +51,9 @@ export default function Print({ data }: any) {
                         {/* preencher linhas */}
                         {rows.length < 16 &&
                             Array.from({ length: 16 - rows.length }).map((_, i) => (
-                                <div key={i} className="row">
+                                <div key={`empty-row-${pageIndex}-${i}`} className="row">
                                     {Array.from({ length: 6 }).map((_, j) => (
-                                        <div key={j} className="etiqueta" />
+                                        <div key={`empty-label-${pageIndex}-${i}-${j}`} className="etiqueta" />
                                     ))}
                                 </div>
                             ))}
