@@ -22,11 +22,19 @@ class DashboardController extends Controller
     {
         $startDate = Carbon::now()->subDays(10)->startOfDay();
         $endDate = Carbon::now()->subDays(7)->endOfDay();
+        $today = Carbon::today();
+        $tomorrow = Carbon::tomorrow();
+
+        $pendingOrdersQuery = Order::query()
+            ->whereNotNull('delivery_forecast')
+            ->whereNotIn('service_status', [2, 8, 10]);
 
         $acount = [
             'numuser' => User::count(),
             'numcust' => Customer::count(),
             'numorde' => Order::count(),
+            'numorde_due_today' => (clone $pendingOrdersQuery)->whereDate('delivery_forecast', $today)->count(),
+            'numorde_due_tomorrow' => (clone $pendingOrdersQuery)->whereDate('delivery_forecast', $tomorrow)->count(),
             'numshed' => Schedule::count(),
             'nummess' => Message::count(),
             'numparts' => Part::where('type', 'part')->count(),

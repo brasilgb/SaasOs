@@ -88,19 +88,21 @@ export default function Messages({ messages, search }: any) {
                                         <TableCell>{moment(message.created_at).format('DD/MM/YYYY')}</TableCell>
                                         <TableCell className="flex justify-end gap-2">
                                             {message.sender_id == auth.user.id ? (
-                                                <Button asChild size="icon" className="bg-orange-500 text-white hover:bg-orange-600">
-                                                    <Link
-                                                        href={route('app.messages.edit', message.id)}
-                                                        data={{ page: messages.current_page, search: search }}
-                                                    >
-                                                        {(message.sender_id === auth.user.id) === message.status ? <Eye /> : <Edit />}
-                                                    </Link>
-                                                </Button>
+                                                <>
+                                                    <Button asChild size="icon" className="bg-orange-500 text-white hover:bg-orange-600">
+                                                        <Link
+                                                            href={route('app.messages.edit', message.id)}
+                                                            data={{ page: messages.current_page, search: search }}
+                                                        >
+                                                            {(message.sender_id === auth.user.id) === message.status ? <Eye /> : <Edit />}
+                                                        </Link>
+                                                    </Button>
+
+                                                    <ActionDelete title={'esta mensagem'} url={'app.messages.destroy'} param={message.id} />
+                                                </>
                                             ) : (
                                                 <AppLoadMessage message={message} />
                                             )}
-
-                                            <ActionDelete title={'esta mensagem'} url={'app.messages.destroy'} param={message.id} />
                                         </TableCell>
                                     </TableRow>
                                 ))

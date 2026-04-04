@@ -13,6 +13,23 @@ use Inertia\Inertia;
 
 class MessageController extends Controller
 {
+    private function canAccessMessage(Message $message): bool
+    {
+        $userId = Auth::id();
+
+        return $message->sender_id === $userId || $message->recipient_id === $userId;
+    }
+
+    private function canManageMessage(Message $message): bool
+    {
+        return $message->sender_id === Auth::id();
+    }
+
+    private function canReadMessage(Message $message): bool
+    {
+        return $message->recipient_id === Auth::id();
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -22,13 +39,22 @@ class MessageController extends Controller
         $sdate = $request->get('dt');
 
         $logged = Auth::user();
-        $query = Message::where('recipient_id', $logged->id)->orWhere('sender_id', $logged->id)->orderBy('id', 'DESC');
+        $query = Message::where(function ($q) use ($logged) {
+            $q->where('recipient_id', $logged->id)
+                ->orWhere('sender_id', $logged->id);
+        })->orderBy('id', 'DESC');
+
         if ($sdate) {
-            $query->whereDate('messages', $sdate);
+            $query->whereDate('created_at', $sdate);
         }
+
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('id', 'like', '%'.$search.'%')
+                $q->where('message_number', 'like', '%'.$search.'%')
+                    ->orWhere('title', 'like', '%'.$search.'%')
+                    ->orWhereHas('sender', function ($subQuery) use ($search) {
+                        $subQuery->where('name', 'like', "%$search%");
+                    })
                     ->orWhereHas('recipient', function ($subQuery) use ($search) {
                         $subQuery->where('name', 'like', "%$search%");
                     });
@@ -55,8 +81,8 @@ class MessageController extends Controller
      */
     public function store(MessageRequest $request): RedirectResponse
     {
-        $data = $request->all();
-        $request->validated();
+        $data = $request->validated();
+        $data['sender_id'] = Auth::id();
         $data['message_number'] = Message::exists() ? Message::latest()->first()->message_number + 1 : 1;
         Message::create($data);
 
@@ -68,6 +94,8 @@ class MessageController extends Controller
      */
     public function show(Message $message, Request $request)
     {
+        abort_unless($this->canAccessMessage($message), 403);
+
         $logged = Auth::user();
         $users = User::where('id', '!=', $logged->id)->get();
 
@@ -84,6 +112,8 @@ class MessageController extends Controller
      */
     public function edit(Message $message, Request $request)
     {
+        abort_unless($this->canManageMessage($message), 403);
+
         return redirect()->route('app.messages.show', [
             'message' => $message->id,
             'page' => $request->page,
@@ -96,8 +126,10 @@ class MessageController extends Controller
      */
     public function update(MessageRequest $request, Message $message): RedirectResponse
     {
-        $data = $request->all();
-        $request->validated();
+        abort_unless($this->canManageMessage($message), 403);
+
+        $data = $request->validated();
+        $data['sender_id'] = $message->sender_id;
         $message->update($data);
 
         return redirect()->route('app.messages.show', ['message' => $message->id])->with('success', 'Agenda editada com sucesso');
@@ -108,8 +140,9 @@ class MessageController extends Controller
      */
     public function read(Request $request, Message $message): RedirectResponse
     {
-        $data = $request->all();
-        $message->update(['status' => $data['status']]);
+        abort_unless($this->canReadMessage($message), 403);
+
+        $message->update(['status' => (bool) $request->get('status')]);
 
         return redirect()->route('app.messages.index')->with('success', 'Mensagem marcada como lida');
     }
@@ -119,6 +152,8 @@ class MessageController extends Controller
      */
     public function destroy(Message $message)
     {
+        abort_unless($this->canManageMessage($message), 403);
+
         $message->delete();
 
         return redirect()->route('app.messages.index')->with('success', 'Mensagem excluida com sucesso!');

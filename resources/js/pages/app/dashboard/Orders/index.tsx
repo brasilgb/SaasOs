@@ -1,6 +1,7 @@
 import { ChartAreaDashboard } from '@/components/Charts/chart-area-dashboard';
 import ChartFluxoOrders from '@/components/Charts/chart-fluxo-orders';
 import { KpiDashboard } from '@/components/kpi-dashboard';
+import { KpiOverdueOrders } from '@/components/kpi-overdue-orders';
 import { SalesProducts } from '@/components/sales-products';
 import ScheduleCalendarModal from '@/components/Schedules/ScheduleCalendarModal';
 import { Badge } from '@/components/ui/badge';
@@ -104,11 +105,10 @@ export default function OrderDashboard({ timerange, dateRange, customRange, part
                     valuedays={metrics?.products ? metrics?.products : '0'}
                 />
             </div>
-            <div className="grid md:grid-cols-6 mt-3 gap-3">
-
-                <div>
+            <div className="mt-3 grid min-h-[210px] gap-3 md:grid-cols-7">
+                <div className="h-full">
                     {others?.enablesales ? (
-                        <div className='flex flex-col gap-3 h-full'>
+                        <div className="flex h-full flex-col gap-3">
                             <Card className="flex h-full items-center justify-center p-4">
                                 <SalesProducts parts={parts} customers={customers} iconSize={60} />
                             </Card>
@@ -122,8 +122,15 @@ export default function OrderDashboard({ timerange, dateRange, customRange, part
                         </Card>
                     )}
                 </div>
-                <div className="col-span-5">
-                    <Card className="@container/card flex-1">
+                <KpiOverdueOrders
+                    link={route('app.orders.index', { filter: 'due_48h' })}
+                    icon={<Wrench className="h-10 w-10" />}
+                    title="Ordens Vencendo"
+                    ordersToday={acount?.numorde_due_today}
+                    ordersTomorrow={acount?.numorde_due_tomorrow}
+                />
+                <div className="col-span-5 h-full">
+                    <Card className="@container/card flex-1 h-full">
                         <CardHeader>
                             <CardTitle>Status das Operações</CardTitle>
                         </CardHeader>

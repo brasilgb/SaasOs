@@ -3,7 +3,7 @@ import { Icon } from '@/components/icon';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { Calendar, Edit, Plus } from 'lucide-react';
+import { Calendar, Edit, Plus, X } from 'lucide-react';
 import moment from 'moment';
 
 import ActionDelete from '@/components/action-delete';
@@ -27,7 +27,9 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Schedules({ schedules, search }: any) {
+export default function Schedules({ schedules, search, status }: any) {
+    const hasActiveFilters = Boolean(search || status);
+
     return (
         <AppLayout>
             <Head title="Agendamentos" />
@@ -45,8 +47,16 @@ export default function Schedules({ schedules, search }: any) {
                 <div className="w-full md:max-w-sm">
                     <InputSearch placeholder="Buscar por serviço, nome do cliente ecpf/cnpj" url="app.schedules.index" />
                 </div>
-                <div className="w-full md:w-auto">
+                <div className="flex w-full flex-col gap-2 md:w-auto md:flex-row">
                     <SelectFilter dataStatus={statusAgenda} url="app.schedules.index" noOrder />
+                    {hasActiveFilters && (
+                        <Button variant={'outline'} asChild className="w-full md:w-auto">
+                            <Link href={route('app.schedules.index')}>
+                                <X className="mr-1 h-4 w-4" />
+                                <span>Limpar filtros</span>
+                            </Link>
+                        </Button>
+                    )}
                 </div>
                 <div className="flex w-full flex-col gap-2 md:w-auto md:flex-row md:justify-end">
                     <ScheduleCalendarModal iconSize={38} schedules={schedules?.data || []} />

@@ -16,14 +16,7 @@ import { useState } from 'react';
 type LoadMessage = {
     id: number;
     status: boolean;
-    title: string;
     message: string;
-    sender: {
-        id: number;
-    };
-    recipient: {
-        id: number;
-    };
 };
 
 export function AppLoadMessage({ message }: { message: LoadMessage }) {
@@ -33,10 +26,6 @@ export function AppLoadMessage({ message }: { message: LoadMessage }) {
         e.preventDefault();
         router.patch(route('app.messages.read', message.id), {
             status: message.status ? false : true,
-            title: message.title,
-            message: message.message,
-            sender_id: message.sender.id,
-            recipient_id: message.recipient.id,
         });
         setOpen(false);
     };

@@ -41,6 +41,7 @@ class ScheduleController extends Controller
         return Inertia::render('app/schedules/index', [
             'schedules' => $schedules,
             'search' => $search,
+            'status' => $status,
         ]);
     }
 

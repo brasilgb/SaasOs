@@ -11,7 +11,14 @@ interface DateRange {
     to?: Date;
 }
 
-export default function OrdersDaily({ dateRange, company }: { dateRange?: DateRange; company: string }) {
+type Company = {
+    shortname?: string | null;
+    logo?: string | null;
+    companyname?: string | null;
+    cnpj?: string | null;
+};
+
+export default function OrdersDaily({ dateRange, company }: { dateRange?: DateRange; company: Company | null }) {
     const [loading, setLoading] = useState(false);
 
     async function handleGeneratePDF() {
@@ -30,21 +37,26 @@ export default function OrdersDaily({ dateRange, company }: { dateRange?: DateRa
                 preserveScroll: true,
                 onSuccess: async (page: any) => {
                     const reportData = page.props?.reportData || [];
+                    const pdfInstance = pdf();
 
-                    // Gera o PDF no frontend
-                    const blob = await pdf(
-                        <OrderDailyReportPDF
-                            data={reportData}
-                            dateRange={{
-                                from: moment(dateRange.from).format('YYYY-MM-DD'),
-                                to: moment(dateRange.to).format('YYYY-MM-DD'),
-                            }}
-                            company={{ companyname: company }}
-                        />,
-                    ).toBlob();
+                    await new Promise<void>((resolve) => {
+                        pdfInstance.updateContainer(
+                            <OrderDailyReportPDF
+                                data={reportData}
+                                dateRange={{
+                                    from: moment(dateRange.from).format('YYYY-MM-DD'),
+                                    to: moment(dateRange.to).format('YYYY-MM-DD'),
+                                }}
+                                company={company}
+                            />,
+                            resolve,
+                        );
+                    });
+
+                    const blob = await pdfInstance.toBlob();
 
                     const url = URL.createObjectURL(blob);
-                    window.open(url, '_blank'); // abre em nova aba
+                    window.open(url, '_blank');
                 },
                 onError: (errors) => {
                     console.error('Erro ao gerar relatório:', errors);

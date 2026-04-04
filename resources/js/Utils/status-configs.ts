@@ -7,7 +7,7 @@ export const APP_STATUS_CONFIGS = {
         5: { label: 'Orçamento reprovado', color: 'bg-red-100 text-red-700 border-red-200' },
         6: { label: 'Reparo em andamento', color: 'bg-purple-100 text-purple-700 border-purple-200' },
         7: { label: 'Serviço concluído', color: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
-        8: { label: 'Serviço não executado', color: 'bg-red-600 text-red-700 border-red-700' },
+        8: { label: 'Serviço não executado', color: 'bg-red-600 text-white border-red-400' },
         9: { label: 'Cliente avisado / aguardando retirada', color: 'bg-teal-100 text-teal-700 border-teal-200' },
         10: { label: 'Entregue ao cliente', color: 'bg-green-600 text-white border-green-700' },
     },

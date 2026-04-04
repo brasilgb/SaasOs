@@ -1,5 +1,5 @@
 import { maskMoney } from '@/Utils/mask';
-import { Document, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
+import { Document, Page, StyleSheet, Text, View, Image } from '@react-pdf/renderer';
 import moment from 'moment';
 
 interface CartItem {
@@ -17,6 +17,7 @@ interface SaleReceiptPDFProps {
         date?: string;
     };
     company: {
+        logo?: string | null;
         company?: string;
         cnpj?: string;
         street?: string;
@@ -116,11 +117,16 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: 'bold',
     },
+    logoPlaceholder: { paddingVertical: 4, width: 40, height: 40, justifyContent: 'center', alignItems: 'center', minWidth: '100%' },
+
 });
 
 const SaleReceiptPDF = ({ items, total, customerName, sale, company }: SaleReceiptPDFProps) => (
     <Document title={`Recibo de Venda (${sale?.id}) - ${moment(sale?.date).format('DD/MM/YYYY')}`}>
         <Page size="A4" style={styles.page}>
+            <View style={styles.logoPlaceholder}>
+                <Image source={`${company?.logo ? `/storage/logos/${company?.logo}` : '/images/default.png'}`} />
+            </View>
             <View style={styles.company}>
                 <Text style={styles.title}>{company?.company}</Text>
                 <Text style={styles.companyInfo}>CNPJ: {company?.cnpj}</Text>

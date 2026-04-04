@@ -70,11 +70,24 @@ class OrderController extends Controller
 
         $status = $request->status;
         $search = $request->search;
+        $filter = $request->filter;
 
         $query = Order::orderBy('id', 'DESC');
 
         if ($status) {
             $query->where('service_status', $status);
+        }
+
+        if ($filter === 'due_48h') {
+            $today = Carbon::today();
+            $tomorrow = Carbon::tomorrow();
+
+            $query->whereNotNull('delivery_forecast')
+                ->whereNotIn('service_status', [2, 8, 10])
+                ->whereBetween('delivery_forecast', [$today->toDateString(), $tomorrow->toDateString()]);
+        } elseif ($filter === 'feedback') {
+            $query->where('service_status', 10)
+                ->whereBetween('delivery_date', [$startDate, $endDate]);
         }
 
         if ($search) {
@@ -99,6 +112,8 @@ class OrderController extends Controller
             'whats' => $whats,
             'feedback' => $feedbackOrders,
             'search' => $request->search,
+            'status' => $status,
+            'filter' => $filter,
         ]);
     }
 

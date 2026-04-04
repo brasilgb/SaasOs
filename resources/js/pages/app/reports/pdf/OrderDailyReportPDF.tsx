@@ -13,61 +13,75 @@ const styles = StyleSheet.create({
     },
 
     title: {
-        fontSize: 16,
+        fontSize: 18,
         textAlign: 'center',
         marginBottom: 4,
+        textTransform: 'uppercase',
+        color: '#333',
     },
 
     subtitle: {
-        fontSize: 11,
+        fontSize: 12,
         textAlign: 'center',
-        marginBottom: 12,
+        marginBottom: 14,
         color: '#555',
     },
 
     headerInfo: {
+        fontSize: 10,
         textAlign: 'center',
-        marginBottom: 10,
+        marginBottom: 12,
+        color: '#666',
     },
 
-    table: {
-        border: '1px solid #DDD',
-        borderRadius: 3,
+    tableContainer: {
+        border: '1px solid #eeeded',
+        borderRadius: 4,
+        overflow: 'hidden',
+        backgroundColor: '#FFF',
     },
 
-    headerRow: {
+    tableHeader: {
         flexDirection: 'row',
-        backgroundColor: '#EEE',
-        borderBottom: '1px solid #AAA',
+        backgroundColor: '#eeeded',
+        borderBottom: '1px solid #999',
         paddingVertical: 5,
+        paddingHorizontal: 6,
+        fontWeight: 'bold',
     },
 
-    row: {
+    tableRow: {
         flexDirection: 'row',
         borderBottom: '0.5px solid #DDD',
-        paddingVertical: 5,
+        paddingVertical: 4,
+        paddingHorizontal: 6,
     },
 
     colDate: {
         width: '18%',
-        paddingLeft: 6,
+        textAlign: 'left',
+        paddingVertical: 2,
     },
 
     colSmall: {
         width: '14%',
+        paddingVertical: 2,
         textAlign: 'center',
     },
 
     colMoney: {
         width: '20%',
+        paddingVertical: 2,
         textAlign: 'right',
-        paddingRight: 6,
     },
 
     footer: {
-        marginTop: 12,
+        marginTop: 14,
         borderTop: '1px solid #AAA',
         paddingTop: 6,
+        fontSize: 10,
+        textAlign: 'center',
+        color: '#333',
     },
 
     total: {
@@ -159,12 +173,12 @@ export default function OrderDailyReportPDF({
                 <Text style={styles.subtitle}>Relatório Movimento Diário de Ordens</Text>
 
                 <Text style={styles.headerInfo}>
-                    Período: {moment(dateRange.from).format('DD/MM/YYYY')} até {moment(dateRange.to).format('DD/MM/YYYY')}
+                    Período: {moment(dateRange.from).format('DD/MM/YYYY')} até {moment(dateRange.to).format('DD/MM/YYYY')} {'\n'}
                     Emitido em: {moment().format('DD/MM/YYYY HH:mm')}
                 </Text>
 
-                <View style={styles.table}>
-                    <View style={styles.headerRow}>
+                <View style={styles.tableContainer}>
+                    <View style={styles.tableHeader}>
                         <Text style={styles.colDate}>Data</Text>
                         <Text style={styles.colSmall}>Entradas</Text>
                         <Text style={styles.colSmall}>Concluídos</Text>
@@ -174,17 +188,12 @@ export default function OrderDailyReportPDF({
                     </View>
 
                     {rows.map((row, index) => (
-                        <View key={index} style={styles.row}>
+                        <View key={`${row.date}-${index}`} style={styles.tableRow}>
                             <Text style={styles.colDate}>{moment(row.date).format('DD/MM/YYYY')}</Text>
-
                             <Text style={styles.colSmall}>{row.entradas}</Text>
-
                             <Text style={styles.colSmall}>{row.concluidos}</Text>
-
                             <Text style={styles.colSmall}>{row.entregues}</Text>
-
                             <Text style={styles.colMoney}>R$ {maskMoney(String(row.totalServicos))}</Text>
-
                             <Text style={styles.colMoney}>R$ {maskMoney(String(row.totalPecas))}</Text>
                         </View>
                     ))}

@@ -1,4 +1,4 @@
-import { useForm } from '@inertiajs/react';
+import { router, useForm, usePage } from '@inertiajs/react';
 import { Search } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -10,13 +10,27 @@ interface SearchProps {
 }
 
 export default function InputSearch({ placeholder, url, date }: SearchProps) {
-    const { data, setData, get, processing } = useForm({
-        search: '',
+    const { ziggy } = usePage<{ ziggy?: { query?: Record<string, string> } }>().props;
+    const currentQuery = ziggy?.query ?? {};
+
+    const { data, setData, processing } = useForm({
+        search: currentQuery.search ?? '',
     });
 
     function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
-        get(route(url));
+        router.get(
+            route(url),
+            {
+                ...currentQuery,
+                page: undefined,
+                search: data.search,
+            },
+            {
+                preserveState: true,
+                replace: true,
+            },
+        );
     }
 
     return (

@@ -15,7 +15,7 @@ import { BreadcrumbItem } from '@/types';
 import { statusServico } from '@/Utils/dataSelect';
 import { maskPhone } from '@/Utils/mask';
 import { Head, Link, router } from '@inertiajs/react';
-import { Edit, FileTextIcon, ImageUp, LinkIcon, Plus, Wrench } from 'lucide-react';
+import { Edit, FileTextIcon, ImageUp, LinkIcon, Plus, Wrench, X } from 'lucide-react';
 import moment from 'moment';
 import { useState } from 'react';
 import ModalReceipt from '../receipts/modal-receipt';
@@ -31,8 +31,9 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Orders({ orders, whats, feedback, search }: any) {
+export default function Orders({ orders, whats, feedback, search, status, filter }: any) {
     const [openInvoiceModal, setOpenInvoiceModal] = useState(false);
+    const hasActiveFilters = Boolean(search || status || filter);
 
     const handleFeedbackCheck = (value: number, id: number) => {
         const newValue = value === 1 ? 0 : 1;
@@ -60,8 +61,23 @@ export default function Orders({ orders, whats, feedback, search }: any) {
                 </div>
 
                 {/* Filtro */}
-                <div className="w-full md:w-auto">
-                    <SelectFilter dataStatus={statusServico} url="app.orders.index" />
+                <div className="flex w-full flex-col gap-2 md:w-auto md:flex-row">
+                    <SelectFilter
+                        dataStatus={statusServico}
+                        specialFilters={[
+                            { value: 'feedback', label: 'Listar Feedback' },
+                            { value: 'due_48h', label: 'Vencendo hoje e amanha' },
+                        ]}
+                        url="app.orders.index"
+                    />
+                    {hasActiveFilters && (
+                        <Button variant="outline" asChild>
+                            <Link href={route('app.orders.index')}>
+                                <X className="mr-1 h-4 w-4" />
+                                Limpar filtro
+                            </Link>
+                        </Button>
+                    )}
                 </div>
 
                 {/* Botões */}
