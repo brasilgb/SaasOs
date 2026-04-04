@@ -1,0 +1,103 @@
+import { toastSuccess } from '@/components/app-toast-messages';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { createSlug, maskMoney, maskMoneyDot } from '@/Utils/mask';
+import { useForm } from '@inertiajs/react';
+import { Edit, Save } from 'lucide-react';
+import { useEffect, useState } from 'react';
+
+interface Plan {
+    id: number;
+    name: string;
+    slug: string;
+    description: string;
+    value: string;
+}
+
+interface EditPlanProps {
+    plan: Plan;
+}
+
+export default function EditPlan({ plan }: EditPlanProps) {
+    const [open, setOpen] = useState(false);
+
+    const { data, setData, patch, processing, errors } = useForm({
+        name: plan.name,
+        slug: plan.slug,
+        description: plan.description,
+        value: plan.value,
+    });
+
+    const handleSlug = (slug: string) => {
+        const creSlug = createSlug(slug);
+        setData('name', slug);
+        setData('slug', creSlug);
+    };
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        patch(route('admin.plans.update', plan.id), {
+            onSuccess: () => {
+                toastSuccess('Sucesso', 'Cadastro alterado com sucesso');
+                setOpen(false);
+            },
+        });
+    };
+
+    useEffect(() => {
+        setData('value', maskMoneyDot(data.value));
+    }, [data.value, setData]);
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                <Button className="gap-2 bg-orange-500 text-white hover:bg-orange-600">
+                    <Edit className="h-4 w-4" />
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                    <DialogTitle>Cadastrar um plano</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
+                    <div className="grid gap-2">
+                        <Label htmlFor="name">Nome</Label>
+                        <Input type="text" id="name" value={data.name} onChange={(e) => handleSlug(e.target.value)} />
+                        {errors.name && <div className="text-sm text-red-500">{errors.name}</div>}
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label htmlFor="slug">Slug</Label>
+                        <Input type="text" id="slug" value={data.slug} onChange={(e) => setData('slug', e.target.value)} />
+                        {errors.slug && <div className="text-sm text-red-500">{errors.slug}</div>}
+                    </div>
+
+                    <div className="grid gap-2 md:col-span-2">
+                        <Label htmlFor="description">Descrição</Label>
+                        <Textarea id="description" value={data.description} onChange={(e) => setData('description', e.target.value)} />
+                        {errors.description && <div className="text-sm text-red-500">{errors.description}</div>}
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label htmlFor="value">Valor</Label>
+                        <Input type="text" id="value" value={maskMoney(data.value)} onChange={(e) => setData('value', e.target.value)} />
+                        {errors.value && <div className="text-sm text-red-500">{errors.value}</div>}
+                    </div>
+
+                    <DialogFooter className="gap-2">
+                        <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                            Cancelar
+                        </Button>
+                        <Button type="submit" disabled={processing}>
+                            <Save />
+                            Salvar
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
+}

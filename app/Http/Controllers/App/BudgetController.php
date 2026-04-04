@@ -1,0 +1,134 @@
+<?php
+
+namespace App\Http\Controllers\App;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\BudgetsRequest;
+use App\Models\App\Budget;
+use App\Models\App\Company;
+use App\Models\App\Equipment;
+use App\Models\App\Service;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
+use Inertia\Inertia;
+
+class BudgetController extends Controller
+{
+    public function getOrcamentos(Request $request)
+    {
+        if (! $request->marca && ! $request->modelo) {
+            $orcamento = Budget::where('servico', $request->servico)->first();
+            $marcas = [];
+            $modelos = [];
+        } else {
+            $orcamento = Budget::where('servico', $request->servico)->where('brand', $request->brand)->where('eqmodel', $request->eqmodel)->first();
+        }
+
+        $servicos = Service::where('id', $request->servico)->first();
+
+        return response()->json([
+            'status' => true,
+            'data' => [
+                'id' => $orcamento->id,
+                'servico' => $servicos->servico,
+                'marca' => $marcas ? $marcas->marca : null,
+                'modelo' => $modelos ? $modelos->modelo : null,
+                'descricao' => $orcamento->descricao,
+                'valor' => $orcamento->valor,
+                'created_at' => $orcamento->created_at,
+            ],
+        ], 200);
+    }
+
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(Request $request)
+    {
+        $search = $request->search;
+        $query = Budget::orderBy('id', 'DESC');
+        if ($search) {
+            $query->where('service', 'like', '%'.$search.'%');
+        }
+        $budgets = $query->with('equipment')->paginate(12)->withQueryString();
+        $company = Company::first();
+
+        return Inertia::render('app/budgets/index', ['budgets' => $budgets, 'company' => $company, 'search' => $search]);
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        $budgets = Budget::distinct()->pluck('model');
+        $equipments = Equipment::get();
+
+        return Inertia::render('app/budgets/create-budget', ['equipments' => $equipments, 'budgets' => $budgets]);
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(BudgetsRequest $request): RedirectResponse
+    {
+        $data = $request->all();
+        $request->validated();
+        $data['budget_number'] = Budget::exists() ? Budget::latest()->first()->budget_number + 1 : 1;
+        Budget::create($data);
+
+        return redirect()->route('app.budgets.index')->with('success', 'Orçamento cadastrado com sucesso');
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(Budget $budget, Request $request)
+    {
+        $budgets = Budget::distinct()->pluck('model');
+        $equipments = Equipment::get();
+
+        return Inertia::render('app/budgets/edit-budget', [
+            'budget' => $budget,
+            'equipments' => $equipments,
+            'budgets' => $budgets,
+            'page' => $request->page,
+            'search' => $request->search,
+        ]);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(Budget $budget, Request $request)
+    {
+        return Redirect::route('app.budgets.show', [
+            'budget' => $budget->id,
+            'page' => $request->page,
+            'search' => $request->search,
+        ]);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(BudgetsRequest $request, Budget $budget): RedirectResponse
+    {
+        $data = $request->all();
+        $request->validated();
+        $budget->update($data);
+
+        return redirect()->route('app.budgets.index')->with('success', 'Orçamento editado com sucesso');
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(Budget $budget)
+    {
+        $budget->delete();
+
+        return redirect()->route('app.budgets.index')->with('success', 'Orçamento excluido com sucesso!');
+    }
+}

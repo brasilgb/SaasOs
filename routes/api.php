@@ -1,0 +1,45 @@
+<?php
+
+use App\Http\Controllers\App\BudgetController;
+use App\Http\Controllers\App\CompanyController;
+use App\Http\Controllers\App\CustomerController;
+use App\Http\Controllers\App\ImageController;
+use App\Http\Controllers\App\OrderController;
+use App\Http\Controllers\App\PartController;
+use App\Http\Controllers\App\ServiceController;
+use App\Http\Controllers\App\UserController;
+use App\Http\Controllers\App\WebhookController;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register API routes for your application. These
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "api" middleware group. Make something great!
+|
+*/
+// routes/api.php (Lembre-se de excluir essa rota da verificação CSRF no VerifyCsrfToken.php)
+Route::post('/webhooks/mercadopago/{token}', [WebhookController::class, 'handle'])->name('webhook.mercadopago');
+
+Route::get('/ordercli/{customer}', [OrderController::class, 'getOrderCli'])->name('ordercli');
+Route::get('/allorder', [OrderController::class, 'allOrder'])->name('allorder');
+Route::get('/order/{order}', [OrderController::class, 'getOrder'])->name('order');
+
+Route::get('/clientes', [CustomerController::class, 'getClientes']);
+
+Route::post('/orcamentos', [BudgetController::class, 'getOrcamentos']);
+
+Route::post('/servicos', [ServiceController::class, 'getServicos']);
+
+Route::get('/empresa', [CompanyController::class, 'getEmpresaInfo']);
+
+Route::delete('/deleteimage/{aimage}', [ImageController::class, 'deleteImageOrder'])->name('deleteimage');
+Route::get('/images/{order}', [ImageController::class, 'getImages'])->name('images');
+Route::post('/upload', [ImageController::class, 'upload'])->name('upload');
+
+Route::post('/loginuser', [UserController::class, 'loginuser'])->name('loginuser');
+Route::get('/logoutuser', [UserController::class, 'logoutuser'])->name('logoutuser');
+Route::get('/getparts/{reference_number}', [PartController::class, 'getPartsForPartNumber'])->name('getparts');

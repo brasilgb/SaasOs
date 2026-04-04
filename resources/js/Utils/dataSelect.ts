@@ -1,0 +1,98 @@
+const statusServico = [
+    { value: '1', label: 'Ordem aberta' },
+    { value: '2', label: 'Ordem cancelada' },
+    { value: '3', label: 'Orçamento gerado' },
+    { value: '4', label: 'Orçamento aprovado' },
+    { value: '5', label: 'Orçamento reprovado' }, // 9
+    { value: '6', label: 'Reparo em andamento' }, //5
+    { value: '7', label: 'Serviço concluído' }, // 6
+    { value: '8', label: 'Serviço não executado' }, // 10
+    { value: '9', label: 'Cliente avisado / aguardando retirada' }, // 7
+    { value: '10', label: 'Entregue ao cliente' }, // 8
+];
+
+const rolesUser = [
+    { value: '99', label: 'RootSystem' },
+    { value: '9', label: 'RootApp' },
+    { value: '1', label: 'Administrador' },
+    { value: '2', label: 'Usuário' },
+    { value: '3', label: 'Técnico' },
+];
+
+const statusUser = [
+    { value: 'active', label: 'Ativo' },
+    { value: 'inactive', label: 'Inativo' },
+];
+
+const movimentosProdutos = [
+    { value: '1', label: 'Entrada' },
+    { value: '2', label: 'Saída' },
+];
+
+const unidadesProdutos = [
+    { value: '1', label: 'Unidade' },
+    { value: '2', label: 'Caixa' },
+    { value: '3', label: 'Metros' },
+    { value: '4', label: 'Kg' },
+    { value: '5', label: 'Litros' },
+];
+
+const tiposProdutos = [
+    { value: '1', label: 'Novo' },
+    { value: '2', label: 'Usado' },
+    { value: '3', label: 'Seminovo' },
+    { value: '4', label: 'Remanufaturado' },
+];
+
+const statusAgenda = [
+    { value: '1', label: 'Aberta' },
+    { value: '2', label: 'Em atendimento' },
+    { value: '3', label: 'Fechada' },
+];
+
+const statusMessage = [
+    { value: '1', label: 'Não lida' },
+    { value: '2', label: 'Lida' },
+];
+
+const statusOrcamento = [
+    { value: '1', label: 'Ordem Aberta' },
+    { value: '3', label: 'Orçamento Gerado' },
+    { value: '4', label: 'Orçamento Aprovado' },
+];
+
+const statusSaas = [
+    { value: '1', label: 'Ativo' },
+    { value: '2', label: 'Inativo' },
+    { value: '3', label: 'Trial' },
+    { value: '5', label: 'Pausado' },
+    { value: '6', label: 'Vence em 5D' },
+];
+
+const warrantyOptions = [
+    { value: '1', label: '1 mês' },
+    { value: '3', label: '3 meses' },
+    { value: '6', label: '6 meses' },
+    { value: '12', label: '12 meses' },
+];
+
+const partsType = [
+    { value: '1', label: 'Peças' },
+    { value: '2', label: 'Produtos' },
+    { value: '3', label: 'Peças/Produtos' },
+];
+
+export {
+    movimentosProdutos,
+    partsType,
+    rolesUser,
+    statusAgenda,
+    statusMessage,
+    statusOrcamento,
+    statusSaas,
+    statusServico,
+    statusUser,
+    tiposProdutos,
+    unidadesProdutos,
+    warrantyOptions,
+};

@@ -1,0 +1,34 @@
+<?php
+
+namespace App\Http\Controllers\App;
+
+use App\Http\Controllers\Controller;
+use App\Models\App\WhatsappMessage;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+
+class WhatsappMessageController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(WhatsappMessage $whatsappmessage)
+    {
+        if (WhatsappMessage::get()->isEmpty()) {
+            WhatsappMessage::create();
+        }
+        $query = WhatsappMessage::orderBy('id', 'DESC')->first();
+        $whatsappmessage = WhatsappMessage::where('id', $query->id)->first();
+
+        return Inertia::render('app/whatsapp-message/index', ['whatsappmessage' => $whatsappmessage]);
+    }
+
+    public function update(Request $request, WhatsappMessage $whatsappmessage): RedirectResponse
+    {
+        $data = $request->all();
+        $whatsappmessage->update($data);
+
+        return redirect()->route('app.whatsapp-message.index', ['whatsappmessage' => $whatsappmessage->id])->with('success', 'Mensagens do WhatsApp editadas com sucesso');
+    }
+}

@@ -1,0 +1,50 @@
+<?php
+
+namespace App\Http\Controllers\App;
+
+use App\Http\Controllers\Controller;
+use App\Models\App\Company;
+use App\Models\App\Order;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+
+class LabelPrintingController extends Controller
+{
+    public function index()
+    {
+        $labels = Order::orderBy('id', 'DESC')->first();
+        if ($labels) {
+            $labels = Order::orderBy('id', 'DESC')->first();
+        } else {
+            $labels = ['id' => 0];
+        }
+
+        return Inertia::render('app/label-printing/index', ['labels' => $labels]);
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $initial = $request->input('initialorder');
+        $final = $request->input('finalorder');
+        $pages = $request->input('pages');
+
+        // $etiquetas = $request->all();
+        // dd($inicial, $final);
+        $company = Company::first();
+        for ($i = $initial; $i <= $final; $i++) {
+            $data[] = [
+                'order' => $i,
+                'telephone' => $company->telephone,
+                'company' => $company->shortname,
+            ];
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $data,
+        ]);
+    }
+}

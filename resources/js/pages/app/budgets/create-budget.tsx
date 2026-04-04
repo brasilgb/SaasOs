@@ -1,0 +1,58 @@
+import { Breadcrumbs } from '@/components/breadcrumbs';
+import { Icon } from '@/components/icon';
+import { Button } from '@/components/ui/button';
+import AppLayout from '@/layouts/app-layout';
+import { BreadcrumbItem } from '@/types';
+import { Head, Link } from '@inertiajs/react';
+import { ArrowLeft, PackagePlus } from 'lucide-react';
+import BudgetForm from './budget-form';
+
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Dashboard',
+        href: route('app.dashboard'),
+    },
+    {
+        title: 'Orçamentos',
+        href: route('app.budgets.index'),
+    },
+    {
+        title: 'Adicionar',
+        href: route('app.budgets.create'),
+    },
+];
+
+export default function CreateBudget({ budgets, equipments }: any) {
+    return (
+        <AppLayout>
+            <Head title="Mensagens" />
+            <div className="flex h-16 items-center justify-between px-4">
+                <div className="flex items-center gap-2">
+                    <Icon iconNode={PackagePlus} className="h-8 w-8" />
+                    <h2 className="text-xl font-semibold tracking-tight">Orçamentos</h2>
+                </div>
+                <div>
+                    <Breadcrumbs breadcrumbs={breadcrumbs} />
+                </div>
+            </div>
+
+            <div className="flex items-center justify-between p-4">
+                <div>
+                    <Button variant={'default'} asChild>
+                        <Link href={route('app.budgets.index')}>
+                            <ArrowLeft className="h-4 w-4" />
+                            <span>Voltar</span>
+                        </Link>
+                    </Button>
+                </div>
+                <div></div>
+            </div>
+
+            <div className="p-4">
+                <div className="rounded-lg border p-2">
+                    <BudgetForm budgets={budgets} equipments={equipments} />
+                </div>
+            </div>
+        </AppLayout>
+    );
+}

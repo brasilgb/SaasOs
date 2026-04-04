@@ -1,0 +1,162 @@
+import ActionDelete from '@/components/action-delete';
+import AppPagination from '@/components/app-pagination';
+import { toastSuccess, toastWarning } from '@/components/app-toast-messages';
+import { Breadcrumbs } from '@/components/breadcrumbs';
+import { Icon } from '@/components/icon';
+import InputSearch from '@/components/inputSearch';
+import { Button } from '@/components/ui/button';
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import AppLayout from '@/layouts/app-layout';
+import { BreadcrumbItem } from '@/types';
+import { maskCpfCnpj, maskPhone, unMask } from '@/Utils/mask';
+import { Head, Link, usePage } from '@inertiajs/react';
+import { Calendar, Edit, Plus, Upload, Users, Wrench } from 'lucide-react';
+import moment from 'moment';
+import { useEffect, useState } from 'react';
+import ImportCustomersModal from './import-customers-modal';
+
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Dashboard',
+        href: route('app.dashboard'),
+    },
+    {
+        title: 'Clientes',
+        href: '#',
+    },
+];
+
+export default function Customers({ customers, search }: any) {
+    const { flash } = usePage().props as any;
+    const [modalAberto, setModalAberto] = useState(false);
+
+    useEffect(() => {
+        // Se houver mensagem de sucesso
+        if (flash.message) {
+            toastSuccess(flash.message);
+        }
+
+        // Se houver erros de validação (ex: arquivo inválido)
+        if (flash.error) {
+            console.log(flash.error);
+            toastWarning('Erro ao salvar csv');
+        }
+    }, [flash]);
+
+    return (
+        <AppLayout>
+            <Head title="Clientes" />
+            <div className="flex h-16 items-center justify-between px-4">
+                <div className="flex items-center gap-2">
+                    <Icon iconNode={Users} className="h-8 w-8" />
+                    <h2 className="text-xl font-semibold tracking-tight">Clientes</h2>
+                </div>
+                <div>
+                    <Breadcrumbs breadcrumbs={breadcrumbs} />
+                </div>
+            </div>
+
+            <div className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
+                <div className="w-full">
+                    <InputSearch placeholder="Pesquisar cliente por nome ou cpf/cnpj" url="app.customers.index" />
+                </div>
+                <div className="flex w-full justify-between gap-2 md:justify-end">
+                    <Button onClick={() => setModalAberto(true)} className="bg-green-600 text-white hover:bg-green-700">
+                        <Upload className="h-4 w-4" />
+                        <span>CSV</span>
+                    </Button>
+                    <Button variant={'default'} asChild>
+                        <Link href={route('app.customers.create')}>
+                            <Plus className="h-4 w-4" />
+                            <span>Novo Cliente</span>
+                        </Link>
+                    </Button>
+                </div>
+            </div>
+
+            <div className="p-4">
+                <ImportCustomersModal isOpen={modalAberto} onClose={() => setModalAberto(false)} />
+                <div className="rounded-lg border">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>#</TableHead>
+                                <TableHead>Nome</TableHead>
+                                <TableHead>Email</TableHead>
+                                <TableHead>CPF/CNPJ</TableHead>
+                                <TableHead>Telefone</TableHead>
+                                <TableHead>Cadastro</TableHead>
+                                <TableHead></TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {customers?.data.length > 0 ? (
+                                customers?.data?.map((customer: any) => (
+                                    <TableRow key={customer.id}>
+                                        <TableCell>{customer.customer_number}</TableCell>
+                                        <TableCell>{customer.name}</TableCell>
+                                        <TableCell>{customer.email}</TableCell>
+                                        <TableCell>{maskCpfCnpj(unMask(customer.cpfcnpj) ?? '')}</TableCell>
+                                        <TableCell>{maskPhone(unMask(customer.phone) ?? '')}</TableCell>
+                                        <TableCell>{moment(customer.created_at).format('DD/MM/YYYY')}</TableCell>
+                                        <TableCell className="flex justify-end gap-2">
+                                            <Button asChild size="icon" className="bg-green-500 text-white hover:bg-green-500">
+                                                <a target="_blank" href={`https://wa.me/${customer.whatsapp}?text=Olá, ${customer.name}`}>
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        width="16"
+                                                        height="16"
+                                                        fill="currentColor"
+                                                        className="bi bi-whatsapp"
+                                                        viewBox="0 0 16 16"
+                                                    >
+                                                        <path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.71 1.916.81 2.049c.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232" />
+                                                    </svg>
+                                                </a>
+                                            </Button>
+                                            <Button asChild size="icon" className="bg-sky-500 text-white hover:bg-sky-600">
+                                                <Link href={route('app.schedules.index', { search: customer.name })}>
+                                                    <Calendar className="h-4 w-4" />
+                                                </Link>
+                                            </Button>
+
+                                            <Button asChild size="icon" className="bg-sky-500 text-white hover:bg-sky-600">
+                                                <Link href={route('app.orders.index', { search: customer.name })}>
+                                                    <Wrench className="h-4 w-4" />
+                                                </Link>
+                                            </Button>
+
+                                            <Button asChild size="icon" className="bg-orange-500 text-white hover:bg-orange-600">
+                                                <Link
+                                                    href={route('app.customers.edit', customer.id)}
+                                                    data={{ page: customers.current_page, search: search }}
+                                                >
+                                                    <Edit />
+                                                </Link>
+                                            </Button>
+
+                                            <ActionDelete title={'este cliente'} url={'app.customers.destroy'} param={customer.id} />
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={7} className="flex h-16 w-full items-center justify-center">
+                                        Não há dados a serem mostrados no momento.
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                        <TableFooter>
+                            <TableRow>
+                                <TableCell colSpan={7}>
+                                    <AppPagination data={customers} />
+                                </TableCell>
+                            </TableRow>
+                        </TableFooter>
+                    </Table>
+                </div>
+            </div>
+        </AppLayout>
+    );
+}
