@@ -17,6 +17,10 @@ class UserFactory extends Factory
      * The current password being used by the factory.
      */
     protected static ?string $password;
+    /**
+     * @var array<int, int>
+     */
+    protected static array $tenantSequence = [];
 
     /**
      * Define the model's default state.
@@ -25,15 +29,23 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        $tenant = Tenant::query()->inRandomOrder()->first() ?? Tenant::factory()->create();
+        $tenantId = (int) $tenant->id;
+        $nextUserNumber = static::$tenantSequence[$tenantId]
+            ?? (User::query()->where('tenant_id', $tenantId)->max('user_number') ?? 0);
+        $nextUserNumber++;
+        static::$tenantSequence[$tenantId] = $nextUserNumber;
+
         return [
-            'tenant_id' => Tenant::factory(),
+            'tenant_id' => $tenantId,
+            'user_number' => $nextUserNumber,
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'telephone' => fake()->phoneNumber(),
             'whatsapp' => fake()->phoneNumber(),
             'password' => static::$password ??= Hash::make('password'),
-            'roles' => fake()->randomElement([1, 2, 3]), // 1=Admin, 2=Usuário, 3=Técnico
-            'status' => 1, // Ex: 1=Active
+            'roles' => User::ROLE_ADMIN,
+            'status' => 1,
             'email_verified_at' => now(),
             'remember_token' => Str::random(10),
         ];
@@ -47,5 +59,20 @@ class UserFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
         ]);
+    }
+
+    public function forTenant(int $tenantId): static
+    {
+        return $this->state(function () use ($tenantId): array {
+            $nextUserNumber = static::$tenantSequence[$tenantId]
+                ?? (User::query()->where('tenant_id', $tenantId)->max('user_number') ?? 0);
+            $nextUserNumber++;
+            static::$tenantSequence[$tenantId] = $nextUserNumber;
+
+            return [
+                'tenant_id' => $tenantId,
+                'user_number' => $nextUserNumber,
+            ];
+        });
     }
 }

@@ -2,10 +2,7 @@
 
 namespace Database\Factories\App;
 
-use App\Models\App\Customer;
 use App\Models\App\Sale;
-use App\Models\App\SaleItem;
-use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -16,6 +13,11 @@ class SaleFactory extends Factory
     protected $model = Sale::class;
 
     /**
+     * @var array<int, int>
+     */
+    protected static array $tenantSequence = [];
+
+    /**
      * Define the model's default state.
      *
      * @return array<string, mixed>
@@ -24,29 +26,27 @@ class SaleFactory extends Factory
     {
         return [
             'sales_number' => $this->faker->unique()->numberBetween(1, 10000),
-            'tenant_id' => Tenant::factory(),
-            'customer_id' => Customer::factory(),
             'total_amount' => $this->faker->randomFloat(2, 20, 1000),
+            'status' => $this->faker->randomElement(['completed', 'cancelled']),
+            'cancelled_at' => fn (array $attributes) => ($attributes['status'] ?? null) === 'cancelled'
+                ? $this->faker->dateTimeBetween('-30 days', 'now')
+                : null,
         ];
     }
 
-    /**
-     * Configure the model factory.
-     *
-     * @return $this
-     */
-    public function configure()
+    public function forTenant(int $tenantId): static
     {
-        return $this->afterCreating(function (Sale $sale) {
-            $items = SaleItem::factory(rand(1, 3))->make();
-            $totalAmount = 0;
+        return $this->state(function () use ($tenantId): array {
+            $next = static::$tenantSequence[$tenantId]
+                ?? (Sale::query()->where('tenant_id', $tenantId)->max('sales_number') ?? 0);
 
-            $items->each(function ($item) use (&$totalAmount) {
-                $totalAmount += $item->quantity * $item->unit_price;
-            });
+            $next++;
+            static::$tenantSequence[$tenantId] = $next;
 
-            $sale->items()->saveMany($items);
-            $sale->update(['total_amount' => $totalAmount]);
+            return [
+                'tenant_id' => $tenantId,
+                'sales_number' => $next,
+            ];
         });
     }
 }

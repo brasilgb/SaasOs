@@ -81,6 +81,10 @@ const styles = StyleSheet.create({
 });
 
 export default function OrderStatisticsPDF({ data, dateRange, company }: any) {
+    const period = dateRange?.from && dateRange?.to
+        ? `${moment(dateRange.from).format('DD/MM/YYYY')} - ${moment(dateRange.to).format('DD/MM/YYYY')}`
+        : 'Período não informado';
+
     const stats = {
         total: data.length,
         abertas: data.filter((o: any) => o.service_status === 1).length,
@@ -107,7 +111,7 @@ export default function OrderStatisticsPDF({ data, dateRange, company }: any) {
                 <Text style={styles.subtitle}>Resumo Geral de Ordens de Serviço</Text>
 
                 <Text style={styles.headerInfo}>
-                    Período: {moment(dateRange.from).format('DD/MM/YYYY')} - {moment(dateRange.to).format('DD/MM/YYYY')} {'\n'}
+                    Período: {period} {'\n'}
                     Emitido em: {moment().format('DD/MM/YYYY HH:mm')}
                 </Text>
 

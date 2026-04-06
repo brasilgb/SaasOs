@@ -8,6 +8,10 @@
 </head>
 
 <body style="margin:0;padding:0;background:#f3f4f6;font-family:Arial,Helvetica,sans-serif;">
+    @php
+        $registeredLogoPath = public_path('logos/sigmaos-horizontal-dark.png');
+        $registeredLogoUrl = file_exists($registeredLogoPath) ? asset('logos/sigmaos-horizontal-dark.png') : null;
+    @endphp
 
     <div style="display:none;max-height:0;overflow:hidden;opacity:0;">
         Sua conta no SigmaOS foi criada com sucesso. Comece agora a gerenciar sua empresa.
@@ -21,11 +25,15 @@
                     style="max-width:600px;background:#ffffff;border-radius:10px;overflow:hidden;box-shadow:0 10px 25px rgba(0,0,0,0.06);">
 
                     <tr>
-                        <td align="center" style="background:#0f172a;padding:30px 20px;">
-
-                            <h1 style="margin:0;color:#ffffff;font-size:24px;letter-spacing:1px;">
-                                SigmaOS
-                            </h1>
+                        <td align="center" style="background:#020817;padding:30px 20px;">
+                            @if (!empty($registeredLogoUrl))
+                                <img src="{{ $registeredLogoUrl }}" alt="SigmaOS"
+                                    style="display:block;margin:0 auto 14px auto;max-width:220px;height:auto;">
+                            @else
+                                <p style="margin:0 0 14px 0;color:#ffffff;font-size:24px;font-weight:bold;letter-spacing:1px;">
+                                    SigmaOS
+                                </p>
+                            @endif
 
                             <p style="margin:6px 0 0 0;color:#cbd5f5;font-size:13px;">
                                 Sistema inteligente de ordens de serviço

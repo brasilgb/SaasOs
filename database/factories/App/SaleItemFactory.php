@@ -23,7 +23,7 @@ class SaleItemFactory extends Factory
     public function definition()
     {
         return [
-            'part_id' => Part::factory(),
+            'part_id' => Part::query()->inRandomOrder()->value('id') ?? Part::factory(),
             'quantity' => $this->faker->numberBetween(1, 3),
             'unit_price' => $this->faker->randomFloat(2, 10, 200),
         ];

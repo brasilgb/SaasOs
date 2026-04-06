@@ -4,11 +4,12 @@ namespace App\Models\App;
 
 use App\Models\User;
 use App\Tenantable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class PartMovement extends Model
 {
-    use Tenantable;
+    use HasFactory, Tenantable;
 
     protected $guarded = [];
 

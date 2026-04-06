@@ -164,9 +164,9 @@ export default function EditTenant({ plans, tenant }: any) {
                                 <Input
                                     type="text"
                                     id="whatsapp"
-                                    value={data.whatsapp}
+                                    value={maskPhone(data.whatsapp)}
                                     onChange={(e) => setData('whatsapp', e.target.value)}
-                                    maxLength={13}
+                                    maxLength={15}
                                 />
                             </div>
                         </div>

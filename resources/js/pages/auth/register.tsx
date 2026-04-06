@@ -137,10 +137,10 @@ export default function Register() {
                                 type="whatsapp"
                                 tabIndex={4}
                                 autoComplete="whatsapp"
-                                value={data.whatsapp}
+                                value={maskPhone(data.whatsapp)}
                                 onChange={(e) => setData('whatsapp', e.target.value)}
                                 disabled={processing}
-                                maxLength={14 - 1}
+                                maxLength={15}
                             />
                             <InputError message={errors.whatsapp} />
                         </div>

@@ -3,65 +3,56 @@
 namespace Database\Factories\App;
 
 use App\Models\App\Customer;
-use App\Models\Tenant;
-use Faker\Factory as FakerFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
+/**
+ * @extends Factory<Customer>
+ */
 class CustomerFactory extends Factory
 {
     protected $model = Customer::class;
 
-    public function definition()
-    {
-        // Para usar o CPF, é comum ter um provider customizado para o Faker.
-        // Ex: https://github.com/faker-br/faker-br
-        // Se já estiver configurado globalmente (ex: em AppServiceProvider), pode remover a linha abaixo.
-        $faker = FakerFactory::create('pt_BR');
+    /**
+     * @var array<int, int>
+     */
+    protected static array $tenantSequence = [];
 
+    public function definition(): array
+    {
         return [
-            'customer_number' => $faker->unique()->numberBetween(1, 999999),
-            'name' => $faker->name,
-            'cpfcnpj' => $faker->cpf(),
-            'birth' => $faker->date('Y-m-d'),
-            'email' => $faker->unique()->safeEmail,
-            'zipcode' => $faker->postcode(),
-            'state' => $faker->state,
-            'city' => $faker->city,
-            'district' => $faker->citySuffix,
-            'street' => $faker->streetName,
-            'complement' => 'Casa',
-            'number' => $faker->buildingNumber,
-            'phone' => $faker->phoneNumber,
-            'contactname' => $faker->name,
-            'whatsapp' => '5551995862789',
-            'contactphone' => $faker->phoneNumber,
-            'observations' => $faker->sentence,
+            'customer_number' => $this->faker->unique()->numberBetween(1, 999999),
+            'name' => $this->faker->name(),
+            'cpfcnpj' => preg_replace('/\D+/', '', $this->faker->numerify('###########')),
+            'birth' => $this->faker->optional()->date('Y-m-d'),
+            'email' => $this->faker->unique()->safeEmail(),
+            'zipcode' => $this->faker->postcode(),
+            'state' => $this->faker->stateAbbr(),
+            'city' => $this->faker->city(),
+            'district' => $this->faker->citySuffix(),
+            'street' => $this->faker->streetName(),
+            'complement' => $this->faker->optional()->secondaryAddress(),
+            'number' => $this->faker->numberBetween(1, 9999),
+            'phone' => $this->faker->phoneNumber(),
+            'contactname' => $this->faker->name(),
+            'whatsapp' => $this->faker->phoneNumber(),
+            'contactphone' => $this->faker->phoneNumber(),
+            'observations' => $this->faker->optional()->sentence(),
         ];
     }
 
-    public function configure()
+    public function forTenant(int $tenantId): static
     {
-        return $this->afterCreating(function (Customer $customer) {
-            if (! $customer->customer_number) {
-                $customer->update([
-                    'customer_number' => $customer->id,
-                ]);
-            }
-        });
-    }
+        return $this->state(function () use ($tenantId): array {
+            $next = static::$tenantSequence[$tenantId]
+                ?? (Customer::query()->where('tenant_id', $tenantId)->max('customer_number') ?? 0);
 
-    /**
-     * Configura a factory para um tenant específico, garantindo que
-     * o customer_number seja sequencial para aquele tenant.
-     *
-     * @return Factory
-     */
-    public function forTenant(int $tenantId)
-    {
-        return $this->state(function (array $attributes) use ($tenantId) {
-            $maxCustomerNumber = Customer::where('tenant_id', $tenantId)->max('customer_number') ?? 0;
+            $next++;
+            static::$tenantSequence[$tenantId] = $next;
 
-            return ['tenant_id' => $tenantId, 'customer_number' => $maxCustomerNumber + 1];
+            return [
+                'tenant_id' => $tenantId,
+                'customer_number' => $next,
+            ];
         });
     }
 }

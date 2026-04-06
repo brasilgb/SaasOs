@@ -3,38 +3,42 @@
 namespace Database\Factories\App;
 
 use App\Models\App\Equipment;
-use App\Models\Model;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<Model>
+ * @extends Factory<Equipment>
  */
 class EquipmentFactory extends Factory
 {
+    protected $model = Equipment::class;
+
     /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
+     * @var array<int, int>
      */
+    protected static array $tenantSequence = [];
+
     public function definition(): array
     {
         return [
-            'equipment' => $this->faker->unique(true)->randomElement(['Notebook', 'PC', 'Mobile', 'Impressora']),
+            'equipment' => $this->faker->randomElement(['Notebook', 'Desktop', 'Smartphone', 'Impressora']),
+            'equipment_number' => $this->faker->unique()->numberBetween(1, 999999),
+            'chart' => $this->faker->boolean(70),
         ];
     }
 
-    /**
-     * Configura a factory para um tenant específico, garantindo que
-     * o equipment_number seja sequencial para aquele tenant.
-     *
-     * @return Factory
-     */
-    public function forTenant(int $tenantId)
+    public function forTenant(int $tenantId): static
     {
-        return $this->state(function (array $attributes) use ($tenantId) {
-            $maxEquipmentNumber = Equipment::where('tenant_id', $tenantId)->max('equipment_number') ?? 0;
+        return $this->state(function () use ($tenantId): array {
+            $next = static::$tenantSequence[$tenantId]
+                ?? (Equipment::query()->where('tenant_id', $tenantId)->max('equipment_number') ?? 0);
 
-            return ['tenant_id' => $tenantId, 'equipment_number' => $maxEquipmentNumber + 1];
+            $next++;
+            static::$tenantSequence[$tenantId] = $next;
+
+            return [
+                'tenant_id' => $tenantId,
+                'equipment_number' => $next,
+            ];
         });
     }
 }

@@ -73,6 +73,10 @@ const styles = StyleSheet.create({
 });
 
 export default function PartReportPDF({ data, dateRange, company }: any) {
+    const period = dateRange?.from && dateRange?.to
+        ? `${moment(dateRange.from).format('DD/MM/YYYY')} - ${moment(dateRange.to).format('DD/MM/YYYY')}`
+        : 'Período não informado';
+
     return (
         <Document>
             <Page size="A4" style={styles.page}>
@@ -82,7 +86,7 @@ export default function PartReportPDF({ data, dateRange, company }: any) {
                 <Text style={styles.title}>{company?.companyname}</Text>
                 <Text style={styles.subtitle}>Relatório de movimento de produtos e peças</Text>
                 <Text style={styles.headerInfo}>
-                    Período: {moment(dateRange.from).format('DD/MM/YYYY')} - {moment(dateRange.to).format('DD/MM/YYYY')} {'\n'}
+                    Período: {period} {'\n'}
                     Emitido em: {moment().format('DD/MM/YYYY HH:mm')}
                 </Text>
 
@@ -110,8 +114,8 @@ export default function PartReportPDF({ data, dateRange, company }: any) {
                             <Text style={styles.colMedium}>{customer.manufacturer}</Text>
                             <Text style={styles.colSmall}>{customer.quantity}</Text>
                             <Text style={styles.colSmall}>{customer.minimum_stock_level}</Text>
-                            <Text style={styles.colSmall}>{maskMoney(customer.cost_price)}</Text>
-                            <Text style={styles.colSmall}>{maskMoney(customer.sale_price)}</Text>
+                            <Text style={styles.colSmall}>R$ {maskMoney(String(customer.cost_price ?? 0))}</Text>
+                            <Text style={styles.colSmall}>R$ {maskMoney(String(customer.sale_price ?? 0))}</Text>
                             <Text style={styles.colRight}>{moment(customer.created_at).format('DD/MM/YYYY')}</Text>
                         </View>
                     ))}

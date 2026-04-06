@@ -1,63 +1,58 @@
-function maskCep(value: string): string {
-    if (value) {
-        value = value.replace(/\D/g, '');
-        value = value.replace(/^(\d{5})(\d)/, '$1-$2');
-        return value;
-    }
+function onlyDigits(value: unknown): string {
+    return String(value ?? '').replace(/\D/g, '');
+}
 
-    return '';
+function maskCep(value: string): string {
+    const digits = onlyDigits(value).slice(0, 8);
+    if (!digits) return '';
+    if (digits.length <= 5) return digits;
+    return digits.replace(/^(\d{5})(\d+)/, '$1-$2');
 }
 
 function maskPhone(value: string): string {
-    if (value) {
-        if (value.length < 11) {
-            value = value.replace(/\D/g, '');
-            value = value.replace(/^(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
-            return value;
-        } else {
-            value = value.replace(/\D/g, '');
-            value = value.replace(/^(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-            return value;
-        }
+    const digits = onlyDigits(value).slice(0, 11);
+    if (!digits) return '';
+
+    if (digits.length <= 10) {
+        return digits.replace(/^(\d{0,2})(\d{0,4})(\d{0,4}).*/, (_m, ddd, a, b) => {
+            if (!ddd) return '';
+            if (!a) return `(${ddd}`;
+            if (!b) return `(${ddd}) ${a}`;
+            return `(${ddd}) ${a}-${b}`;
+        });
     }
 
-    return '';
+    return digits.replace(/^(\d{2})(\d{5})(\d{4}).*/, '($1) $2-$3');
 }
 
 function maskWhatsApp(value: string): string {
-    if (value) {
-        value = value.replace(/\D/g, '');
-        value = value.replace(/^(\d{2})(\d{2})(\d{5})(\d{4})/, '$1$2$3$4');
-        return value;
-    }
-
-    return '';
+    return onlyDigits(value).slice(0, 13);
 }
 
 function maskDate(value: string): string {
-    if (value) {
-        value = value.replace(/\D/g, '');
-        value = value.replace(/^(\d{2})(\d{2})(\d{4})/, '$1/$2/$3');
-        return value;
-    }
-
-    return '';
+    const digits = onlyDigits(value).slice(0, 8);
+    if (!digits) return '';
+    if (digits.length <= 2) return digits;
+    if (digits.length <= 4) return digits.replace(/^(\d{2})(\d+)/, '$1/$2');
+    return digits.replace(/^(\d{2})(\d{2})(\d+)/, '$1/$2/$3');
 }
 
 function maskCpfCnpj(value: string): string {
-    if (value) {
-        if (value.length < 12) {
-            value = value.replace(/\D/g, '');
-            value = value.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-            return value;
-        } else {
-            value = value.replace(/\D/g, '');
-            value = value.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
-            return value;
-        }
+    const digits = onlyDigits(value).slice(0, 14);
+    if (!digits) return '';
+
+    if (digits.length <= 11) {
+        if (digits.length <= 3) return digits;
+        if (digits.length <= 6) return digits.replace(/^(\d{3})(\d+)/, '$1.$2');
+        if (digits.length <= 9) return digits.replace(/^(\d{3})(\d{3})(\d+)/, '$1.$2.$3');
+        return digits.replace(/^(\d{3})(\d{3})(\d{3})(\d+)/, '$1.$2.$3-$4');
     }
 
-    return '';
+    if (digits.length <= 2) return digits;
+    if (digits.length <= 5) return digits.replace(/^(\d{2})(\d+)/, '$1.$2');
+    if (digits.length <= 8) return digits.replace(/^(\d{2})(\d{3})(\d+)/, '$1.$2.$3');
+    if (digits.length <= 12) return digits.replace(/^(\d{2})(\d{3})(\d{3})(\d+)/, '$1.$2.$3/$4');
+    return digits.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d+)/, '$1.$2.$3/$4-$5');
 }
 
 function maskCnpj(value: string): string {
@@ -70,57 +65,44 @@ function maskCnpj(value: string): string {
     }
 
     // 2. Lógica de formatação existente (para CNPJs normais)
-    if (value && value.length < 21) {
-        // Remove todos os caracteres não numéricos
-        value = value.replace(/\D/g, '');
-
-        // Aplica a máscara de CNPJ
-        value = value.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
-        return value;
-    }
-
-    // Retorna o valor original se não atender às condições de formatação
-    return value;
+    const digits = onlyDigits(value).slice(0, 14);
+    if (!digits) return '';
+    if (digits.length <= 2) return digits;
+    if (digits.length <= 5) return digits.replace(/^(\d{2})(\d+)/, '$1.$2');
+    if (digits.length <= 8) return digits.replace(/^(\d{2})(\d{3})(\d+)/, '$1.$2.$3');
+    if (digits.length <= 12) return digits.replace(/^(\d{2})(\d{3})(\d{3})(\d+)/, '$1.$2.$3/$4');
+    return digits.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d+)/, '$1.$2.$3/$4-$5');
 }
 
 function unMask(value: string): string {
-    if (value) {
-        value = value.replace(/\D/g, '');
-        return value;
-    }
-
-    return '';
+    return onlyDigits(value);
 }
 // Sua função unMask deve garantir que o hash não seja alterado também
-function unMasCpfCnpj(value: string): string {
+function unMasCpfCnpj(value: unknown): string {
     const SUPERUSER_CNPJ_CODE = '0D82457BF990DE04D1F8F98AC7BFE7DC';
-    if (value === SUPERUSER_CNPJ_CODE) {
-        return value;
+    if (String(value ?? '') === SUPERUSER_CNPJ_CODE) {
+        return SUPERUSER_CNPJ_CODE;
     }
-    return value.replace(/\D/g, '');
+    return String(value ?? '').replace(/\D/g, '');
 }
 
 function maskMoney(value: string): string {
-    if (value) {
-        let valorAlterado = value;
-        valorAlterado = valorAlterado.replace(/\D/g, ''); // Remove todos os não dígitos
-        valorAlterado = valorAlterado.replace(/(\d+)(\d{2})$/, '$1,$2'); // Adiciona a parte de centavos
-        valorAlterado = valorAlterado.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.'); // Adiciona pontos a cada três dígitos
-        return valorAlterado;
-    }
-
-    return '';
+    const digits = onlyDigits(value).slice(0, 15);
+    if (!digits) return '';
+    const normalized = digits.length === 1 ? `0${digits}` : digits;
+    const cents = normalized.slice(-2);
+    const integerPart = normalized.slice(0, -2).replace(/^0+(?=\d)/, '') || '0';
+    const withThousands = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return `${withThousands},${cents}`;
 }
 
 function maskMoneyDot(value: string): string {
-    if (value) {
-        let valorAlterado = value;
-        valorAlterado = valorAlterado.replace(/\D/g, ''); // Remove todos os não dígitos
-        valorAlterado = valorAlterado.replace(/(\d+)(\d{2})$/, '$1.$2'); // Adiciona a parte de centavos
-        return valorAlterado;
-    }
-
-    return '';
+    const digits = onlyDigits(value).slice(0, 15);
+    if (!digits) return '';
+    const normalized = digits.length === 1 ? `0${digits}` : digits;
+    const cents = normalized.slice(-2);
+    const integerPart = normalized.slice(0, -2).replace(/^0+(?=\d)/, '') || '0';
+    return `${integerPart}.${cents}`;
 }
 
 function createSlug(title: string): string {

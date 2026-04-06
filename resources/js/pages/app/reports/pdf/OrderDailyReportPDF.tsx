@@ -125,6 +125,10 @@ export default function OrderDailyReportPDF({
     dateRange: DateRange;
     company?: Company | null;
 }) {
+    const period = dateRange?.from && dateRange?.to
+        ? `${moment(dateRange.from).format('DD/MM/YYYY')} - ${moment(dateRange.to).format('DD/MM/YYYY')}`
+        : 'Período não informado';
+
     const statsByDay: Record<string, OrderDailyRow> = {};
 
     data.forEach((order) => {
@@ -173,7 +177,7 @@ export default function OrderDailyReportPDF({
                 <Text style={styles.subtitle}>Relatório Movimento Diário de Ordens</Text>
 
                 <Text style={styles.headerInfo}>
-                    Período: {moment(dateRange.from).format('DD/MM/YYYY')} até {moment(dateRange.to).format('DD/MM/YYYY')} {'\n'}
+                    Período: {period} {'\n'}
                     Emitido em: {moment().format('DD/MM/YYYY HH:mm')}
                 </Text>
 

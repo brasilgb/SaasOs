@@ -77,6 +77,10 @@ const STATUS_MAP: Record<number, string> = {
 };
 
 export default function SchedulesReportPDF({ data, dateRange, company }: any) {
+    const period = dateRange?.from && dateRange?.to
+        ? `${moment(dateRange.from).format('DD/MM/YYYY')} - ${moment(dateRange.to).format('DD/MM/YYYY')}`
+        : 'Período não informado';
+
     return (
         <Document>
             <Page size="A4" style={styles.page}>
@@ -86,7 +90,7 @@ export default function SchedulesReportPDF({ data, dateRange, company }: any) {
                 <Text style={styles.title}>{company?.companyname}</Text>
                 <Text style={styles.subtitle}>Relatório de Visitas</Text>
                 <Text style={styles.headerInfo}>
-                    Período: {moment(dateRange.from).format('DD/MM/YYYY')} - {moment(dateRange.to).format('DD/MM/YYYY')} {'\n'}
+                    Período: {period} {'\n'}
                     Emitido em: {moment().format('DD/MM/YYYY HH:mm')}
                 </Text>
 

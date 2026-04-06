@@ -125,9 +125,9 @@ export default function CreateUser() {
                                 <Input
                                     id="whatsapp"
                                     type="text"
-                                    value={data.whatsapp}
+                                    value={maskPhone(data.whatsapp)}
                                     onChange={(e) => setData('whatsapp', e.target.value)}
-                                    maxLength={13}
+                                    maxLength={15}
                                 />
                                 {errors.whatsapp && <div className="text-sm text-red-500">{errors.whatsapp}</div>}
                             </div>

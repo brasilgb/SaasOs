@@ -182,7 +182,7 @@ export default function CustomerForm({ initialData }: { initialData?: Customer }
 
                 <div className="grid gap-2">
                     <Label htmlFor="whatsapp">Whatsapp</Label>
-                    <Input type="text" id="whatsapp" value={data.whatsapp} onChange={(e) => setData('whatsapp', e.target.value)} maxLength={13} />
+                    <Input type="text" id="whatsapp" value={maskPhone(data.whatsapp)} onChange={(e) => setData('whatsapp', e.target.value)} maxLength={15} />
                 </div>
 
                 <div className="grid gap-2 md:col-span-2">

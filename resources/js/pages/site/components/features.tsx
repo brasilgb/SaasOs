@@ -27,6 +27,12 @@ const features = [
         description: 'Centralize histórico de serviços, contatos e equipamentos em um único lugar.',
     },
     {
+        icon: MessageSquare,
+        title: 'Notificações por E-mail',
+        description:
+            'Dispare e-mails automáticos para o cliente ao cadastrar a ordem de serviço e sempre que houver atualização de status, com link de acompanhamento.',
+    },
+    {
         icon: Calendar,
         title: 'Agendamento de Visitas',
         description: 'Organize visitas técnicas e evite conflitos de agenda da equipe.',
@@ -63,8 +69,8 @@ const features = [
     },
     {
         icon: MessageSquare,
-        title: 'Comunicação Interna',
-        description: 'Troque mensagens entre técnicos e atendentes sem sair do sistema.',
+        title: 'Mensagens por Usuário',
+        description: 'Envie mensagens internas direcionadas por usuário, com histórico para técnicos, atendentes e administradores.',
     },
     {
         icon: Smartphone,
@@ -109,7 +115,7 @@ const features = [
     {
         icon: Settings,
         title: 'Gestão de Usuários',
-        description: 'Controle permissões para técnicos, atendentes e administradores.',
+        description: 'Definição de papéis predefinidos pelo sistema para técnicos, atendentes e administradores.',
     },
 ];
 

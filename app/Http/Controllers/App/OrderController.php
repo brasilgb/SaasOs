@@ -4,6 +4,8 @@ namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OrderRequest;
+use App\Mail\OrderCreatedMail;
+use App\Mail\OrderStatusUpdatedMail;
 use App\Models\App\Customer;
 use App\Models\App\Equipment;
 use App\Models\App\Order;
@@ -15,11 +17,32 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class OrderController extends Controller
 {
+    private function normalizeMoneyValue(mixed $value): string
+    {
+        if ($value === null || $value === '') {
+            return '0.00';
+        }
+
+        if (is_numeric($value)) {
+            return number_format((float) $value, 2, '.', '');
+        }
+
+        $raw = trim((string) $value);
+
+        // Suporta "1.234,56" e "1234.56"
+        $normalized = str_contains($raw, ',')
+            ? str_replace(',', '.', str_replace('.', '', $raw))
+            : str_replace(',', '', $raw);
+
+        return number_format((float) $normalized, 2, '.', '');
+    }
+
     private function authorizeOrdersAccess(): void
     {
         abort_unless(Auth::user()?->hasPermission('orders'), 403);
@@ -188,7 +211,14 @@ class OrderController extends Controller
         $request->validated();
         $data['order_number'] = Order::exists() ? Order::latest()->first()->order_number + 1 : 1;
         $data['tracking_token'] = Str::uuid();
-        Order::create($data);
+        $order = Order::create($data);
+
+        $order->load(['customer', 'tenant']);
+        $customerEmail = $order->customer?->email;
+
+        if (! empty($customerEmail) && filter_var($customerEmail, FILTER_VALIDATE_EMAIL)) {
+            Mail::to($customerEmail)->send(new OrderCreatedMail($order));
+        }
 
         return redirect()->route('app.orders.index')->with('success', 'Ordem cadastrada com sucesso');
     }
@@ -247,6 +277,10 @@ class OrderController extends Controller
 
         $data = $request->all();
         $request->validated();
+        $data['budget_value'] = $this->normalizeMoneyValue($data['budget_value'] ?? 0);
+        $data['parts_value'] = $this->normalizeMoneyValue($data['parts_value'] ?? 0);
+        $data['service_value'] = $this->normalizeMoneyValue($data['service_value'] ?? 0);
+        $data['service_cost'] = $this->normalizeMoneyValue($data['service_cost'] ?? 0);
         $oldStatus = $order->service_status;
         $order->update([
             'customer_id' => $data['customer_id'],
@@ -298,6 +332,18 @@ class OrderController extends Controller
                 'changed_by' => Auth::id(),
                 'note' => $notes[$data['service_status']] ?? null,
             ]);
+
+            $customerEmail = $order->customer?->email;
+
+            if (! empty($customerEmail) && filter_var($customerEmail, FILTER_VALIDATE_EMAIL)) {
+                Mail::to($customerEmail)->send(
+                    new OrderStatusUpdatedMail(
+                        $order->fresh(['customer', 'tenant']),
+                        $notes[$data['service_status']] ?? 'Status atualizado',
+                        $data['observations'] ?? null
+                    )
+                );
+            }
         }
 
         return redirect()->route('app.orders.show', ['order' => $order->id])->with('success', 'Ordem atualizada com sucesso');

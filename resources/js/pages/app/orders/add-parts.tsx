@@ -9,6 +9,20 @@ import { useState } from 'react';
 import Select from 'react-select';
 
 export default function AddPartsModal({ onSubmit, parts }: any) {
+    const toMoneyNumber = (value: unknown): number => {
+        if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+        const raw = String(value ?? '').trim();
+        if (!raw) return 0;
+
+        // "1.234,56" -> "1234.56" | "1234.56" -> "1234.56"
+        const normalized = raw.includes(',')
+            ? raw.replace(/\./g, '').replace(',', '.')
+            : raw.replace(/,/g, '');
+
+        const parsed = Number(normalized);
+        return Number.isFinite(parsed) ? parsed : 0;
+    };
+
     const [open, setOpen] = useState(false);
 
     const [addedParts, setAddedParts] = useState<any>([]);
@@ -126,8 +140,8 @@ export default function AddPartsModal({ onSubmit, parts }: any) {
                                         onChange={(e) => handleQuantityChange(part.id, e.target.value)}
                                         className="mx-2 w-20 text-sm"
                                     />
-                                    <div className="w-4 text-sm">{maskMoney(part.sale_price)}</div>
-                                    <div className="w-4 text-sm">{maskMoney(String(Number(part.sale_price) * Number(part.quantity)))}</div>
+                                    <div className="w-4 text-sm">{maskMoney(String(toMoneyNumber(part.sale_price)))}</div>
+                                    <div className="w-4 text-sm">{maskMoney(String(toMoneyNumber(part.sale_price) * Number(part.quantity || 0)))}</div>
                                     <Button variant={'destructive'} onClick={() => handleRemovePart(part.id)} className="btn btn-danger btn-sm">
                                         <Trash2 className="h-4 w-4" />
                                     </Button>

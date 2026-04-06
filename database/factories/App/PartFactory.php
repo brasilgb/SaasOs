@@ -37,4 +37,9 @@ class PartFactory extends Factory
             'sale_price' => $this->faker->randomFloat(2, 5, 500),
         ];
     }
+
+    public function forTenant(int $tenantId): static
+    {
+        return $this->state(fn () => ['tenant_id' => $tenantId]);
+    }
 }

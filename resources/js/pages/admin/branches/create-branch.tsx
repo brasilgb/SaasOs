@@ -213,9 +213,9 @@ export default function CreateBranch({ tenants }: any) {
                                 <Input
                                     type="text"
                                     id="contact_whatsapp"
-                                    value={data.contact_whatsapp}
+                                    value={maskPhone(data.contact_whatsapp)}
                                     onChange={(e) => setData('contact_whatsapp', e.target.value)}
-                                    maxLength={13}
+                                    maxLength={15}
                                 />
                             </div>
                         </div>

@@ -4,8 +4,15 @@ use App\Http\Controllers\App\PaymentController;
 use App\Http\Controllers\App\SubscriptionController;
 use App\Http\Controllers\OsController;
 use App\Http\Controllers\Site\HomeController;
+use App\Mail\UserRegisteredMail;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+
+Route::get('/preview/email/order-status', function () {
+    $order = User::latest()->firstOrFail();
+    return new UserRegisteredMail($order);
+});
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/os/{token}', [OsController::class, 'index'])->name('os.token');

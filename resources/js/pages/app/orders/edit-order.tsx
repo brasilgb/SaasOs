@@ -41,6 +41,19 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function EditOrder({ customers, order, technicals, equipments, parts, orderparts, page, search, models }: any) {
+    const toMoneyNumber = (value: unknown): number => {
+        if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+        const raw = String(value ?? '').trim();
+        if (!raw) return 0;
+
+        const normalized = raw.includes(',')
+            ? raw.replace(/\./g, '').replace(',', '.')
+            : raw.replace(/,/g, '');
+
+        const parsed = Number(normalized);
+        return Number.isFinite(parsed) ? parsed : 0;
+    };
+
     const { othersetting } = usePage().props as any;
     const [partsData, setPartsData] = useState<any>([]);
 
@@ -123,7 +136,7 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
         const allpartsPayload = finalListWithDetails.map((p) => ({ part_id: p.id, quantity: p.quantity }));
 
         // Calcula o total. Se não houver peças, o total é 0.
-        const totalValue = finalListWithDetails.reduce((acc, p) => acc + Number(p.sale_price) * p.quantity, 0);
+        const totalValue = finalListWithDetails.reduce((acc, p) => acc + toMoneyNumber(p.sale_price) * Number(p.quantity || 0), 0);
 
         setData((currentData: any) => ({
             ...currentData,
@@ -131,14 +144,14 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
             // Se o total for 0 e não houver peças, fixa 0.
             // Removido a condição "totalValue ? totalValue : order?.parts_value"
             // que causava a insistência no valor antigo do banco.
-            parts_value: String(totalValue),
+            parts_value: totalValue.toFixed(2),
         }));
     }, [partsData, orderparts]);
 
     useEffect(() => {
         // Converte para número, mas garante que se for vazio ou NaN, vire 0
-        const pValue = parseFloat(String(data?.parts_value).replace(',', '.')) || 0;
-        const sValue = parseFloat(String(data?.service_value).replace(',', '.')) || 0;
+        const pValue = toMoneyNumber(data?.parts_value);
+        const sValue = toMoneyNumber(data?.service_value);
 
         const total = pValue + sValue;
 
@@ -454,7 +467,8 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
                                 <CardContent className="p-0">
                                     <div className="divide-y">
                                         {combinedParts.map((part: any, index: number) => {
-                                            const total = Number(part.sale_price) * Number(part.quantity);
+                                            const unitPrice = toMoneyNumber(part.sale_price);
+                                            const total = unitPrice * Number(part.quantity || 0);
 
                                             return (
                                                 <div
@@ -466,7 +480,7 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
                                                         <span className="text-sm font-medium">{part.name}</span>
 
                                                         <span className="text-muted-foreground text-xs">
-                                                            {maskMoney(String(part.sale_price))} × {part.quantity}
+                                                            {maskMoney(String(unitPrice))} × {part.quantity}
                                                         </span>
                                                     </div>
 

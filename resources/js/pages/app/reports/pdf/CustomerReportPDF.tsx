@@ -72,6 +72,10 @@ const styles = StyleSheet.create({
 });
 
 export default function CustomerReportPDF({ data, dateRange, company }: any) {
+    const period = dateRange?.from && dateRange?.to
+        ? `${moment(dateRange.from).format('DD/MM/YYYY')} - ${moment(dateRange.to).format('DD/MM/YYYY')}`
+        : 'Período não informado';
+
     return (
         <Document>
             <Page size="A4" style={styles.page}>
@@ -81,7 +85,7 @@ export default function CustomerReportPDF({ data, dateRange, company }: any) {
                 <Text style={styles.title}>{company?.companyname}</Text>
                 <Text style={styles.subtitle}>Relatório de Clientes</Text>
                 <Text style={styles.headerInfo}>
-                    Período: {moment(dateRange.from).format('DD/MM/YYYY')} - {moment(dateRange.to).format('DD/MM/YYYY')} {'\n'}
+                    Período: {period} {'\n'}
                     Emitido em: {moment().format('DD/MM/YYYY HH:mm')}
                 </Text>
 

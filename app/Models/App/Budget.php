@@ -3,12 +3,13 @@
 namespace App\Models\App;
 
 use App\Tenantable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Budget extends Model
 {
-    use Tenantable;
+    use HasFactory, Tenantable;
 
     public function equipment(): BelongsTo
     {

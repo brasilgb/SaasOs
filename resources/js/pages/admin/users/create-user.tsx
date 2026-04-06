@@ -122,7 +122,13 @@ export default function CreateUser({ tenants }: any) {
 
                             <div className="grid gap-2">
                                 <Label htmlFor="whatsapp">Whatsapp</Label>
-                                <Input id="whatsapp" type="text" value={data.whatsapp} onChange={(e) => setData('whatsapp', e.target.value)} />
+                                <Input
+                                    id="whatsapp"
+                                    type="text"
+                                    value={maskPhone(data.whatsapp)}
+                                    onChange={(e) => setData('whatsapp', e.target.value)}
+                                    maxLength={15}
+                                />
                                 {errors.whatsapp && <div className="text-sm text-red-500">{errors.whatsapp}</div>}
                             </div>
                         </div>

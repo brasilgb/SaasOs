@@ -36,6 +36,10 @@ const styles = StyleSheet.create({
 });
 
 export default function SalesReportPDF({ data, dateRange, company }: any) {
+    const period = dateRange?.from && dateRange?.to
+        ? `${moment(dateRange.from).format('DD/MM/YYYY')} - ${moment(dateRange.to).format('DD/MM/YYYY')}`
+        : 'Período não informado';
+
     const totalGeral = data.reduce((acc: number, sale: any) => acc + Number(sale.total_amount || 0), 0);
     const totalCanceled = data
         .filter((sale: any) => sale.status === 'cancelled')
@@ -50,7 +54,7 @@ export default function SalesReportPDF({ data, dateRange, company }: any) {
                 <Text style={styles.title}>{company?.companyname}</Text>
                 <Text style={styles.subtitle}>Relatório de Vendas</Text>
                 <Text style={styles.headerInfo}>
-                    Período: {moment(dateRange.from).format('DD/MM/YYYY')} - {moment(dateRange.to).format('DD/MM/YYYY')}
+                    Período: {period}
                     {'\n'}
                     Emitido em: {moment().format('DD/MM/YYYY HH:mm')}
                 </Text>

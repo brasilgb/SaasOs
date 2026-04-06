@@ -19,6 +19,12 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginBottom: 12,
     },
+    headerInfo: {
+        fontSize: 10,
+        textAlign: 'center',
+        marginBottom: 12,
+        color: '#666',
+    },
 
     table: {
         border: '1px solid #DDD',
@@ -71,7 +77,11 @@ const styles = StyleSheet.create({
     logoPlaceholder: { paddingVertical: 4, width: 40, height: 40, justifyContent: 'center', alignItems: 'center', minWidth: '100%' },
 });
 
-export default function TechnicianProductivityPDF({ data, company }: any) {
+export default function TechnicianProductivityPDF({ data, company, dateRange }: any) {
+    const period = dateRange?.from && dateRange?.to
+        ? `${moment(dateRange.from).format('DD/MM/YYYY')} - ${moment(dateRange.to).format('DD/MM/YYYY')}`
+        : 'Período não informado';
+
     const statsByTechnician: any = {};
 
     data.forEach((order: any) => {
@@ -133,6 +143,10 @@ export default function TechnicianProductivityPDF({ data, company }: any) {
                 </View>
                 <Text style={styles.title}>{company?.companyname}</Text>
                 <Text style={styles.subtitle}>Relatório de Produtividade por Técnico</Text>
+                <Text style={styles.headerInfo}>
+                    Período: {period} {'\n'}
+                    Emitido em: {moment().format('DD/MM/YYYY HH:mm')}
+                </Text>
 
                 <View style={styles.table}>
                     <View style={styles.headerRow}>
