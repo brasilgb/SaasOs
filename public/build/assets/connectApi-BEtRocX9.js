@@ -1,1 +1,0 @@
-import{b as e}from"./vendor-rEbsdysF.js";const n=e.create({baseURL:"undefined/api/",headers:{"Access-Control-Allow-Origin":"*","Access-Control-Allow-Methods":"GET, POST, PATCH, PUT, DELETE, OPTIONS","Access-Control-Allow-Headers":"*","Content-Type":"application/json"}}),s=e.create({baseURL:"undefined/app/",headers:{"Content-Type":"application/json"}});export{n as a,s as c};
