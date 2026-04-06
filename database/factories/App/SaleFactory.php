@@ -26,7 +26,10 @@ class SaleFactory extends Factory
     {
         return [
             'sales_number' => $this->faker->unique()->numberBetween(1, 10000),
-            'total_amount' => $this->faker->randomFloat(2, 20, 1000),
+            'total_amount' => $total = $this->faker->randomFloat(2, 20, 1000),
+            'paid_amount' => $paid = $this->faker->randomFloat(2, 0, $total),
+            'financial_status' => $paid <= 0 ? 'pending' : ($paid < $total ? 'partial' : 'paid'),
+            'payment_method' => $this->faker->randomElement(['pix', 'cartao', 'dinheiro', 'transferencia', 'boleto']),
             'status' => $this->faker->randomElement(['completed', 'cancelled']),
             'cancelled_at' => fn (array $attributes) => ($attributes['status'] ?? null) === 'cancelled'
                 ? $this->faker->dateTimeBetween('-30 days', 'now')

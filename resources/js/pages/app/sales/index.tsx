@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { pdf } from '@react-pdf/renderer';
 import { EyeIcon, FileText, Loader2, PrinterIcon, ShoppingCartIcon } from 'lucide-react';
 import moment from 'moment';
@@ -29,7 +29,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Sales({ sales }: any) {
+export default function Sales({ sales, search, financial_status, financial_counts }: any) {
     const { auth } = usePage().props as any;
     const companyData = auth?.user?.tenant;
     const acessDenied = auth?.user?.roles === 9 || auth?.user?.roles === 1 ? true : false;
@@ -129,7 +129,31 @@ export default function Sales({ sales }: any) {
                 <div className="w-full">
                     <InputSearch placeholder="Buscar vendas por número e cliente" url="app.sales.index" />
                 </div>
-                <div className="flex w-full justify-end"></div>
+                <div className="flex w-full flex-wrap justify-end gap-2">
+                    <Button variant={financial_status === 'paid' ? 'default' : 'outline'} asChild>
+                        <Link href={route('app.sales.index', { search, financial_status: 'paid' })}>Pago ({financial_counts?.paid ?? 0})</Link>
+                    </Button>
+                    <Button variant={financial_status === 'partial' ? 'default' : 'outline'} asChild>
+                        <Link href={route('app.sales.index', { search, financial_status: 'partial' })}>
+                            Parcial ({financial_counts?.partial ?? 0})
+                        </Link>
+                    </Button>
+                    <Button variant={financial_status === 'pending' ? 'default' : 'outline'} asChild>
+                        <Link href={route('app.sales.index', { search, financial_status: 'pending' })}>
+                            Pendente ({financial_counts?.pending ?? 0})
+                        </Link>
+                    </Button>
+                    <Button variant={financial_status === 'cancelled' ? 'default' : 'outline'} asChild>
+                        <Link href={route('app.sales.index', { search, financial_status: 'cancelled' })}>
+                            Cancelada ({financial_counts?.cancelled ?? 0})
+                        </Link>
+                    </Button>
+                    {financial_status && (
+                        <Button variant="ghost" asChild>
+                            <Link href={route('app.sales.index', { search })}>Limpar filtro</Link>
+                        </Button>
+                    )}
+                </div>
             </div>
 
             <div className="p-4">
@@ -140,6 +164,8 @@ export default function Sales({ sales }: any) {
                                 <TableHead>#</TableHead>
                                 <TableHead>Cliente</TableHead>
                                 <TableHead>Total</TableHead>
+                                <TableHead>Pagamento</TableHead>
+                                <TableHead>Financeiro</TableHead>
                                 <TableHead>Data venda</TableHead>
                                 <TableHead></TableHead>
                             </TableRow>
@@ -152,6 +178,13 @@ export default function Sales({ sales }: any) {
                                         <TableCell>{sale.customer?.name || 'Cliente não informado'}</TableCell>
                                         <TableCell>
                                             {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(sale.total_amount)}
+                                        </TableCell>
+                                        <TableCell className="capitalize">{sale.payment_method || 'não informado'}</TableCell>
+                                        <TableCell>
+                                            {sale.financial_status === 'paid' && <Badge>Pago</Badge>}
+                                            {sale.financial_status === 'partial' && <Badge variant="secondary">Parcial</Badge>}
+                                            {sale.financial_status === 'pending' && <Badge variant="destructive">Pendente</Badge>}
+                                            {sale.financial_status === 'cancelled' && <Badge variant="outline">Cancelada</Badge>}
                                         </TableCell>
                                         <TableCell>{moment(sale.created_at).format('DD/MM/YYYY')}</TableCell>
                                         <TableCell className="flex justify-end gap-2">
@@ -191,7 +224,7 @@ export default function Sales({ sales }: any) {
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="flex h-16 w-full items-center justify-center">
+                                    <TableCell colSpan={7} className="flex h-16 w-full items-center justify-center">
                                         Não há dados a serem mostrados no momento.
                                     </TableCell>
                                 </TableRow>
@@ -199,7 +232,7 @@ export default function Sales({ sales }: any) {
                         </TableBody>
                         <TableFooter>
                             <TableRow>
-                                <TableCell colSpan={5}>
+                                <TableCell colSpan={7}>
                                     <AppPagination data={sales} />
                                 </TableCell>
                             </TableRow>

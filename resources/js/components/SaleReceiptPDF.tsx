@@ -15,6 +15,7 @@ interface SaleReceiptPDFProps {
     sale: {
         id?: string | number;
         date?: string;
+        payment_method?: string;
     };
     company: {
         logo?: string | null;
@@ -141,6 +142,7 @@ const SaleReceiptPDF = ({ items, total, customerName, sale, company }: SaleRecei
             <View style={styles.header}>
                 <Text style={styles.subtitle}>Recibo de Venda ({sale?.id})</Text>
                 <Text style={styles.subtitle}>{moment(sale?.date).format('DD/MM/YYYY HH:mm')}</Text>
+                <Text style={styles.subtitle}>Pagamento: {sale?.payment_method || 'Não informado'}</Text>
             </View>
 
             {customerName && (

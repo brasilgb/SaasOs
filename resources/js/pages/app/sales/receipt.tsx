@@ -43,6 +43,8 @@ const Receipt = forwardRef<HTMLDivElement, Props>(({ paper, items, total, custom
                     Data: {moment(sale?.date).format('DD/MM/YYYY HH:mm')}
                     <br />
                     Cliente: {customer}
+                    <br />
+                    Pagamento: {sale?.payment_method || 'Não informado'}
                 </div>
 
                 <div className="my-2 border-t border-dashed border-black" />

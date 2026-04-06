@@ -9,6 +9,7 @@ const plans = [
         price: 'R$59',
         period: '/mês',
         description: 'Ideal para começar',
+        cta: 'Começar agora',
         features: [
             'Todos os recursos incluídos',
             'Usuários ilimitados',
@@ -24,6 +25,7 @@ const plans = [
         period: 'a cada 3 meses',
         description: 'Economize pagando antecipado',
         savings: 'Economize R$18',
+        cta: 'Escolher trimestral',
         features: [
             'Todos os recursos incluídos',
             'Usuários ilimitados',
@@ -42,6 +44,7 @@ const plans = [
         description: 'Melhor custo-benefício',
         savings: 'Economize R$57',
         popular: true,
+        cta: 'Quero o semestral',
         features: [
             'Todos os recursos incluídos',
             'Usuários ilimitados',
@@ -64,6 +67,7 @@ export function Pricing() {
                     <p className="text-muted-foreground mt-4 text-lg">
                         Teste gratuito por 14 dias • Sem cartão de crédito • Pagamento simples via Pix
                     </p>
+                    <p className="text-muted-foreground mt-2 text-sm">Ativação imediata, suporte humano e cancelamento sem burocracia.</p>
                 </div>
 
                 <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-3">
@@ -105,6 +109,9 @@ export function Pricing() {
                             </CardHeader>
 
                             <CardContent className="space-y-4">
+                                <div className="text-muted-foreground rounded-lg border border-dashed p-2 text-center text-xs">
+                                    Todos os módulos liberados desde o primeiro dia.
+                                </div>
                                 {plan.features.map((feature, featureIndex) => (
                                     <div key={featureIndex} className="flex items-start gap-3">
                                         <Check className="text-primary mt-0.5 h-5 w-5 shrink-0" />
@@ -117,11 +124,11 @@ export function Pricing() {
                             <CardFooter className="flex flex-col gap-3 pt-6">
                                 <Link href={route('register')} className="w-full">
                                     <Button size="lg" className="w-full">
-                                        Começar teste grátis
+                                        {plan.cta}
                                     </Button>
                                 </Link>
 
-                                <span className="text-muted-foreground text-xs">Cancele quando quiser</span>
+                                <span className="text-muted-foreground text-xs">14 dias grátis • Cancele quando quiser</span>
                             </CardFooter>
                         </Card>
                     ))}

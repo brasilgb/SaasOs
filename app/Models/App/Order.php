@@ -48,4 +48,9 @@ class Order extends Model
     {
         return $this->hasMany(OrderStatusHistory::class)->latest();
     }
+
+    public function orderPayments(): HasMany
+    {
+        return $this->hasMany(OrderPayment::class)->latest('paid_at');
+    }
 }

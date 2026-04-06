@@ -8,7 +8,9 @@ use App\Mail\OrderCreatedMail;
 use App\Mail\OrderStatusUpdatedMail;
 use App\Models\App\Customer;
 use App\Models\App\Equipment;
+use App\Models\App\CashSession;
 use App\Models\App\Order;
+use App\Models\App\OrderPayment;
 use App\Models\App\OrderStatusHistory;
 use App\Models\App\Part;
 use App\Models\App\WhatsappMessage;
@@ -41,6 +43,37 @@ class OrderController extends Controller
             : str_replace(',', '', $raw);
 
         return number_format((float) $normalized, 2, '.', '');
+    }
+
+    private function normalizeMoneyFloat(mixed $value): ?float
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        return (float) $this->normalizeMoneyValue($value);
+    }
+
+    private function roundMoney(float $value): float
+    {
+        return round($value, 2);
+    }
+
+    private function buildPaymentSummary(Order $order): array
+    {
+        $partsValue = $this->roundMoney((float) ($order->parts_value ?? 0));
+        $serviceValue = $this->roundMoney((float) ($order->service_value ?? 0));
+        $totalOrder = $this->roundMoney((float) ($order->service_cost ?? 0));
+        $totalPaid = $this->roundMoney((float) $order->orderPayments->sum('amount'));
+        $remaining = $this->roundMoney(max(0, $totalOrder - $totalPaid));
+
+        return [
+            'parts_value' => $partsValue,
+            'service_value' => $serviceValue,
+            'total_order' => $totalOrder,
+            'total_paid' => $totalPaid,
+            'remaining' => $remaining,
+        ];
     }
 
     private function authorizeOrdersAccess(): void
@@ -157,6 +190,10 @@ class OrderController extends Controller
         } elseif ($filter === 'feedback') {
             $query->where('service_status', 10)
                 ->whereBetween('delivery_date', [$startDate, $endDate]);
+        } elseif ($filter === 'financial_open') {
+            $query->whereRaw(
+                '(COALESCE(orders.service_cost, 0) - COALESCE((SELECT SUM(op.amount) FROM order_payments op WHERE op.order_id = orders.id), 0)) > 0.009'
+            );
         }
 
         if ($search) {
@@ -233,6 +270,7 @@ class OrderController extends Controller
         $order->load([
             'customer',
             'orderParts',
+            'orderPayments',
         ]);
 
         $equipments = Equipment::get();
@@ -244,10 +282,13 @@ class OrderController extends Controller
             ->where('status', 1)
             ->get();
         $models = Order::distinct()->pluck('model');
+        $paymentSummary = $this->buildPaymentSummary($order);
 
         return Inertia::render('app/orders/edit-order', [
             'order' => $order,
             'orderparts' => $order->orderParts,
+            'orderPayments' => $order->orderPayments,
+            'paymentSummary' => $paymentSummary,
             'customers' => $customers,
             'technicals' => $technicals,
             'equipments' => $equipments,
@@ -265,7 +306,12 @@ class OrderController extends Controller
     {
         abort_unless($this->canAccessOrder($order), 403);
 
-        return redirect()->route('app.orders.show', ['order' => $order->id, 'page' => $request->page, 'search' => $request->search]);
+        return redirect()->route('app.orders.show', [
+            'order' => $order->id,
+            'page' => $request->page,
+            'search' => $request->search,
+            'open_payments' => $request->get('open_payments'),
+        ]);
     }
 
     /**
@@ -379,6 +425,79 @@ class OrderController extends Controller
         $order->orderParts()->detach();
 
         return redirect()->route('app.orders.show', $order)->with('success', 'Peça removida e estoque devolvido com sucesso.');
+    }
+
+    public function storePayment(Request $request, Order $order): RedirectResponse
+    {
+        abort_unless($this->canAccessOrder($order), 403);
+
+        $request->merge([
+            'amount' => $this->normalizeMoneyFloat($request->input('amount')),
+        ]);
+
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:0.01',
+            'payment_method' => 'required|in:pix,cartao,dinheiro,transferencia,boleto',
+            'paid_at' => 'nullable|date',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        $order->load('orderPayments');
+        $paymentSummary = $this->buildPaymentSummary($order);
+        $amount = $this->roundMoney((float) $validated['amount']);
+
+        if ($amount > $paymentSummary['remaining']) {
+            return back()->withErrors([
+                'amount' => 'O valor informado é maior que o saldo restante da ordem.',
+            ]);
+        }
+
+        $openCashSessionId = CashSession::query()
+            ->where('status', 'open')
+            ->latest('opened_at')
+            ->value('id');
+
+        if (! $openCashSessionId) {
+            return back()->with('error', 'Abra o caixa diário antes de registrar pagamento da ordem.');
+        }
+
+        OrderPayment::create([
+            'order_id' => $order->id,
+            'cash_session_id' => $openCashSessionId,
+            'amount' => $amount,
+            'payment_method' => $validated['payment_method'],
+            'paid_at' => $validated['paid_at'] ?? now(),
+            'notes' => $validated['notes'] ?? null,
+        ]);
+
+        return back()->with('success', 'Pagamento registrado com sucesso.');
+    }
+
+    public function destroyPayment(Order $order, OrderPayment $payment): RedirectResponse
+    {
+        abort_unless($this->canAccessOrder($order), 403);
+        abort_unless((int) $payment->order_id === (int) $order->id, 404);
+
+        $payment->delete();
+
+        return back()->with('success', 'Pagamento removido com sucesso.');
+    }
+
+    public function paymentsData(Order $order)
+    {
+        abort_unless($this->canAccessOrder($order), 403);
+
+        $order->load('orderPayments');
+        $paymentSummary = $this->buildPaymentSummary($order);
+
+        return response()->json([
+            'order' => [
+                'id' => $order->id,
+                'order_number' => $order->order_number,
+            ],
+            'orderPayments' => $order->orderPayments,
+            'paymentSummary' => $paymentSummary,
+        ]);
     }
 
     public function getFeedback(Request $request)

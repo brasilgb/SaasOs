@@ -227,7 +227,12 @@ class TenantDemoSeeder extends Seeder
                 'amount' => $order->budget_value ?? random_int(100, 1000),
                 'payment_method' => collect(['pix', 'cartao', 'dinheiro'])->random(),
                 'paid_at' => now()->subDays(random_int(0, 20)),
-                'notes' => 'Pagamento vinculado ao seed tenant '.$tenant->id,
+                'notes' => sprintf(
+                    'Pagamento OS #%s - %s (seed tenant %s)',
+                    $order->order_number,
+                    $order->customer?->name ?? 'Cliente',
+                    $tenant->id
+                ),
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -254,6 +259,9 @@ class TenantDemoSeeder extends Seeder
                 'status' => 'completed',
                 'cancelled_at' => null,
                 'total_amount' => 0,
+                'paid_amount' => 0,
+                'financial_status' => 'pending',
+                'payment_method' => collect(['pix', 'cartao', 'dinheiro', 'transferencia', 'boleto'])->random(),
             ]);
 
             $selectedParts = $parts->random(random_int(1, 4));
@@ -273,7 +281,19 @@ class TenantDemoSeeder extends Seeder
                 ]);
             }
 
-            $sale->update(['total_amount' => $total]);
+            $paidAmount = round((float) collect([
+                0,
+                $total / 2,
+                $total,
+            ])->random(), 2);
+
+            $financialStatus = $paidAmount <= 0 ? 'pending' : ($paidAmount < $total ? 'partial' : 'paid');
+
+            $sale->update([
+                'total_amount' => $total,
+                'paid_amount' => $paidAmount,
+                'financial_status' => $financialStatus,
+            ]);
         }
     }
 }

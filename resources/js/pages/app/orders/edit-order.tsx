@@ -23,6 +23,7 @@ import { useEffect, useState } from 'react';
 import Select from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 import AddPartsModal from './add-parts';
+import OrderPaymentsModal from './order-payments-modal';
 moment.locale('pt-br');
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -40,7 +41,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function EditOrder({ customers, order, technicals, equipments, parts, orderparts, page, search, models }: any) {
+export default function EditOrder({ customers, order, technicals, equipments, parts, orderparts, orderPayments, paymentSummary, page, search, models }: any) {
     const toMoneyNumber = (value: unknown): number => {
         if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
         const raw = String(value ?? '').trim();
@@ -269,6 +270,12 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
                             Emitir NFSe
                         </Button>
                     )}
+                    <OrderPaymentsModal
+                        order={order}
+                        orderPayments={orderPayments}
+                        paymentSummary={paymentSummary}
+                        defaultOpen={typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('open_payments') === '1'}
+                    />
                     <AddPartsModal onSubmit={handleModalSubmit} parts={parts} />
                 </div>
             </div>

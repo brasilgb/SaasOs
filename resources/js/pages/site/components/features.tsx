@@ -10,6 +10,7 @@ import {
     Eye,
     FileSpreadsheet,
     FileText,
+    HandCoins,
     MessageSquare,
     Package,
     Printer,
@@ -66,6 +67,11 @@ const features = [
         icon: ShoppingCart,
         title: 'Vendas de Produtos e Peças',
         description: 'Venda itens diretamente pelo sistema com emissão automática de recibos.',
+    },
+    {
+        icon: HandCoins,
+        title: 'Caixa Diário',
+        description: 'Realize abertura e fechamento diário de caixa com conferência de saldo, diferença e relatório em PDF.',
     },
     {
         icon: MessageSquare,

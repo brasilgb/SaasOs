@@ -5,9 +5,12 @@ namespace App\Http\Controllers\App;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CustomerRequest;
 use App\Models\App\Customer;
+use App\Models\App\Order;
+use App\Models\App\OrderPayment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
@@ -208,18 +211,50 @@ class CustomerController extends Controller
         $this->authorizeCustomersAccess();
 
         $search = $request->search;
+        $pending = $request->get('pending');
 
-        $query = Customer::orderBy('id', 'DESC');
+        $ordersTotalsSub = Order::query()
+            ->selectRaw('customer_id, COALESCE(SUM(service_cost), 0) as total_order_amount')
+            ->groupBy('customer_id');
+
+        $paymentsTotalsSub = OrderPayment::query()
+            ->join('orders', 'orders.id', '=', 'order_payments.order_id')
+            ->selectRaw('orders.customer_id as customer_id, COALESCE(SUM(order_payments.amount), 0) as total_paid_amount')
+            ->groupBy('orders.customer_id');
+
+        $query = Customer::query()
+            ->leftJoinSub($ordersTotalsSub, 'order_totals', function ($join) {
+                $join->on('order_totals.customer_id', '=', 'customers.id');
+            })
+            ->leftJoinSub($paymentsTotalsSub, 'payment_totals', function ($join) {
+                $join->on('payment_totals.customer_id', '=', 'customers.id');
+            })
+            ->select('customers.*')
+            ->selectRaw('COALESCE(order_totals.total_order_amount, 0) as total_order_amount')
+            ->selectRaw('COALESCE(payment_totals.total_paid_amount, 0) as total_paid_amount')
+            ->selectRaw('(COALESCE(order_totals.total_order_amount, 0) - COALESCE(payment_totals.total_paid_amount, 0)) as pending_amount')
+            ->orderBy('customers.id', 'DESC');
 
         if ($search) {
-            $query->where('name', 'like', '%'.$search.'%')
-                ->orWhere('cpfcnpj', 'like', '%'.$search.'%');
+            $query->where(function ($q) use ($search) {
+                $q->where('customers.name', 'like', '%'.$search.'%')
+                    ->orWhere('customers.cpfcnpj', 'like', '%'.$search.'%');
+            });
+        }
+
+        if ($pending === '1') {
+            $query->whereRaw('(COALESCE(order_totals.total_order_amount, 0) - COALESCE(payment_totals.total_paid_amount, 0)) > 0.009');
         }
 
         $customers = $query->paginate(11)->withQueryString();
         $customerlast = Customer::orderBy('id', 'DESC')->first();
 
-        return Inertia::render('app/customers/index', ['customers' => $customers, 'customerlast' => $customerlast, 'search' => $search]);
+        return Inertia::render('app/customers/index', [
+            'customers' => $customers,
+            'customerlast' => $customerlast,
+            'search' => $search,
+            'pending' => $pending,
+        ]);
     }
 
     /**

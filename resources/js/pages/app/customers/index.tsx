@@ -4,6 +4,7 @@ import { toastSuccess, toastWarning } from '@/components/app-toast-messages';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
 import InputSearch from '@/components/inputSearch';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
@@ -26,7 +27,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Customers({ customers, search }: any) {
+export default function Customers({ customers, search, pending }: any) {
     const { flash, auth } = usePage().props as any;
     const [modalAberto, setModalAberto] = useState(false);
     const canManageCustomers = auth?.permissions?.includes('customers');
@@ -62,6 +63,11 @@ export default function Customers({ customers, search }: any) {
                     <InputSearch placeholder="Pesquisar cliente por nome ou cpf/cnpj" url="app.customers.index" />
                 </div>
                 <div className="flex w-full justify-between gap-2 md:justify-end">
+                    <Button variant={pending === '1' ? 'default' : 'outline'} asChild>
+                        <Link href={route('app.customers.index', { search, pending: pending === '1' ? undefined : 1 })}>
+                            {pending === '1' ? 'Mostrar todos' : 'Com saldo pendente'}
+                        </Link>
+                    </Button>
                     {canManageCustomers && (
                         <Button onClick={() => setModalAberto(true)} className="bg-green-600 text-white hover:bg-green-700">
                             <Upload className="h-4 w-4" />
@@ -90,6 +96,7 @@ export default function Customers({ customers, search }: any) {
                                 <TableHead>Email</TableHead>
                                 <TableHead>CPF/CNPJ</TableHead>
                                 <TableHead>Telefone</TableHead>
+                                <TableHead>Saldo pendente</TableHead>
                                 <TableHead>Cadastro</TableHead>
                                 <TableHead></TableHead>
                             </TableRow>
@@ -103,6 +110,17 @@ export default function Customers({ customers, search }: any) {
                                         <TableCell>{customer.email}</TableCell>
                                         <TableCell>{maskCpfCnpj(unMask(customer.cpfcnpj) ?? '')}</TableCell>
                                         <TableCell>{maskPhone(unMask(customer.phone) ?? '')}</TableCell>
+                                        <TableCell>
+                                            {Number(customer.pending_amount || 0) > 0 ? (
+                                                <Badge variant="destructive">
+                                                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                                                        Number(customer.pending_amount || 0),
+                                                    )}
+                                                </Badge>
+                                            ) : (
+                                                <Badge variant="secondary">Sem pendência</Badge>
+                                            )}
+                                        </TableCell>
                                         <TableCell>{moment(customer.created_at).format('DD/MM/YYYY')}</TableCell>
                                         <TableCell className="flex justify-end gap-2">
                                             <Button asChild size="icon" className="bg-green-500 text-white hover:bg-green-500">
@@ -150,7 +168,7 @@ export default function Customers({ customers, search }: any) {
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={7} className="flex h-16 w-full items-center justify-center">
+                                    <TableCell colSpan={8} className="flex h-16 w-full items-center justify-center">
                                         Não há dados a serem mostrados no momento.
                                     </TableCell>
                                 </TableRow>
@@ -158,7 +176,7 @@ export default function Customers({ customers, search }: any) {
                         </TableBody>
                         <TableFooter>
                             <TableRow>
-                                <TableCell colSpan={7}>
+                                <TableCell colSpan={8}>
                                     <AppPagination data={customers} />
                                 </TableCell>
                             </TableRow>

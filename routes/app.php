@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\App\BudgetController;
 use App\Http\Controllers\App\ChecklistController;
+use App\Http\Controllers\App\CashSessionController;
 use App\Http\Controllers\App\CompanyController;
 use App\Http\Controllers\App\CustomerController;
 use App\Http\Controllers\App\DashboardController;
@@ -35,6 +36,9 @@ Route::resource('messages', MessageController::class);
 Route::patch('messages/{message}/read', [MessageController::class, 'read'])->name('messages.read');
 Route::get('orders/feedback', [OrderController::class, 'getFeedback'])->name('orders.feedback');
 Route::resource('orders', OrderController::class);
+Route::post('orders/{order}/payments', [OrderController::class, 'storePayment'])->name('orders.payments.store');
+Route::delete('orders/{order}/payments/{payment}', [OrderController::class, 'destroyPayment'])->name('orders.payments.destroy');
+Route::get('orders/{order}/payments-data', [OrderController::class, 'paymentsData'])->name('orders.payments.data');
 Route::resource('schedules', ScheduleController::class);
 Route::resource('services', ServiceController::class);
 Route::resource('users', UserController::class);
@@ -62,4 +66,8 @@ Route::resource('/parts', PartController::class);
 Route::post('/orders/remove-part', [OrderController::class, 'removePart'])->name('orders.removePart');
 Route::resource('/sales', SaleController::class);
 Route::post('/sales/{sale}/cancel', [SaleController::class, 'cancel'])->name('sales.cancel');
+Route::post('/sales/{sale}/fiscal', [SaleController::class, 'registerFiscal'])->name('sales.fiscal.register');
+Route::get('/cashier', [CashSessionController::class, 'index'])->name('cashier.index');
+Route::post('/cashier/open', [CashSessionController::class, 'open'])->name('cashier.open');
+Route::post('/cashier/{cashSession}/close', [CashSessionController::class, 'close'])->name('cashier.close');
 Route::resource('/reports', ReportController::class);

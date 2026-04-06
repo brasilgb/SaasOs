@@ -24,6 +24,47 @@ export default function SaleDetailsModal({ isOpen, onClose, sale }: SaleDetailsM
                         <p>
                             <strong>Cliente:</strong> {sale.customer?.name || 'Não informado'}
                         </p>
+                        <p>
+                            <strong>Pagamento:</strong> {sale.payment_method || 'Não informado'}
+                        </p>
+                        <p>
+                            <strong>Status financeiro:</strong> {sale.financial_status || 'Não informado'}
+                        </p>
+                        <p>
+                            <strong>Valor pago:</strong> {maskMoney(String(sale.paid_amount || 0))}
+                        </p>
+                        <p>
+                            <strong>Saldo:</strong> {maskMoney(String(Number(sale.total_amount || 0) - Number(sale.paid_amount || 0)))}
+                        </p>
+                        {sale.status === 'cancelled' && (
+                            <>
+                                <p>
+                                    <strong>Cancelada em:</strong> {sale.cancelled_at ? moment(sale.cancelled_at).format('DD/MM/YYYY [às] HH:mm') : '-'}
+                                </p>
+                                <p>
+                                    <strong>Cancelada por:</strong> {sale.cancelled_by?.name || 'Não informado'}
+                                </p>
+                                <p>
+                                    <strong>Motivo:</strong> {sale.cancel_reason || 'Não informado'}
+                                </p>
+                            </>
+                        )}
+                        {sale.fiscal_document_number && (
+                            <>
+                                <p>
+                                    <strong>Documento fiscal:</strong> {sale.fiscal_document_number}
+                                </p>
+                                <p>
+                                    <strong>Chave:</strong> {sale.fiscal_document_key || '-'}
+                                </p>
+                                <p>
+                                    <strong>Emitido em:</strong> {sale.fiscal_issued_at ? moment(sale.fiscal_issued_at).format('DD/MM/YYYY [às] HH:mm') : '-'}
+                                </p>
+                                <p>
+                                    <strong>Registrado por:</strong> {sale.fiscal_registered_by?.name || '-'}
+                                </p>
+                            </>
+                        )}
                     </div>
 
                     <div>
@@ -55,6 +96,29 @@ export default function SaleDetailsModal({ isOpen, onClose, sale }: SaleDetailsM
                                     </TableRow>
                                 </TableBody>
                             </Table>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 className="mb-2 font-semibold">Histórico da Venda</h4>
+                        <div className="space-y-2">
+                            {sale.logs?.length ? (
+                                sale.logs.map((log: any) => (
+                                    <div key={log.id} className="rounded border p-2 text-xs">
+                                        <div>
+                                            <strong>Ação:</strong> {log.action}
+                                        </div>
+                                        <div>
+                                            <strong>Usuário:</strong> {log.user?.name || 'Sistema'}
+                                        </div>
+                                        <div>
+                                            <strong>Data:</strong> {moment(log.created_at).format('DD/MM/YYYY HH:mm')}
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-muted-foreground text-sm">Sem histórico registrado.</div>
+                            )}
                         </div>
                     </div>
                 </div>

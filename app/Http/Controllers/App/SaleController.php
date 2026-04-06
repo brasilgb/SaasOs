@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
+use App\Models\App\CashSession;
 use App\Models\App\Part;
 use App\Models\App\Sale;
+use App\Models\App\SaleLog;
 use App\Models\App\SaleItem;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -13,6 +16,33 @@ use Inertia\Inertia;
 
 class SaleController extends Controller
 {
+    private function logSaleAction(Sale $sale, string $action, array $data = []): void
+    {
+        SaleLog::create([
+            'sale_id' => $sale->id,
+            'user_id' => Auth::id(),
+            'action' => $action,
+            'data' => $data,
+        ]);
+    }
+
+    private function resolveFinancialStatus(float $totalAmount, float $paidAmount, string $saleStatus): string
+    {
+        if ($saleStatus === 'cancelled') {
+            return 'cancelled';
+        }
+
+        if ($paidAmount <= 0) {
+            return 'pending';
+        }
+
+        if ($paidAmount < $totalAmount) {
+            return 'partial';
+        }
+
+        return 'paid';
+    }
+
     private function authorizeSalesAccess(): void
     {
         abort_unless(Auth::user()?->hasPermission('sales'), 403);
@@ -23,19 +53,44 @@ class SaleController extends Controller
         $this->authorizeSalesAccess();
 
         $search = $request->search;
-        $query = Sale::with('customer')->with('items.part')->orderBy('id', 'DESC');
+        $financialStatus = $request->get('financial_status');
+        $baseQuery = Sale::query();
 
         if ($search) {
-            $query->where(function ($q) use ($search) {
+            $baseQuery->where(function ($q) use ($search) {
                 $q->where('sales_number', 'like', '%'.$search.'%')
                     ->orWhereHas('customer', function ($subQuery) use ($search) {
                         $subQuery->where('name', 'like', '%'.$search.'%');
                     });
             });
         }
+
+        $counts = [
+            'paid' => (clone $baseQuery)->where('financial_status', 'paid')->count(),
+            'partial' => (clone $baseQuery)->where('financial_status', 'partial')->count(),
+            'pending' => (clone $baseQuery)->where('financial_status', 'pending')->count(),
+            'cancelled' => (clone $baseQuery)->where('financial_status', 'cancelled')->count(),
+        ];
+
+        $query = (clone $baseQuery)
+            ->with('customer')
+            ->with('items.part')
+            ->with('cancelledBy:id,name')
+            ->with('fiscalRegisteredBy:id,name')
+            ->with('logs.user:id,name')
+            ->orderBy('id', 'DESC');
+
+        if ($financialStatus) {
+            $query->where('financial_status', $financialStatus);
+        }
         $sales = $query->paginate(10)->withQueryString();
 
-        return Inertia::render('app/sales/index', ['sales' => $sales, 'search' => $search]);
+        return Inertia::render('app/sales/index', [
+            'sales' => $sales,
+            'search' => $search,
+            'financial_status' => $financialStatus,
+            'financial_counts' => $counts,
+        ]);
     }
 
     public function store(Request $request)
@@ -45,6 +100,8 @@ class SaleController extends Controller
         $request->validate([
             'customer_id' => 'nullable|exists:customers,id',
             'total_amount' => 'required|numeric',
+            'paid_amount' => 'nullable|numeric|min:0',
+            'payment_method' => 'required|in:pix,cartao,dinheiro,transferencia,boleto',
             'parts' => 'required|array',
             'parts.*.part_id' => 'required|exists:parts,id',
             'parts.*.quantity' => 'required|integer|min:1',
@@ -53,10 +110,32 @@ class SaleController extends Controller
         try {
             DB::beginTransaction();
 
+            $openCashSession = CashSession::query()
+                ->where('status', 'open')
+                ->latest('opened_at')
+                ->first();
+
+            if (! $openCashSession) {
+                throw new \Exception('Abra o caixa diário antes de concluir uma venda.');
+            }
+
+            $totalAmount = round((float) $request->total_amount, 2);
+            $paidAmount = round((float) ($request->paid_amount ?? $request->total_amount), 2);
+
+            if ($paidAmount > $totalAmount) {
+                throw new \Exception('O valor pago não pode ser maior que o total da venda.');
+            }
+
+            $financialStatus = $this->resolveFinancialStatus($totalAmount, $paidAmount, 'completed');
+
             $sale = Sale::create([
                 'sales_number' => Sale::max('sales_number') + 1,
                 'customer_id' => $request->customer_id,
-                'total_amount' => $request->total_amount,
+                'cash_session_id' => $openCashSession->id,
+                'total_amount' => $totalAmount,
+                'paid_amount' => $paidAmount,
+                'financial_status' => $financialStatus,
+                'payment_method' => $request->payment_method,
                 'status' => 'completed',
             ]);
 
@@ -77,6 +156,13 @@ class SaleController extends Controller
                 $part->decrement('quantity', $item['quantity']);
             }
 
+            $this->logSaleAction($sale, 'created', [
+                'payment_method' => $sale->payment_method,
+                'total_amount' => (float) $sale->total_amount,
+                'paid_amount' => (float) $sale->paid_amount,
+                'financial_status' => $sale->financial_status,
+            ]);
+
             DB::commit();
 
             return response()->json([
@@ -84,6 +170,9 @@ class SaleController extends Controller
                 'sale' => [
                     'id' => $sale->id,
                     'date' => $sale->created_at,
+                    'payment_method' => $sale->payment_method,
+                    'paid_amount' => $sale->paid_amount,
+                    'financial_status' => $sale->financial_status,
                 ],
             ]);
         } catch (\Throwable $e) {
@@ -99,12 +188,25 @@ class SaleController extends Controller
     public function cancel(Sale $sale)
     {
         $this->authorizeSalesAccess();
+        $user = Auth::user();
+
+        $validated = request()->validate([
+            'cancel_reason' => 'required|string|min:8|max:500',
+        ]);
 
         if ($sale->status === 'cancelled') {
             return back()->with('error', 'Venda já está cancelada.');
         }
 
-        DB::transaction(function () use ($sale) {
+        if ($sale->cashSession && $sale->cashSession->status === 'closed') {
+            return back()->with('error', 'Não é possível cancelar venda vinculada a caixa já fechado.');
+        }
+
+        if ($user?->roles === User::ROLE_OPERATOR && $sale->created_at->diffInMinutes(now()) > 60) {
+            return back()->with('error', 'Operador só pode cancelar vendas com até 60 minutos. Solicite um administrador.');
+        }
+
+        DB::transaction(function () use ($sale, $validated) {
 
             foreach ($sale->items as $item) {
                 $part = Part::find($item->part_id);
@@ -115,6 +217,13 @@ class SaleController extends Controller
             $sale->update([
                 'status' => 'cancelled',
                 'cancelled_at' => now(),
+                'cancelled_by' => Auth::id(),
+                'cancel_reason' => $validated['cancel_reason'],
+                'financial_status' => 'cancelled',
+            ]);
+
+            $this->logSaleAction($sale, 'cancelled', [
+                'reason' => $validated['cancel_reason'],
             ]);
         });
 
@@ -124,6 +233,19 @@ class SaleController extends Controller
     public function destroy(Sale $sale)
     {
         $this->authorizeSalesAccess();
+        $user = Auth::user();
+
+        if (! $user?->isRoot() && ! $user?->isAdministrator()) {
+            return back()->with('error', 'Apenas administradores podem excluir vendas.');
+        }
+
+        if ($sale->status !== 'cancelled') {
+            return back()->with('error', 'Somente vendas canceladas podem ser excluídas.');
+        }
+
+        if ($sale->cashSession && $sale->cashSession->status === 'closed') {
+            return back()->with('error', 'Não é possível excluir venda de caixa já fechado.');
+        }
 
         try {
             DB::beginTransaction();
@@ -148,5 +270,38 @@ class SaleController extends Controller
 
             return back()->with('error', 'Erro ao excluir a venda: '.$e->getMessage());
         }
+    }
+
+    public function registerFiscal(Request $request, Sale $sale)
+    {
+        $this->authorizeSalesAccess();
+
+        if ($sale->status === 'cancelled') {
+            return back()->with('error', 'Não é possível registrar comprovante fiscal em venda cancelada.');
+        }
+
+        $validated = $request->validate([
+            'fiscal_document_number' => 'required|string|max:120',
+            'fiscal_document_key' => 'nullable|string|max:120',
+            'fiscal_document_url' => 'nullable|url|max:500',
+            'fiscal_issued_at' => 'nullable|date',
+            'fiscal_notes' => 'nullable|string|max:2000',
+        ]);
+
+        $sale->update([
+            'fiscal_document_number' => $validated['fiscal_document_number'],
+            'fiscal_document_key' => $validated['fiscal_document_key'] ?? null,
+            'fiscal_document_url' => $validated['fiscal_document_url'] ?? null,
+            'fiscal_issued_at' => $validated['fiscal_issued_at'] ?? now(),
+            'fiscal_registered_by' => Auth::id(),
+            'fiscal_notes' => $validated['fiscal_notes'] ?? null,
+        ]);
+
+        $this->logSaleAction($sale, 'fiscal_registered', [
+            'fiscal_document_number' => $sale->fiscal_document_number,
+            'fiscal_document_key' => $sale->fiscal_document_key,
+        ]);
+
+        return back()->with('success', 'Comprovante fiscal registrado com sucesso.');
     }
 }

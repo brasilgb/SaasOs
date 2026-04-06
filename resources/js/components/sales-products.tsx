@@ -1,5 +1,5 @@
 import { apios } from '@/Utils/connectApi';
-import { maskMoney } from '@/Utils/mask';
+import { maskMoney, maskMoneyDot } from '@/Utils/mask';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -57,6 +57,8 @@ interface SaleFormData {
     customer_id: number | '';
     part_id: number | '';
     quantity: number;
+    payment_method: 'pix' | 'cartao' | 'dinheiro' | 'transferencia' | 'boleto';
+    paid_amount: string;
     parts: { part_id: number; quantity: number }[];
     total_amount: number;
 }
@@ -96,6 +98,8 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
         customer_id: '',
         part_id: '', // Keep part_id for selecting a part to add to cart
         quantity: 1, // Quantity for the currently selected part
+        payment_method: 'pix',
+        paid_amount: '0.00',
         parts: [] as { part_id: number; quantity: number }[], // This will be populated from cartItems
         total_amount: 0,
     });
@@ -115,6 +119,7 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
             ...prevData,
             parts: cartItems.map((item) => ({ part_id: item.id, quantity: item.selected_quantity })),
             total_amount: total,
+            paid_amount: total.toFixed(2),
         }));
     }, [cartItems, setData]);
 
@@ -176,6 +181,8 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
         try {
             const response = await apios.post(route('app.sales.store'), {
                 customer_id: data.customer_id,
+                payment_method: data.payment_method,
+                paid_amount: data.paid_amount,
                 parts: cartItems.map((item) => ({
                     part_id: item.id,
                     quantity: item.selected_quantity,
@@ -323,6 +330,36 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
                                 }}
                             />
                             {errors.customer_id && <p className="col-span-4 text-right text-xs text-red-500">{errors.customer_id}</p>}
+                        </div>
+                        <div className="items-center gap-4">
+                            <Label htmlFor="payment_method" className="mb-1 text-right">
+                                Forma de pagamento
+                            </Label>
+                            <select
+                                id="payment_method"
+                                value={data.payment_method}
+                                onChange={(e) => setData('payment_method', e.target.value as SaleFormData['payment_method'])}
+                                className="h-9 w-full rounded-md border border-gray-300 bg-transparent px-3 text-sm shadow-xs"
+                            >
+                                <option value="pix">Pix</option>
+                                <option value="cartao">Cartão</option>
+                                <option value="dinheiro">Dinheiro</option>
+                                <option value="transferencia">Transferência</option>
+                                <option value="boleto">Boleto</option>
+                            </select>
+                            {errors.payment_method && <p className="col-span-4 text-right text-xs text-red-500">{errors.payment_method}</p>}
+                        </div>
+                        <div className="items-center gap-4">
+                            <Label htmlFor="paid_amount" className="mb-1 text-right">
+                                Valor pago
+                            </Label>
+                            <Input
+                                id="paid_amount"
+                                type="text"
+                                value={maskMoney(String(data.paid_amount || '0'))}
+                                onChange={(e) => setData('paid_amount', maskMoneyDot(e.target.value))}
+                            />
+                            {errors.paid_amount && <p className="col-span-4 text-right text-xs text-red-500">{errors.paid_amount}</p>}
                         </div>
                         <div className="grid grid-cols-1 gap-2 sm:grid-cols-5 sm:gap-4">
                             <div className="col-span-2 items-center gap-4">

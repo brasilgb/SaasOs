@@ -4,6 +4,7 @@ import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
 import InputSearch from '@/components/inputSearch';
 import InvoiceModal from '@/components/Modals/InvoiceModal';
+import OrderPaymentsModal from './order-payments-modal';
 import SelectFilter from '@/components/SelectFilter';
 import { StatusBadge } from '@/components/StatusBadge';
 import { Button } from '@/components/ui/button';
@@ -69,6 +70,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                         specialFilters={[
                             { value: 'feedback', label: 'Listar Feedback' },
                             { value: 'due_48h', label: 'Vencendo hoje e amanha' },
+                            { value: 'financial_open', label: 'Em aberto financeiramente' },
                         ]}
                         url="app.orders.index"
                     />
@@ -194,6 +196,14 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                             )}
 
                                             {canManageOrders && <ModalReceipt orderid={order.id} />}
+                                            {canManageOrders && (
+                                                <OrderPaymentsModal
+                                                    order={order}
+                                                    orderPayments={[]}
+                                                    paymentSummary={null}
+                                                    compactTrigger
+                                                />
+                                            )}
                                             <Button asChild size="icon" className="bg-fuchsia-700 text-white hover:bg-fuchsia-700">
                                                 <Link href={route('app.images.index', { or: order.id })}>
                                                     <ImageUp className="h-4 w-4" />

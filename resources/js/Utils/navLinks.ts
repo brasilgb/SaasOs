@@ -90,6 +90,14 @@ const mainNavItems: NavItem[] = [
         permission: 'sales',
     },
     {
+        title: 'Caixa diário',
+        href: route('app.cashier.index'),
+        icon: HandCoins,
+        active: 'app.cashier.*',
+        enabled: 'sales',
+        permission: 'sales',
+    },
+    {
         title: 'Relatórios',
         href: route('app.reports.index'),
         icon: FileTextIcon,
