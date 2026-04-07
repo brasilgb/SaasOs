@@ -42,7 +42,7 @@
                             </h2>
 
                             <p style="font-size:15px;line-height:1.6;margin:14px 0;">
-                                Sua ordem de serviço foi atualizada com sucesso.
+                                Sua ordem de serviço foi atualizada.
                             </p>
 
                             <table width="100%" cellpadding="0" cellspacing="0"
@@ -74,8 +74,21 @@
                                 </tr>
                             </table>
 
+                            @if ((int) $order->service_status === 7)
+                            <table width="100%" cellpadding="0" cellspacing="0" role="presentation"
+                                style="margin:0 0 20px 0;background:#ecfeff;border:1px solid #a5f3fc;border-radius:8px;">
+                                <tr>
+                                    <td style="padding:14px 16px;color:#0f172a;font-size:14px;line-height:1.6;">
+                                        <strong>Observação importante:</strong>
+                                        O serviço foi concluído e seu equipamento está aguardando retirada.
+                                        Entre em contato com nossa equipe ou passe em nossa loja para retirar.
+                                    </td>
+                                </tr>
+                            </table>
+                            @endif
+
                             <p style="font-size:15px;line-height:1.6;">
-                                Se tiver dúvidas, entre em contato com nossa equipe pelo sistema.
+                                Se tiver dúvidas, entre em contato com nossa equipe.
                             </p>
 
                             @if (!empty($order->tracking_token))
