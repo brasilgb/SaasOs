@@ -22,16 +22,16 @@ export function KpiFinancial({ title, total = 0, services = 0, parts = 0, orders
     const percentParts = total > 0 ? Math.round((parts / total) * 100) : 0;
 
     return (
-        <Card className="h-full">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <Card className="h-full min-w-0">
+            <CardHeader className="flex flex-row items-center justify-between gap-3 pb-2">
                 <CardDescription>{title}</CardDescription>
 
-                <div className="text-muted-foreground">{icon}</div>
+                <div className="text-muted-foreground shrink-0">{icon}</div>
             </CardHeader>
 
             <CardContent className="space-y-4">
                 {/* VALOR PRINCIPAL */}
-                <CardTitle className="text-3xl font-bold tabular-nums">{format(total)}</CardTitle>
+                <CardTitle className="truncate text-2xl font-bold tabular-nums 2xl:text-3xl">{format(total)}</CardTitle>
 
                 {/* ORIGEM DO FATURAMENTO */}
                 <div className="bg-muted flex h-2 w-full overflow-hidden rounded-full">
@@ -40,7 +40,7 @@ export function KpiFinancial({ title, total = 0, services = 0, parts = 0, orders
                 </div>
 
                 {/* BREAKDOWN */}
-                <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="grid gap-3 text-sm sm:grid-cols-2">
                     <div className="flex flex-col rounded-lg border p-3">
                         <span className="text-muted-foreground flex justify-between text-xs">
                             Serviços

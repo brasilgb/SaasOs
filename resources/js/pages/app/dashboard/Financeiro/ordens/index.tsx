@@ -59,13 +59,11 @@ export default function FinanceiroOrders({ timerange, dateRange, customRange }: 
     }, [timerange, customRange, dateRange]);
 
     const rangeLabel =
-        customRange && dateRange?.from && dateRange?.to
-            ? `${formatBrDate(dateRange.from)} a ${formatBrDate(dateRange.to)}`
-            : `${timerange} dias`;
+        customRange && dateRange?.from && dateRange?.to ? `${formatBrDate(dateRange.from)} a ${formatBrDate(dateRange.to)}` : `${timerange} dias`;
 
     return (
-        <div>
-            <div className="grid gap-3 md:grid-cols-4">
+        <div className="min-w-0">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 <KpiFinancial
                     title="Faturamento - Diário"
                     total={kpiOrders?.today_revenue?.total}

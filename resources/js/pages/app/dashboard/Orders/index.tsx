@@ -6,7 +6,7 @@ import { SalesProducts } from '@/components/sales-products';
 import ScheduleCalendarModal from '@/components/Schedules/ScheduleCalendarModal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { connectBackend } from '@/Utils/connectApi';
 import { Link, usePage } from '@inertiajs/react';
@@ -50,13 +50,11 @@ export default function OrderDashboard({ timerange, dateRange, customRange, part
     }, [timerange, customRange, dateRange]);
 
     const rangeLabel =
-        customRange && dateRange?.from && dateRange?.to
-            ? `${formatBrDate(dateRange.from)} a ${formatBrDate(dateRange.to)}`
-            : `${timerange} dias`;
+        customRange && dateRange?.from && dateRange?.to ? `${formatBrDate(dateRange.from)} a ${formatBrDate(dateRange.to)}` : `${timerange} dias`;
 
     return (
-        <div>
-            <div className="grid md:grid-cols-6 gap-3 rounded-xl">
+        <div className="min-w-0">
+            <div className="grid gap-3 rounded-xl sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
                 <KpiDashboard
                     link={route('app.customers.index')}
                     title="Clientes"
@@ -107,8 +105,8 @@ export default function OrderDashboard({ timerange, dateRange, customRange, part
                     valuedays={metrics?.products ? metrics?.products : '0'}
                 />
             </div>
-            <div className="mt-3 grid min-h-[210px] gap-3 md:grid-cols-7">
-                <div className="h-full">
+            <div className="mt-3 grid min-h-[210px] gap-3 2xl:grid-cols-7">
+                <div className="h-full min-w-0">
                     {others?.enablesales && canUsePdv ? (
                         <div className="flex h-full flex-col gap-3">
                             <Card className="flex h-full items-center justify-center p-4">
@@ -131,8 +129,8 @@ export default function OrderDashboard({ timerange, dateRange, customRange, part
                     ordersToday={acount?.numorde_due_today}
                     ordersTomorrow={acount?.numorde_due_tomorrow}
                 />
-                <div className="col-span-5 h-full">
-                    <Card className="@container/card flex-1 h-full">
+                <div className="h-full min-w-0 2xl:col-span-5">
+                    <Card className="@container/card h-full flex-1">
                         <CardHeader>
                             <CardTitle>Status das Operações</CardTitle>
                         </CardHeader>

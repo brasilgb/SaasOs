@@ -1,4 +1,5 @@
 import AlertSuccess from '@/components/app-alert-success';
+import { DatePicker } from '@/components/date-picker';
 import { Icon } from '@/components/icon';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -9,7 +10,6 @@ import moment from 'moment';
 import { useState } from 'react';
 import FinanceiroOrders from './Financeiro/ordens';
 import OrderDashboard from './Orders';
-import { DatePicker } from '@/components/date-picker';
 
 function formatDateRange(date?: Date | string) {
     if (!date) return '';
@@ -30,9 +30,7 @@ export default function Dashboard({ reloadKey, orders, acount, parts, customers,
         ? Math.max(1, Math.ceil((new Date(dateRange.to).getTime() - new Date(dateRange.from).getTime()) / (1000 * 60 * 60 * 24)) + 1)
         : Number(timeRange);
 
-    const timerangeLabel = hasCustomRange
-        ? `${formatDateRange(dateRange.from)} até ${formatDateRange(dateRange.to)}`
-        : `${timeRange} dias`;
+    const timerangeLabel = hasCustomRange ? `${formatDateRange(dateRange.from)} até ${formatDateRange(dateRange.to)}` : `${timeRange} dias`;
 
     const onTimeRangeChange = (value: string) => {
         if (!value) return;
@@ -58,22 +56,28 @@ export default function Dashboard({ reloadKey, orders, acount, parts, customers,
             {flash?.message && <AlertSuccess message={flash?.message} />}
             <Head title="Dashboard" />
             <div key={reloadKey}>
-                <div className="p-4">
-                    <div className={isTechnician ? 'mb-4 items-center justify-between gap-3 md:flex md:h-16' : 'mb-4 items-center justify-between gap-3 md:mb-0 md:flex md:h-16'}>
-                        <div className="flex items-center gap-2">
+                <div className="p-3 sm:p-4">
+                    <div
+                        className={
+                            isTechnician
+                                ? 'mb-4 flex flex-col gap-3 xl:h-16 xl:flex-row xl:items-center xl:justify-between'
+                                : 'mb-4 flex flex-col gap-3 xl:mb-0 xl:h-16 xl:flex-row xl:items-center xl:justify-between'
+                        }
+                    >
+                        <div className="flex min-w-0 items-center gap-2">
                             <Icon iconNode={LayoutGridIcon} className="h-8 w-8" />
                             <h2 className="text-xl font-semibold tracking-tight">Dashboard</h2>
                         </div>
-                        <div>
+                        <div className="w-full sm:w-auto">
                             <DatePicker mode={'range'} setDate={onDateRangeChange} date={dateRange} />
                         </div>
-                        <div className="flex flex-col items-end gap-2">
-                            <span className="text-xs text-muted-foreground font-medium">Período: {timerangeLabel}</span>
+                        <div className="flex min-w-0 flex-col gap-2 xl:items-end">
+                            <span className="text-muted-foreground text-xs font-medium">Período: {timerangeLabel}</span>
                             <ToggleGroup
                                 type="single"
                                 value={timeRange}
                                 onValueChange={onTimeRangeChange}
-                                className="bg-muted flex gap-2 rounded-lg p-1"
+                                className="bg-muted flex w-full justify-start gap-2 overflow-x-auto rounded-lg p-1 sm:w-auto"
                             >
                                 <ToggleGroupItem value="7" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
                                     7 dias

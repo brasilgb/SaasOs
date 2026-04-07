@@ -19,28 +19,30 @@ function formatNumberPtBr(value: number) {
 
 export function KpiDashboard({ title, value, icon, description, link, valuedays }: KpiDashboardProps) {
     return (
-        <Card>
-            <CardHeader className="flex flex-row items-start justify-between pb-2">
-                <div className="space-y-1">
+        <Card className="min-w-0">
+            <CardHeader className="flex flex-row items-start justify-between gap-3 pb-2">
+                <div className="min-w-0 space-y-1">
                     <CardDescription>{title}</CardDescription>
 
-                    <CardTitle className="text-3xl font-bold tabular-nums">{value}</CardTitle>
+                    <CardTitle className="truncate text-3xl font-bold tabular-nums">{value}</CardTitle>
                 </div>
 
-                <CardAction className="text-muted-foreground">{icon}</CardAction>
+                <CardAction className="text-muted-foreground shrink-0">{icon}</CardAction>
             </CardHeader>
 
-            <CardFooter className="flex items-center justify-between text-sm">
-                <div className="text-muted-foreground flex items-center gap-2 text-xs">
-                    {description}
+            <CardFooter className="flex min-w-0 items-center justify-between gap-2 text-sm">
+                <div className="text-muted-foreground flex min-w-0 items-center gap-2 text-xs">
+                    <span className="truncate">{description}</span>
 
                     {valuedays !== undefined && valuedays !== null && (
-                        <Badge variant="secondary">{formatNumberPtBr(valuedays)}</Badge>
+                        <Badge variant="secondary" className="shrink-0">
+                            {formatNumberPtBr(valuedays)}
+                        </Badge>
                     )}
                 </div>
 
                 {link && (
-                    <Link href={link} className="text-primary flex items-center gap-1 text-xs hover:underline">
+                    <Link href={link} className="text-primary flex shrink-0 items-center gap-1 text-xs hover:underline">
                         <LinkIcon className="h-4 w-4" />
                     </Link>
                 )}
