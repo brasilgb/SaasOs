@@ -115,6 +115,12 @@ function ServiceOrders({ order }: { order: Order }) {
                     <div className="mb-4 flex justify-center">
                         {<StatusBadge category="ordem" value={order.service_status} className="px-4 py-2" />}
                     </div>
+                    {order.service_status === 7 && (
+                        <div className="mb-4 rounded-md border border-cyan-200 bg-cyan-50 px-4 py-3 text-sm text-slate-800">
+                            <strong>Observação importante:</strong> O serviço foi concluído e seu equipamento está aguardando retirada. Entre
+                            em contato com nossa equipe ou passe em nossa loja para retirar.
+                        </div>
+                    )}
                     {order.service_status === 3 && (
                         <div className="mb-6 flex flex-1 items-center justify-center">
                             <InfoIcon className="h-4 w-4 text-red-500" />
