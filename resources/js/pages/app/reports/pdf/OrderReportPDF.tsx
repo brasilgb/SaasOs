@@ -59,14 +59,30 @@ const styles = StyleSheet.create({
         marginTop: 14,
         borderTop: '1px solid #AAA',
         paddingTop: 6,
-        fontSize: 10,
-        textAlign: 'center',
-        color: '#333',
     },
-    totalHighlight: {
+    footerCards: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 6,
+    },
+    footerCard: {
+        width: '32%',
+        border: '1px solid #d9d9d9',
+        borderRadius: 4,
+        paddingVertical: 6,
+        paddingHorizontal: 8,
+        backgroundColor: '#f7f7f7',
+    },
+    footerCardLabel: {
+        fontSize: 8,
+        color: '#555',
+        marginBottom: 2,
+        textTransform: 'uppercase',
+    },
+    footerCardValue: {
+        fontSize: 10,
         fontWeight: 'bold',
-        marginTop: 2,
-        color: '#000',
+        color: '#111',
     },
     logoPlaceholder: { paddingVertical: 4, width: 40, height: 40, justifyContent: 'center', alignItems: 'center', minWidth: '100%' },
 });
@@ -84,9 +100,12 @@ const STATUS_MAP: Record<number, string> = {
 
 export default function OrderReportPDF({ data, dateRange, company }: any) {
     const totalGeral = data.reduce((acc: any, order: any) => acc + (Number(order.parts_value) + Number(order.service_value)), 0);
-    const period = dateRange?.from && dateRange?.to
-        ? `${moment(dateRange.from).format('DD/MM/YYYY')} - ${moment(dateRange.to).format('DD/MM/YYYY')}`
-        : 'Período não informado';
+    const deliveredCount = data.filter((order: any) => Number(order.service_status) === 8).length;
+    const avgTicket = data.length ? totalGeral / data.length : 0;
+    const period =
+        dateRange?.from && dateRange?.to
+            ? `${moment(dateRange.from).format('DD/MM/YYYY')} - ${moment(dateRange.to).format('DD/MM/YYYY')}`
+            : 'Período não informado';
 
     return (
         <Document>
@@ -126,8 +145,24 @@ export default function OrderReportPDF({ data, dateRange, company }: any) {
 
                 {/* Rodapé */}
                 <View style={styles.footer}>
-                    <Text>Total de Ordens no período: {data.length}</Text>
-                    <Text style={styles.totalHighlight}>Valor Total: R$ {maskMoney(String(totalGeral))}</Text>
+                    <View style={styles.footerCards}>
+                        <View style={styles.footerCard}>
+                            <Text style={styles.footerCardLabel}>Ordens no período</Text>
+                            <Text style={styles.footerCardValue}>{data.length}</Text>
+                        </View>
+                        <View style={styles.footerCard}>
+                            <Text style={styles.footerCardLabel}>Entregues</Text>
+                            <Text style={styles.footerCardValue}>{deliveredCount}</Text>
+                        </View>
+                        <View style={styles.footerCard}>
+                            <Text style={styles.footerCardLabel}>Valor Total</Text>
+                            <Text style={styles.footerCardValue}>R$ {maskMoney(String(totalGeral))}</Text>
+                        </View>
+                        <View style={styles.footerCard}>
+                            <Text style={styles.footerCardLabel}>Ticket Médio</Text>
+                            <Text style={styles.footerCardValue}>R$ {maskMoney(String(avgTicket))}</Text>
+                        </View>
+                    </View>
                 </View>
             </Page>
         </Document>

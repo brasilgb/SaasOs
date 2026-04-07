@@ -29,7 +29,7 @@ class EquipmentController extends Controller
         if ($search) {
             $query->where('equipment', 'like', '%'.$search.'%');
         }
-        $equipments = $query->paginate(12);
+        $equipments = $query->paginate(11);
 
         return Inertia::render('app/equipments/index', ['equipments' => $equipments]);
     }

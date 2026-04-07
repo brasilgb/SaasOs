@@ -5,6 +5,7 @@ namespace App\Http\Controllers\App;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OrderRequest;
 use App\Mail\OrderCreatedMail;
+use App\Mail\OrderPaymentReminderMail;
 use App\Mail\OrderStatusUpdatedMail;
 use App\Models\App\Customer;
 use App\Models\App\Equipment;
@@ -189,7 +190,10 @@ class OrderController extends Controller
                 ->whereBetween('delivery_forecast', [$today->toDateString(), $tomorrow->toDateString()]);
         } elseif ($filter === 'feedback') {
             $query->where('service_status', 10)
-                ->whereBetween('delivery_date', [$startDate, $endDate]);
+                ->whereBetween('delivery_date', [$startDate, $endDate])
+                ->where(function ($q) {
+                    $q->whereNull('feedback')->orWhere('feedback', 0);
+                });
         } elseif ($filter === 'financial_open') {
             $query->whereRaw(
                 '(COALESCE(orders.service_cost, 0) - COALESCE((SELECT SUM(op.amount) FROM order_payments op WHERE op.order_id = orders.id), 0)) > 0.009'
@@ -206,12 +210,20 @@ class OrderController extends Controller
             });
         }
 
-        $orders = $query->with('equipment', 'customer')->paginate(11)->withQueryString();
+        $orders = $query
+            ->with('equipment', 'customer')
+            ->withSum('orderPayments as total_paid', 'amount')
+            ->paginate(11)
+            ->withQueryString();
         $whats = WhatsappMessage::first();
 
-        $feedbackOrders = Order::where('service_status', 10)
+        $feedbackOrders = $this->scopeOrdersQuery(Order::query())
+            ->where('service_status', 10)
             ->whereBetween('delivery_date', [$startDate, $endDate])
-            ->get('order_number');
+            ->where(function ($q) {
+                $q->whereNull('feedback')->orWhere('feedback', 0);
+            })
+            ->get(['id', 'order_number']);
 
         return Inertia::render('app/orders/index', [
             'orders' => $orders,
@@ -500,17 +512,101 @@ class OrderController extends Controller
         ]);
     }
 
-    public function getFeedback(Request $request)
+    public function registerFiscal(Request $request, Order $order): RedirectResponse
     {
         abort_unless($this->canManageOrders(), 403);
-
-        $feedback = $request->get('feedback');
-        $orderid = $request->get('orderid');
-        $order = Order::findOrFail($orderid);
         abort_unless($this->canAccessOrder($order), 403);
-        $order->update(['feedback' => $feedback]);
-        response()->json([
-            'success' => true,
+
+        $validated = $request->validate([
+            'fiscal_document_number' => 'required|string|max:120',
+            'fiscal_document_url' => 'nullable|url|max:500',
+            'fiscal_issued_at' => 'nullable|date',
+            'fiscal_notes' => 'nullable|string|max:2000',
         ]);
+
+        $fiscalDocumentKey = $order->fiscal_document_key;
+
+        if (empty($fiscalDocumentKey)) {
+            $fiscalDocumentKey = hash('sha256', implode('|', [
+                (string) $order->id,
+                (string) now()->timestamp,
+                (string) $validated['fiscal_document_number'],
+            ]));
+        }
+
+        $order->update([
+            'fiscal_document_number' => $validated['fiscal_document_number'],
+            'fiscal_document_key' => $fiscalDocumentKey,
+            'fiscal_document_url' => $validated['fiscal_document_url'] ?? null,
+            'fiscal_issued_at' => $validated['fiscal_issued_at'] ?? now(),
+            'fiscal_registered_by' => Auth::id(),
+            'fiscal_notes' => $validated['fiscal_notes'] ?? null,
+        ]);
+
+        return back()->with('success', 'Comprovante fiscal da ordem registrado com sucesso.');
+    }
+
+    public function sendPaymentReminder(Order $order): RedirectResponse
+    {
+        abort_unless($this->canManageOrders(), 403);
+        abort_unless($this->canAccessOrder($order), 403);
+
+        $order->load('customer', 'orderPayments');
+        $paymentSummary = $this->buildPaymentSummary($order);
+
+        if ((float) ($paymentSummary['total_order'] ?? 0) <= 0) {
+            return back()->with('error', 'Defina os valores financeiros da ordem antes de enviar lembrete.');
+        }
+
+        if ((float) ($paymentSummary['remaining'] ?? 0) <= 0) {
+            return back()->with('success', 'Esta ordem já está quitada, nenhum lembrete foi enviado.');
+        }
+
+        if (empty($order->delivery_date)) {
+            return back()->with('error', 'O lembrete só pode ser enviado após a entrega do equipamento.');
+        }
+
+        $customerEmail = trim((string) ($order->customer?->email ?? ''));
+
+        if (empty($customerEmail) || ! filter_var($customerEmail, FILTER_VALIDATE_EMAIL)) {
+            return back()->with('error', 'Cliente sem e-mail válido para envio do lembrete.');
+        }
+
+        $isOverdue = false;
+        if (! empty($order->delivery_date)) {
+            $isOverdue = Carbon::parse($order->delivery_date)->lt(now()->subDays(7));
+        }
+
+        Mail::to($customerEmail)->send(new OrderPaymentReminderMail($order, $paymentSummary, $isOverdue));
+
+        return back()->with('success', 'E-mail de cobrança/lembrete enviado com sucesso.');
+    }
+
+    public function markFeedback(Order $order)
+    {
+        abort_unless($this->canManageOrders(), 403);
+        abort_unless($this->canAccessOrder($order), 403);
+
+        $startDate = Carbon::now()->subDays(10)->startOfDay();
+        $endDate = Carbon::now()->subDays(7)->endOfDay();
+
+        if ((int) $order->service_status !== 10 || ! $order->delivery_date) {
+            return back()->with('error', 'Esta ordem não está elegível para feedback.');
+        }
+
+        $deliveryDate = Carbon::parse($order->delivery_date);
+        $isInWindow = $deliveryDate->betweenIncluded($startDate, $endDate);
+
+        if (! $isInWindow) {
+            return back()->with('error', 'A janela de feedback desta ordem já expirou ou ainda não foi iniciada.');
+        }
+
+        if ((bool) $order->feedback) {
+            return back()->with('success', 'Feedback já foi marcado como realizado.');
+        }
+
+        $order->update(['feedback' => 1]);
+
+        return back()->with('success', 'Feedback marcado como realizado.');
     }
 }

@@ -60,7 +60,7 @@ class CashSessionController extends Controller
                 'sales:id,cash_session_id,total_amount,payment_method,status'
             )
             ->latest('id')
-            ->paginate(10)
+            ->paginate(11)
             ->withQueryString();
 
         $openTotals = [

@@ -29,16 +29,20 @@ Route::get('/dashboardData/{timerange}', [DashboardController::class, 'dashboard
 Route::get('/metricsSystem/{timerange}', [DashboardController::class, 'metricsSystem'])->name('metricsSystem');
 Route::get('/kpisFinancialOrder/{timerange}', [DashboardController::class, 'kpisFinancialOrder'])->name('kpisFinancialOrder');
 Route::get('/financialRevenueChart/{timerange}', [DashboardController::class, 'financialRevenueChart'])->name('financialRevenueChart');
+Route::get('/kpisFinancialSales/{timerange}', [DashboardController::class, 'kpisFinancialSales'])->name('kpisFinancialSales');
+Route::get('/financialSalesRevenueChart/{timerange}', [DashboardController::class, 'financialSalesRevenueChart'])->name('financialSalesRevenueChart');
 
 Route::resource('customers', CustomerController::class);
 Route::post('customers/import-customer', [CustomerController::class, 'ImportCustomer'])->name('import.customer');
 Route::resource('messages', MessageController::class);
 Route::patch('messages/{message}/read', [MessageController::class, 'read'])->name('messages.read');
-Route::get('orders/feedback', [OrderController::class, 'getFeedback'])->name('orders.feedback');
+Route::patch('orders/{order}/feedback', [OrderController::class, 'markFeedback'])->name('orders.feedback');
 Route::resource('orders', OrderController::class);
 Route::post('orders/{order}/payments', [OrderController::class, 'storePayment'])->name('orders.payments.store');
+Route::post('orders/{order}/payments/reminder', [OrderController::class, 'sendPaymentReminder'])->name('orders.payments.reminder');
 Route::delete('orders/{order}/payments/{payment}', [OrderController::class, 'destroyPayment'])->name('orders.payments.destroy');
 Route::get('orders/{order}/payments-data', [OrderController::class, 'paymentsData'])->name('orders.payments.data');
+Route::post('orders/{order}/fiscal', [OrderController::class, 'registerFiscal'])->name('orders.fiscal.register');
 Route::resource('schedules', ScheduleController::class);
 Route::resource('services', ServiceController::class);
 Route::resource('users', UserController::class);

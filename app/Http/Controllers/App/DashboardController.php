@@ -9,6 +9,7 @@ use App\Models\App\Message;
 use App\Models\App\Order;
 use App\Models\App\Other;
 use App\Models\App\Part;
+use App\Models\App\Sale;
 use App\Models\App\Schedule;
 use App\Models\User;
 use Carbon\CarbonPeriod;
@@ -323,6 +324,111 @@ class DashboardController extends Controller
                 'services' => $services[$d] ?? 0,
                 'parts' => $parts[$d] ?? 0,
                 'total' => $orders[$d] ?? 0,
+            ];
+        }
+
+        return response()->json($data);
+    }
+
+    public function kpisFinancialSales($timeRange)
+    {
+        [$startDate, $endDate] = $this->getRange($timeRange);
+        $today = now()->startOfDay();
+
+        $rangeDays = max(1, $startDate->diffInDays($endDate) + 1);
+
+        $rangeRevenue = Sale::where('status', 'completed')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->sum('total_amount');
+
+        $todayRevenue = Sale::where('status', 'completed')
+            ->whereDate('created_at', $today)
+            ->sum('total_amount');
+
+        $salesCount = Sale::where('status', 'completed')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->count();
+
+        $salesTodayCount = Sale::where('status', 'completed')
+            ->whereDate('created_at', $today)
+            ->count();
+
+        $dailyAverage = $rangeDays > 0 ? $rangeRevenue / $rangeDays : 0;
+        $averageTicket = $salesCount > 0 ? $rangeRevenue / $salesCount : 0;
+
+        return response()->json([
+            'range' => $timeRange,
+            'kpis' => [
+                'today_revenue' => $todayRevenue,
+                'range_revenue' => $rangeRevenue,
+                'daily_average' => $dailyAverage,
+                'average_ticket' => $averageTicket,
+                'sales_count' => $salesCount,
+                'sales_today_count' => $salesTodayCount,
+            ],
+        ]);
+    }
+
+    public function financialSalesRevenueChart($timeRange)
+    {
+        [$startDate, $endDate] = $this->getRange($timeRange);
+
+        $totals = Sale::select(
+            DB::raw('DATE(created_at) as date'),
+            DB::raw('SUM(total_amount) as value')
+        )
+            ->where('status', 'completed')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->groupBy('date')
+            ->pluck('value', 'date')
+            ->toArray();
+
+        $paid = Sale::select(
+            DB::raw('DATE(created_at) as date'),
+            DB::raw('SUM(total_amount) as value')
+        )
+            ->where('status', 'completed')
+            ->where('financial_status', 'paid')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->groupBy('date')
+            ->pluck('value', 'date')
+            ->toArray();
+
+        $pending = Sale::select(
+            DB::raw('DATE(created_at) as date'),
+            DB::raw('SUM(total_amount) as value')
+        )
+            ->where('status', 'completed')
+            ->where('financial_status', 'pending')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->groupBy('date')
+            ->pluck('value', 'date')
+            ->toArray();
+
+        $partial = Sale::select(
+            DB::raw('DATE(created_at) as date'),
+            DB::raw('SUM(total_amount) as value')
+        )
+            ->where('status', 'completed')
+            ->where('financial_status', 'partial')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->groupBy('date')
+            ->pluck('value', 'date')
+            ->toArray();
+
+        $period = CarbonPeriod::create($startDate, $endDate);
+
+        $data = [];
+
+        foreach ($period as $date) {
+            $d = $date->format('Y-m-d');
+
+            $data[] = [
+                'date' => $d,
+                'total' => $totals[$d] ?? 0,
+                'paid' => $paid[$d] ?? 0,
+                'pending' => $pending[$d] ?? 0,
+                'partial' => $partial[$d] ?? 0,
             ];
         }
 

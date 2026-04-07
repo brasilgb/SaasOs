@@ -69,21 +69,39 @@ const styles = StyleSheet.create({
         marginTop: 16,
         borderTop: '1px solid #AAA',
         paddingTop: 6,
-        textAlign: 'center',
-        fontSize: 10,
     },
-
-    total: {
+    footerCards: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 6,
+    },
+    footerCard: {
+        width: '32%',
+        border: '1px solid #d9d9d9',
+        borderRadius: 4,
+        paddingVertical: 6,
+        paddingHorizontal: 8,
+        backgroundColor: '#f7f7f7',
+    },
+    footerCardLabel: {
+        fontSize: 8,
+        color: '#555',
+        marginBottom: 2,
+        textTransform: 'uppercase',
+    },
+    footerCardValue: {
+        fontSize: 10,
         fontWeight: 'bold',
-        marginTop: 4,
+        color: '#111',
     },
     logoPlaceholder: { paddingVertical: 4, width: 40, height: 40, justifyContent: 'center', alignItems: 'center', minWidth: '100%' },
 });
 
 export default function OrderStatisticsPDF({ data, dateRange, company }: any) {
-    const period = dateRange?.from && dateRange?.to
-        ? `${moment(dateRange.from).format('DD/MM/YYYY')} - ${moment(dateRange.to).format('DD/MM/YYYY')}`
-        : 'Período não informado';
+    const period =
+        dateRange?.from && dateRange?.to
+            ? `${moment(dateRange.from).format('DD/MM/YYYY')} - ${moment(dateRange.to).format('DD/MM/YYYY')}`
+            : 'Período não informado';
 
     const stats = {
         total: data.length,
@@ -177,8 +195,24 @@ export default function OrderStatisticsPDF({ data, dateRange, company }: any) {
 
                 {/* Rodapé */}
                 <View style={styles.footer}>
-                    <Text>Sistema de Gestão de Ordens de Serviço</Text>
-                    <Text style={styles.total}>Total de ordens analisadas: {stats.total}</Text>
+                    <View style={styles.footerCards}>
+                        <View style={styles.footerCard}>
+                            <Text style={styles.footerCardLabel}>Ordens Analisadas</Text>
+                            <Text style={styles.footerCardValue}>{stats.total}</Text>
+                        </View>
+                        <View style={styles.footerCard}>
+                            <Text style={styles.footerCardLabel}>Concluídas</Text>
+                            <Text style={styles.footerCardValue}>{stats.concluidos}</Text>
+                        </View>
+                        <View style={styles.footerCard}>
+                            <Text style={styles.footerCardLabel}>Entregues</Text>
+                            <Text style={styles.footerCardValue}>{stats.entregues}</Text>
+                        </View>
+                        <View style={styles.footerCard}>
+                            <Text style={styles.footerCardLabel}>Faturamento Total</Text>
+                            <Text style={styles.footerCardValue}>R$ {maskMoney(String(totalGeral))}</Text>
+                        </View>
+                    </View>
                 </View>
             </Page>
         </Document>

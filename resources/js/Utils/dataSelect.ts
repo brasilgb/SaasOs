@@ -1,14 +1,14 @@
 const statusServico = [
-    { value: '1', label: 'Ordem aberta' },
-    { value: '2', label: 'Ordem cancelada' },
-    { value: '3', label: 'Orçamento gerado' },
-    { value: '4', label: 'Orçamento aprovado' },
-    { value: '5', label: 'Orçamento reprovado' }, // 9
-    { value: '6', label: 'Reparo em andamento' }, //5
-    { value: '7', label: 'Serviço concluído' }, // 6
-    { value: '8', label: 'Serviço não executado' }, // 10
-    { value: '9', label: 'Cliente avisado / aguardando retirada' }, // 7
-    { value: '10', label: 'Entregue ao cliente' }, // 8
+    { value: '1', label: 'Ordem aberta' }, // defaultmessage
+    { value: '2', label: 'Ordem cancelada' }, // defaultmessage
+    { value: '3', label: 'Orçamento gerado' }, // generatedbudget
+    { value: '4', label: 'Orçamento aprovado' }, // defaultmessage
+    { value: '5', label: 'Orçamento reprovado' },// defaultmessage
+    { value: '6', label: 'Reparo em andamento' }, // defaultmessage
+    { value: '7', label: 'Serviço concluído' },// servicecompleted
+    { value: '8', label: 'Serviço não executado' }, // defaultmessage
+    { value: '9', label: 'Cliente avisado / aguardando retirada' }, // defaultmessage
+    { value: '10', label: 'Entregue ao cliente' },  // defaultmessage
 ];
 
 const rolesUser = [

@@ -1,26 +1,72 @@
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-
+import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-
 import { maskCpfCnpj, maskMoney } from '@/Utils/mask';
+import { useForm } from '@inertiajs/react';
+import { useEffect } from 'react';
 
 interface InvoiceModalProps {
     open: boolean;
     onClose: () => void;
     order: {
+        id?: string | number;
         customer?: {
             name?: string;
             cpfcnpj?: string;
         };
         services_performed?: string;
         service_cost?: string | number;
+        service_value?: string | number;
+        parts_value?: string | number;
         order_number?: string | number;
+        fiscal_document_number?: string;
+        fiscal_document_url?: string;
+        fiscal_issued_at?: string;
+        fiscal_notes?: string;
     };
+    summary?: {
+        service_value?: string | number;
+        parts_value?: string | number;
+        total_order?: string | number;
+    } | null;
 }
 
-export default function InvoiceModal({ open, onClose, order }: InvoiceModalProps) {
+export default function InvoiceModal({ open, onClose, order, summary = null }: InvoiceModalProps) {
+    const orderId = order?.id;
+    const partsValue = Number(summary?.parts_value ?? order.parts_value ?? 0);
+    const serviceValue = Number(summary?.service_value ?? order.service_value ?? 0);
+    const totalOrder = Number(summary?.total_order ?? order.service_cost ?? serviceValue + partsValue);
+    const { data, setData, post, processing, errors } = useForm({
+        fiscal_document_number: '',
+        fiscal_document_url: '',
+        fiscal_issued_at: '',
+        fiscal_notes: '',
+    });
+
+    useEffect(() => {
+        if (!open) return;
+
+        setData({
+            fiscal_document_number: order?.fiscal_document_number ?? '',
+            fiscal_document_url: order?.fiscal_document_url ?? '',
+            fiscal_issued_at: order?.fiscal_issued_at ? String(order.fiscal_issued_at).slice(0, 16) : '',
+            fiscal_notes: order?.fiscal_notes ?? '',
+        });
+    }, [open, order?.id, order?.fiscal_document_number, order?.fiscal_document_url, order?.fiscal_issued_at, order?.fiscal_notes, setData]);
+
+    const handleRegisterFiscal = () => {
+        if (!orderId) return;
+
+        post(route('app.orders.fiscal.register', orderId), {
+            preserveScroll: true,
+            onSuccess: () => onClose(),
+        });
+    };
+
     return (
         <Dialog open={open} onOpenChange={onClose}>
             <DialogContent className="max-w-md">
@@ -46,12 +92,72 @@ export default function InvoiceModal({ open, onClose, order }: InvoiceModalProps
                             <span className="font-medium">Serviço:</span> {order.services_performed}
                         </div>
 
-                        <div>
-                            <span className="font-medium">Valor:</span> R$ {maskMoney(String(order.service_cost ?? ''))}
+                        <div className="font-medium">Resumo para emissão da NFS-e</div>
+
+                        <div className="flex justify-between text-sm">
+                            <span>Peças</span>
+                            <span>R$ {maskMoney(String(partsValue))}</span>
+                        </div>
+
+                        <div className="flex justify-between text-sm">
+                            <span>Mão de obra</span>
+                            <span>R$ {maskMoney(String(serviceValue))}</span>
+                        </div>
+
+                        <div className="flex justify-between font-medium">
+                            <span>Total</span>
+                            <span>R$ {maskMoney(String(totalOrder))}</span>
                         </div>
 
                         <div>
                             <span className="font-medium">Ordem de serviço:</span> #{order.order_number}
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <div className="flex justify-end">
+                    <Button asChild>
+                        <a href="https://www.nfse.gov.br/EmissorNacional" target="_blank" rel="noopener noreferrer">
+                            Abrir emissor
+                        </a>
+                    </Button>
+                </div>
+
+                <Card>
+                    <CardContent className="space-y-3 pt-4 text-sm">
+                        <div className="font-medium">Registrar comprovante fiscal no banco para consulta e auditoria</div>
+
+                        <div className="space-y-1">
+                            <Label htmlFor="fiscal_document_number">Número do documento</Label>
+                            <Input
+                                id="fiscal_document_number"
+                                value={data.fiscal_document_number}
+                                onChange={(e) => setData('fiscal_document_number', e.target.value)}
+                                placeholder="Número da NFS-e"
+                            />
+                            <InputError message={errors.fiscal_document_number} />
+                        </div>
+
+                        <div className="space-y-1">
+                            <Label htmlFor="fiscal_document_url">Link de consulta (opcional)</Label>
+                            <Input
+                                id="fiscal_document_url"
+                                value={data.fiscal_document_url}
+                                onChange={(e) => setData('fiscal_document_url', e.target.value)}
+                                placeholder="https://..."
+                            />
+                            <InputError message={errors.fiscal_document_url} />
+                        </div>
+
+                        <div className="space-y-1">
+                            <Label htmlFor="fiscal_issued_at">Emitido em</Label>
+                            <Input
+                                id="fiscal_issued_at"
+                                type="datetime-local"
+                                value={data.fiscal_issued_at}
+                                onChange={(e) => setData('fiscal_issued_at', e.target.value)}
+                            />
+                            <InputError message={errors.fiscal_issued_at} />
                         </div>
                     </CardContent>
                 </Card>
@@ -61,10 +167,8 @@ export default function InvoiceModal({ open, onClose, order }: InvoiceModalProps
                         Fechar
                     </Button>
 
-                    <Button asChild>
-                        <a href="https://www.nfse.gov.br/EmissorNacional" target="_blank" rel="noopener noreferrer">
-                            Abrir emissor
-                        </a>
+                    <Button onClick={handleRegisterFiscal} disabled={!orderId || processing}>
+                        Salvar comprovante
                     </Button>
                 </DialogFooter>
             </DialogContent>

@@ -41,15 +41,25 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function EditOrder({ customers, order, technicals, equipments, parts, orderparts, orderPayments, paymentSummary, page, search, models }: any) {
+export default function EditOrder({
+    customers,
+    order,
+    technicals,
+    equipments,
+    parts,
+    orderparts,
+    orderPayments,
+    paymentSummary,
+    page,
+    search,
+    models,
+}: any) {
     const toMoneyNumber = (value: unknown): number => {
         if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
         const raw = String(value ?? '').trim();
         if (!raw) return 0;
 
-        const normalized = raw.includes(',')
-            ? raw.replace(/\./g, '').replace(',', '.')
-            : raw.replace(/,/g, '');
+        const normalized = raw.includes(',') ? raw.replace(/\./g, '').replace(',', '.') : raw.replace(/,/g, '');
 
         const parsed = Number(normalized);
         return Number.isFinite(parsed) ? parsed : 0;
@@ -243,13 +253,13 @@ export default function EditOrder({ customers, order, technicals, equipments, pa
     return (
         <AppLayout>
             <Head title="Ordens" />
-            <InvoiceModal open={openInvoiceModal} onClose={() => setOpenInvoiceModal(false)} order={order} />
+            <InvoiceModal open={openInvoiceModal} onClose={() => setOpenInvoiceModal(false)} order={order} summary={paymentSummary} />
             <div className="flex h-16 items-center justify-between px-4">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={Wrench} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Ordens</h2>
                 </div>
-                <div> 
+                <div>
                     <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>

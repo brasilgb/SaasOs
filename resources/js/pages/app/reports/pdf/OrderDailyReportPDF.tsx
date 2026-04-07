@@ -79,13 +79,30 @@ const styles = StyleSheet.create({
         marginTop: 14,
         borderTop: '1px solid #AAA',
         paddingTop: 6,
-        fontSize: 10,
-        textAlign: 'center',
-        color: '#333',
     },
-
-    total: {
+    footerCards: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 6,
+    },
+    footerCard: {
+        width: '32%',
+        border: '1px solid #d9d9d9',
+        borderRadius: 4,
+        paddingVertical: 6,
+        paddingHorizontal: 8,
+        backgroundColor: '#f7f7f7',
+    },
+    footerCardLabel: {
+        fontSize: 8,
+        color: '#555',
+        marginBottom: 2,
+        textTransform: 'uppercase',
+    },
+    footerCardValue: {
+        fontSize: 10,
         fontWeight: 'bold',
+        color: '#111',
     },
     logoPlaceholder: { paddingVertical: 4, width: 40, height: 40, justifyContent: 'center', alignItems: 'center', minWidth: '100%' },
 });
@@ -125,9 +142,10 @@ export default function OrderDailyReportPDF({
     dateRange: DateRange;
     company?: Company | null;
 }) {
-    const period = dateRange?.from && dateRange?.to
-        ? `${moment(dateRange.from).format('DD/MM/YYYY')} - ${moment(dateRange.to).format('DD/MM/YYYY')}`
-        : 'Período não informado';
+    const period =
+        dateRange?.from && dateRange?.to
+            ? `${moment(dateRange.from).format('DD/MM/YYYY')} - ${moment(dateRange.to).format('DD/MM/YYYY')}`
+            : 'Período não informado';
 
     const statsByDay: Record<string, OrderDailyRow> = {};
 
@@ -204,13 +222,28 @@ export default function OrderDailyReportPDF({
                 </View>
 
                 <View style={styles.footer}>
-                    <Text>Total de entradas: {totalEntradas}</Text>
-                    <Text>Total concluídos: {totalConcluidos}</Text>
-                    <Text>Total entregues: {totalEntregues}</Text>
-
-                    <Text style={styles.total}>Total serviços: R$ {maskMoney(String(totalServicos))}</Text>
-
-                    <Text style={styles.total}>Total peças: R$ {maskMoney(String(totalPecas))}</Text>
+                    <View style={styles.footerCards}>
+                        <View style={styles.footerCard}>
+                            <Text style={styles.footerCardLabel}>Entradas</Text>
+                            <Text style={styles.footerCardValue}>{totalEntradas}</Text>
+                        </View>
+                        <View style={styles.footerCard}>
+                            <Text style={styles.footerCardLabel}>Concluídos</Text>
+                            <Text style={styles.footerCardValue}>{totalConcluidos}</Text>
+                        </View>
+                        <View style={styles.footerCard}>
+                            <Text style={styles.footerCardLabel}>Entregues</Text>
+                            <Text style={styles.footerCardValue}>{totalEntregues}</Text>
+                        </View>
+                        <View style={styles.footerCard}>
+                            <Text style={styles.footerCardLabel}>Total Serviços</Text>
+                            <Text style={styles.footerCardValue}>R$ {maskMoney(String(totalServicos))}</Text>
+                        </View>
+                        <View style={styles.footerCard}>
+                            <Text style={styles.footerCardLabel}>Total Peças</Text>
+                            <Text style={styles.footerCardValue}>R$ {maskMoney(String(totalPecas))}</Text>
+                        </View>
+                    </View>
                 </View>
             </Page>
         </Document>

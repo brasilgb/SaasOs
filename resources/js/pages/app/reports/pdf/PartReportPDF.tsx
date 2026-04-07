@@ -60,22 +60,44 @@ const styles = StyleSheet.create({
         marginTop: 14,
         borderTop: '1px solid #AAA',
         paddingTop: 6,
-        fontSize: 10,
-        textAlign: 'center',
-        color: '#333',
     },
-    totalHighlight: {
+    footerCards: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 6,
+    },
+    footerCard: {
+        width: '32%',
+        border: '1px solid #d9d9d9',
+        borderRadius: 4,
+        paddingVertical: 6,
+        paddingHorizontal: 8,
+        backgroundColor: '#f7f7f7',
+    },
+    footerCardLabel: {
+        fontSize: 8,
+        color: '#555',
+        marginBottom: 2,
+        textTransform: 'uppercase',
+    },
+    footerCardValue: {
+        fontSize: 10,
         fontWeight: 'bold',
-        marginTop: 2,
-        color: '#000',
+        color: '#111',
     },
     logoPlaceholder: { paddingVertical: 4, width: 40, height: 40, justifyContent: 'center', alignItems: 'center', minWidth: '100%' },
 });
 
 export default function PartReportPDF({ data, dateRange, company }: any) {
-    const period = dateRange?.from && dateRange?.to
-        ? `${moment(dateRange.from).format('DD/MM/YYYY')} - ${moment(dateRange.to).format('DD/MM/YYYY')}`
-        : 'Período não informado';
+    const period =
+        dateRange?.from && dateRange?.to
+            ? `${moment(dateRange.from).format('DD/MM/YYYY')} - ${moment(dateRange.to).format('DD/MM/YYYY')}`
+            : 'Período não informado';
+    const totalItems = data.length;
+    const stockTotal = data.reduce((acc: number, part: any) => acc + Number(part.quantity || 0), 0);
+    const lowStock = data.filter((part: any) => Number(part.quantity || 0) <= Number(part.minimum_stock_level || 0)).length;
+    const stockCost = data.reduce((acc: number, part: any) => acc + Number(part.quantity || 0) * Number(part.cost_price || 0), 0);
+    const stockSale = data.reduce((acc: number, part: any) => acc + Number(part.quantity || 0) * Number(part.sale_price || 0), 0);
 
     return (
         <Document>
@@ -119,6 +141,31 @@ export default function PartReportPDF({ data, dateRange, company }: any) {
                             <Text style={styles.colRight}>{moment(customer.created_at).format('DD/MM/YYYY')}</Text>
                         </View>
                     ))}
+                </View>
+
+                <View style={styles.footer}>
+                    <View style={styles.footerCards}>
+                        <View style={styles.footerCard}>
+                            <Text style={styles.footerCardLabel}>Itens</Text>
+                            <Text style={styles.footerCardValue}>{totalItems}</Text>
+                        </View>
+                        <View style={styles.footerCard}>
+                            <Text style={styles.footerCardLabel}>Quantidade em estoque</Text>
+                            <Text style={styles.footerCardValue}>{stockTotal}</Text>
+                        </View>
+                        <View style={styles.footerCard}>
+                            <Text style={styles.footerCardLabel}>Abaixo do mínimo</Text>
+                            <Text style={styles.footerCardValue}>{lowStock}</Text>
+                        </View>
+                        <View style={styles.footerCard}>
+                            <Text style={styles.footerCardLabel}>Estoque a custo</Text>
+                            <Text style={styles.footerCardValue}>R$ {maskMoney(String(stockCost))}</Text>
+                        </View>
+                        <View style={styles.footerCard}>
+                            <Text style={styles.footerCardLabel}>Estoque a venda</Text>
+                            <Text style={styles.footerCardValue}>R$ {maskMoney(String(stockSale))}</Text>
+                        </View>
+                    </View>
                 </View>
             </Page>
         </Document>

@@ -64,6 +64,30 @@ const styles = StyleSheet.create({
         borderTop: '1px solid #AAA',
         paddingTop: 6,
     },
+    footerCards: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 6,
+    },
+    footerCard: {
+        width: '32%',
+        border: '1px solid #d9d9d9',
+        borderRadius: 4,
+        paddingVertical: 6,
+        paddingHorizontal: 8,
+        backgroundColor: '#f7f7f7',
+    },
+    footerCardLabel: {
+        fontSize: 8,
+        color: '#555',
+        marginBottom: 2,
+        textTransform: 'uppercase',
+    },
+    footerCardValue: {
+        fontSize: 10,
+        fontWeight: 'bold',
+        color: '#111',
+    },
     metricsBox: {
         marginTop: 12,
         border: '1px solid #DDD',
@@ -78,9 +102,10 @@ const styles = StyleSheet.create({
 });
 
 export default function TechnicianProductivityPDF({ data, company, dateRange }: any) {
-    const period = dateRange?.from && dateRange?.to
-        ? `${moment(dateRange.from).format('DD/MM/YYYY')} - ${moment(dateRange.to).format('DD/MM/YYYY')}`
-        : 'Período não informado';
+    const period =
+        dateRange?.from && dateRange?.to
+            ? `${moment(dateRange.from).format('DD/MM/YYYY')} - ${moment(dateRange.to).format('DD/MM/YYYY')}`
+            : 'Período não informado';
 
     const statsByTechnician: any = {};
 
@@ -170,8 +195,20 @@ export default function TechnicianProductivityPDF({ data, company, dateRange }: 
                 </View>
 
                 <View style={styles.footer}>
-                    <Text>Total de ordens concluídas: {totalOrdens}</Text>
-                    <Text>Total faturado em serviços: R$ {maskMoney(String(totalServicos))}</Text>
+                    <View style={styles.footerCards}>
+                        <View style={styles.footerCard}>
+                            <Text style={styles.footerCardLabel}>Ordens Concluídas</Text>
+                            <Text style={styles.footerCardValue}>{totalOrdens}</Text>
+                        </View>
+                        <View style={styles.footerCard}>
+                            <Text style={styles.footerCardLabel}>Faturado em Serviços</Text>
+                            <Text style={styles.footerCardValue}>R$ {maskMoney(String(totalServicos))}</Text>
+                        </View>
+                        <View style={styles.footerCard}>
+                            <Text style={styles.footerCardLabel}>Ticket Médio Geral</Text>
+                            <Text style={styles.footerCardValue}>R$ {maskMoney(String(totalOrdens ? totalServicos / totalOrdens : 0))}</Text>
+                        </View>
+                    </View>
                 </View>
 
                 <View style={styles.metricsBox}>

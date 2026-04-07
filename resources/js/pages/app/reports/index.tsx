@@ -28,7 +28,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Parts() {
-    const { company, auth } = usePage().props as any;
+    const { company, auth, othersetting } = usePage().props as any;
     const [dateRange, setDateRange] = useState<any>({
         from: new Date(),
         to: new Date(),
@@ -37,7 +37,7 @@ export default function Parts() {
     const canViewOrders = permissions.includes('orders');
     const canViewCustomers = permissions.includes('customers');
     const canViewSchedules = permissions.includes('schedules');
-    const canViewSales = permissions.includes('sales');
+    const canViewSales = Boolean(permissions.includes('sales') && othersetting?.enablesales);
     const canViewParts = permissions.includes('parts');
 
     return (

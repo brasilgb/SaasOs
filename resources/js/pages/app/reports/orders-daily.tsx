@@ -24,6 +24,15 @@ export default function OrdersDaily({ dateRange, company }: { dateRange?: DateRa
     async function handleGeneratePDF() {
         if (!dateRange?.from || !dateRange?.to) return;
         setLoading(true);
+        const previewWindow = window.open('', '_blank');
+
+        if (!previewWindow) {
+            setLoading(false);
+            return;
+        }
+
+        previewWindow.document.title = 'Gerando relatório...';
+        previewWindow.document.body.innerHTML = '<p style="font-family: Arial, sans-serif; padding: 16px;">Gerando relatório PDF...</p>';
 
         router.post(
             route('app.reports.store'),
@@ -56,10 +65,11 @@ export default function OrdersDaily({ dateRange, company }: { dateRange?: DateRa
                     const blob = await pdfInstance.toBlob();
 
                     const url = URL.createObjectURL(blob);
-                    window.open(url, '_blank');
+                    previewWindow.location.href = url;
                 },
                 onError: (errors) => {
                     console.error('Erro ao gerar relatório:', errors);
+                    previewWindow.close();
                 },
                 onFinish: () => setLoading(false),
             },

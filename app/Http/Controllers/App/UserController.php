@@ -31,7 +31,7 @@ class UserController extends Controller
         if ($search) {
             $query->where('name', 'like', '%'.$search.'%');
         }
-        $users = $query->paginate(12)->withQueryString();
+        $users = $query->paginate(11)->withQueryString();
         $firstAdminId = User::where('roles', 9)->orderBy('id', 'asc')->value('id');
 
         return Inertia::render('app/users/index', ['users' => $users, 'firstAdminId' => $firstAdminId, 'search' => $search]);

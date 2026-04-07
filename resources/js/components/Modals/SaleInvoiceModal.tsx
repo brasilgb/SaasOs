@@ -1,8 +1,8 @@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
+import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import InputError from '@/components/input-error';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
@@ -34,7 +34,6 @@ export default function SaleInvoiceModal({ open, onClose, sale }: SaleInvoiceMod
     const saleId = sale?.numberSale?.id;
     const { data, setData, post, processing, errors } = useForm({
         fiscal_document_number: '',
-        fiscal_document_key: '',
         fiscal_document_url: '',
         fiscal_issued_at: '',
         fiscal_notes: '',
@@ -96,9 +95,17 @@ export default function SaleInvoiceModal({ open, onClose, sale }: SaleInvoiceMod
                     </CardContent>
                 </Card>
 
+                <div className="flex justify-end">
+                    <Button asChild>
+                        <a href="https://www.nfe.fazenda.gov.br" target="_blank" rel="noopener noreferrer">
+                            Abrir emissor
+                        </a>
+                    </Button>
+                </div>
+
                 <Card>
                     <CardContent className="space-y-3 pt-4 text-sm">
-                        <div className="font-medium">Registrar comprovante fiscal</div>
+                        <div className="font-medium">Registrar comprovante fiscal no banco para consulta e auditoria</div>
                         <div className="space-y-1">
                             <Label htmlFor="fiscal_document_number">Número do documento</Label>
                             <Input
@@ -110,14 +117,12 @@ export default function SaleInvoiceModal({ open, onClose, sale }: SaleInvoiceMod
                         </div>
 
                         <div className="space-y-1">
-                            <Label htmlFor="fiscal_document_key">Chave</Label>
-                            <Input id="fiscal_document_key" value={data.fiscal_document_key} onChange={(e) => setData('fiscal_document_key', e.target.value)} />
-                            <InputError message={errors.fiscal_document_key} />
-                        </div>
-
-                        <div className="space-y-1">
                             <Label htmlFor="fiscal_document_url">URL</Label>
-                            <Input id="fiscal_document_url" value={data.fiscal_document_url} onChange={(e) => setData('fiscal_document_url', e.target.value)} />
+                            <Input
+                                id="fiscal_document_url"
+                                value={data.fiscal_document_url}
+                                onChange={(e) => setData('fiscal_document_url', e.target.value)}
+                            />
                             <InputError message={errors.fiscal_document_url} />
                         </div>
 
@@ -137,12 +142,6 @@ export default function SaleInvoiceModal({ open, onClose, sale }: SaleInvoiceMod
                 <DialogFooter className="flex justify-between">
                     <Button variant="ghost" onClick={onClose}>
                         Fechar
-                    </Button>
-
-                    <Button asChild>
-                        <a href="https://www.nfe.fazenda.gov.br" target="_blank" rel="noopener noreferrer">
-                            Abrir emissor
-                        </a>
                     </Button>
                     <Button onClick={handleRegisterFiscal} disabled={!saleId || processing}>
                         Salvar comprovante

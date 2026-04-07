@@ -1,4 +1,5 @@
 import InputError from '@/components/input-error';
+import InvoiceModal from '@/components/Modals/InvoiceModal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -7,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { maskMoney, maskMoneyDot } from '@/Utils/mask';
 import { router, useForm } from '@inertiajs/react';
-import { HandCoins } from 'lucide-react';
+import { FileTextIcon, HandCoins, Mail } from 'lucide-react';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
 
@@ -17,8 +18,11 @@ export default function OrderPaymentsModal({
     paymentSummary = null,
     defaultOpen = false,
     compactTrigger = false,
+    compactTriggerClassName = 'bg-emerald-600 text-white hover:bg-emerald-700',
+    compactTriggerTitle = 'Pagamentos da ordem',
 }: any) {
     const [open, setOpen] = useState(defaultOpen);
+    const [openInvoiceSummary, setOpenInvoiceSummary] = useState(false);
     const [loading, setLoading] = useState(false);
     const [localPayments, setLocalPayments] = useState<any[]>(orderPayments || []);
     const [localSummary, setLocalSummary] = useState<any>(
@@ -31,16 +35,25 @@ export default function OrderPaymentsModal({
         paid_at: moment().format('YYYY-MM-DDTHH:mm'),
         notes: '',
     });
+    const reminderForm = useForm({});
 
     const remaining = Number(localSummary?.remaining || 0);
     const totalOrder = Number(localSummary?.total_order || 0);
     const totalPaid = Number(localSummary?.total_paid || 0);
+    const isDelivered = Boolean(order?.delivery_date);
+    const canSendReminder = remaining > 0 && isDelivered;
 
     const financialStatus = (() => {
-        if (totalOrder <= 0) return { label: 'Sem valor', variant: 'outline' as const };
-        if (remaining <= 0 && totalPaid > 0) return { label: 'Pago', variant: 'default' as const };
-        if (totalPaid > 0 && remaining > 0) return { label: 'Parcial', variant: 'secondary' as const };
-        return { label: 'Em aberto', variant: 'destructive' as const };
+        if (totalOrder <= 0) return { label: 'Sem valor', variant: 'outline' as const, className: '' };
+        if (remaining <= 0 && totalPaid > 0) return { label: 'Pago', variant: 'default' as const, className: '' };
+        if (totalPaid > 0 && remaining > 0) {
+            return {
+                label: 'Parcial',
+                variant: 'secondary' as const,
+                className: 'bg-amber-100 text-amber-800 hover:bg-amber-100 dark:bg-amber-900/40 dark:text-amber-300',
+            };
+        }
+        return { label: 'Em aberto', variant: 'destructive' as const, className: '' };
     })();
 
     const loadPaymentsData = async () => {
@@ -102,11 +115,20 @@ export default function OrderPaymentsModal({
         });
     };
 
+    const handleSendReminder = () => {
+        reminderForm.post(route('app.orders.payments.reminder', order.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                loadPaymentsData();
+            },
+        });
+    };
+
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 {compactTrigger ? (
-                    <Button size="icon" className="bg-emerald-600 text-white hover:bg-emerald-700" title="Pagamentos da ordem">
+                    <Button size="icon" className={compactTriggerClassName} title={compactTriggerTitle}>
                         <HandCoins className="h-4 w-4" />
                     </Button>
                 ) : (
@@ -119,8 +141,42 @@ export default function OrderPaymentsModal({
             <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-3xl">
                 <DialogHeader>
                     <DialogTitle>Pagamentos da ordem #{order?.order_number}</DialogTitle>
-                    <div>
-                        <Badge variant={financialStatus.variant}>{financialStatus.label}</Badge>
+                    <div className="flex items-center gap-2">
+                        <Badge variant={financialStatus.variant} className={financialStatus.className}>
+                            {financialStatus.label}
+                        </Badge>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            title="Resumo para emissão da NFS-e"
+                            onClick={() => setOpenInvoiceSummary(true)}
+                        >
+                            <FileTextIcon className="mr-1 h-4 w-4" />
+                            Emitir NFS-e
+                        </Button>
+                        <InvoiceModal
+                            open={openInvoiceSummary}
+                            onClose={() => setOpenInvoiceSummary(false)}
+                            order={{
+                                ...order,
+                                service_cost: localSummary?.total_order ?? order?.service_cost,
+                            }}
+                            summary={localSummary}
+                        />
+                        {canSendReminder && (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={handleSendReminder}
+                                disabled={reminderForm.processing || !order?.customer?.email}
+                                title={!order?.customer?.email ? 'Cliente sem e-mail cadastrado' : 'Enviar lembrete de cobrança por e-mail'}
+                            >
+                                <Mail className="mr-1 h-4 w-4" />
+                                {reminderForm.processing ? 'Enviando...' : 'Enviar lembrete'}
+                            </Button>
+                        )}
                     </div>
                 </DialogHeader>
 
@@ -139,27 +195,31 @@ export default function OrderPaymentsModal({
                     </Card>
                     <Card>
                         <CardContent className="p-3">
-                            <div className="text-muted-foreground text-xs">Total da ordem</div>
+                            <div className="text-muted-foreground text-xs">Total a pagar</div>
                             <div className="text-lg font-semibold">{maskMoney(String(localSummary?.total_order ?? 0))}</div>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardContent className="p-3">
-                            <div className="text-muted-foreground text-xs">Total pago</div>
+                            <div className="text-muted-foreground text-xs">Valor pago</div>
                             <div className="text-lg font-semibold">{maskMoney(String(localSummary?.total_paid ?? 0))}</div>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardContent className="p-3">
                             <div className="text-muted-foreground text-xs">Saldo restante</div>
-                            <div className="text-lg font-semibold">{maskMoney(String(localSummary?.remaining ?? 0))}</div>
+                            <div
+                                className={`text-lg font-semibold ${remaining > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}
+                            >
+                                {maskMoney(String(localSummary?.remaining ?? 0))}
+                            </div>
                         </CardContent>
                     </Card>
                 </div>
 
                 <form onSubmit={handlePaymentSubmit} className="grid gap-4 md:grid-cols-2">
                     <div className="grid gap-2">
-                        <Label htmlFor="payment_amount">Valor pago</Label>
+                        <Label htmlFor="payment_amount">Valor a pagar</Label>
                         <Input
                             id="payment_amount"
                             type="text"
@@ -168,15 +228,6 @@ export default function OrderPaymentsModal({
                             placeholder="0,00"
                         />
                         <InputError message={paymentForm.errors.amount} />
-                        {remaining > 0 && (
-                            <button
-                                type="button"
-                                className="text-primary text-left text-xs underline"
-                                onClick={() => paymentForm.setData('amount', String(remaining.toFixed(2)))}
-                            >
-                                Usar saldo restante automaticamente
-                            </button>
-                        )}
                     </div>
 
                     <div className="grid gap-2">
@@ -219,15 +270,13 @@ export default function OrderPaymentsModal({
                         <InputError message={paymentForm.errors.notes} />
                     </div>
 
-                    <div className="md:col-span-2 flex justify-end">
+                    <div className="flex justify-end md:col-span-2">
                         <Button type="submit" disabled={paymentForm.processing || remaining <= 0}>
                             Registrar pagamento
                         </Button>
                     </div>
                 </form>
-                {remaining <= 0 && (
-                    <div className="text-muted-foreground text-sm">Esta ordem já está com pagamento completo.</div>
-                )}
+                {remaining <= 0 && <div className="text-muted-foreground text-sm">Esta ordem já está com pagamento completo.</div>}
 
                 <div className="space-y-2">
                     {loading ? (

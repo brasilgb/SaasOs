@@ -4,9 +4,9 @@ import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
 import InputSearch from '@/components/inputSearch';
 import InvoiceModal from '@/components/Modals/InvoiceModal';
-import OrderPaymentsModal from './order-payments-modal';
 import SelectFilter from '@/components/SelectFilter';
 import { StatusBadge } from '@/components/StatusBadge';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -20,6 +20,7 @@ import { Edit, FileTextIcon, ImageUp, LinkIcon, Plus, Wrench, X } from 'lucide-r
 import moment from 'moment';
 import { useState } from 'react';
 import ModalReceipt from '../receipts/modal-receipt';
+import OrderPaymentsModal from './order-payments-modal';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -35,12 +36,20 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Orders({ orders, whats, feedback, search, status, filter }: any) {
     const { auth } = usePage<{ auth?: { role?: string; permissions?: string[] } }>().props;
     const [openInvoiceModal, setOpenInvoiceModal] = useState(false);
+    const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState<any | null>(null);
     const hasActiveFilters = Boolean(search || status || filter);
     const canManageOrders = auth?.role !== 'technician' && auth?.permissions?.includes('orders');
+    const feedbackWindowIds = new Set((feedback || []).map((feed: any) => feed.id));
 
-    const handleFeedbackCheck = (value: number, id: number) => {
-        const newValue = value === 1 ? 0 : 1;
-        router.get(route('app.orders.feedback', { feedback: newValue, orderid: id }));
+    const handleFeedbackCheck = (id: number) => {
+        router.patch(
+            route('app.orders.feedback', id),
+            {},
+            {
+                preserveScroll: true,
+                preserveState: true,
+            },
+        );
     };
 
     return (
@@ -123,103 +132,144 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                         </TableHeader>
                         <TableBody>
                             {orders?.data.length > 0 ? (
-                                orders?.data?.map((order: any) => (
-                                    <TableRow key={order.id}>
-                                        <TableCell>{order.order_number}</TableCell>
-                                        <TableCell className="font-medium">
-                                            <Link
-                                                className="flex items-center gap-2"
-                                                href={route('app.orders.index', { search: order.customer.name })}
-                                                title={`Ordens do cliente ${order.customer.name}`}
-                                            >
-                                                <Wrench className="h-4 w-4" />
-                                                <span>{order.customer.name}</span>
-                                            </Link>
-                                        </TableCell>
-                                        <TableCell className="font-medium">{maskPhone(order.customer.phone)}</TableCell>
-                                        <TableCell>{moment(order.created_at).format('DD/MM/YYYY')}</TableCell>
-                                        <TableCell>{order.equipment.equipment}</TableCell>
-                                        <TableCell>{order.model}</TableCell>
-                                        <TableCell>
-                                            <StatusBadge category="ordem" value={order.service_status} />
-                                        </TableCell>
-                                        <TableCell>{order.delivery_date ? moment(order.delivery_date).format('DD/MM/YYYY') : ''}</TableCell>
-                                        {canManageOrders && (
-                                            <TableCell>
-                                                <Switch
-                                                    disabled={!feedback?.some((feed: any) => feed.order_number === order.order_number)}
-                                                    checked={order.feedback}
-                                                    onCheckedChange={() => handleFeedbackCheck(order.feedback, order.id)}
-                                                />
+                                orders?.data?.map((order: any) => {
+                                    const isFeedbackDone = order.feedback === 1 || order.feedback === true;
+                                    const isFeedbackWindowOpen = feedbackWindowIds.has(order.id);
+                                    const isDelivered = Number(order.service_status) === 10;
+                                    const isFeedbackExpired = isDelivered && !isFeedbackDone && !isFeedbackWindowOpen;
+                                    const totalOrder = Number(order.service_cost ?? 0);
+                                    const totalPaid = Number(order.total_paid ?? 0);
+                                    const remaining = Math.max(0, totalOrder - totalPaid);
+                                    const hasFinancialValuesFilled =
+                                        order.parts_value !== null &&
+                                        order.parts_value !== '' &&
+                                        order.service_value !== null &&
+                                        order.service_value !== '' &&
+                                        totalOrder > 0;
+                                    const hasPendingPayment = remaining > 0.009;
+                                    const hasFiscalRegistered = Boolean(order?.fiscal_document_number || order?.fiscal_document_url);
+
+                                    return (
+                                        <TableRow key={order.id}>
+                                            <TableCell>{order.order_number}</TableCell>
+                                            <TableCell className="font-medium">
+                                                <Link
+                                                    className="flex items-center gap-2"
+                                                    href={route('app.orders.index', { search: order.customer.name })}
+                                                    title={`Ordens do cliente ${order.customer.name}`}
+                                                >
+                                                    <Wrench className="h-4 w-4" />
+                                                    <span>{order.customer.name}</span>
+                                                </Link>
                                             </TableCell>
-                                        )}
-                                        <TableCell className="flex justify-end gap-2">
+                                            <TableCell className="font-medium">{maskPhone(order.customer.phone)}</TableCell>
+                                            <TableCell>{moment(order.created_at).format('DD/MM/YYYY')}</TableCell>
+                                            <TableCell>{order.equipment.equipment}</TableCell>
+                                            <TableCell>{order.model}</TableCell>
+                                            <TableCell>
+                                                <StatusBadge category="ordem" value={order.service_status} />
+                                            </TableCell>
+                                            <TableCell>{order.delivery_date ? moment(order.delivery_date).format('DD/MM/YYYY') : ''}</TableCell>
                                             {canManageOrders && (
-                                                <Button asChild>
-                                                    <a
-                                                        target="_blank"
-                                                        href={route('os.token', order?.tracking_token)}
-                                                        title="Link para o cliente sobre a ordem de serviço"
-                                                        className="bg-solar-blue-primary hover:bg-solar-blue-primary/90 text-white"
-                                                    >
-                                                        <LinkIcon className="h-4 w-4" />
-                                                    </a>
-                                                </Button>
+                                                <TableCell>
+                                                    {isFeedbackDone && <Badge>OK</Badge>}
+
+                                                    {!isFeedbackDone && isFeedbackWindowOpen && (
+                                                        <div className="flex items-center gap-2">
+                                                            <Badge variant="secondary">Pendente</Badge>
+                                                            <Switch
+                                                                checked={false}
+                                                                onCheckedChange={(checked) => checked && handleFeedbackCheck(order.id)}
+                                                            />
+                                                        </div>
+                                                    )}
+
+                                                    {isFeedbackExpired && <Badge variant="outline">Fora da janela</Badge>}
+                                                </TableCell>
                                             )}
-                                            {canManageOrders &&
-                                                (order.service_status === 6 || order.service_status === 7 || order.service_status === 8) && (
-                                                    <Button
-                                                        title="Emitir Nota Fiscal"
-                                                        onClick={() => setOpenInvoiceModal(true)}
-                                                        className="rounded-lg py-2 text-sm font-medium"
-                                                    >
-                                                        <FileTextIcon className="h-4 w-4" />
-                                                        NFSe
+                                            <TableCell className="flex justify-end gap-2">
+                                                {canManageOrders && hasFiscalRegistered && (
+                                                    <Badge variant="secondary" className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">
+                                                        NFSe registrada
+                                                    </Badge>
+                                                )}
+
+                                                {canManageOrders && hasFinancialValuesFilled && hasPendingPayment && (
+                                                    <OrderPaymentsModal
+                                                        order={order}
+                                                        orderPayments={[]}
+                                                        paymentSummary={null}
+                                                        compactTrigger
+                                                        compactTriggerClassName="bg-rose-600 text-white hover:bg-rose-700"
+                                                        compactTriggerTitle="Pagamento pendente"
+                                                    />
+                                                )}
+
+                                                {canManageOrders && (
+                                                    <Button asChild>
+                                                        <a
+                                                            target="_blank"
+                                                            href={route('os.token', order?.tracking_token)}
+                                                            title="Link para o cliente sobre a ordem de serviço"
+                                                            className="bg-solar-blue-primary hover:bg-solar-blue-primary/90 text-white"
+                                                        >
+                                                            <LinkIcon className="h-4 w-4" />
+                                                        </a>
                                                     </Button>
                                                 )}
-                                            <InvoiceModal open={openInvoiceModal} onClose={() => setOpenInvoiceModal(false)} order={order} />
+                                                {canManageOrders &&
+                                                    (order.service_status === 6 || order.service_status === 7 || order.service_status === 8) && (
+                                                        <Button
+                                                            title="Emitir Nota Fiscal"
+                                                            onClick={() => {
+                                                                setSelectedInvoiceOrder(order);
+                                                                setOpenInvoiceModal(true);
+                                                            }}
+                                                            className="rounded-lg py-2 text-sm font-medium"
+                                                        >
+                                                            <FileTextIcon className="h-4 w-4" />
+                                                            NFSe
+                                                        </Button>
+                                                    )}
 
-                                            {canManageOrders && (
-                                                <WhatsAppButton
-                                                    phone={order.customer.whatsapp}
-                                                    customerName={order.customer.name}
-                                                    orderNumber={order.order_number}
-                                                    status={order.service_status}
-                                                    feedback={feedback?.some((feed: any) => feed.order_number === order.order_number)}
-                                                    whats={{
-                                                        generatedbudget: whats?.generatedbudget,
-                                                        servicecompleted: whats?.servicecompleted,
-                                                        feedback: whats?.feedback,
-                                                        tracking_token: order?.tracking_token,
-                                                    }}
-                                                />
-                                            )}
+                                                {canManageOrders && (
+                                                    <WhatsAppButton
+                                                        phone={order.customer.whatsapp}
+                                                        customerName={order.customer.name}
+                                                        orderNumber={order.order_number}
+                                                        status={order.service_status}
+                                                        feedback={isFeedbackWindowOpen}
+                                                        whats={{
+                                                            generatedbudget: whats?.generatedbudget,
+                                                            servicecompleted: whats?.servicecompleted,
+                                                            feedback: whats?.feedback,
+                                                            defaultmessage: whats?.defaultmessage,
+                                                            tracking_token: order?.tracking_token,
+                                                        }}
+                                                    />
+                                                )}
 
-                                            {canManageOrders && <ModalReceipt orderid={order.id} />}
-                                            {canManageOrders && (
-                                                <OrderPaymentsModal
-                                                    order={order}
-                                                    orderPayments={[]}
-                                                    paymentSummary={null}
-                                                    compactTrigger
-                                                />
-                                            )}
-                                            <Button asChild size="icon" className="bg-fuchsia-700 text-white hover:bg-fuchsia-700">
-                                                <Link href={route('app.images.index', { or: order.id })}>
-                                                    <ImageUp className="h-4 w-4" />
-                                                </Link>
-                                            </Button>
+                                                {canManageOrders && <ModalReceipt orderid={order.id} />}
+                                                <Button asChild size="icon" className="bg-fuchsia-700 text-white hover:bg-fuchsia-700">
+                                                    <Link href={route('app.images.index', { or: order.id })}>
+                                                        <ImageUp className="h-4 w-4" />
+                                                    </Link>
+                                                </Button>
 
-                                            <Button asChild size="icon" className="bg-orange-500 text-white hover:bg-orange-600">
-                                                <Link href={route('app.orders.edit', order.id)} data={{ page: orders.current_page, search: search }}>
-                                                    <Edit />
-                                                </Link>
-                                            </Button>
+                                                <Button asChild size="icon" className="bg-orange-500 text-white hover:bg-orange-600">
+                                                    <Link
+                                                        href={route('app.orders.edit', order.id)}
+                                                        data={{ page: orders.current_page, search: search }}
+                                                    >
+                                                        <Edit />
+                                                    </Link>
+                                                </Button>
 
-                                            {canManageOrders && <ActionDelete title={'esta ordem'} url={'app.orders.destroy'} param={order.id} />}
-                                        </TableCell>
-                                    </TableRow>
-                                ))
+                                                {canManageOrders && <ActionDelete title={'esta ordem'} url={'app.orders.destroy'} param={order.id} />}
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })
                             ) : (
                                 <TableRow>
                                     <TableCell colSpan={canManageOrders ? 10 : 9} className="flex h-16 w-full items-center justify-center">
@@ -238,6 +288,16 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                     </Table>
                 </div>
             </div>
+            {selectedInvoiceOrder && (
+                <InvoiceModal
+                    open={openInvoiceModal}
+                    onClose={() => {
+                        setOpenInvoiceModal(false);
+                        setSelectedInvoiceOrder(null);
+                    }}
+                    order={selectedInvoiceOrder}
+                />
+            )}
         </AppLayout>
     );
 }

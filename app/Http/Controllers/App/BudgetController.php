@@ -51,7 +51,7 @@ class BudgetController extends Controller
         if ($search) {
             $query->where('service', 'like', '%'.$search.'%');
         }
-        $budgets = $query->with('equipment')->paginate(12)->withQueryString();
+        $budgets = $query->with('equipment')->paginate(11)->withQueryString();
         $company = Company::first();
 
         return Inertia::render('app/budgets/index', ['budgets' => $budgets, 'company' => $company, 'search' => $search]);

@@ -59,22 +59,43 @@ const styles = StyleSheet.create({
         marginTop: 14,
         borderTop: '1px solid #AAA',
         paddingTop: 6,
-        fontSize: 10,
-        textAlign: 'center',
-        color: '#333',
     },
-    totalHighlight: {
+    footerCards: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 6,
+    },
+    footerCard: {
+        width: '32%',
+        border: '1px solid #d9d9d9',
+        borderRadius: 4,
+        paddingVertical: 6,
+        paddingHorizontal: 8,
+        backgroundColor: '#f7f7f7',
+    },
+    footerCardLabel: {
+        fontSize: 8,
+        color: '#555',
+        marginBottom: 2,
+        textTransform: 'uppercase',
+    },
+    footerCardValue: {
+        fontSize: 10,
         fontWeight: 'bold',
-        marginTop: 2,
-        color: '#000',
+        color: '#111',
     },
     logoPlaceholder: { paddingVertical: 4, width: 40, height: 40, justifyContent: 'center', alignItems: 'center', minWidth: '100%' },
 });
 
 export default function CustomerReportPDF({ data, dateRange, company }: any) {
-    const period = dateRange?.from && dateRange?.to
-        ? `${moment(dateRange.from).format('DD/MM/YYYY')} - ${moment(dateRange.to).format('DD/MM/YYYY')}`
-        : 'Período não informado';
+    const period =
+        dateRange?.from && dateRange?.to
+            ? `${moment(dateRange.from).format('DD/MM/YYYY')} - ${moment(dateRange.to).format('DD/MM/YYYY')}`
+            : 'Período não informado';
+
+    const customersWithEmail = data.filter((customer: any) => Boolean(customer.email)).length;
+    const customersWithPhone = data.filter((customer: any) => Boolean(customer.phone)).length;
+    const customersWithCpfCnpj = data.filter((customer: any) => Boolean(customer.cpfcnpj)).length;
 
     return (
         <Document>
@@ -110,6 +131,27 @@ export default function CustomerReportPDF({ data, dateRange, company }: any) {
                             <Text style={styles.colRight}>{moment(customer.created_at).format('DD/MM/YYYY')}</Text>
                         </View>
                     ))}
+                </View>
+
+                <View style={styles.footer}>
+                    <View style={styles.footerCards}>
+                        <View style={styles.footerCard}>
+                            <Text style={styles.footerCardLabel}>Clientes no período</Text>
+                            <Text style={styles.footerCardValue}>{data.length}</Text>
+                        </View>
+                        <View style={styles.footerCard}>
+                            <Text style={styles.footerCardLabel}>Com e-mail</Text>
+                            <Text style={styles.footerCardValue}>{customersWithEmail}</Text>
+                        </View>
+                        <View style={styles.footerCard}>
+                            <Text style={styles.footerCardLabel}>Com telefone</Text>
+                            <Text style={styles.footerCardValue}>{customersWithPhone}</Text>
+                        </View>
+                        <View style={styles.footerCard}>
+                            <Text style={styles.footerCardLabel}>Com CPF/CNPJ</Text>
+                            <Text style={styles.footerCardValue}>{customersWithCpfCnpj}</Text>
+                        </View>
+                    </View>
                 </View>
             </Page>
         </Document>

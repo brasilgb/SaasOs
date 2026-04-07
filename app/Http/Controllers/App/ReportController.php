@@ -5,6 +5,7 @@ namespace App\Http\Controllers\App;
 use App\Http\Controllers\Controller;
 use App\Models\App\Customer;
 use App\Models\App\Order;
+use App\Models\App\Other;
 use App\Models\App\Part;
 use App\Models\App\Sale;
 use App\Models\App\Schedule;
@@ -18,6 +19,14 @@ class ReportController extends Controller
     private function authorizeReportsAccess(): void
     {
         abort_unless(Auth::user()?->hasPermission('reports'), 403);
+    }
+
+    private function canUseSalesReports(): bool
+    {
+        $user = Auth::user();
+        $otherSetting = Other::query()->first();
+
+        return (bool) ($user?->hasPermission('sales') && $otherSetting?->enablesales);
     }
 
     public function index(Request $request)
@@ -54,7 +63,12 @@ class ReportController extends Controller
                 break;
 
             case 'sales':
+                if (! $this->canUseSalesReports()) {
+                    abort(403, 'Relatórios de vendas estão desabilitados.');
+                }
+
                 $data = Sale::with('customer')
+                    ->withCount('items')
                     ->whereBetween('created_at', [$from, $to])
                     ->get();
                 break;

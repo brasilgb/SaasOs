@@ -8,8 +8,9 @@ import { Head, usePage } from '@inertiajs/react';
 import { LayoutGridIcon } from 'lucide-react';
 import moment from 'moment';
 import { useState } from 'react';
-import FinanceiroOrders from './Financeiro/ordens';
-import OrderDashboard from './Orders';
+import FinanceiroOrders from './fin-order/ordens';
+import FinanceiroSales from './fin-order/sales';
+import OrderDashboard from './ope-order';
 
 function formatDateRange(date?: Date | string) {
     if (!date) return '';
@@ -23,6 +24,7 @@ export default function Dashboard({ reloadKey, orders, acount, parts, customers,
     const [timeRange, setTimeRange] = useState('7');
     const [dateRange, setDateRange] = useState<any>({});
     const isTechnician = auth?.role === 'technician';
+    const canUseSales = Boolean(auth?.permissions?.includes('sales') && others?.enablesales && !isTechnician);
 
     const hasCustomRange = dateRange?.from && dateRange?.to;
 
@@ -103,6 +105,7 @@ export default function Dashboard({ reloadKey, orders, acount, parts, customers,
                             <TabsList>
                                 <TabsTrigger value="account">Operacional</TabsTrigger>
                                 <TabsTrigger value="password">Financeiro</TabsTrigger>
+                                {canUseSales && <TabsTrigger value="sales">Vendas</TabsTrigger>}
                             </TabsList>
                         )}
                         <TabsContent value="account">
@@ -121,6 +124,11 @@ export default function Dashboard({ reloadKey, orders, acount, parts, customers,
                         {!isTechnician && (
                             <TabsContent value="password">
                                 <FinanceiroOrders timerange={timerangeForRequests} dateRange={dateRange} customRange={hasCustomRange} />
+                            </TabsContent>
+                        )}
+                        {canUseSales && (
+                            <TabsContent value="sales">
+                                <FinanceiroSales timerange={timerangeForRequests} dateRange={dateRange} customRange={hasCustomRange} />
                             </TabsContent>
                         )}
                     </Tabs>

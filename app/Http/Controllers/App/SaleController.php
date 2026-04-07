@@ -12,6 +12,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class SaleController extends Controller
@@ -83,7 +84,7 @@ class SaleController extends Controller
         if ($financialStatus) {
             $query->where('financial_status', $financialStatus);
         }
-        $sales = $query->paginate(10)->withQueryString();
+        $sales = $query->paginate(11)->withQueryString();
 
         return Inertia::render('app/sales/index', [
             'sales' => $sales,
@@ -282,15 +283,25 @@ class SaleController extends Controller
 
         $validated = $request->validate([
             'fiscal_document_number' => 'required|string|max:120',
-            'fiscal_document_key' => 'nullable|string|max:120',
             'fiscal_document_url' => 'nullable|url|max:500',
             'fiscal_issued_at' => 'nullable|date',
             'fiscal_notes' => 'nullable|string|max:2000',
         ]);
 
+        $fiscalDocumentKey = $sale->fiscal_document_key;
+
+        if (empty($fiscalDocumentKey)) {
+            $fiscalDocumentKey = hash('sha256', implode('|', [
+                (string) $sale->tenant_id,
+                (string) $sale->id,
+                (string) $validated['fiscal_document_number'],
+                (string) Str::uuid(),
+            ]));
+        }
+
         $sale->update([
             'fiscal_document_number' => $validated['fiscal_document_number'],
-            'fiscal_document_key' => $validated['fiscal_document_key'] ?? null,
+            'fiscal_document_key' => $fiscalDocumentKey,
             'fiscal_document_url' => $validated['fiscal_document_url'] ?? null,
             'fiscal_issued_at' => $validated['fiscal_issued_at'] ?? now(),
             'fiscal_registered_by' => Auth::id(),

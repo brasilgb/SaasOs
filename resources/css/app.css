@@ -112,6 +112,13 @@ html {
 
     --destructive: oklch(0.577 0.245 27.325);
     --destructive-foreground: oklch(0.98 0 0);
+
+    /* Charts */
+    --chart-1: oklch(0.62 0.2 255);
+    --chart-2: oklch(0.7 0.18 160);
+    --chart-3: oklch(0.75 0.17 85);
+    --chart-4: oklch(0.65 0.21 20);
+    --chart-5: oklch(0.68 0.19 300);
 }
 
 .dark {
@@ -146,6 +153,13 @@ html {
     --sidebar-accent: oklch(0.22 0.04 282);
     --sidebar-accent-foreground: oklch(0.98 0 0);
     --sidebar-border: oklch(1 0 0 / 10%);
+
+    /* Charts */
+    --chart-1: oklch(0.72 0.16 255);
+    --chart-2: oklch(0.76 0.15 160);
+    --chart-3: oklch(0.8 0.14 85);
+    --chart-4: oklch(0.73 0.18 20);
+    --chart-5: oklch(0.76 0.16 300);
 }
 
 @media print {
