@@ -6,11 +6,52 @@ import moment from 'moment';
 interface SaleDetailsModalProps {
     isOpen: boolean;
     onClose: () => void;
-    sale: any; // Você pode criar uma interface/tipo mais forte para 'sale'
+    sale: {
+        sales_number?: string | number;
+        created_at?: string;
+        customer?: { name?: string };
+        payment_method?: string;
+        financial_status?: string;
+        paid_amount?: string | number;
+        total_amount?: string | number;
+        status?: string;
+        cancelled_at?: string;
+        cancelled_by?: { name?: string };
+        cancel_reason?: string;
+        fiscal_document_number?: string;
+        fiscal_document_key?: string;
+        fiscal_issued_at?: string;
+        fiscal_registered_by?: { name?: string };
+        items?: Array<{
+            id?: string | number;
+            quantity?: number;
+            unit_price?: string | number;
+            part?: { name?: string };
+        }>;
+        logs?: Array<{
+            id?: string | number;
+            action?: string;
+            user?: { name?: string };
+            created_at?: string;
+        }>;
+    } | null;
 }
 
 export default function SaleDetailsModal({ isOpen, onClose, sale }: SaleDetailsModalProps) {
     if (!sale) return null;
+
+    const financialStatusLabel: Record<string, string> = {
+        paid: 'Pago',
+        partial: 'Parcial',
+        pending: 'Pendente',
+        cancelled: 'Cancelada',
+    };
+
+    const actionLabel: Record<string, string> = {
+        created: 'Criada',
+        cancelled: 'Cancelada',
+        fiscal_registered: 'Comprovante fiscal registrado',
+    };
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -28,7 +69,8 @@ export default function SaleDetailsModal({ isOpen, onClose, sale }: SaleDetailsM
                             <strong>Pagamento:</strong> {sale.payment_method || 'Não informado'}
                         </p>
                         <p>
-                            <strong>Status financeiro:</strong> {sale.financial_status || 'Não informado'}
+                            <strong>Status financeiro:</strong>{' '}
+                            {financialStatusLabel[sale.financial_status] || sale.financial_status || 'Não informado'}
                         </p>
                         <p>
                             <strong>Valor pago:</strong> {maskMoney(String(sale.paid_amount || 0))}
@@ -39,7 +81,8 @@ export default function SaleDetailsModal({ isOpen, onClose, sale }: SaleDetailsM
                         {sale.status === 'cancelled' && (
                             <>
                                 <p>
-                                    <strong>Cancelada em:</strong> {sale.cancelled_at ? moment(sale.cancelled_at).format('DD/MM/YYYY [às] HH:mm') : '-'}
+                                    <strong>Cancelada em:</strong>{' '}
+                                    {sale.cancelled_at ? moment(sale.cancelled_at).format('DD/MM/YYYY [às] HH:mm') : '-'}
                                 </p>
                                 <p>
                                     <strong>Cancelada por:</strong> {sale.cancelled_by?.name || 'Não informado'}
@@ -58,7 +101,8 @@ export default function SaleDetailsModal({ isOpen, onClose, sale }: SaleDetailsM
                                     <strong>Chave:</strong> {sale.fiscal_document_key || '-'}
                                 </p>
                                 <p>
-                                    <strong>Emitido em:</strong> {sale.fiscal_issued_at ? moment(sale.fiscal_issued_at).format('DD/MM/YYYY [às] HH:mm') : '-'}
+                                    <strong>Emitido em:</strong>{' '}
+                                    {sale.fiscal_issued_at ? moment(sale.fiscal_issued_at).format('DD/MM/YYYY [às] HH:mm') : '-'}
                                 </p>
                                 <p>
                                     <strong>Registrado por:</strong> {sale.fiscal_registered_by?.name || '-'}
@@ -80,7 +124,7 @@ export default function SaleDetailsModal({ isOpen, onClose, sale }: SaleDetailsM
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {sale.items?.map((item: any) => (
+                                    {sale.items?.map((item) => (
                                         <TableRow key={item.id}>
                                             <TableCell>{item.part?.name}</TableCell>
                                             <TableCell className="text-center">{item.quantity}</TableCell>
@@ -103,10 +147,10 @@ export default function SaleDetailsModal({ isOpen, onClose, sale }: SaleDetailsM
                         <h4 className="mb-2 font-semibold">Histórico da Venda</h4>
                         <div className="space-y-2">
                             {sale.logs?.length ? (
-                                sale.logs.map((log: any) => (
+                                sale.logs.map((log) => (
                                     <div key={log.id} className="rounded border p-2 text-xs">
                                         <div>
-                                            <strong>Ação:</strong> {log.action}
+                                            <strong>Ação:</strong> {actionLabel[log.action] || log.action}
                                         </div>
                                         <div>
                                             <strong>Usuário:</strong> {log.user?.name || 'Sistema'}

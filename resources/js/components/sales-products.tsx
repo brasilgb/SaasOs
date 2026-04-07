@@ -51,6 +51,11 @@ interface CartItem extends Part {
 interface SaleRecord {
     id?: string | number;
     date?: string;
+    total_amount?: number;
+    sales_number?: number;
+    payment_method?: string;
+    paid_amount?: number;
+    financial_status?: string;
 }
 
 interface SaleFormData {
@@ -62,12 +67,6 @@ interface SaleFormData {
     parts: { part_id: number; quantity: number }[];
     total_amount: number;
 }
-
-const formatCurrencyBRL = (value: number) =>
-    new Intl.NumberFormat('pt-BR', {
-        style: 'currency',
-        currency: 'BRL',
-    }).format(Number.isFinite(value) ? value : 0);
 
 interface AxiosErrorLike {
     response?: {
@@ -93,9 +92,6 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
     const [cartItems, setCartItems] = useState<CartItem[]>([]); // New state for cart items
     const [saleCompleted, setSaleCompleted] = useState(false);
     const [saleData, setSaleData] = useState<SaleRecord | null>(null);
-    const [isEditingPaidAmount, setIsEditingPaidAmount] = useState(false);
-    const [paidAmountInput, setPaidAmountInput] = useState('');
-    const [showComputedBalance, setShowComputedBalance] = useState(false);
 
     const [isPrintingThermal, setIsPrintingThermal] = useState(false);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
@@ -130,7 +126,6 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
             total_amount: total,
             paid_amount: total.toFixed(2),
         }));
-        setShowComputedBalance(false);
     }, [cartItems, setData]);
 
     const addToCart = () => {
@@ -192,7 +187,7 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
             const response = await apios.post(route('app.sales.store'), {
                 customer_id: data.customer_id,
                 payment_method: data.payment_method,
-                paid_amount: parseCurrencyToNumber(data.paid_amount).toFixed(2),
+                paid_amount: cartTotal.toFixed(2),
                 parts: cartItems.map((item) => ({
                     part_id: item.id,
                     quantity: item.selected_quantity,
@@ -237,7 +232,6 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
         setSelectedPart(null);
         setCartItems([]);
         setSaleCompleted(false);
-        setShowComputedBalance(false);
     };
 
     const selectedOptionParts = optionsParts.find((option) => option.value === data.part_id) || null;
@@ -245,57 +239,6 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
     const nfCustomer = customers.filter((customer) => customer.id === data.customer_id);
 
     const cartTotal = cartItems.reduce((sum, item) => sum + Number(item.sale_price) * item.selected_quantity, 0);
-
-    const normalizeCurrencyInput = (value: string): string => {
-        const raw = String(value ?? '').trim();
-        if (!raw) return '';
-
-        const cleaned = raw.replace(/[^\d.,]/g, '');
-        if (!cleaned) return '';
-
-        const lastComma = cleaned.lastIndexOf(',');
-        const lastDot = cleaned.lastIndexOf('.');
-        const decimalSeparatorIndex = Math.max(lastComma, lastDot);
-
-        let integerPart = '';
-        let decimalPart = '';
-
-        if (decimalSeparatorIndex >= 0) {
-            integerPart = cleaned.slice(0, decimalSeparatorIndex).replace(/[^\d]/g, '');
-            decimalPart = cleaned
-                .slice(decimalSeparatorIndex + 1)
-                .replace(/[^\d]/g, '')
-                .slice(0, 2);
-        } else {
-            integerPart = cleaned.replace(/[^\d]/g, '');
-        }
-
-        integerPart = integerPart.replace(/^0+(?=\d)/, '') || '0';
-        return decimalPart.length ? `${integerPart}.${decimalPart}` : integerPart;
-    };
-
-    const parseCurrencyToNumber = (value: unknown): number => {
-        const raw = String(value ?? '').trim();
-        if (!raw) return 0;
-
-        const cleaned = raw.replace(/[^\d.,-]/g, '');
-        const lastComma = cleaned.lastIndexOf(',');
-        const lastDot = cleaned.lastIndexOf('.');
-        const decimalSeparatorIndex = Math.max(lastComma, lastDot);
-
-        if (decimalSeparatorIndex >= 0) {
-            const integerPart = cleaned.slice(0, decimalSeparatorIndex).replace(/[^\d-]/g, '') || '0';
-            const decimalPart = cleaned
-                .slice(decimalSeparatorIndex + 1)
-                .replace(/[^\d]/g, '')
-                .slice(0, 2);
-            return Number(decimalPart.length ? `${integerPart}.${decimalPart}` : integerPart) || 0;
-        }
-
-        return Number(cleaned.replace(/[^\d-]/g, '')) || 0;
-    };
-
-    const paidAmountValue = isEditingPaidAmount ? parseCurrencyToNumber(paidAmountInput) : parseCurrencyToNumber(data.paid_amount);
 
     const paper = usePaperSize();
 
@@ -344,7 +287,7 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
     const dataSalesTotal = {
         customer: nfCustomer,
         items: cartItems,
-        total: String(cartTotal),
+        total: String(Number(saleData?.total_amount ?? cartTotal)),
         numberSale: saleData ?? {},
     };
 
@@ -524,47 +467,6 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
                             <div className="mt-4 flex items-center justify-between font-bold">
                                 <span>Total do Carrinho:</span>
                                 <span>R$ {maskMoney(String(cartTotal))}</span>
-                            </div>
-                            <div className="mt-3 grid gap-3 rounded-lg border p-3 md:grid-cols-3">
-                                <div className="space-y-1">
-                                    <div className="text-muted-foreground text-xs">Total</div>
-                                    <div className="text-sm font-semibold">{formatCurrencyBRL(cartTotal)}</div>
-                                </div>
-                                <div className="space-y-1">
-                                    <Label htmlFor="paid_amount" className="text-muted-foreground text-xs">
-                                        Valor pago
-                                    </Label>
-                                    <Input
-                                        id="paid_amount"
-                                        type="text"
-                                        inputMode="decimal"
-                                        value={isEditingPaidAmount ? paidAmountInput : maskMoney(String(data.paid_amount || '0'))}
-                                        onChange={(e) => {
-                                            setPaidAmountInput(e.target.value);
-                                        }}
-                                        onFocus={(e) => {
-                                            setIsEditingPaidAmount(true);
-                                            // Evita concatenação com o valor auto-preenchido ao editar
-                                            setPaidAmountInput('');
-                                            e.currentTarget.select();
-                                        }}
-                                        onBlur={() => {
-                                            const hasTypedValue = paidAmountInput.trim().length > 0;
-                                            const normalized = normalizeCurrencyInput(paidAmountInput);
-                                            const parsed = parseCurrencyToNumber(normalized);
-                                            setData('paid_amount', parsed.toFixed(2));
-                                            setShowComputedBalance(hasTypedValue);
-                                            setIsEditingPaidAmount(false);
-                                            setPaidAmountInput('');
-                                        }}
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <div className="text-muted-foreground text-xs">Saldo</div>
-                                    <div className={`text-sm font-semibold ${showComputedBalance ? 'text-rose-600' : 'text-muted-foreground'}`}>
-                                        {formatCurrencyBRL(showComputedBalance ? Math.max(0, cartTotal - paidAmountValue) : 0)}
-                                    </div>
-                                </div>
                             </div>
                             {errors.paid_amount && <p className="mt-2 text-right text-xs text-red-500">{errors.paid_amount}</p>}
                             {errors.total_amount && <p className="col-span-4 text-right text-xs text-red-500">{errors.total_amount}</p>}

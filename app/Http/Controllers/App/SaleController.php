@@ -170,9 +170,11 @@ class SaleController extends Controller
                 'success' => true,
                 'sale' => [
                     'id' => $sale->id,
+                    'sales_number' => $sale->sales_number,
                     'date' => $sale->created_at,
+                    'total_amount' => (float) $sale->total_amount,
                     'payment_method' => $sale->payment_method,
-                    'paid_amount' => $sale->paid_amount,
+                    'paid_amount' => (float) $sale->paid_amount,
                     'financial_status' => $sale->financial_status,
                 ],
             ]);
