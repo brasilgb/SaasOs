@@ -15,6 +15,7 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { statusAgenda } from '@/Utils/dataSelect';
+import { unMask } from '@/Utils/mask';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -26,6 +27,40 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '#',
     },
 ];
+
+function getWhatsappPhone(value: string) {
+    const digits = unMask(value ?? '');
+    if (!digits) return '';
+
+    // Se vier apenas DDD + número, adiciona DDI do Brasil.
+    if (digits.length === 10 || digits.length === 11) {
+        return `55${digits}`;
+    }
+
+    return digits;
+}
+
+function getTechnicianWhatsappMessage(schedule: any) {
+    const visitDate = moment(schedule.schedules).format('DD/MM/YYYY HH:mm');
+    const greetingHour = new Date().getHours();
+    const greeting = greetingHour < 12 ? 'Bom dia' : greetingHour < 18 ? 'Boa tarde' : 'Boa noite';
+
+    const addressParts = [
+        schedule.customer?.street,
+        schedule.customer?.number,
+        schedule.customer?.complement,
+        schedule.customer?.district,
+        schedule.customer?.city,
+    ].filter(Boolean);
+
+    return [
+        `${greeting}, ${schedule.user?.name}!`,
+        `Visita agendada para ${visitDate}.`,
+        `Serviço: ${schedule.service}.`,
+        `Cliente: ${schedule.customer?.name}.`,
+        `Endereço: ${addressParts.join(', ')}.`,
+    ].join('\n');
+}
 
 export default function Schedules({ schedules, search, status }: any) {
     const { auth } = usePage<{ auth?: { role?: string; permissions?: string[] } }>().props;
@@ -107,7 +142,8 @@ export default function Schedules({ schedules, search, status }: any) {
                                                 <Button asChild size="icon" className="bg-green-500 text-white hover:bg-green-500">
                                                     <a
                                                         target="_blank"
-                                                        href={`https://wa.me/${schedule.user.whatsapp}?text=Olá, ${schedule.user?.name} - ${moment(schedule.schedules).format('DD/MM/YYYY H:m')} - ${schedule.service} - ${schedule.customer.street}, ${schedule.customer.number}, ${schedule.customer.complement}, ${schedule.customer.district}, ${schedule.customer.city}`}
+                                                        rel="noopener noreferrer"
+                                                        href={`https://wa.me/${getWhatsappPhone(schedule.user?.whatsapp ?? '')}?text=${encodeURIComponent(getTechnicianWhatsappMessage(schedule))}`}
                                                     >
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"

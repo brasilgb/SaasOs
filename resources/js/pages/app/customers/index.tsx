@@ -27,6 +27,15 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+function getWhatsappGreeting(name: string) {
+    const now = new Date();
+    const hour = now.getHours();
+    const weekday = now.toLocaleDateString('pt-BR', { weekday: 'long' });
+    const greetingByHour = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
+
+    return `${greetingByHour}, ${name}, como está?`;
+}
+
 export default function Customers({ customers, search, pending }: any) {
     const { flash, auth } = usePage().props as any;
     const [modalAberto, setModalAberto] = useState(false);
@@ -124,7 +133,11 @@ export default function Customers({ customers, search, pending }: any) {
                                         <TableCell>{moment(customer.created_at).format('DD/MM/YYYY')}</TableCell>
                                         <TableCell className="flex justify-end gap-2">
                                             <Button asChild size="icon" className="bg-green-500 text-white hover:bg-green-500">
-                                                <a target="_blank" href={`https://wa.me/${customer.whatsapp}?text=Olá, ${customer.name}`}>
+                                                <a
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    href={`https://wa.me/${unMask(customer.whatsapp ?? '')}?text=${encodeURIComponent(getWhatsappGreeting(customer.name))}`}
+                                                >
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"
                                                         width="16"
