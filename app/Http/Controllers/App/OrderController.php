@@ -372,23 +372,26 @@ class OrderController extends Controller
 
         $notes = [
             1 => 'Ordem Aberta',
-            2 => 'Ordem Fechada',
+            2 => 'Ordem Cancelada',
             3 => 'Orçamento Gerado',
             4 => 'Orçamento Aprovado',
-            5 => 'Reparo em andamento',
-            6 => 'Serviço concluído',
-            7 => 'Cliente avisado / aguardando retirada',
-            8 => 'Entregue ao cliente',
-            9 => 'Orçamento recusado',
-            10 => 'Serviço não executado',
+            5 => 'Orçamento reprovado',
+            6 => 'Reparo em andamento',
+            7 => 'Serviço concluído',
+            8 => 'Serviço não executado',
+            9 => 'Cliente avisado / aguardando retirada',
+            10 => 'Entregue ao cliente',
         ];
 
         if ($data['service_status'] != $oldStatus) {
+            $currentStatus = (int) $data['service_status'];
+            $statusLabel = $notes[$currentStatus] ?? 'Status atualizado';
+
             OrderStatusHistory::create([
                 'order_id' => $order->id,
-                'status' => $data['service_status'],
+                'status' => $currentStatus,
                 'changed_by' => Auth::id(),
-                'note' => $notes[$data['service_status']] ?? null,
+                'note' => $statusLabel,
             ]);
 
             $customerEmail = $order->customer?->email;
@@ -397,7 +400,7 @@ class OrderController extends Controller
                 Mail::to($customerEmail)->send(
                     new OrderStatusUpdatedMail(
                         $order->fresh(['customer', 'tenant']),
-                        $notes[$data['service_status']] ?? 'Status atualizado',
+                        $statusLabel,
                         $data['observations'] ?? null
                     )
                 );
