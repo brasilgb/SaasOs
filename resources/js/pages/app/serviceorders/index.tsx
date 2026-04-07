@@ -191,25 +191,20 @@ function ServiceOrders({ order }: { order: Order }) {
                                     <p className="text-lg font-bold text-red-600">R$ {maskMoney(String(order.budget_value ?? ''))}</p>
                                 </div>
 
-                                {/* Ações */}
-                                <div className="flex items-center gap-2">
-                                    <Button
-                                        onClick={handleApprove}
-                                        disabled={loadingA || order.service_status === 4}
-                                        className="bg-green-600 text-white hover:bg-green-700"
-                                    >
-                                        {loadingA ? 'Aprovando...' : 'Aprovar'}
-                                    </Button>
+                                {/* Ações: cliente só decide enquanto o orçamento está gerado */}
+                                {order.service_status === 3 && (
+                                    <div className="flex items-center gap-2">
+                                        <Button onClick={handleApprove} disabled={loadingA} className="bg-green-600 text-white hover:bg-green-700">
+                                            {loadingA ? 'Aprovando...' : 'Aprovar'}
+                                        </Button>
 
-                                    <Button
-                                        onClick={handleReject}
-                                        disabled={loadingR || order.service_status === 5}
-                                        className="bg-red-600 text-white hover:bg-red-700"
-                                    >
-                                        {loadingR ? 'Reprovando...' : 'Reprovar'}
-                                    </Button>
-                                </div>
+                                        <Button onClick={handleReject} disabled={loadingR} className="bg-red-600 text-white hover:bg-red-700">
+                                            {loadingR ? 'Reprovando...' : 'Reprovar'}
+                                        </Button>
+                                    </div>
+                                )}
                             </div>
+
                         </div>
                     )}
 
