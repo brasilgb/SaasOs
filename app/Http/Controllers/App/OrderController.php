@@ -26,6 +26,13 @@ use Inertia\Inertia;
 
 class OrderController extends Controller
 {
+    private function currentUser(): ?User
+    {
+        $user = Auth::user() ?? Auth::guard('sanctum')->user();
+
+        return $user instanceof User ? $user : null;
+    }
+
     private function normalizeMoneyValue(mixed $value): string
     {
         if ($value === null || $value === '') {
@@ -79,19 +86,19 @@ class OrderController extends Controller
 
     private function authorizeOrdersAccess(): void
     {
-        abort_unless(Auth::user()?->hasPermission('orders'), 403);
+        abort_unless($this->currentUser()?->hasPermission('orders'), 403);
     }
 
     private function canManageOrders(): bool
     {
-        $user = Auth::user();
+        $user = $this->currentUser();
 
         return $user?->hasPermission('orders') && ! $user->isTechnician();
     }
 
     private function canAccessOrder(Order $order): bool
     {
-        $user = Auth::user();
+        $user = $this->currentUser();
 
         if (! $user?->hasPermission('orders')) {
             return false;
@@ -106,7 +113,7 @@ class OrderController extends Controller
 
     private function scopeOrdersQuery($query)
     {
-        $user = Auth::user();
+        $user = $this->currentUser();
 
         if ($user?->isTechnician()) {
             $query->where('user_id', $user->id);
@@ -205,7 +212,7 @@ class OrderController extends Controller
                 $q->where('order_number', $search)
                     ->orWhereHas('customer', function ($subQuery) use ($search) {
                         $subQuery->where('name', 'like', "%$search%")
-                            ->orWhere('cpfcnpj', 'like', '%'.$search.'%');
+                            ->orWhere('cpfcnpj', 'like', '%' . $search . '%');
                     });
             });
         }
