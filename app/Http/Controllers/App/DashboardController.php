@@ -4,6 +4,7 @@ namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
 use App\Models\App\Customer;
+use App\Models\App\CashSession;
 use App\Models\App\Equipment;
 use App\Models\App\Message;
 use App\Models\App\Order;
@@ -55,8 +56,24 @@ class DashboardController extends Controller
         $parts = Part::where('is_sellable', true)->get();
         $customers = Customer::get();
         $others = Other::first();
+        $openCashSession = CashSession::query()
+            ->where('status', 'open')
+            ->latest('opened_at')
+            ->first();
 
-        return Inertia::render('app/dashboard/index', [ 'listSchedules' => $listSchedules, 'reloadKey' => now()->timestamp, 'orders' => $orders, 'acount' => $acount, 'parts' => $parts, 'customers' => $customers, 'others' => $others]);
+        return Inertia::render('app/dashboard/index', [
+            'listSchedules' => $listSchedules,
+            'reloadKey' => now()->timestamp,
+            'orders' => $orders,
+            'acount' => $acount,
+            'parts' => $parts,
+            'customers' => $customers,
+            'others' => $others,
+            'cashier' => [
+                'isOpen' => (bool) $openCashSession,
+                'openedAt' => $openCashSession?->opened_at?->toIso8601String(),
+            ],
+        ]);
     }
 
     private function getRange($timerange)

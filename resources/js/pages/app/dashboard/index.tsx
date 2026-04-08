@@ -19,7 +19,7 @@ function formatDateRange(date?: Date | string) {
     return moment(d).format('DD/MM/YYYY');
 }
 
-export default function Dashboard({ reloadKey, orders, acount, parts, customers, others, listSchedules }: any) {
+export default function Dashboard({ reloadKey, orders, acount, parts, customers, others, listSchedules, cashier }: any) {
     const { flash, auth } = usePage().props as any;
     const [timeRange, setTimeRange] = useState('7');
     const [dateRange, setDateRange] = useState<any>({});
@@ -116,6 +116,7 @@ export default function Dashboard({ reloadKey, orders, acount, parts, customers,
                                 parts={parts}
                                 customers={customers}
                                 others={others}
+                                cashier={cashier}
                                 orders={orders}
                                 acount={acount}
                                 listSchedules={listSchedules}

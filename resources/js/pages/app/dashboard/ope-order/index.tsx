@@ -24,10 +24,11 @@ function formatBrDate(date: Date | string) {
     return moment(d).format('DD/MM/YYYY');
 }
 
-export default function OrderDashboard({ timerange, dateRange, customRange, parts, customers, others, orders, acount, listSchedules }: any) {
+export default function OrderDashboard({ timerange, dateRange, customRange, parts, customers, others, cashier, orders, acount, listSchedules }: any) {
     const { auth } = usePage<{ auth?: { role?: string; permissions?: string[] } }>().props;
     const [metrics, setMetrics] = useState<any>([]);
     const canUsePdv = auth?.permissions?.includes('sales') && auth?.role !== 'technician';
+    const isCashierOpen = Boolean(cashier?.isOpen);
 
     useEffect(() => {
         const getOrders = async () => {
@@ -109,7 +110,18 @@ export default function OrderDashboard({ timerange, dateRange, customRange, part
                 <div className="h-full min-w-0">
                     {others?.enablesales && canUsePdv ? (
                         <div className="flex h-full flex-col gap-3">
-                            <Card className="flex h-full items-center justify-center p-4">
+                            <Card className="flex h-full flex-col items-center justify-center gap-3 p-4">
+                                <div className="w-full rounded-lg border p-3 text-center">
+                                    <div className="text-sm font-medium">Caixa diário</div>
+                                    <div className={`text-xs ${isCashierOpen ? 'text-emerald-600' : 'text-amber-600'}`}>
+                                        {isCashierOpen ? 'Aberto' : 'Fechado'}
+                                    </div>
+                                    {!isCashierOpen && (
+                                        <Button variant="outline" size="sm" className="mt-2" asChild>
+                                            <Link href={route('app.cashier.index')}>Abrir caixa diário</Link>
+                                        </Button>
+                                    )}
+                                </div>
                                 <SalesProducts parts={parts} customers={customers} iconSize={60} />
                             </Card>
                             <Card className="flex h-full items-center justify-center p-4">
