@@ -71,12 +71,14 @@ export default function Customers({ customers, search, pending }: any) {
                 <div className="w-full">
                     <InputSearch placeholder="Pesquisar cliente por nome ou cpf/cnpj" url="app.customers.index" />
                 </div>
-                <div className="flex w-full justify-between gap-2 md:justify-end">
+                <div className='w-full flex items-center justify-end'>
                     <Button variant={pending === '1' ? 'default' : 'outline'} asChild>
                         <Link href={route('app.customers.index', { search, pending: pending === '1' ? undefined : 1 })}>
                             {pending === '1' ? 'Mostrar todos' : 'Com saldo pendente'}
                         </Link>
                     </Button>
+                </div>
+                <div className="flex justify-between gap-2 md:justify-end">
                     {canManageCustomers && (
                         <Button onClick={() => setModalAberto(true)} className="bg-green-600 text-white hover:bg-green-700">
                             <Upload className="h-4 w-4" />
