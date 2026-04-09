@@ -38,7 +38,7 @@ export default function Parts() {
     const canViewCustomers = permissions.includes('customers');
     const canViewSchedules = permissions.includes('schedules');
     const canViewSales = Boolean(permissions.includes('sales') && othersetting?.enablesales);
-    const canViewExpenses = permissions.includes('sales');
+    const canViewExpenses = Boolean(permissions.includes('sales') && othersetting?.enablesales);
     const canViewParts = permissions.includes('parts');
 
     return (

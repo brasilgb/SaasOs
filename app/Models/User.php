@@ -160,7 +160,15 @@ class User extends Authenticatable
                 'parts',
                 'sales',
                 'reports',
+                'users',
+                'settings',
+                'company',
+                'whatsapp_messages',
                 'receipts',
+                'label_printing',
+                'register_equipments',
+                'register_checklists',
+                'other_settings',
             ];
         }
 

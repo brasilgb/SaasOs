@@ -7,6 +7,7 @@ type NavMainPageProps = {
         enablesales?: boolean;
     };
     auth: {
+        role?: string;
         permissions?: string[];
     };
 };
@@ -15,11 +16,16 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
     const { othersetting, auth } = usePage<NavMainPageProps>().props;
     const disableSales = !othersetting?.enablesales ? 'sales' : '';
     const permissions = auth?.permissions ?? [];
+    const canAccessSalesModules =
+        auth?.role === 'administrator' || auth?.role === 'operator' || auth?.role === 'root_app' || auth?.role === 'root_system';
 
     return (
         <SidebarMenu>
             {items.map(
                 (item) =>
+                    (item.title !== 'Vendas' && item.title !== 'Despesas' && item.title !== 'Caixa diário'
+                        ? true
+                        : canAccessSalesModules && !!othersetting?.enablesales) &&
                     item.enabled !== disableSales &&
                     (!item.permission || permissions.includes(item.permission)) && (
                         <SidebarMenuItem key={item.title}>

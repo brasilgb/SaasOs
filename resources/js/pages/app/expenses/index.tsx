@@ -71,8 +71,8 @@ export default function Expenses({ expenses }: any) {
     const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
     const canManageOrders = auth?.role !== 'technician' && auth?.permissions?.includes('orders');
     const initialCategoryOptions: OptionType[] = Array.from(
-        new Set((expenses?.data ?? []).map((expense: Expense) => String(expense.category ?? '').trim()).filter(Boolean)),
-    ).map((category) => ({ value: category, label: category }));
+        new Set<string>((expenses?.data ?? []).map((expense: Expense) => String(expense.category ?? '').trim()).filter(Boolean)),
+    ).map((category): OptionType => ({ value: category, label: category }));
     const [categoryOptions, setCategoryOptions] = useState<OptionType[]>(initialCategoryOptions);
     const [selectedCategory, setSelectedCategory] = useState<OptionType | null>(null);
     const [amountDisplay, setAmountDisplay] = useState('');

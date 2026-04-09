@@ -4,6 +4,8 @@ import { Breadcrumbs } from '@/components/breadcrumbs';
 import HeadingSmall from '@/components/heading-small';
 import { Icon } from '@/components/icon';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
@@ -22,7 +24,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Others({ othersettings, company, time_remaining }: any) {
+export default function Others({ othersettings, company, time_remaining, mailSettings }: any) {
     const { auth } = usePage().props as any;
     const canManageOtherSettings = auth?.permissions?.includes('other_settings');
 
@@ -31,6 +33,14 @@ export default function Others({ othersettings, company, time_remaining }: any) 
         budget: othersettings?.budget,
         enableparts: othersettings?.enableparts,
         enablesales: othersettings?.enablesales,
+        mail_mailer: mailSettings?.mail_mailer ?? 'smtp',
+        mail_host: mailSettings?.mail_host ?? '',
+        mail_port: mailSettings?.mail_port ?? 587,
+        mail_username: mailSettings?.mail_username ?? '',
+        mail_password: '',
+        mail_encryption: mailSettings?.mail_encryption ?? 'tls',
+        mail_from_address: mailSettings?.mail_from_address ?? '',
+        mail_from_name: mailSettings?.mail_from_name ?? '',
     });
 
     const handleSubmit = (e: any) => {
@@ -77,8 +87,8 @@ export default function Others({ othersettings, company, time_remaining }: any) 
                 <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
                     <div className="mt-6 space-y-6">
                         <HeadingSmall
-                            title="Habilitar a venda de peças e/ou produtos"
-                            description="Habilitar a venda de peças e/ou produtos avulsos ou para usuários específicos, com ajuste de estoque."
+                            title="Habilitar vendas, despesas e operações de caixa"
+                            description="Ao habilitar, libera os módulos de Vendas, Despesas e Caixa Diário para administradores e operadores. Ao desabilitar, esses módulos ficam ocultos e bloqueados."
                         />
                         <div className="flex items-center gap-3">
                             <Switch
@@ -89,6 +99,99 @@ export default function Others({ othersettings, company, time_remaining }: any) 
                             />
 
                             <span className="text-muted-foreground text-sm">{data.enablesales ? 'Habilitado' : 'Desabilitado'}</span>
+                        </div>
+                    </div>
+
+                    <div className="mt-6 space-y-6">
+                        <HeadingSmall
+                            title="Configuração de e-mail (SMTP)"
+                            description="Cadastre os dados da conta de e-mail para envio de notificações de status e outros e-mails automáticos."
+                        />
+
+                        <div className="grid gap-4 md:grid-cols-2">
+                            <div className="space-y-2">
+                                <Label htmlFor="mail_mailer">Mailer</Label>
+                                <Input
+                                    id="mail_mailer"
+                                    value={data.mail_mailer}
+                                    disabled={!canManageOtherSettings}
+                                    onChange={(e) => setData('mail_mailer', e.target.value)}
+                                    placeholder="smtp"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="mail_host">Host</Label>
+                                <Input
+                                    id="mail_host"
+                                    value={data.mail_host}
+                                    disabled={!canManageOtherSettings}
+                                    onChange={(e) => setData('mail_host', e.target.value)}
+                                    placeholder="smtp.server.email"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="mail_port">Porta</Label>
+                                <Input
+                                    id="mail_port"
+                                    type="number"
+                                    value={data.mail_port}
+                                    disabled={!canManageOtherSettings}
+                                    onChange={(e) => setData('mail_port', Number(e.target.value))}
+                                    placeholder="465"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="mail_encryption">Criptografia</Label>
+                                <Input
+                                    id="mail_encryption"
+                                    value={data.mail_encryption}
+                                    disabled={!canManageOtherSettings}
+                                    onChange={(e) => setData('mail_encryption', e.target.value)}
+                                    placeholder="ssl ou tls"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="mail_username">Usuário SMTP</Label>
+                                <Input
+                                    id="mail_username"
+                                    value={data.mail_username}
+                                    disabled={!canManageOtherSettings}
+                                    onChange={(e) => setData('mail_username', e.target.value)}
+                                    placeholder="sending-mail@email.com.br"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="mail_password">Senha SMTP</Label>
+                                <Input
+                                    id="mail_password"
+                                    type="password"
+                                    value={data.mail_password}
+                                    disabled={!canManageOtherSettings}
+                                    onChange={(e) => setData('mail_password', e.target.value)}
+                                    placeholder={mailSettings?.mail_password_set ? '•••••••• (deixe em branco para manter)' : 'Digite a senha SMTP'}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="mail_from_address">E-mail remetente</Label>
+                                <Input
+                                    id="mail_from_address"
+                                    type="email"
+                                    value={data.mail_from_address}
+                                    disabled={!canManageOtherSettings}
+                                    onChange={(e) => setData('mail_from_address', e.target.value)}
+                                    placeholder="sending-mail@email.com.br"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="mail_from_name">Nome remetente</Label>
+                                <Input
+                                    id="mail_from_name"
+                                    value={data.mail_from_name}
+                                    disabled={!canManageOtherSettings}
+                                    onChange={(e) => setData('mail_from_name', e.target.value)}
+                                    placeholder="Nome da empresa"
+                                />
+                            </div>
                         </div>
                     </div>
                     <div className="flex justify-end">

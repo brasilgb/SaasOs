@@ -37,6 +37,8 @@ class MessageController extends Controller
     {
         $search = $request->search;
         $sdate = $request->get('dt');
+        $status = $request->get('status');
+        $filter = $request->get('filter');
 
         $logged = Auth::user();
         $query = Message::where(function ($q) use ($logged) {
@@ -60,9 +62,20 @@ class MessageController extends Controller
                     });
             });
         }
+
+        if ($filter === 'received') {
+            $query->where('recipient_id', $logged->id);
+        } elseif ($filter === 'sent') {
+            $query->where('sender_id', $logged->id);
+        }
+
+        if ($status !== null && in_array((string) $status, ['0', '1'], true)) {
+            $query->where('status', (int) $status);
+        }
+
         $messages = $query->with('sender')->with('recipient')->paginate(11)->withQueryString();
 
-        return Inertia::render('app/messages/index', ['messages' => $messages, 'search' => $search]);
+        return Inertia::render('app/messages/index', ['messages' => $messages, 'search' => $search, 'status' => $status, 'filter' => $filter]);
     }
 
     /**

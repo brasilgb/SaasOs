@@ -4,6 +4,9 @@ namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
 use App\Models\App\Expense;
+use App\Models\App\Other;
+use App\Models\User;
+use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,14 +15,44 @@ use Inertia\Inertia;
 
 class ExpenseController extends Controller
 {
-    private function authorizeExpensesAccess(): void
+    private function canAccessExpensesFeature(): bool
     {
-        abort_unless(Auth::user()?->hasPermission('sales'), 403);
+        $user = Auth::user();
+        if (! $user instanceof User) {
+            return false;
+        }
+
+        if (! $user->hasPermission('sales')) {
+            return false;
+        }
+
+        if (! ($user->isAdministrator() || $user->isOperator() || $user->isRoot())) {
+            return false;
+        }
+
+        return (bool) (Other::query()->value('enablesales') ?? false);
+    }
+
+    private function authorizeExpensesAccess(): ?Response
+    {
+        if ($this->canAccessExpensesFeature()) {
+            return null;
+        }
+
+        if (request()->expectsJson()) {
+            return response()->json([
+                'message' => 'Módulo de vendas desabilitado ou acesso não permitido.',
+            ], 403);
+        }
+
+        return redirect()->route('app.dashboard')->with('error', 'Módulo de vendas desabilitado ou acesso não permitido.');
     }
 
     public function index(Request $request)
     {
-        $this->authorizeExpensesAccess();
+        if ($response = $this->authorizeExpensesAccess()) {
+            return $response;
+        }
 
         $search = trim((string) $request->get('search', ''));
         $category = trim((string) $request->get('category', ''));
@@ -52,7 +85,9 @@ class ExpenseController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $this->authorizeExpensesAccess();
+        if ($response = $this->authorizeExpensesAccess()) {
+            return $response;
+        }
 
         $validated = $request->validate([
             'expense_date' => 'required|date',
@@ -79,7 +114,9 @@ class ExpenseController extends Controller
 
     public function update(Request $request, Expense $expense): RedirectResponse
     {
-        $this->authorizeExpensesAccess();
+        if ($response = $this->authorizeExpensesAccess()) {
+            return $response;
+        }
 
         $validated = $request->validate([
             'expense_date' => 'required|date',
@@ -96,7 +133,9 @@ class ExpenseController extends Controller
 
     public function destroy(Expense $expense): RedirectResponse
     {
-        $this->authorizeExpensesAccess();
+        if ($response = $this->authorizeExpensesAccess()) {
+            return $response;
+        }
         $expense->delete();
 
         return back()->with('success', 'Despesa excluída com sucesso.');

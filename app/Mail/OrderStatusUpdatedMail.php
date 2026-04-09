@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Mail\Concerns\AppliesTenantMailConfig;
 use App\Models\App\Company;
 use App\Models\App\Order;
 use Illuminate\Bus\Queueable;
@@ -13,7 +14,7 @@ use Illuminate\Queue\SerializesModels;
 
 class OrderStatusUpdatedMail extends Mailable
 {
-    use Queueable, SerializesModels;
+    use AppliesTenantMailConfig, Queueable, SerializesModels;
 
     public Order $order;
 
@@ -21,17 +22,21 @@ class OrderStatusUpdatedMail extends Mailable
 
     public ?string $note;
     public ?string $logoUrl;
+    public ?int $tenantId;
 
     public function __construct(Order $order, string $statusLabel, ?string $note = null)
     {
         $this->order = $order;
         $this->statusLabel = $statusLabel;
         $this->note = $note;
+        $this->tenantId = $order->tenant_id ? (int) $order->tenant_id : null;
         $this->logoUrl = $this->resolveLogoUrl($order);
     }
 
     public function envelope(): Envelope
     {
+        $this->applyTenantMailConfig($this->tenantId);
+
         return new Envelope(
             subject: 'Atualização da sua ordem #'.$this->order->order_number,
         );

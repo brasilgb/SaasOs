@@ -4,6 +4,7 @@ import AppPagination from '@/components/app-pagination';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
 import InputSearch from '@/components/inputSearch';
+import SelectFilter from '@/components/SelectFilter';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -27,6 +28,15 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function Messages({ messages, search }: any) {
     const { auth } = usePage().props as any;
+    const messageStatusFilter = [
+        { value: '0', label: 'Não lida' },
+        { value: '1', label: 'Lida' },
+    ];
+    const messageOperationFilter = [
+        { value: 'received', label: 'Recebidas', param: 'filter' as const },
+        { value: 'sent', label: 'Enviadas', param: 'filter' as const },
+    ];
+
     return (
         <AppLayout>
             <Head title="Mensagens" />
@@ -41,11 +51,16 @@ export default function Messages({ messages, search }: any) {
             </div>
 
             <div className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
-                <div className="w-full">
+                <div className="w-full md:max-w-sm">
                     <InputSearch placeholder="Buscar po número da mensagem nome do destinatário" url="app.messages.index" />
                 </div>
-                <div className="flex w-full justify-end">
-                    <Button variant={'default'} asChild>
+                <div className="flex w-full flex-col gap-2 md:w-auto md:flex-row">
+                    <div className="w-full md:w-44">
+                        <SelectFilter dataStatus={messageStatusFilter} specialFilters={messageOperationFilter} url="app.messages.index" noOrder />
+                    </div>
+                </div>
+                <div className="flex w-full flex-col gap-2 md:w-auto md:flex-row md:justify-end">
+                    <Button variant={'default'} asChild className="w-full md:w-auto">
                         <Link href={route('app.messages.create')} className="w-full md:w-auto">
                             <Plus className="h-4 w-4" />
                             <span>Nova Mensagem</span>

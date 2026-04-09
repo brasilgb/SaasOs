@@ -4,12 +4,15 @@ namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
 use App\Models\App\CashSession;
+use App\Models\App\Other;
 use App\Models\App\OrderPayment;
 use App\Models\App\Sale;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use Symfony\Component\HttpFoundation\Response;
 
 class CashSessionController extends Controller
 {
@@ -32,14 +35,44 @@ class CashSessionController extends Controller
         return is_numeric($normalized) ? (float) $normalized : null;
     }
 
-    private function authorizeSalesAccess(): void
+    private function canAccessCashierFeature(): bool
     {
-        abort_unless(Auth::user()?->hasPermission('sales'), 403);
+        $user = Auth::user();
+        if (! $user instanceof User) {
+            return false;
+        }
+
+        if (! $user->hasPermission('sales')) {
+            return false;
+        }
+
+        if (! ($user->isAdministrator() || $user->isOperator() || $user->isRoot())) {
+            return false;
+        }
+
+        return (bool) (Other::query()->value('enablesales') ?? false);
+    }
+
+    private function authorizeSalesAccess(): ?Response
+    {
+        if ($this->canAccessCashierFeature()) {
+            return null;
+        }
+
+        if (request()->expectsJson()) {
+            return response()->json([
+                'message' => 'Módulo de vendas desabilitado ou acesso não permitido.',
+            ], 403);
+        }
+
+        return redirect()->route('app.dashboard')->with('error', 'Módulo de vendas desabilitado ou acesso não permitido.');
     }
 
     public function index()
     {
-        $this->authorizeSalesAccess();
+        if ($response = $this->authorizeSalesAccess()) {
+            return $response;
+        }
 
         $currentSession = CashSession::query()
             ->with(
@@ -97,7 +130,9 @@ class CashSessionController extends Controller
 
     public function open(Request $request): RedirectResponse
     {
-        $this->authorizeSalesAccess();
+        if ($response = $this->authorizeSalesAccess()) {
+            return $response;
+        }
 
         $request->merge([
             'opening_balance' => $this->normalizeMoneyInput($request->input('opening_balance')),
@@ -129,7 +164,9 @@ class CashSessionController extends Controller
 
     public function close(Request $request, CashSession $cashSession): RedirectResponse
     {
-        $this->authorizeSalesAccess();
+        if ($response = $this->authorizeSalesAccess()) {
+            return $response;
+        }
 
         $request->merge([
             'closing_balance' => $this->normalizeMoneyInput($request->input('closing_balance')),

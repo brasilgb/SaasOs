@@ -9,4 +9,10 @@ use Illuminate\Database\Eloquent\Model;
 class Other extends Model
 {
     use HasFactory, Tenantable;
+
+    protected $casts = [
+        'navigation' => 'boolean',
+        'enableparts' => 'boolean',
+        'enablesales' => 'boolean',
+    ];
 }

@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Mail\Concerns\AppliesTenantMailConfig;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
@@ -12,9 +13,10 @@ use Illuminate\Queue\SerializesModels;
 
 class UserRegisteredMail extends Mailable
 {
-    use Queueable, SerializesModels;
+    use AppliesTenantMailConfig, Queueable, SerializesModels;
 
     public User $user;
+    public ?int $tenantId;
 
     /**
      * Create a new message instance.
@@ -22,6 +24,7 @@ class UserRegisteredMail extends Mailable
     public function __construct(User $user)
     {
         $this->user = $user;
+        $this->tenantId = $user->tenant_id ? (int) $user->tenant_id : null;
     }
 
     /**
@@ -29,6 +32,8 @@ class UserRegisteredMail extends Mailable
      */
     public function envelope(): Envelope
     {
+        $this->applyTenantMailConfig($this->tenantId);
+
         return new Envelope(
             subject: 'Bem-vindo ao SigmaOS'
         );

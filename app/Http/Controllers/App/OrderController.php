@@ -15,6 +15,7 @@ use App\Models\App\OrderPayment;
 use App\Models\App\OrderStatusHistory;
 use App\Models\App\Part;
 use App\Models\App\WhatsappMessage;
+use App\Support\TenantMailConfig;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -26,6 +27,16 @@ use Inertia\Inertia;
 
 class OrderController extends Controller
 {
+    private function shouldSendCustomerMailer(Order $order, ?string $customerEmail): bool
+    {
+        $email = trim((string) ($customerEmail ?? ''));
+        if ($email === '' || ! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return false;
+        }
+
+        return TenantMailConfig::hasConfiguredForTenantId($order->tenant_id ? (int) $order->tenant_id : null);
+    }
+
     private function currentUser(): ?User
     {
         $user = Auth::user() ?? Auth::guard('sanctum')->user();
@@ -272,7 +283,7 @@ class OrderController extends Controller
         $order->load(['customer', 'tenant']);
         $customerEmail = $order->customer?->email;
 
-        if (! empty($customerEmail) && filter_var($customerEmail, FILTER_VALIDATE_EMAIL)) {
+        if ($this->shouldSendCustomerMailer($order, $customerEmail)) {
             Mail::to($customerEmail)->send(new OrderCreatedMail($order));
         }
 
@@ -403,7 +414,7 @@ class OrderController extends Controller
 
             $customerEmail = $order->customer?->email;
 
-            if (! empty($customerEmail) && filter_var($customerEmail, FILTER_VALIDATE_EMAIL)) {
+            if ($this->shouldSendCustomerMailer($order, $customerEmail)) {
                 Mail::to($customerEmail)->send(
                     new OrderStatusUpdatedMail(
                         $order->fresh(['customer', 'tenant']),
@@ -578,8 +589,8 @@ class OrderController extends Controller
 
         $customerEmail = trim((string) ($order->customer?->email ?? ''));
 
-        if (empty($customerEmail) || ! filter_var($customerEmail, FILTER_VALIDATE_EMAIL)) {
-            return back()->with('error', 'Cliente sem e-mail válido para envio do lembrete.');
+        if (! $this->shouldSendCustomerMailer($order, $customerEmail)) {
+            return back()->with('error', 'Envio indisponível: cliente sem e-mail válido ou SMTP do cliente não configurado.');
         }
 
         $isOverdue = false;

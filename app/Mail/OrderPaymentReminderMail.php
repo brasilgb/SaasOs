@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Mail\Concerns\AppliesTenantMailConfig;
 use App\Models\App\Company;
 use App\Models\App\Order;
 use Illuminate\Bus\Queueable;
@@ -12,7 +13,7 @@ use Illuminate\Queue\SerializesModels;
 
 class OrderPaymentReminderMail extends Mailable
 {
-    use Queueable, SerializesModels;
+    use AppliesTenantMailConfig, Queueable, SerializesModels;
 
     public Order $order;
 
@@ -21,17 +22,21 @@ class OrderPaymentReminderMail extends Mailable
     public bool $isOverdue;
 
     public ?string $logoUrl;
+    public ?int $tenantId;
 
     public function __construct(Order $order, array $paymentSummary, bool $isOverdue = false)
     {
         $this->order = $order;
         $this->paymentSummary = $paymentSummary;
         $this->isOverdue = $isOverdue;
+        $this->tenantId = $order->tenant_id ? (int) $order->tenant_id : null;
         $this->logoUrl = $this->resolveLogoUrl($order);
     }
 
     public function envelope(): Envelope
     {
+        $this->applyTenantMailConfig($this->tenantId);
+
         return new Envelope(
             subject: $this->isOverdue
                 ? 'Cobrança pendente da ordem #'.$this->order->order_number

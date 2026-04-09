@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Mail\Concerns\AppliesTenantMailConfig;
 use App\Models\App\Company;
 use App\Models\App\Order;
 use Illuminate\Bus\Queueable;
@@ -13,19 +14,23 @@ use Illuminate\Queue\SerializesModels;
 
 class OrderCreatedMail extends Mailable
 {
-    use Queueable, SerializesModels;
+    use AppliesTenantMailConfig, Queueable, SerializesModels;
 
     public Order $order;
     public ?string $logoUrl;
+    public ?int $tenantId;
 
     public function __construct(Order $order)
     {
         $this->order = $order;
+        $this->tenantId = $order->tenant_id ? (int) $order->tenant_id : null;
         $this->logoUrl = $this->resolveLogoUrl($order);
     }
 
     public function envelope(): Envelope
     {
+        $this->applyTenantMailConfig($this->tenantId);
+
         return new Envelope(
             subject: 'Ordem de serviço criada #'.$this->order->order_number,
         );

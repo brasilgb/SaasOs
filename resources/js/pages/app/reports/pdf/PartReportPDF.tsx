@@ -7,28 +7,28 @@ moment.locale('pt-br');
 
 const styles = StyleSheet.create({
     page: {
-        padding: 10,
-        fontSize: 10,
+        padding: 16,
+        fontSize: 9,
         fontFamily: 'Helvetica',
         backgroundColor: '#FAFAFA',
     },
     title: {
-        fontSize: 18,
+        fontSize: 15,
         textAlign: 'center',
         marginBottom: 4,
         textTransform: 'uppercase',
         color: '#333',
     },
     subtitle: {
-        fontSize: 12,
+        fontSize: 10,
         textAlign: 'center',
-        marginBottom: 14,
+        marginBottom: 8,
         color: '#555',
     },
     headerInfo: {
         fontSize: 10,
         textAlign: 'center',
-        marginBottom: 12,
+        marginBottom: 10,
         color: '#666',
     },
     tableContainer: {
@@ -41,23 +41,26 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         backgroundColor: '#eeeded',
         borderBottom: '1px solid #999',
-        paddingVertical: 5,
-        paddingHorizontal: 6,
+        paddingVertical: 6,
+        paddingHorizontal: 8,
         fontWeight: 'bold',
     },
     tableRow: {
         flexDirection: 'row',
         borderBottom: '0.5px solid #DDD',
-        paddingVertical: 4,
-        paddingHorizontal: 6,
+        paddingVertical: 5,
+        paddingHorizontal: 8,
     },
-    colSmall: { width: '8%', paddingVertical: 2, textAlign: 'center' },
-    colMedium: { width: '18%', paddingVertical: 2, textAlign: 'left' },
-    colLarge: { width: '22%', paddingVertical: 2, textAlign: 'left' },
-    col: { flex: 1, textAlign: 'left', paddingVertical: 2 },
-    colRight: { width: '8%', paddingVertical: 2, textAlign: 'right' },
+    colType: { width: '10%', textAlign: 'center' },
+    colRef: { width: '12%', textAlign: 'center' },
+    colName: { width: '30%', textAlign: 'left' },
+    colManufacturer: { width: '16%', textAlign: 'left' },
+    colQty: { width: '7%', textAlign: 'right' },
+    colMin: { width: '7%', textAlign: 'right' },
+    colCost: { width: '9%', textAlign: 'right' },
+    colSale: { width: '9%', textAlign: 'right' },
     footer: {
-        marginTop: 14,
+        marginTop: 10,
         borderTop: '1px solid #AAA',
         paddingTop: 6,
     },
@@ -85,10 +88,15 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#111',
     },
-    logoPlaceholder: { paddingVertical: 4, width: 40, height: 40, justifyContent: 'center', alignItems: 'center', minWidth: '100%' },
+    logoPlaceholder: { paddingVertical: 2, width: 38, height: 38, justifyContent: 'center', alignItems: 'center', minWidth: '100%' },
 });
 
 export default function PartReportPDF({ data, dateRange, company }: any) {
+    const normalizePartType = (value: unknown) => {
+        const numeric = Number(value);
+        return Number.isFinite(numeric) ? typesPartsByValue(numeric as 1 | 2 | 3) ?? '-' : '-';
+    };
+
     const period =
         dateRange?.from && dateRange?.to
             ? `${moment(dateRange.from).format('DD/MM/YYYY')} - ${moment(dateRange.to).format('DD/MM/YYYY')}`
@@ -101,7 +109,7 @@ export default function PartReportPDF({ data, dateRange, company }: any) {
 
     return (
         <Document>
-            <Page size="A4" style={styles.page}>
+            <Page size="A4" orientation="landscape" style={styles.page}>
                 <View style={styles.logoPlaceholder}>
                     <Image source={`${company?.logo ? `/storage/logos/${company?.logo}` : '/images/default.png'}`} />
                 </View>
@@ -115,30 +123,26 @@ export default function PartReportPDF({ data, dateRange, company }: any) {
                 {/* Tabela */}
                 <View style={styles.tableContainer}>
                     <View style={styles.tableHeader}>
-                        <Text style={styles.colSmall}>#</Text>
-                        <Text style={styles.colSmall}>Tipo</Text>
-                        <Text style={styles.colSmall}>Ref.</Text>
-                        <Text style={styles.colLarge}>Nome</Text>
-                        <Text style={styles.colMedium}>Fabricante</Text>
-                        <Text style={styles.colSmall}>Quant.</Text>
-                        <Text style={styles.colSmall}>Mín.</Text>
-                        <Text style={styles.colSmall}>Compra</Text>
-                        <Text style={styles.colSmall}>Venda</Text>
-                        <Text style={styles.colRight}>Mov.</Text>
+                        <Text style={styles.colType}>Tipo</Text>
+                        <Text style={styles.colRef}>Referência</Text>
+                        <Text style={styles.colName}>Nome</Text>
+                        <Text style={styles.colManufacturer}>Fabricante</Text>
+                        <Text style={styles.colQty}>Qtd.</Text>
+                        <Text style={styles.colMin}>Mín.</Text>
+                        <Text style={styles.colCost}>Custo</Text>
+                        <Text style={styles.colSale}>Venda</Text>
                     </View>
 
-                    {data.map((customer: any) => (
-                        <View key={customer.id} style={styles.tableRow}>
-                            <Text style={styles.colSmall}>{customer.part_number}</Text>
-                            <Text style={styles.colSmall}>{typesPartsByValue(customer.type)}</Text>
-                            <Text style={styles.colSmall}>{customer.reference_number}</Text>
-                            <Text style={styles.colLarge}>{customer.name}</Text>
-                            <Text style={styles.colMedium}>{customer.manufacturer}</Text>
-                            <Text style={styles.colSmall}>{customer.quantity}</Text>
-                            <Text style={styles.colSmall}>{customer.minimum_stock_level}</Text>
-                            <Text style={styles.colSmall}>{currencyFormatter(customer.cost_price ?? 0)}</Text>
-                            <Text style={styles.colSmall}>{currencyFormatter(customer.sale_price ?? 0)}</Text>
-                            <Text style={styles.colRight}>{moment(customer.created_at).format('DD/MM/YYYY')}</Text>
+                    {data.map((part: any) => (
+                        <View key={part.id} style={styles.tableRow}>
+                            <Text style={styles.colType}>{normalizePartType(part.type)}</Text>
+                            <Text style={styles.colRef}>{part.reference_number || '-'}</Text>
+                            <Text style={styles.colName}>{part.name || '-'}</Text>
+                            <Text style={styles.colManufacturer}>{part.manufacturer || '-'}</Text>
+                            <Text style={styles.colQty}>{Number(part.quantity || 0)}</Text>
+                            <Text style={styles.colMin}>{Number(part.minimum_stock_level || 0)}</Text>
+                            <Text style={styles.colCost}>{currencyFormatter(part.cost_price ?? 0)}</Text>
+                            <Text style={styles.colSale}>{currencyFormatter(part.sale_price ?? 0)}</Text>
                         </View>
                     ))}
                 </View>

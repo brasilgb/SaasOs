@@ -80,12 +80,18 @@ class ReportController extends Controller
                 break;
 
             case 'parts':
-                $data = Part::with('part_movements')
+                $data = Part::query()
+                    ->withCount('part_movements')
                     ->whereBetween('created_at', [$from, $to])
+                    ->orderBy('name')
                     ->get();
                 break;
 
             case 'expenses':
+                if (! $this->canUseSalesReports()) {
+                    abort(403, 'Relatórios de despesas estão desabilitados.');
+                }
+
                 $data = Expense::with('createdBy:id,name')
                     ->whereBetween('expense_date', [$from->toDateString(), $to->toDateString()])
                     ->orderByDesc('expense_date')

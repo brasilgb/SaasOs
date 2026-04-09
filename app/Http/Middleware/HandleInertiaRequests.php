@@ -69,6 +69,11 @@ class HandleInertiaRequests extends Middleware
             }
         }
 
+        $otherSetting = null;
+        if ($user) {
+            $otherSetting = Other::query()->firstOrCreate([]);
+        }
+
         return [
             ...parent::share($request),
 
@@ -86,7 +91,7 @@ class HandleInertiaRequests extends Middleware
             'company' => $user ? Company::first(['shortname', 'logo', 'companyname', 'cnpj']) : null,
             'setting' => $user ? Setting::first(['name', 'logo']) : null,
             'whatsapp' => $user ? WhatsappMessage::first() : null,
-            'othersetting' => $user ? Other::first() : null,
+            'othersetting' => $otherSetting,
             'orderStatus' => $user ? Order::where('service_status', 4)->get() : null,
 
             'notifications' => $user

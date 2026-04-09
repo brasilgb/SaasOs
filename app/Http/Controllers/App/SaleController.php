@@ -4,6 +4,7 @@ namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
 use App\Models\App\CashSession;
+use App\Models\App\Other;
 use App\Models\App\Part;
 use App\Models\App\Sale;
 use App\Models\App\SaleLog;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
+use Symfony\Component\HttpFoundation\Response;
 
 class SaleController extends Controller
 {
@@ -44,14 +46,33 @@ class SaleController extends Controller
         return 'paid';
     }
 
-    private function authorizeSalesAccess(): void
+    private function authorizeSalesAccess(): ?Response
     {
-        abort_unless(Auth::user()?->hasPermission('sales'), 403);
+        $user = Auth::user();
+
+        $canAccess = $user instanceof User
+            && $user->hasPermission('sales')
+            && ($user->isAdministrator() || $user->isOperator() || $user->isRoot())
+            && (bool) (Other::query()->value('enablesales') ?? false);
+
+        if ($canAccess) {
+            return null;
+        }
+
+        if (request()->expectsJson()) {
+            return response()->json([
+                'message' => 'Módulo de vendas desabilitado ou acesso não permitido.',
+            ], 403);
+        }
+
+        return redirect()->route('app.dashboard')->with('error', 'Módulo de vendas desabilitado ou acesso não permitido.');
     }
 
     public function index(Request $request)
     {
-        $this->authorizeSalesAccess();
+        if ($response = $this->authorizeSalesAccess()) {
+            return $response;
+        }
 
         $search = $request->search;
         $financialStatus = $request->get('financial_status');
@@ -96,7 +117,9 @@ class SaleController extends Controller
 
     public function store(Request $request)
     {
-        $this->authorizeSalesAccess();
+        if ($response = $this->authorizeSalesAccess()) {
+            return $response;
+        }
 
         $request->validate([
             'customer_id' => 'nullable|exists:customers,id',
@@ -190,7 +213,9 @@ class SaleController extends Controller
 
     public function cancel(Sale $sale)
     {
-        $this->authorizeSalesAccess();
+        if ($response = $this->authorizeSalesAccess()) {
+            return $response;
+        }
         $user = Auth::user();
 
         $validated = request()->validate([
@@ -235,7 +260,9 @@ class SaleController extends Controller
 
     public function destroy(Sale $sale)
     {
-        $this->authorizeSalesAccess();
+        if ($response = $this->authorizeSalesAccess()) {
+            return $response;
+        }
         $user = Auth::user();
 
         if (! $user?->isRoot() && ! $user?->isAdministrator()) {
@@ -277,7 +304,9 @@ class SaleController extends Controller
 
     public function registerFiscal(Request $request, Sale $sale)
     {
-        $this->authorizeSalesAccess();
+        if ($response = $this->authorizeSalesAccess()) {
+            return $response;
+        }
 
         if ($sale->status === 'cancelled') {
             return back()->with('error', 'Não é possível registrar comprovante fiscal em venda cancelada.');
