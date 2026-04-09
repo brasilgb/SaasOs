@@ -1,17 +1,17 @@
 import { Button } from '@/components/ui/button';
 import { router } from '@inertiajs/react';
-import { pdf } from '@react-pdf/renderer'; // componente do PDF
+import { pdf } from '@react-pdf/renderer';
 import { FileText, Loader2 } from 'lucide-react';
 import moment from 'moment';
 import { useState } from 'react';
-import TechnicianProductivityPDF from './pdf/TechnicianProductivityPDF';
+import ExpenseReportPDF from './pdf/ExpenseReportPDF';
 
 interface DateRange {
     from?: Date;
     to?: Date;
 }
 
-export default function TechnicianProductivity({ dateRange, company }: { dateRange?: DateRange; company: string }) {
+export default function ExpensesReport({ dateRange, company }: { dateRange?: DateRange; company: string }) {
     const [loading, setLoading] = useState(false);
 
     async function handleGeneratePDF() {
@@ -30,7 +30,7 @@ export default function TechnicianProductivity({ dateRange, company }: { dateRan
         router.post(
             route('app.reports.store'),
             {
-                type: 'orders',
+                type: 'expenses',
                 from: moment(dateRange.from).format('YYYY-MM-DD'),
                 to: moment(dateRange.to).format('YYYY-MM-DD'),
             },
@@ -40,8 +40,7 @@ export default function TechnicianProductivity({ dateRange, company }: { dateRan
                 onSuccess: async (page: any) => {
                     const reportData = page.props?.reportData || [];
 
-                    // Gera o PDF no frontend
-                    const blob = await pdf(<TechnicianProductivityPDF data={reportData} dateRange={dateRange} company={company} />).toBlob();
+                    const blob = await pdf(<ExpenseReportPDF data={reportData} dateRange={dateRange} company={company} />).toBlob();
 
                     const url = URL.createObjectURL(blob);
                     previewWindow.location.href = url;
@@ -66,7 +65,7 @@ export default function TechnicianProductivity({ dateRange, company }: { dateRan
                 ) : (
                     <>
                         <FileText className="mr-2 size-4" />
-                        Produtividade Técnica
+                        Despesas
                     </>
                 )}
             </Button>

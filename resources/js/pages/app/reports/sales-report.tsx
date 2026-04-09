@@ -35,13 +35,14 @@ export default function SalesReport({ dateRange, company }: { dateRange?: DateRa
                 to: moment(dateRange.to).format('YYYY-MM-DD'),
             },
             {
-                preserveState: false,
+                preserveState: true,
                 preserveScroll: true,
                 onSuccess: async (page: any) => {
                     const reportData = page.props?.reportData || [];
+                    const reportMeta = page.props?.reportMeta || {};
 
                     // Gera o PDF no frontend
-                    const blob = await pdf(<SalesReportPDF data={reportData} dateRange={dateRange} company={company} />).toBlob();
+                    const blob = await pdf(<SalesReportPDF data={reportData} dateRange={dateRange} company={company} reportMeta={reportMeta} />).toBlob();
 
                     const url = URL.createObjectURL(blob);
                     previewWindow.location.href = url;

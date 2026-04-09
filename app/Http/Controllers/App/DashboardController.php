@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\App\Customer;
 use App\Models\App\CashSession;
 use App\Models\App\Equipment;
+use App\Models\App\Expense;
 use App\Models\App\Message;
 use App\Models\App\Order;
 use App\Models\App\Other;
@@ -108,7 +109,6 @@ class DashboardController extends Controller
         [$start, $end] = $this->getRange($timerange);
 
         $equipments = Equipment::where('chart', 1)
-            ->limit(3)
             ->get();
 
         $selects = [
@@ -189,6 +189,30 @@ class DashboardController extends Controller
         }
 
         return response()->json($result);
+    }
+
+    public function budgetsStatusChart($timerange)
+    {
+        [$start, $end] = $this->getRange($timerange);
+
+        $generated = Order::query()
+            ->where('service_status', 3)
+            ->whereBetween('created_at', [$start, $end])
+            ->count();
+
+        $approved = Order::query()
+            ->where('service_status', 4)
+            ->whereBetween('created_at', [$start, $end])
+            ->count();
+
+        $approvalRate = $generated > 0 ? round(min(100, ($approved / $generated) * 100), 1) : 0;
+
+        return response()->json([
+            'generated' => $generated,
+            'approved' => $approved,
+            'total' => $generated,
+            'approval_rate' => $approvalRate,
+        ]);
     }
 
     public function metricsSystem($timerange)
@@ -358,9 +382,31 @@ class DashboardController extends Controller
             ->whereBetween('created_at', [$startDate, $endDate])
             ->sum('total_amount');
 
+        $rangeCashExits = CashSession::query()
+            ->whereNotNull('closed_at')
+            ->whereBetween('closed_at', [$startDate, $endDate])
+            ->sum('manual_exits');
+
+        $rangeRegisteredExpenses = Expense::query()
+            ->whereBetween('expense_date', [$startDate->toDateString(), $endDate->toDateString()])
+            ->sum('amount');
+
+        $rangeExpenses = $rangeCashExits + $rangeRegisteredExpenses;
+
         $todayRevenue = Sale::where('status', 'completed')
             ->whereDate('created_at', $today)
             ->sum('total_amount');
+
+        $todayCashExits = CashSession::query()
+            ->whereNotNull('closed_at')
+            ->whereDate('closed_at', $today)
+            ->sum('manual_exits');
+
+        $todayRegisteredExpenses = Expense::query()
+            ->whereDate('expense_date', $today)
+            ->sum('amount');
+
+        $todayExpenses = $todayCashExits + $todayRegisteredExpenses;
 
         $salesCount = Sale::where('status', 'completed')
             ->whereBetween('created_at', [$startDate, $endDate])
@@ -371,14 +417,26 @@ class DashboardController extends Controller
             ->count();
 
         $dailyAverage = $rangeDays > 0 ? $rangeRevenue / $rangeDays : 0;
+        $dailyExpenseAverage = $rangeDays > 0 ? $rangeExpenses / $rangeDays : 0;
         $averageTicket = $salesCount > 0 ? $rangeRevenue / $salesCount : 0;
+        $rangeProfit = $rangeRevenue - $rangeExpenses;
+        $todayProfit = $todayRevenue - $todayExpenses;
+        $dailyProfitAverage = $rangeDays > 0 ? $rangeProfit / $rangeDays : 0;
 
         return response()->json([
             'range' => $timeRange,
             'kpis' => [
                 'today_revenue' => $todayRevenue,
+                'today_expenses' => $todayExpenses,
+                'today_profit' => $todayProfit,
                 'range_revenue' => $rangeRevenue,
+                'range_expenses' => $rangeExpenses,
+                'range_profit' => $rangeProfit,
+                'range_cash_exits' => $rangeCashExits,
+                'range_registered_expenses' => $rangeRegisteredExpenses,
                 'daily_average' => $dailyAverage,
+                'daily_expense_average' => $dailyExpenseAverage,
+                'daily_profit_average' => $dailyProfitAverage,
                 'average_ticket' => $averageTicket,
                 'sales_count' => $salesCount,
                 'sales_today_count' => $salesTodayCount,
@@ -433,6 +491,25 @@ class DashboardController extends Controller
             ->pluck('value', 'date')
             ->toArray();
 
+        $cashExits = CashSession::select(
+            DB::raw('DATE(closed_at) as date'),
+            DB::raw('SUM(manual_exits) as value')
+        )
+            ->whereNotNull('closed_at')
+            ->whereBetween('closed_at', [$startDate, $endDate])
+            ->groupBy('date')
+            ->pluck('value', 'date')
+            ->toArray();
+
+        $registeredExpenses = Expense::select(
+            DB::raw('DATE(expense_date) as date'),
+            DB::raw('SUM(amount) as value')
+        )
+            ->whereBetween('expense_date', [$startDate->toDateString(), $endDate->toDateString()])
+            ->groupBy('date')
+            ->pluck('value', 'date')
+            ->toArray();
+
         $period = CarbonPeriod::create($startDate, $endDate);
 
         $data = [];
@@ -440,12 +517,16 @@ class DashboardController extends Controller
         foreach ($period as $date) {
             $d = $date->format('Y-m-d');
 
+            $dayExpenses = ($cashExits[$d] ?? 0) + ($registeredExpenses[$d] ?? 0);
+
             $data[] = [
                 'date' => $d,
                 'total' => $totals[$d] ?? 0,
                 'paid' => $paid[$d] ?? 0,
                 'pending' => $pending[$d] ?? 0,
                 'partial' => $partial[$d] ?? 0,
+                'expenses' => $dayExpenses,
+                'profit' => ($totals[$d] ?? 0) - $dayExpenses,
             ];
         }
 

@@ -1,4 +1,4 @@
-import { maskMoney } from '@/Utils/mask';
+import { currencyFormatter } from '@/Utils/currency-formatter';
 import { Document, Image, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 import moment from 'moment';
 
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     logoPlaceholder: { paddingVertical: 4, width: 40, height: 40, justifyContent: 'center', alignItems: 'center', minWidth: '100%' },
 });
 
-export default function SalesReportPDF({ data, dateRange, company }: any) {
+export default function SalesReportPDF({ data, dateRange, company, reportMeta }: any) {
     const period =
         dateRange?.from && dateRange?.to
             ? `${moment(dateRange.from).format('DD/MM/YYYY')} - ${moment(dateRange.to).format('DD/MM/YYYY')}`
@@ -70,12 +70,9 @@ export default function SalesReportPDF({ data, dateRange, company }: any) {
     const totalCanceled = data
         .filter((sale: any) => sale.status === 'cancelled')
         .reduce((acc: number, sale: any) => acc + Number(sale.total_amount || 0), 0);
-    const totalPaid = data.reduce((acc: number, sale: any) => acc + Number(sale.paid_amount || 0), 0);
-    const totalRemaining = data.reduce(
-        (acc: number, sale: any) => acc + Math.max(0, Number(sale.total_amount || 0) - Number(sale.paid_amount || 0)),
-        0,
-    );
     const totalItems = data.reduce((acc: number, sale: any) => acc + Number(sale.items_count || 0), 0);
+    const totalExpenses = Number(reportMeta?.expenses_total || 0);
+    const totalProfit = totalGeral - totalExpenses;
     const paymentMethodLabel = (method?: string) => {
         switch (method) {
             case 'pix':
@@ -116,15 +113,11 @@ export default function SalesReportPDF({ data, dateRange, company }: any) {
                     <Text style={styles.colPayment}>Pagamento</Text>
                     <Text style={styles.colItems}>Itens</Text>
                     <Text style={styles.colMoney}>Total</Text>
-                    <Text style={styles.colMoney}>Pago</Text>
-                    <Text style={styles.colMoney}>Saldo</Text>
                 </View>
 
                 {/* Linhas de dados */}
                 {data.map((sale: any) => {
                     const total = Number(sale.total_amount || 0);
-                    const paid = Number(sale.paid_amount || 0);
-                    const remaining = Math.max(0, total - paid);
 
                     return (
                         <View key={sale.id} style={styles.tableRow}>
@@ -134,9 +127,7 @@ export default function SalesReportPDF({ data, dateRange, company }: any) {
                             <Text style={styles.colStatus}>{sale.status === 'cancelled' ? 'Cancelada' : 'Completa'}</Text>
                             <Text style={styles.colPayment}>{paymentMethodLabel(sale.payment_method)}</Text>
                             <Text style={styles.colItems}>{sale.items_count || 0}</Text>
-                            <Text style={styles.colMoney}>{maskMoney(String(total))}</Text>
-                            <Text style={styles.colMoney}>{maskMoney(String(paid))}</Text>
-                            <Text style={styles.colMoney}>{maskMoney(String(remaining))}</Text>
+                            <Text style={styles.colMoney}>{currencyFormatter(total)}</Text>
                         </View>
                     );
                 })}
@@ -158,19 +149,15 @@ export default function SalesReportPDF({ data, dateRange, company }: any) {
                         </View>
                         <View style={styles.footerCard}>
                             <Text style={styles.footerCardLabel}>Total</Text>
-                            <Text style={styles.footerCardValue}>R$ {maskMoney(String(totalGeral))}</Text>
+                            <Text style={styles.footerCardValue}>{currencyFormatter(totalGeral)}</Text>
                         </View>
                         <View style={styles.footerCard}>
-                            <Text style={styles.footerCardLabel}>Pago</Text>
-                            <Text style={styles.footerCardValue}>R$ {maskMoney(String(totalPaid))}</Text>
-                        </View>
-                        <View style={styles.footerCard}>
-                            <Text style={styles.footerCardLabel}>Saldo</Text>
-                            <Text style={styles.footerCardValue}>R$ {maskMoney(String(totalRemaining))}</Text>
+                            <Text style={styles.footerCardLabel}>Lucro (Vendas - Despesas)</Text>
+                            <Text style={styles.footerCardValue}>{currencyFormatter(totalProfit)}</Text>
                         </View>
                         <View style={styles.footerCard}>
                             <Text style={styles.footerCardLabel}>Canceladas</Text>
-                            <Text style={styles.footerCardValue}>R$ {maskMoney(String(totalCanceled))}</Text>
+                            <Text style={styles.footerCardValue}>{currencyFormatter(totalCanceled)}</Text>
                         </View>
                     </View>
                 </View>

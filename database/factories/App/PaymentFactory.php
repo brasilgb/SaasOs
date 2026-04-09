@@ -16,6 +16,7 @@ class PaymentFactory extends Factory
     public function definition(): array
     {
         $status = $this->faker->randomElement(['pending', 'approved', 'cancelled']);
+        $createdAt = $this->faker->dateTimeBetween('-60 days', 'now');
 
         return [
             'gateway' => 'mercadopago',
@@ -23,11 +24,13 @@ class PaymentFactory extends Factory
             'amount' => $this->faker->randomFloat(2, 99, 1999),
             'status' => $status,
             'idempotency_key' => 'idem_'.Str::uuid(),
-            'expires_at' => $status === 'pending' ? $this->faker->dateTimeBetween('now', '+7 days') : null,
+            'expires_at' => $status === 'pending' ? $this->faker->dateTimeBetween($createdAt, 'now') : null,
             'raw_response' => [
                 'status' => $status,
                 'provider' => 'mercadopago',
             ],
+            'created_at' => $createdAt,
+            'updated_at' => $this->faker->dateTimeBetween($createdAt, 'now'),
         ];
     }
 

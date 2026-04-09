@@ -4,10 +4,10 @@ import { Icon } from '@/components/icon';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, usePage, useRemember } from '@inertiajs/react';
 import { FileTextIcon } from 'lucide-react';
-import { useState } from 'react';
 import CustomersReport from './customers-report';
+import ExpensesReport from './expenses-report';
 import OrdersStatistics from './order-statistics';
 import OrdersDaily from './orders-daily';
 import OrdersReport from './orders-report';
@@ -29,15 +29,16 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function Parts() {
     const { company, auth, othersetting } = usePage().props as any;
-    const [dateRange, setDateRange] = useState<any>({
+    const [dateRange, setDateRange] = useRemember<any>({
         from: new Date(),
         to: new Date(),
-    });
+    }, 'reports-date-range');
     const permissions = auth?.permissions ?? [];
     const canViewOrders = permissions.includes('orders');
     const canViewCustomers = permissions.includes('customers');
     const canViewSchedules = permissions.includes('schedules');
     const canViewSales = Boolean(permissions.includes('sales') && othersetting?.enablesales);
+    const canViewExpenses = permissions.includes('sales');
     const canViewParts = permissions.includes('parts');
 
     return (
@@ -58,8 +59,10 @@ export default function Parts() {
                     <CardHeader>
                         <CardTitle>Selecione um intervalo de datas e um módulo para gerar o relatório.</CardTitle>
                     </CardHeader>
-                    <CardContent>
-                        <DatePicker mode={'range'} setDate={setDateRange} date={dateRange} />
+                    <CardContent className="flex justify-start">
+                        <div className="w-full max-w-md">
+                            <DatePicker mode={'range'} setDate={setDateRange} date={dateRange} />
+                        </div>
                     </CardContent>
                     <CardContent className="flex flex-wrap items-start gap-4">
                         {canViewOrders && (
@@ -107,6 +110,12 @@ export default function Parts() {
                         {canViewParts && (
                             <div className="w-full md:w-[15.8%]">
                                 <PartsReport dateRange={dateRange} company={company} />
+                            </div>
+                        )}
+
+                        {canViewExpenses && (
+                            <div className="w-full md:w-[15.8%]">
+                                <ExpensesReport dateRange={dateRange} company={company} />
                             </div>
                         )}
                     </CardContent>

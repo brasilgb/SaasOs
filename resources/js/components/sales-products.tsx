@@ -262,6 +262,16 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
         if (cartItems.length === 0) return;
 
         setIsGeneratingPdf(true);
+        const previewWindow = window.open('', '_blank');
+
+        if (!previewWindow) {
+            setIsGeneratingPdf(false);
+            return;
+        }
+
+        previewWindow.document.title = 'Gerando recibo...';
+        previewWindow.document.body.innerHTML = '<p style="font-family: Arial, sans-serif; padding: 16px;">Gerando recibo PDF...</p>';
+
         try {
             // Gera o blob do PDF
             const blob = await pdf(
@@ -275,8 +285,10 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
             ).toBlob();
 
             const url = URL.createObjectURL(blob);
-            window.open(url, '_blank'); // Abre em nova aba para imprimir
+            previewWindow.location.href = url;
+            setTimeout(() => URL.revokeObjectURL(url), 60_000);
         } catch (error) {
+            previewWindow.close();
             console.error('Erro ao gerar PDF:', error);
             alert('Erro ao gerar o PDF.');
         } finally {

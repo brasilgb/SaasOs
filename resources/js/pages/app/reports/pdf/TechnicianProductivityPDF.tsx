@@ -1,4 +1,4 @@
-import { maskMoney } from '@/Utils/mask';
+import { currencyFormatter } from '@/Utils/currency-formatter';
 import { Document, Image, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 import moment from 'moment';
 
@@ -187,9 +187,9 @@ export default function TechnicianProductivityPDF({ data, company, dateRange }: 
 
                             <Text style={styles.colCenter}>{row.totalOrdens}</Text>
 
-                            <Text style={styles.colMoney}>R$ {maskMoney(String(row.totalServicos))}</Text>
+                            <Text style={styles.colMoney}>{currencyFormatter(row.totalServicos)}</Text>
 
-                            <Text style={styles.colMoney}>R$ {maskMoney(String(row.ticketMedio))}</Text>
+                            <Text style={styles.colMoney}>{currencyFormatter(row.ticketMedio)}</Text>
                         </View>
                     ))}
                 </View>
@@ -202,11 +202,11 @@ export default function TechnicianProductivityPDF({ data, company, dateRange }: 
                         </View>
                         <View style={styles.footerCard}>
                             <Text style={styles.footerCardLabel}>Faturado em Serviços</Text>
-                            <Text style={styles.footerCardValue}>R$ {maskMoney(String(totalServicos))}</Text>
+                            <Text style={styles.footerCardValue}>{currencyFormatter(totalServicos)}</Text>
                         </View>
                         <View style={styles.footerCard}>
                             <Text style={styles.footerCardLabel}>Ticket Médio Geral</Text>
-                            <Text style={styles.footerCardValue}>R$ {maskMoney(String(totalOrdens ? totalServicos / totalOrdens : 0))}</Text>
+                            <Text style={styles.footerCardValue}>{currencyFormatter(totalOrdens ? totalServicos / totalOrdens : 0)}</Text>
                         </View>
                     </View>
                 </View>

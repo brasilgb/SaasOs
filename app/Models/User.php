@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\App\Message;
 use App\Models\App\Order;
+use App\Models\App\Expense;
 use App\Models\App\Schedule;
 use App\Tenantable;
 use Database\Factories\UserFactory;
@@ -79,6 +80,11 @@ class User extends Authenticatable
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function expenses(): HasMany
+    {
+        return $this->hasMany(Expense::class, 'created_by');
     }
 
     public function tenant(): BelongsTo

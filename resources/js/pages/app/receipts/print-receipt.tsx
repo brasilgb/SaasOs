@@ -1,7 +1,10 @@
 import { Button } from '@/components/ui/button';
 import { maskMoney } from '@/Utils/mask';
 import { Link } from '@inertiajs/react';
+import { pdf } from '@react-pdf/renderer';
 import { ArrowLeft, Printer, Square } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import OrderReceiptPDF from './pdf/OrderReceiptPDF';
 
 function ReceiptCopy({
     order,
@@ -226,6 +229,52 @@ function ReceiptCopy({
 }
 
 export default function Receipt({ order, company, type, receipt, checklist }: { order: any; company: any; type: any; receipt: any; checklist: any }) {
+    const [openAsPdf, setOpenAsPdf] = useState(false);
+    const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const query = new URLSearchParams(window.location.search);
+        setOpenAsPdf(query.get('pdf') === '1');
+    }, []);
+
+    useEffect(() => {
+        if (!openAsPdf) return;
+
+        let isMounted = true;
+        const generatePdf = async () => {
+            setIsGeneratingPdf(true);
+            try {
+                const blob = await pdf(
+                    <OrderReceiptPDF order={order} company={company} type={type} receipt={receipt} checklist={checklist} />,
+                ).toBlob();
+                if (!isMounted) return;
+
+                const url = URL.createObjectURL(blob);
+                window.location.href = url;
+                setTimeout(() => URL.revokeObjectURL(url), 60_000);
+            } catch (error) {
+                console.error('Erro ao gerar recibo em PDF:', error);
+                alert('Erro ao gerar recibo em PDF.');
+            } finally {
+                if (isMounted) setIsGeneratingPdf(false);
+            }
+        };
+
+        generatePdf();
+        return () => {
+            isMounted = false;
+        };
+    }, [openAsPdf, order, company, type, receipt, checklist]);
+
+    if (openAsPdf) {
+        return (
+            <div className="mx-auto flex min-h-[60vh] max-w-4xl items-center justify-center p-6">
+                <p className="text-sm text-muted-foreground">{isGeneratingPdf ? 'Gerando recibo PDF...' : 'Abrindo recibo PDF...'}</p>
+            </div>
+        );
+    }
+
     const handlePrint = () => {
         window.print();
     };

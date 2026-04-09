@@ -1,4 +1,5 @@
 import { ChartAreaDashboard } from '@/components/Charts/chart-area-dashboard';
+import ChartBudgetsStatus from '@/components/Charts/chart-budgets-status';
 import ChartFluxoOrders from '@/components/Charts/chart-fluxo-orders';
 import { KpiDashboard } from '@/components/kpi-dashboard';
 import { KpiOverdueOrders } from '@/components/kpi-overdue-orders';
@@ -9,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { connectBackend } from '@/Utils/connectApi';
-import { Link, usePage } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import { Calendar, Check, MemoryStickIcon, MessageSquareMore, Users, Wrench } from 'lucide-react';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
@@ -24,8 +25,19 @@ function formatBrDate(date: Date | string) {
     return moment(d).format('DD/MM/YYYY');
 }
 
-export default function OrderDashboard({ timerange, dateRange, customRange, parts, customers, others, cashier, orders, acount, listSchedules }: any) {
-    const { auth } = usePage<{ auth?: { role?: string; permissions?: string[] } }>().props;
+export default function OrderDashboard({
+    timerange,
+    dateRange,
+    customRange,
+    parts,
+    customers,
+    others,
+    cashier,
+    orders,
+    acount,
+    listSchedules,
+    auth,
+}: any) {
     const [metrics, setMetrics] = useState<any>([]);
     const canUsePdv = auth?.permissions?.includes('sales') && auth?.role !== 'technician';
     const isCashierOpen = Boolean(cashier?.isOpen);
@@ -183,8 +195,8 @@ export default function OrderDashboard({ timerange, dateRange, customRange, part
                                     <TabsContent value="va" className="max-h-48 overflow-y-auto">
                                         <div className="py-1 text-xs font-semibold">Visitas agendadas pelo número do agendamento</div>
                                         <div className="flex flex-wrap gap-2 border-t py-2">
-                                            {orders?.agendados.map((age: any) => (
-                                                <Button key={age.id} variant={'secondary'} asChild>
+                                            {orders?.agendados.map((age: any, index: number) => (
+                                                <Button key={`ag-${age.schedules_number ?? index}`} variant={'secondary'} asChild>
                                                     <Link href={route('app.schedules.index', { q: age.id, init: true })}>{age.schedules_number}</Link>
                                                 </Button>
                                             ))}
@@ -193,8 +205,8 @@ export default function OrderDashboard({ timerange, dateRange, customRange, part
                                     <TabsContent value="og" className="max-h-48 overflow-y-auto">
                                         <div className="py-1 text-xs font-semibold">Orçamentos gerados por número de ordem</div>
                                         <div className="flex flex-wrap gap-2 border-t py-2">
-                                            {orders?.gerados.map((ger: any) => (
-                                                <Button key={ger.id} variant={'secondary'} asChild>
+                                            {orders?.gerados.map((ger: any, index: number) => (
+                                                <Button key={`og-${ger.order_number ?? index}`} variant={'secondary'} asChild>
                                                     <Link href={route('app.orders.index', { q: ger.id, init: true })}>{ger.order_number}</Link>
                                                 </Button>
                                             ))}
@@ -203,8 +215,8 @@ export default function OrderDashboard({ timerange, dateRange, customRange, part
                                     <TabsContent value="oa" className="max-h-48 overflow-y-auto">
                                         <div className="py-1 text-xs font-semibold">Orçamentos aprovados por número de ordem</div>
                                         <div className="flex flex-wrap gap-2 border-t py-2">
-                                            {orders?.aprovados.map((apro: any) => (
-                                                <Button key={apro.id} variant={'secondary'} asChild>
+                                            {orders?.aprovados.map((apro: any, index: number) => (
+                                                <Button key={`oa-${apro.order_number ?? index}`} variant={'secondary'} asChild>
                                                     <Link href={route('app.orders.index', { q: apro.id, init: true })}>{apro.order_number}</Link>
                                                 </Button>
                                             ))}
@@ -213,8 +225,8 @@ export default function OrderDashboard({ timerange, dateRange, customRange, part
                                     <TabsContent value="ca" className="max-h-48 overflow-y-auto">
                                         <div className="py-1 text-xs font-semibold">Serviços concluídos por número de ordem e clientes avisados</div>
                                         <div className="flex flex-wrap gap-2 border-t py-2">
-                                            {orders?.concluidosca.map((conca: any) => (
-                                                <Button key={conca.id} variant={'secondary'} asChild>
+                                            {orders?.concluidosca.map((conca: any, index: number) => (
+                                                <Button key={`ca-${conca.order_number ?? index}`} variant={'secondary'} asChild>
                                                     <Link href={route('app.orders.index', { q: conca.id, init: true })}>{conca.order_number}</Link>
                                                 </Button>
                                             ))}
@@ -225,8 +237,8 @@ export default function OrderDashboard({ timerange, dateRange, customRange, part
                                             Serviços concluídos por número de ordem e clientes não avisados
                                         </div>
                                         <div className="flex flex-wrap gap-2 border-t py-2">
-                                            {orders?.concluidoscn.map((concn: any) => (
-                                                <Button key={concn.id} variant={'secondary'} asChild>
+                                            {orders?.concluidoscn.map((concn: any, index: number) => (
+                                                <Button key={`cn-${concn.order_number ?? index}`} variant={'secondary'} asChild>
                                                     <Link href={route('app.orders.index', { q: concn.id, init: true })}>{concn.order_number}</Link>
                                                 </Button>
                                             ))}
@@ -235,8 +247,8 @@ export default function OrderDashboard({ timerange, dateRange, customRange, part
                                     <TabsContent value="fb" className="max-h-48 overflow-y-auto">
                                         <div className="py-1 text-xs font-semibold">Serviços a sete dias para provável feedback</div>
                                         <div className="flex flex-wrap gap-2 border-t py-2">
-                                            {orders?.feedback.map((ger: any) => (
-                                                <Button key={ger.id} variant={'secondary'} asChild>
+                                            {orders?.feedback.map((ger: any, index: number) => (
+                                                <Button key={`fb-${ger.order_number ?? index}`} variant={'secondary'} asChild>
                                                     <Link href={route('app.orders.index', { q: ger.id, init: true, fd: 1 })} className="relative">
                                                         {ger.feedback && <Check className="absolute -top-1 -right-1 h-4 w-4" />}
                                                         {ger.order_number}
@@ -252,11 +264,14 @@ export default function OrderDashboard({ timerange, dateRange, customRange, part
                 </div>
             </div>
 
-            <div className="mt-3">
+            <div className="mt-3 grid gap-3 xl:grid-cols-3">
                 <div>
                     <ChartAreaDashboard timerange={timerange} dateRange={dateRange} customRange={customRange} />
                 </div>
-                <div className="mt-3">
+                <div>
+                    <ChartBudgetsStatus timerange={timerange} dateRange={dateRange} customRange={customRange} />
+                </div>
+                <div>
                     <ChartFluxoOrders timerange={timerange} dateRange={dateRange} customRange={customRange} />
                 </div>
             </div>

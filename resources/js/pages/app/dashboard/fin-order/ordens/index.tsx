@@ -1,10 +1,37 @@
-import { FinancialRevenueChart } from '@/components/Charts/chart-financial-revenue';
+import { FinancialRevenueChart, FinancialRevenueTrendChart } from '@/components/Charts/chart-financial-revenue';
 import { KpiFinancial } from '@/components/kpi-financial';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { connectBackend } from '@/Utils/connectApi';
 import { DollarSign, Receipt, TrendingUp } from 'lucide-react';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
+
+type DateRangeValue = {
+    from?: Date | string;
+    to?: Date | string;
+};
+
+type FinancialRevenuePoint = {
+    date: string;
+    total: number;
+    services: number;
+    parts: number;
+};
+
+type RevenueBreakdown = {
+    total: number;
+    services: number;
+    parts: number;
+};
+
+type OrdersKpis = {
+    today_revenue: RevenueBreakdown;
+    range_revenue: RevenueBreakdown;
+    daily_average: RevenueBreakdown;
+    average_ticket: RevenueBreakdown;
+    orders_count: number;
+    orders_today_count: number;
+};
 
 function formatIsoDate(date: Date | string) {
     const d = date instanceof Date ? date : new Date(date);
@@ -16,9 +43,18 @@ function formatBrDate(date: Date | string) {
     return moment(d).format('DD/MM/YYYY');
 }
 
-export default function FinanceiroOrders({ timerange, dateRange, customRange }: any) {
-    const [kpiOrders, setKpisOrders] = useState<any>([]);
-    const [chartFinancial, setChartFinancial] = useState<any>([]);
+export default function FinanceiroOrders({
+    timerange,
+    dateRange,
+    customRange,
+}: {
+    timerange: number;
+    dateRange?: DateRangeValue;
+    customRange?: boolean;
+}) {
+    const [kpiOrders, setKpisOrders] = useState<OrdersKpis | null>(null);
+    const [chartFinancial, setChartFinancial] = useState<FinancialRevenuePoint[]>([]);
+    const [chartFinancialTrend, setChartFinancialTrend] = useState<FinancialRevenuePoint[]>([]);
 
     useEffect(() => {
         const getOrders = async () => {
@@ -57,6 +93,22 @@ export default function FinanceiroOrders({ timerange, dateRange, customRange }: 
         };
         getChartFinancial();
     }, [timerange, customRange, dateRange]);
+
+    useEffect(() => {
+        const getChartFinancialTrend = async () => {
+            try {
+                const query = new URLSearchParams();
+                query.set('from', moment().startOf('month').format('YYYY-MM-DD'));
+                query.set('to', moment().endOf('month').format('YYYY-MM-DD'));
+
+                const response = await connectBackend.get(`financialRevenueChart/30?${query.toString()}`);
+                setChartFinancialTrend(response.data);
+            } catch (error) {
+                console.error('Erro ao carregar dados do gráfico composto financeiro', error);
+            }
+        };
+        getChartFinancialTrend();
+    }, []);
 
     const rangeLabel =
         customRange && dateRange?.from && dateRange?.to ? `${formatBrDate(dateRange.from)} a ${formatBrDate(dateRange.to)}` : `${timerange} dias`;
@@ -101,15 +153,28 @@ export default function FinanceiroOrders({ timerange, dateRange, customRange }: 
                 />
             </div>
 
-            <div className="mt-3">
-                <Card>
+            <div className="mt-3 grid gap-3 xl:grid-cols-3">
+                <Card className="xl:col-span-1">
                     <CardHeader>
                         <CardTitle>Faturamento</CardTitle>
-                        <CardDescription>Serviços, peças e total do período de {rangeLabel}</CardDescription>
+                        <CardDescription>Participação por categoria no período de {rangeLabel}</CardDescription>
                     </CardHeader>
 
                     <CardContent>
-                        <FinancialRevenueChart data={chartFinancial} />
+                        <div className="mx-auto w-full max-w-[340px]">
+                            <FinancialRevenueChart data={chartFinancial} />
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="xl:col-span-2">
+                    <CardHeader>
+                        <CardTitle>Comparativo de ganhos</CardTitle>
+                        <CardDescription>Mês corrente (do dia 01 ao último dia do mês): total de serviços x total de peças</CardDescription>
+                    </CardHeader>
+
+                    <CardContent>
+                        <FinancialRevenueTrendChart data={chartFinancialTrend} />
                     </CardContent>
                 </Card>
             </div>

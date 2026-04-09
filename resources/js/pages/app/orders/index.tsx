@@ -261,10 +261,10 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                         href={route('app.orders.edit', order.id)}
                                                         data={{ page: orders.current_page, search: search }}
                                                     >
-                                                        <Edit />
+                                                        <Edit className="h-4 w-4" />
                                                     </Link>
                                                 </Button>
-
+ 
                                                 {canManageOrders && <ActionDelete title={'esta ordem'} url={'app.orders.destroy'} param={order.id} />}
                                             </TableCell>
                                         </TableRow>

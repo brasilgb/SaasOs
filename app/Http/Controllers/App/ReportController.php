@@ -4,6 +4,7 @@ namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
 use App\Models\App\Customer;
+use App\Models\App\Expense;
 use App\Models\App\Order;
 use App\Models\App\Other;
 use App\Models\App\Part;
@@ -43,6 +44,7 @@ class ReportController extends Controller
         $type = $request->input('type');
         $from = Carbon::parse($request->input('from'))->startOfDay();
         $to = Carbon::parse($request->input('to'))->endOfDay();
+        $reportMeta = [];
 
         switch ($type) {
             case 'orders':
@@ -71,11 +73,23 @@ class ReportController extends Controller
                     ->withCount('items')
                     ->whereBetween('created_at', [$from, $to])
                     ->get();
+
+                $reportMeta['expenses_total'] = (float) Expense::query()
+                    ->whereBetween('expense_date', [$from->toDateString(), $to->toDateString()])
+                    ->sum('amount');
                 break;
 
             case 'parts':
                 $data = Part::with('part_movements')
                     ->whereBetween('created_at', [$from, $to])
+                    ->get();
+                break;
+
+            case 'expenses':
+                $data = Expense::with('createdBy:id,name')
+                    ->whereBetween('expense_date', [$from->toDateString(), $to->toDateString()])
+                    ->orderByDesc('expense_date')
+                    ->orderByDesc('expense_number')
                     ->get();
                 break;
 
@@ -85,6 +99,7 @@ class ReportController extends Controller
 
         return Inertia::render('app/reports/index', [
             'reportData' => $data,
+            'reportMeta' => $reportMeta,
             'type' => $type,
         ]);
     }

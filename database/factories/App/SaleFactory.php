@@ -24,6 +24,8 @@ class SaleFactory extends Factory
      */
     public function definition()
     {
+        $createdAt = $this->faker->dateTimeBetween('-60 days', 'now');
+
         return [
             'sales_number' => $this->faker->unique()->numberBetween(1, 10000),
             'total_amount' => $total = $this->faker->randomFloat(2, 20, 1000),
@@ -32,8 +34,10 @@ class SaleFactory extends Factory
             'payment_method' => $this->faker->randomElement(['pix', 'cartao', 'dinheiro', 'transferencia', 'boleto']),
             'status' => $this->faker->randomElement(['completed', 'cancelled']),
             'cancelled_at' => fn (array $attributes) => ($attributes['status'] ?? null) === 'cancelled'
-                ? $this->faker->dateTimeBetween('-30 days', 'now')
+                ? $this->faker->dateTimeBetween($attributes['created_at'] ?? '-60 days', 'now')
                 : null,
+            'created_at' => $createdAt,
+            'updated_at' => $this->faker->dateTimeBetween($createdAt, 'now'),
         ];
     }
 

@@ -1,4 +1,4 @@
-import { maskMoney } from '@/Utils/mask';
+import { currencyFormatter } from '@/Utils/currency-formatter';
 import { Document, Image, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 import moment from 'moment';
 
@@ -138,7 +138,7 @@ export default function OrderReportPDF({ data, dateRange, company }: any) {
                             <Text style={styles.colMedium}>{order.model || '—'}</Text>
                             <Text style={styles.col}>{order.user?.name || '—'}</Text>
                             <Text style={styles.colMedium}>{STATUS_MAP[order.service_status] || '—'}</Text>
-                            <Text style={styles.colRight}>R$ {maskMoney(String(Number(order.parts_value) + Number(order.service_value)))}</Text>
+                            <Text style={styles.colRight}>{currencyFormatter(Number(order.parts_value) + Number(order.service_value))}</Text>
                         </View>
                     ))}
                 </View>
@@ -156,11 +156,11 @@ export default function OrderReportPDF({ data, dateRange, company }: any) {
                         </View>
                         <View style={styles.footerCard}>
                             <Text style={styles.footerCardLabel}>Valor Total</Text>
-                            <Text style={styles.footerCardValue}>R$ {maskMoney(String(totalGeral))}</Text>
+                            <Text style={styles.footerCardValue}>{currencyFormatter(totalGeral)}</Text>
                         </View>
                         <View style={styles.footerCard}>
                             <Text style={styles.footerCardLabel}>Ticket Médio</Text>
-                            <Text style={styles.footerCardValue}>R$ {maskMoney(String(avgTicket))}</Text>
+                            <Text style={styles.footerCardValue}>{currencyFormatter(avgTicket)}</Text>
                         </View>
                     </View>
                 </View>

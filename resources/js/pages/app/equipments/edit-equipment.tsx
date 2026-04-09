@@ -47,7 +47,7 @@ export default function EditEquipment({ equipment, page, search }: any) {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="chart">Adicionar ao gráfico do dashboard (max:. 3)</Label>
+                                <Label htmlFor="chart">Adicionar ao gráfico do dashboard</Label>
                                 <Switch id="chart" checked={data.chart} onCheckedChange={(checked: any) => setData('chart', checked)} />
                             </div>
                         </div>

@@ -21,7 +21,7 @@ interface DatePickerProps {
 }
 
 // Arrays fixos para evitar recriação a cada render
-const MONTHS = moment.months();
+const MONTHS = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 const currentYear = new Date().getFullYear();
 const YEARS = Array.from({ length: 100 }, (_, i) => currentYear - 80 + i);
 
@@ -37,7 +37,12 @@ export function DatePicker({ date, setDate, mode = 'range' }: DatePickerProps) {
         if (value instanceof Date) return value;
 
         const [year, month, day] = value.split('-').map(Number);
-        return new Date(year, month - 1, day); // 🔥 LOCAL
+        if (Number.isFinite(year) && Number.isFinite(month) && Number.isFinite(day)) {
+            return new Date(year, month - 1, day);
+        }
+
+        const parsed = new Date(value);
+        return Number.isNaN(parsed.getTime()) ? undefined : parsed;
     }
 
     const parsedDate = React.useMemo<Date | DateRange | undefined>(() => {

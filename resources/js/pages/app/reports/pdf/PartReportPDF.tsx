@@ -1,5 +1,5 @@
 import { typesPartsByValue } from '@/Utils/functions';
-import { maskMoney } from '@/Utils/mask';
+import { currencyFormatter } from '@/Utils/currency-formatter';
 import { Document, Image, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 import moment from 'moment';
 
@@ -136,8 +136,8 @@ export default function PartReportPDF({ data, dateRange, company }: any) {
                             <Text style={styles.colMedium}>{customer.manufacturer}</Text>
                             <Text style={styles.colSmall}>{customer.quantity}</Text>
                             <Text style={styles.colSmall}>{customer.minimum_stock_level}</Text>
-                            <Text style={styles.colSmall}>R$ {maskMoney(String(customer.cost_price ?? 0))}</Text>
-                            <Text style={styles.colSmall}>R$ {maskMoney(String(customer.sale_price ?? 0))}</Text>
+                            <Text style={styles.colSmall}>{currencyFormatter(customer.cost_price ?? 0)}</Text>
+                            <Text style={styles.colSmall}>{currencyFormatter(customer.sale_price ?? 0)}</Text>
                             <Text style={styles.colRight}>{moment(customer.created_at).format('DD/MM/YYYY')}</Text>
                         </View>
                     ))}
@@ -159,11 +159,11 @@ export default function PartReportPDF({ data, dateRange, company }: any) {
                         </View>
                         <View style={styles.footerCard}>
                             <Text style={styles.footerCardLabel}>Estoque a custo</Text>
-                            <Text style={styles.footerCardValue}>R$ {maskMoney(String(stockCost))}</Text>
+                            <Text style={styles.footerCardValue}>{currencyFormatter(stockCost)}</Text>
                         </View>
                         <View style={styles.footerCard}>
                             <Text style={styles.footerCardLabel}>Estoque a venda</Text>
-                            <Text style={styles.footerCardValue}>R$ {maskMoney(String(stockSale))}</Text>
+                            <Text style={styles.footerCardValue}>{currencyFormatter(stockSale)}</Text>
                         </View>
                     </View>
                 </View>

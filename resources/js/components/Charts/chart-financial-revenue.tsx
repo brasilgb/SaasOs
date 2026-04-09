@@ -1,12 +1,24 @@
-import { Area, CartesianGrid, Line, LineChart, XAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, Pie, PieChart, XAxis, YAxis } from 'recharts';
 
-import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import moment from 'moment';
 
 const chartConfig = {
     total: {
         label: 'Total',
         color: 'var(--chart-1)',
     },
+    services: {
+        label: 'Serviços',
+        color: 'var(--chart-2)',
+    },
+    parts: {
+        label: 'Peças',
+        color: 'var(--chart-3)',
+    },
+} satisfies ChartConfig;
+
+const trendChartConfig = {
     services: {
         label: 'Serviços',
         color: 'var(--chart-2)',
@@ -25,53 +37,84 @@ type FinancialRevenuePoint = {
 };
 
 export function FinancialRevenueChart({ data }: { data: FinancialRevenuePoint[] }) {
+    const totals = data.reduce(
+        (acc, item) => {
+            acc.services += Number(item.services || 0);
+            acc.parts += Number(item.parts || 0);
+            return acc;
+        },
+        { services: 0, parts: 0 },
+    );
+
+    const pieData = [
+        { key: 'services', label: 'Serviços', value: totals.services, fill: 'var(--color-services)' },
+        { key: 'parts', label: 'Peças', value: totals.parts, fill: 'var(--color-parts)' },
+    ].filter((item) => item.value > 0);
+
     return (
         <ChartContainer config={chartConfig} className="h-[300px] w-full">
-            <LineChart data={data}>
-                <CartesianGrid vertical={false} />
+            <PieChart>
+                <ChartTooltip cursor={false} content={<ChartTooltipContent nameKey="key" hideLabel />} />
+                <Pie data={pieData} dataKey="value" nameKey="label" innerRadius={55} outerRadius={95} strokeWidth={2} />
+                <ChartLegend align="left" verticalAlign="middle" layout="vertical" content={<ChartLegendContent nameKey="key" className="flex-col items-start justify-start pl-2 pt-0" />} />
+            </PieChart>
+        </ChartContainer>
+    );
+}
 
-                <XAxis
-                    dataKey="date"
+function formatCurrency(value?: number) {
+    return Number(value || 0).toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+    });
+}
+
+export function FinancialRevenueTrendChart({ data }: { data: FinancialRevenuePoint[] }) {
+    const chartData = data.map((item) => ({
+        ...item,
+        dateLabel: moment(item.date).format('DD/MM'),
+    }));
+
+    return (
+        <ChartContainer config={trendChartConfig} className="h-[300px] w-full">
+            <BarChart data={chartData} margin={{ top: 8, right: 10, left: 10, bottom: 0 }}>
+                <CartesianGrid vertical={false} />
+                <XAxis dataKey="dateLabel" tickLine={false} axisLine={false} minTickGap={18} />
+                <YAxis
                     tickLine={false}
                     axisLine={false}
-                    tickMargin={8}
-                    minTickGap={32}
+                    width={72}
                     tickFormatter={(value) =>
-                        new Date(value).toLocaleDateString('pt-BR', {
-                            day: '2-digit',
-                            month: '2-digit',
+                        Number(value || 0).toLocaleString('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL',
+                            maximumFractionDigits: 0,
                         })
                     }
                 />
-
                 <ChartTooltip
                     cursor={false}
                     content={
                         <ChartTooltipContent
-                            indicator="dot"
-                            // formatter={(value) => currencyFormatter(Number(value))}
-                            labelFormatter={(value) =>
-                                new Date(value).toLocaleDateString('pt-BR', {
-                                    day: '2-digit',
-                                    month: '2-digit',
-                                })
+                            labelFormatter={(_, payload) =>
+                                payload?.[0]?.payload?.date ? moment(payload[0].payload.date).format('DD/MM/YYYY') : ''
                             }
+                            formatter={(value, name) => {
+                                const label = name === 'services' ? 'Serviços' : 'Peças';
+                                return (
+                                    <div className="flex w-full items-center justify-between gap-3">
+                                        <span>{label}</span>
+                                        <span className="font-mono font-medium tabular-nums">{formatCurrency(Number(value || 0))}</span>
+                                    </div>
+                                );
+                            }}
                         />
                     }
                 />
-
-                {/* Área somente no TOTAL */}
-
-                <Area dataKey="total" type="monotone" fill="var(--color-total)" fillOpacity={0.08} stroke="none" />
-
-                {/* Linhas */}
-
-                <Line dataKey="total" type="monotone" stroke="var(--color-total)" strokeWidth={3} dot={false} />
-
-                <Line dataKey="services" type="monotone" stroke="var(--color-services)" strokeWidth={2} dot={false} />
-
-                <Line dataKey="parts" type="monotone" stroke="var(--color-parts)" strokeWidth={2} dot={false} />
-            </LineChart>
+                <Bar dataKey="services" name="services" fill="var(--color-services)" radius={[4, 4, 0, 0]} maxBarSize={18} />
+                <Bar dataKey="parts" name="parts" fill="var(--color-parts)" radius={[4, 4, 0, 0]} maxBarSize={18} />
+                <ChartLegend content={<ChartLegendContent nameKey="name" />} />
+            </BarChart>
         </ChartContainer>
     );
 }

@@ -24,14 +24,18 @@ class ScheduleFactory extends Factory
      */
     public function definition()
     {
+        $scheduledAt = $this->faker->dateTimeBetween('-60 days', 'now');
+
         return [
             'schedules_number' => $this->faker->unique()->numberBetween(1, 10000),
-            'schedules' => $this->faker->dateTimeBetween('+1 day', '+1 month'),
+            'schedules' => $scheduledAt,
             'service' => $this->faker->sentence(3),
             'details' => $this->faker->paragraph(),
             'status' => $this->faker->numberBetween(1, 4),
             'observations' => $this->faker->optional()->sentence(),
             'responsible_technician' => $this->faker->name(),
+            'created_at' => $scheduledAt,
+            'updated_at' => $this->faker->dateTimeBetween($scheduledAt, 'now'),
         ];
     }
 

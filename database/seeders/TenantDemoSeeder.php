@@ -26,6 +26,8 @@ use App\Models\App\WhatsappMessage;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -109,6 +111,9 @@ class TenantDemoSeeder extends Seeder
 
     private function seedTenantData(Tenant $tenant, int $tenantIndex): void
     {
+        $windowStart = now()->subDays(60)->startOfDay();
+        $windowEnd = now()->endOfDay();
+
         $users = $this->seedUsers($tenant, $tenantIndex);
         $technicians = $users->where('roles', User::ROLE_TECHNICIAN)->values();
 
@@ -155,12 +160,20 @@ class TenantDemoSeeder extends Seeder
             'sender_id' => fn () => $users->random()->id,
             'recipient_id' => fn () => $users->random()->id,
         ]);
+        $this->spreadTimestamps(Budget::query()->where('tenant_id', $tenant->id)->latest('id')->take(24)->get(), $windowStart, $windowEnd);
+        $this->spreadTimestamps($customers, $windowStart, $windowEnd);
+        $this->spreadTimestamps($parts, $windowStart, $windowEnd);
+        $this->spreadTimestamps($orders, $windowStart, $windowEnd);
+        $this->spreadTimestamps(Schedule::query()->where('tenant_id', $tenant->id)->latest('id')->take(36)->get(), $windowStart, $windowEnd);
+        $this->spreadTimestamps(Message::query()->where('tenant_id', $tenant->id)->latest('id')->take(40)->get(), $windowStart, $windowEnd);
 
-        $this->seedOrderRelatedData($tenant, $orders, $parts, $users);
-        $this->seedSales($tenant, $customers, $parts);
+        $this->seedOrderRelatedData($tenant, $orders, $parts, $users, $windowEnd);
+        $this->seedSales($tenant, $customers, $parts, $windowStart, $windowEnd);
 
         Payment::factory(3)->forTenant($tenant->id)->create([
             'amount' => $tenant->plan?->value ?? 99.90,
+            'created_at' => fn () => fake()->dateTimeBetween($windowStart, $windowEnd),
+            'updated_at' => fn (array $attributes) => $attributes['created_at'],
         ]);
     }
 
@@ -190,21 +203,23 @@ class TenantDemoSeeder extends Seeder
         return collect([$mainUser, $admin, $operator])->merge($technicians);
     }
 
-    private function seedOrderRelatedData(Tenant $tenant, $orders, $parts, $users): void
+    private function seedOrderRelatedData(Tenant $tenant, $orders, $parts, $users, Carbon $windowEnd): void
     {
         foreach ($orders as $order) {
+            $orderCreatedAt = Carbon::parse($order->created_at);
             $selectedParts = $parts->random(random_int(1, 3));
             $partsForOrder = $selectedParts instanceof Part ? collect([$selectedParts]) : $selectedParts;
 
             foreach ($partsForOrder as $part) {
                 $quantity = random_int(1, 3);
+                $partCreatedAt = $orderCreatedAt->copy()->addHours(random_int(1, 48))->min($windowEnd);
 
                 DB::table('order_parts')->insert([
                     'order_id' => $order->id,
                     'part_id' => $part->id,
                     'quantity' => $quantity,
-                    'created_at' => now(),
-                    'updated_at' => now(),
+                    'created_at' => $partCreatedAt,
+                    'updated_at' => $partCreatedAt,
                 ]);
 
                 PartMovement::factory()->forTenant($tenant->id)->create([
@@ -214,27 +229,33 @@ class TenantDemoSeeder extends Seeder
                     'movement_type' => 'saida',
                     'quantity' => $quantity,
                     'reason' => 'Uso em ordem #'.$order->order_number,
+                    'created_at' => $partCreatedAt,
+                    'updated_at' => $partCreatedAt,
                 ]);
             }
 
             OrderStatusHistory::factory(2)->create([
                 'order_id' => $order->id,
                 'changed_by' => $users->random()->id,
+                'created_at' => fn () => $orderCreatedAt->copy()->addHours(random_int(2, 120))->min($windowEnd),
+                'updated_at' => fn (array $attributes) => $attributes['created_at'],
             ]);
+
+            $paidAt = $orderCreatedAt->copy()->addDays(random_int(0, 20))->min($windowEnd);
 
             DB::table('order_payments')->insert([
                 'order_id' => $order->id,
                 'amount' => $order->budget_value ?? random_int(100, 1000),
                 'payment_method' => collect(['pix', 'cartao', 'dinheiro'])->random(),
-                'paid_at' => now()->subDays(random_int(0, 20)),
+                'paid_at' => $paidAt,
                 'notes' => sprintf(
                     'Pagamento OS #%s - %s (seed tenant %s)',
                     $order->order_number,
                     $order->customer?->name ?? 'Cliente',
                     $tenant->id
                 ),
-                'created_at' => now(),
-                'updated_at' => now(),
+                'created_at' => $paidAt,
+                'updated_at' => $paidAt,
             ]);
 
             DB::table('order_logs')->insert([
@@ -242,18 +263,21 @@ class TenantDemoSeeder extends Seeder
                 'user_id' => $users->random()->id,
                 'action' => collect(['created', 'status_changed', 'payment_registered'])->random(),
                 'data' => json_encode(['token' => Str::random(8), 'seed' => true], JSON_THROW_ON_ERROR),
-                'created_at' => now()->subDays(random_int(0, 30)),
+                'created_at' => $orderCreatedAt->copy()->addHours(random_int(1, 96))->min($windowEnd),
             ]);
 
             Image::factory(random_int(0, 2))->forTenant($tenant->id)->create([
                 'order_id' => $order->id,
+                'created_at' => fn () => $orderCreatedAt->copy()->addHours(random_int(1, 72))->min($windowEnd),
+                'updated_at' => fn (array $attributes) => $attributes['created_at'],
             ]);
         }
     }
 
-    private function seedSales(Tenant $tenant, $customers, $parts): void
+    private function seedSales(Tenant $tenant, $customers, $parts, Carbon $windowStart, Carbon $windowEnd): void
     {
         for ($i = 0; $i < 30; $i++) {
+            $saleDate = Carbon::instance(fake()->dateTimeBetween($windowStart, $windowEnd));
             $sale = Sale::factory()->forTenant($tenant->id)->create([
                 'customer_id' => $customers->random()->id,
                 'status' => 'completed',
@@ -262,6 +286,8 @@ class TenantDemoSeeder extends Seeder
                 'paid_amount' => 0,
                 'financial_status' => 'pending',
                 'payment_method' => collect(['pix', 'cartao', 'dinheiro', 'transferencia', 'boleto'])->random(),
+                'created_at' => $saleDate,
+                'updated_at' => $saleDate,
             ]);
 
             $selectedParts = $parts->random(random_int(1, 4));
@@ -278,6 +304,8 @@ class TenantDemoSeeder extends Seeder
                     'part_id' => $part->id,
                     'quantity' => $quantity,
                     'unit_price' => $part->sale_price,
+                    'created_at' => $saleDate,
+                    'updated_at' => $saleDate,
                 ]);
             }
 
@@ -293,7 +321,21 @@ class TenantDemoSeeder extends Seeder
                 'total_amount' => $total,
                 'paid_amount' => $paidAmount,
                 'financial_status' => $financialStatus,
+                'updated_at' => $saleDate,
             ]);
+        }
+    }
+
+    private function spreadTimestamps(Collection $models, Carbon $start, Carbon $end): void
+    {
+        foreach ($models as $model) {
+            $createdAt = Carbon::instance(fake()->dateTimeBetween($start, $end));
+            $updatedAt = $createdAt->copy()->addDays(random_int(0, 4))->min($end);
+
+            $model->forceFill([
+                'created_at' => $createdAt,
+                'updated_at' => $updatedAt,
+            ])->saveQuietly();
         }
     }
 }

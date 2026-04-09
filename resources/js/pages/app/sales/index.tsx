@@ -38,12 +38,15 @@ export default function Sales({ sales, search, financial_status, financial_count
     const [selectedSale, setSelectedSale] = useState(null);
     const [saleToPrint, setSaleToPrint] = useState<any>(null);
     const receiptRef = useRef<HTMLDivElement>(null);
-    const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
-    const [isPrintingThermal, setIsPrintingThermal] = useState(false);
+    const [generatingPdfSaleId, setGeneratingPdfSaleId] = useState<number | null>(null);
+    const [printingThermalSaleId, setPrintingThermalSaleId] = useState<number | null>(null);
 
     const handlePrint = useReactToPrint({
         contentRef: receiptRef,
-        onAfterPrint: () => setSaleToPrint(null),
+        onAfterPrint: () => {
+            setSaleToPrint(null);
+            setPrintingThermalSaleId(null);
+        },
     });
 
     useEffect(() => {
@@ -58,7 +61,7 @@ export default function Sales({ sales, search, financial_status, financial_count
     };
 
     const handlePrintReceipt = (sale: any) => {
-        setIsPrintingThermal(true);
+        setPrintingThermalSaleId(sale.id);
         const mappedSale = {
             ...sale,
             items: sale.items.map((item: any) => ({
@@ -68,13 +71,22 @@ export default function Sales({ sales, search, financial_status, financial_count
             })),
         };
         setSaleToPrint(mappedSale);
-        setIsPrintingThermal(false);
     };
 
     const handleGeneratePDF = async (sale: any) => {
         if (!sale) return;
 
-        setIsGeneratingPdf(true);
+        setGeneratingPdfSaleId(sale.id);
+        const previewWindow = window.open('', '_blank');
+
+        if (!previewWindow) {
+            setGeneratingPdfSaleId(null);
+            return;
+        }
+
+        previewWindow.document.title = 'Gerando recibo...';
+        previewWindow.document.body.innerHTML = '<p style="font-family: Arial, sans-serif; padding: 16px;">Gerando recibo PDF...</p>';
+
         try {
             const customerNameForPDF = sale.customer?.name || 'Consumidor Final';
 
@@ -90,12 +102,14 @@ export default function Sales({ sales, search, financial_status, financial_count
             ).toBlob();
 
             const url = URL.createObjectURL(blob);
-            window.open(url, '_blank'); // Abre em nova aba para imprimir
+            previewWindow.location.href = url;
+            setTimeout(() => URL.revokeObjectURL(url), 60_000);
         } catch (error) {
+            previewWindow.close();
             console.error('Erro ao gerar PDF:', error);
             alert('Erro ao gerar o PDF.');
         } finally {
-            setIsGeneratingPdf(false);
+            setGeneratingPdfSaleId(null);
         }
     };
 
@@ -172,56 +186,63 @@ export default function Sales({ sales, search, financial_status, financial_count
                         </TableHeader>
                         <TableBody>
                             {sales?.data.length > 0 ? (
-                                sales?.data?.map((sale: any) => (
-                                    <TableRow key={sale.id}>
-                                        <TableCell>{sale.sales_number}</TableCell>
-                                        <TableCell>{sale.customer?.name || 'Cliente não informado'}</TableCell>
-                                        <TableCell>
-                                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(sale.total_amount)}
-                                        </TableCell>
-                                        <TableCell className="capitalize">{sale.payment_method || 'não informado'}</TableCell>
-                                        <TableCell>
-                                            {sale.financial_status === 'paid' && <Badge>Pago</Badge>}
-                                            {sale.financial_status === 'partial' && <Badge variant="secondary">Parcial</Badge>}
-                                            {sale.financial_status === 'pending' && <Badge variant="destructive">Pendente</Badge>}
-                                            {sale.financial_status === 'cancelled' && <Badge variant="outline">Cancelada</Badge>}
-                                        </TableCell>
-                                        <TableCell>{moment(sale.created_at).format('DD/MM/YYYY')}</TableCell>
-                                        <TableCell className="flex justify-end gap-2">
-                                            {sale.status === 'completed' && <ActionCancelSale saleId={sale.id} disabled={acessDenied} />}
+                                sales?.data?.map((sale: any) => {
+                                    const isGeneratingCurrentPdf = generatingPdfSaleId === sale.id;
+                                    const isPrintingCurrentThermal = printingThermalSaleId === sale.id;
 
-                                            {sale.status === 'cancelled' && <Badge variant="destructive">Cancelada</Badge>}
+                                    return (
+                                        <TableRow key={sale.id}>
+                                            <TableCell>{sale.sales_number}</TableCell>
+                                            <TableCell>{sale.customer?.name || 'Cliente não informado'}</TableCell>
+                                            <TableCell>
+                                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(sale.total_amount)}
+                                            </TableCell>
+                                            <TableCell className="capitalize">{sale.payment_method || 'não informado'}</TableCell>
+                                            <TableCell>
+                                                {sale.financial_status === 'paid' && <Badge>Pago</Badge>}
+                                                {sale.financial_status === 'partial' && <Badge variant="secondary">Parcial</Badge>}
+                                                {sale.financial_status === 'pending' && <Badge variant="destructive">Pendente</Badge>}
+                                                {sale.financial_status === 'cancelled' && <Badge variant="outline">Cancelada</Badge>}
+                                            </TableCell>
+                                            <TableCell>{moment(sale.created_at).format('DD/MM/YYYY')}</TableCell>
+                                            <TableCell className="flex justify-end gap-2">
+                                                {sale.status === 'completed' && <ActionCancelSale saleId={sale.id} disabled={acessDenied} />}
 
-                                            <Button
-                                                type="button"
-                                                onClick={() => handleGeneratePDF(sale)}
-                                                disabled={isPrintingThermal || isGeneratingPdf}
-                                                className="bg-blue-600 text-white hover:bg-blue-700"
-                                            >
-                                                {isGeneratingPdf ? <Loader2 className="size-4 animate-spin" /> : <FileText className="size-4" />}
-                                                Recibo PDF
-                                            </Button>
+                                                {sale.status === 'cancelled' && <Badge variant="destructive">Cancelada</Badge>}
 
-                                            <Button
-                                                onClick={() => handlePrintReceipt(sale)}
-                                                size="icon"
-                                                className="bg-blue-600 text-white hover:bg-blue-500"
-                                                title="Imprimir Recibo"
-                                            >
-                                                <PrinterIcon className="h-4 w-4" />
-                                            </Button>
+                                                <Button
+                                                    type="button"
+                                                    onClick={() => handleGeneratePDF(sale)}
+                                                    disabled={isGeneratingCurrentPdf || isPrintingCurrentThermal}
+                                                    className="bg-blue-600 text-white hover:bg-blue-700"
+                                                >
+                                                    {isGeneratingCurrentPdf ? <Loader2 className="size-4 animate-spin" /> : <FileText className="size-4" />}
+                                                    Recibo PDF
+                                                </Button>
 
-                                            <Button
-                                                onClick={() => handleViewDetails(sale)}
-                                                size="icon"
-                                                className="bg-orange-500 text-white hover:bg-orange-600"
-                                                title="Ver Detalhes"
-                                            >
-                                                <EyeIcon className="h-4 w-4" />
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
+                                                <Button
+                                                    onClick={() => handlePrintReceipt(sale)}
+                                                    size="icon"
+                                                    className="bg-blue-600 text-white hover:bg-blue-500"
+                                                    title="Imprimir Recibo"
+                                                    disabled={isGeneratingCurrentPdf || isPrintingCurrentThermal}
+                                                >
+                                                    {isPrintingCurrentThermal ? <Loader2 className="h-4 w-4 animate-spin" /> : <PrinterIcon className="h-4 w-4" />}
+                                                </Button>
+
+                                                <Button
+                                                    onClick={() => handleViewDetails(sale)}
+                                                    size="icon"
+                                                    className="bg-orange-500 text-white hover:bg-orange-600"
+                                                    title="Ver Detalhes"
+                                                    disabled={isGeneratingCurrentPdf || isPrintingCurrentThermal}
+                                                >
+                                                    <EyeIcon className="h-4 w-4" />
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })
                             ) : (
                                 <TableRow>
                                     <TableCell colSpan={7} className="flex h-16 w-full items-center justify-center">

@@ -25,7 +25,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function Equipment({ equipments, search }: any) {
     const { auth } = usePage<{ auth?: { permissions?: string[] } }>().props;
-    const equipmentLength = equipments.data.filter((eq: any) => eq.chart === 1).length;
     const canManageEquipments = auth?.permissions?.includes('register_equipments');
 
     return (
@@ -46,7 +45,7 @@ export default function Equipment({ equipments, search }: any) {
                     <InputSearch placeholder="Buscar equipamento" url="app.register-equipments.index" />
                 </div>
                 <div className="flex w-full justify-end">
-                    {canManageEquipments && <CreateEquipment equipmentLength={equipmentLength} />}
+                    {canManageEquipments && <CreateEquipment />}
                 </div>
             </div>
 
@@ -69,7 +68,7 @@ export default function Equipment({ equipments, search }: any) {
                                         <TableCell className="font-medium">{equipment.equipment}</TableCell>
                                         <TableCell>{moment(equipment.created_at).format('DD/MM/YYYY')}</TableCell>
                                         <TableCell className="flex justify-end gap-2">
-                                            {canManageEquipments && <EditEquipment equipment={equipment} equipmentLength={equipmentLength} />}
+                                            {canManageEquipments && <EditEquipment equipment={equipment} />}
                                             {canManageEquipments && (
                                                 <ActionDelete title={'esta marca'} url={'app.register-equipments.destroy'} param={equipment.id} />
                                             )}

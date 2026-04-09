@@ -4,7 +4,7 @@ import { Icon } from '@/components/icon';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import AppLayout from '@/layouts/app-layout';
-import { Head, usePage } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import { LayoutGridIcon } from 'lucide-react';
 import moment from 'moment';
 import { useState } from 'react';
@@ -19,8 +19,7 @@ function formatDateRange(date?: Date | string) {
     return moment(d).format('DD/MM/YYYY');
 }
 
-export default function Dashboard({ reloadKey, orders, acount, parts, customers, others, listSchedules, cashier }: any) {
-    const { flash, auth } = usePage().props as any;
+export default function Dashboard({ reloadKey, orders, acount, parts, customers, others, listSchedules, cashier, flash, auth }: any) {
     const [timeRange, setTimeRange] = useState('7');
     const [dateRange, setDateRange] = useState<any>({});
     const isTechnician = auth?.role === 'technician';
@@ -120,6 +119,7 @@ export default function Dashboard({ reloadKey, orders, acount, parts, customers,
                                 orders={orders}
                                 acount={acount}
                                 listSchedules={listSchedules}
+                                auth={auth}
                             />
                         </TabsContent>
                         {!isTechnician && (

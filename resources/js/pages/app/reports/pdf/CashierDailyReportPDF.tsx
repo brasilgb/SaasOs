@@ -1,4 +1,4 @@
-import { maskMoney } from '@/Utils/mask';
+import { currencyFormatter } from '@/Utils/currency-formatter';
 import { Document, Image, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 import moment from 'moment';
 
@@ -78,51 +78,51 @@ export default function CashierDailyReportPDF({ session, company }: any) {
                     </View>
                     <View style={styles.row}>
                         <Text style={styles.label}>Saldo inicial</Text>
-                        <Text style={styles.value}>R$ {maskMoney(String(session?.opening_balance || 0))}</Text>
+                        <Text style={styles.value}>{currencyFormatter(session?.opening_balance || 0)}</Text>
                     </View>
                     <View style={styles.row}>
                         <Text style={styles.label}>Total de vendas concluídas</Text>
-                        <Text style={styles.value}>R$ {maskMoney(String(session?.total_completed_sales || 0))}</Text>
+                        <Text style={styles.value}>{currencyFormatter(session?.total_completed_sales || 0)}</Text>
                     </View>
                     {saleMethodsWithValue.map((method) => (
                         <View key={`sale-${method}`} style={styles.row}>
                             <Text style={styles.label}>Vendas via {paymentMethodLabels[method]}</Text>
-                            <Text style={styles.value}>R$ {maskMoney(String(salesTotalsByMethod[method] || 0))}</Text>
+                            <Text style={styles.value}>{currencyFormatter(salesTotalsByMethod[method] || 0)}</Text>
                         </View>
                     ))}
                     <View style={styles.row}>
                         <Text style={styles.label}>Total de pagamentos de ordens</Text>
-                        <Text style={styles.value}>R$ {maskMoney(String(session?.total_order_payments || 0))}</Text>
+                        <Text style={styles.value}>{currencyFormatter(session?.total_order_payments || 0)}</Text>
                     </View>
                     {paymentMethodsWithValue.map((method) => (
                         <View key={method} style={styles.row}>
                             <Text style={styles.label}>OS via {paymentMethodLabels[method]}</Text>
-                            <Text style={styles.value}>R$ {maskMoney(String(orderPaymentTotalsByMethod[method] || 0))}</Text>
+                            <Text style={styles.value}>{currencyFormatter(orderPaymentTotalsByMethod[method] || 0)}</Text>
                         </View>
                     ))}
                     <View style={styles.row}>
                         <Text style={styles.label}>Total de vendas canceladas</Text>
-                        <Text style={styles.value}>R$ {maskMoney(String(session?.total_cancelled_sales || 0))}</Text>
+                        <Text style={styles.value}>{currencyFormatter(session?.total_cancelled_sales || 0)}</Text>
                     </View>
                     <View style={styles.row}>
                         <Text style={styles.label}>Entradas manuais</Text>
-                        <Text style={styles.value}>R$ {maskMoney(String(session?.manual_entries || 0))}</Text>
+                        <Text style={styles.value}>{currencyFormatter(session?.manual_entries || 0)}</Text>
                     </View>
                     <View style={styles.row}>
                         <Text style={styles.label}>Saídas manuais</Text>
-                        <Text style={styles.value}>R$ {maskMoney(String(session?.manual_exits || 0))}</Text>
+                        <Text style={styles.value}>{currencyFormatter(session?.manual_exits || 0)}</Text>
                     </View>
                     <View style={styles.row}>
                         <Text style={styles.label}>Saldo esperado</Text>
-                        <Text style={styles.value}>R$ {maskMoney(String(session?.expected_balance || 0))}</Text>
+                        <Text style={styles.value}>{currencyFormatter(session?.expected_balance || 0)}</Text>
                     </View>
                     <View style={styles.row}>
                         <Text style={styles.label}>Saldo contado</Text>
-                        <Text style={styles.value}>R$ {maskMoney(String(session?.closing_balance || 0))}</Text>
+                        <Text style={styles.value}>{currencyFormatter(session?.closing_balance || 0)}</Text>
                     </View>
                     <View style={[styles.row, { borderBottom: '0px solid transparent' }]}>
                         <Text style={styles.label}>Diferença</Text>
-                        <Text style={styles.value}>R$ {maskMoney(String(session?.difference || 0))}</Text>
+                        <Text style={styles.value}>{currencyFormatter(session?.difference || 0)}</Text>
                     </View>
                 </View>
 

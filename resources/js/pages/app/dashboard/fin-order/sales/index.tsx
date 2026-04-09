@@ -1,11 +1,11 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { connectBackend } from '@/Utils/connectApi';
-import { BadgeDollarSign, ShoppingCart, TrendingUp } from 'lucide-react';
+import { BadgeDollarSign, ShoppingCart, TrendingUp, WalletCards } from 'lucide-react';
 import moment from 'moment';
 import type { ReactNode } from 'react';
-import { useEffect, useState } from 'react';
-import { Area, CartesianGrid, Line, LineChart, XAxis } from 'recharts';
+import { useEffect, useMemo, useState } from 'react';
+import { Bar, CartesianGrid, ComposedChart, Line, XAxis, YAxis } from 'recharts';
 
 function formatIsoDate(date: Date | string) {
     const d = date instanceof Date ? date : new Date(date);
@@ -30,6 +30,8 @@ type SalesRevenuePoint = {
     paid: number;
     pending: number;
     partial: number;
+    expenses: number;
+    profit: number;
 };
 
 type DateRangeValue = {
@@ -39,8 +41,14 @@ type DateRangeValue = {
 
 type SalesKpis = {
     today_revenue: number;
+    today_expenses: number;
+    today_profit: number;
     range_revenue: number;
+    range_expenses: number;
+    range_profit: number;
     daily_average: number;
+    daily_expense_average: number;
+    daily_profit_average: number;
     average_ticket: number;
     sales_count: number;
     sales_today_count: number;
@@ -48,65 +56,75 @@ type SalesKpis = {
 
 const chartConfig = {
     total: {
-        label: 'Total',
+        label: 'Vendas',
         color: 'var(--chart-1)',
     },
-    paid: {
-        label: 'Pagas',
+    profit: {
+        label: 'Lucro',
         color: 'var(--chart-2)',
-    },
-    pending: {
-        label: 'Pendentes',
-        color: 'var(--chart-3)',
-    },
-    partial: {
-        label: 'Parciais',
-        color: 'var(--chart-4)',
     },
 } satisfies ChartConfig;
 
 function SalesRevenueChart({ data }: { data: SalesRevenuePoint[] }) {
+    const chartData = useMemo(
+        () =>
+            data.map((item) => ({
+                ...item,
+                dateLabel: moment(item.date).format('DD/MM'),
+            })),
+        [data],
+    );
+
     return (
         <ChartContainer config={chartConfig} className="h-[300px] w-full">
-            <LineChart data={data}>
+            <ComposedChart data={chartData} margin={{ top: 8, right: 10, left: 10, bottom: 0 }}>
                 <CartesianGrid vertical={false} />
-
-                <XAxis
-                    dataKey="date"
+                <XAxis dataKey="dateLabel" tickLine={false} axisLine={false} minTickGap={18} />
+                <YAxis
                     tickLine={false}
                     axisLine={false}
-                    tickMargin={8}
-                    minTickGap={32}
+                    width={72}
                     tickFormatter={(value) =>
-                        new Date(value).toLocaleDateString('pt-BR', {
-                            day: '2-digit',
-                            month: '2-digit',
+                        Number(value || 0).toLocaleString('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL',
+                            maximumFractionDigits: 0,
                         })
                     }
                 />
-
                 <ChartTooltip
                     cursor={false}
                     content={
                         <ChartTooltipContent
-                            indicator="dot"
-                            labelFormatter={(value) =>
-                                new Date(value).toLocaleDateString('pt-BR', {
-                                    day: '2-digit',
-                                    month: '2-digit',
-                                })
+                            labelFormatter={(_, payload) =>
+                                payload?.[0]?.payload?.date ? moment(payload[0].payload.date).format('DD/MM/YYYY') : ''
                             }
+                            formatter={(value, name) => {
+                                const label = name === 'total' ? 'Vendas' : 'Lucro';
+                                return (
+                                    <div className="flex w-full items-center justify-between gap-3">
+                                        <span>{label}</span>
+                                        <span className="font-mono font-medium tabular-nums">
+                                            {formatCurrency(Number(value || 0))}
+                                        </span>
+                                    </div>
+                                );
+                            }}
                         />
                     }
                 />
-
-                <Area dataKey="total" type="monotone" fill="var(--color-total)" fillOpacity={0.08} stroke="none" />
-
-                <Line dataKey="total" type="monotone" stroke="var(--color-total)" strokeWidth={3} dot={false} />
-                <Line dataKey="paid" type="monotone" stroke="var(--color-paid)" strokeWidth={2} dot={false} />
-                <Line dataKey="pending" type="monotone" stroke="var(--color-pending)" strokeWidth={2} dot={false} />
-                <Line dataKey="partial" type="monotone" stroke="var(--color-partial)" strokeWidth={2} dot={false} />
-            </LineChart>
+                <Bar dataKey="total" name="total" fill="var(--color-total)" radius={[6, 6, 0, 0]} maxBarSize={28} />
+                <Line
+                    type="monotone"
+                    dataKey="profit"
+                    name="profit"
+                    stroke="var(--color-profit)"
+                    strokeWidth={2}
+                    dot={{ r: 2 }}
+                    activeDot={{ r: 4 }}
+                />
+                <ChartLegend content={<ChartLegendContent nameKey="name" />} />
+            </ComposedChart>
         </ChartContainer>
     );
 }
@@ -178,13 +196,10 @@ export default function FinanceiroSales({
         const getSalesChart = async () => {
             try {
                 const query = new URLSearchParams();
+                query.set('from', moment().startOf('month').format('YYYY-MM-DD'));
+                query.set('to', moment().endOf('month').format('YYYY-MM-DD'));
 
-                if (customRange && dateRange?.from && dateRange?.to) {
-                    query.set('from', formatIsoDate(dateRange.from));
-                    query.set('to', formatIsoDate(dateRange.to));
-                }
-
-                const response = await connectBackend.get(`financialSalesRevenueChart/${timerange}${query.toString() ? `?${query.toString()}` : ''}`);
+                const response = await connectBackend.get(`financialSalesRevenueChart/30?${query.toString()}`);
                 setChartSalesFinancial(response.data);
             } catch (error) {
                 console.error('Erro ao carregar gráfico financeiro de vendas', error);
@@ -192,14 +207,15 @@ export default function FinanceiroSales({
         };
 
         getSalesChart();
-    }, [timerange, customRange, dateRange]);
+    }, []);
 
     const rangeLabel =
         customRange && dateRange?.from && dateRange?.to ? `${formatBrDate(dateRange.from)} a ${formatBrDate(dateRange.to)}` : `${timerange} dias`;
 
     return (
         <div className="min-w-0">
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                 <KpiCard
                     title="Vendas - Diário"
                     value={kpisSales?.today_revenue}
@@ -209,17 +225,25 @@ export default function FinanceiroSales({
                 />
 
                 <KpiCard
-                    title={`Vendas - Período ${rangeLabel}`}
-                    value={kpisSales?.range_revenue}
-                    description="Faturamento total de vendas no período"
+                    title={`Lucro Líquido - Período ${rangeLabel}`}
+                    value={kpisSales?.range_profit}
+                    description="Receita de vendas menos despesas lançadas"
+                    count={kpisSales?.sales_count}
+                    icon={<WalletCards size={18} />}
+                />
+
+                <KpiCard
+                    title={`Despesas - Período ${rangeLabel}`}
+                    value={kpisSales?.range_expenses}
+                    description="Somatório de saídas de caixa e despesas lançadas"
                     count={kpisSales?.sales_count}
                     icon={<ShoppingCart size={18} />}
                 />
 
                 <KpiCard
-                    title={`Média - Período ${rangeLabel}`}
-                    value={kpisSales?.daily_average}
-                    description="Média de faturamento diário no período"
+                    title={`Média de Lucro - Período ${rangeLabel}`}
+                    value={kpisSales?.daily_profit_average}
+                    description="Média diária do lucro líquido no período"
                     count={kpisSales?.sales_count}
                     icon={<TrendingUp size={18} />}
                 />
@@ -237,7 +261,7 @@ export default function FinanceiroSales({
                 <Card>
                     <CardHeader>
                         <CardTitle>Faturamento de vendas</CardTitle>
-                        <CardDescription>Totais por status financeiro no período de {rangeLabel}</CardDescription>
+                        <CardDescription>Mês corrente (do dia 01 ao último dia do mês): barras de vendas e linha de lucro</CardDescription>
                     </CardHeader>
 
                     <CardContent>

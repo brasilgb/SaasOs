@@ -8,10 +8,8 @@ import { useForm } from '@inertiajs/react';
 import { Plus, Save } from 'lucide-react';
 import { useState } from 'react';
 
-export default function CreateEquipment({ equipmentLength }: any) {
+export default function CreateEquipment() {
     const [open, setOpen] = useState(false);
-
-    const isDisabled = equipmentLength > 2 ? true : false;
 
     const { data, setData, processing, post, errors, reset } = useForm({
         equipment: '',
@@ -49,13 +47,8 @@ export default function CreateEquipment({ equipmentLength }: any) {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="chart">Adicionar ao gráfico do dashboard (max:. 3)</Label>
-                                <Switch
-                                    disabled={isDisabled}
-                                    id="chart"
-                                    checked={data.chart}
-                                    onCheckedChange={(checked: any) => setData('chart', checked)}
-                                />
+                                <Label htmlFor="chart">Adicionar ao gráfico do dashboard</Label>
+                                <Switch id="chart" checked={data.chart} onCheckedChange={(checked: any) => setData('chart', checked)} />
                             </div>
                         </div>
 

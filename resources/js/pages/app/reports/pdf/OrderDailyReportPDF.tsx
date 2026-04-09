@@ -1,4 +1,4 @@
-import { maskMoney } from '@/Utils/mask';
+import { currencyFormatter } from '@/Utils/currency-formatter';
 import { Document, Image, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 import moment from 'moment';
 
@@ -215,8 +215,8 @@ export default function OrderDailyReportPDF({
                             <Text style={styles.colSmall}>{row.entradas}</Text>
                             <Text style={styles.colSmall}>{row.concluidos}</Text>
                             <Text style={styles.colSmall}>{row.entregues}</Text>
-                            <Text style={styles.colMoney}>R$ {maskMoney(String(row.totalServicos))}</Text>
-                            <Text style={styles.colMoney}>R$ {maskMoney(String(row.totalPecas))}</Text>
+                            <Text style={styles.colMoney}>{currencyFormatter(row.totalServicos)}</Text>
+                            <Text style={styles.colMoney}>{currencyFormatter(row.totalPecas)}</Text>
                         </View>
                     ))}
                 </View>
@@ -237,11 +237,11 @@ export default function OrderDailyReportPDF({
                         </View>
                         <View style={styles.footerCard}>
                             <Text style={styles.footerCardLabel}>Total Serviços</Text>
-                            <Text style={styles.footerCardValue}>R$ {maskMoney(String(totalServicos))}</Text>
+                            <Text style={styles.footerCardValue}>{currencyFormatter(totalServicos)}</Text>
                         </View>
                         <View style={styles.footerCard}>
                             <Text style={styles.footerCardLabel}>Total Peças</Text>
-                            <Text style={styles.footerCardValue}>R$ {maskMoney(String(totalPecas))}</Text>
+                            <Text style={styles.footerCardValue}>{currencyFormatter(totalPecas)}</Text>
                         </View>
                     </View>
                 </View>

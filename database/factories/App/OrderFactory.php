@@ -20,8 +20,9 @@ class OrderFactory extends Factory
 
     public function definition(): array
     {
-        $createdAt = $this->faker->dateTimeBetween('-3 months', 'now');
+        $createdAt = $this->faker->dateTimeBetween('-60 days', 'now');
         $deliveryDate = $this->faker->optional(40)->dateTimeBetween($createdAt, 'now');
+        $updatedAt = $this->faker->dateTimeBetween($createdAt, 'now');
 
         return [
             'order_number' => $this->faker->unique()->numberBetween(1, 999999),
@@ -39,11 +40,11 @@ class OrderFactory extends Factory
             'parts_value' => $this->faker->optional()->randomFloat(2, 10, 600),
             'service_value' => $this->faker->optional()->randomFloat(2, 10, 900),
             'service_cost' => $this->faker->optional()->randomFloat(2, 10, 500),
-            'delivery_forecast' => $this->faker->optional()->dateTimeBetween('now', '+20 days')?->format('Y-m-d'),
+            'delivery_forecast' => $this->faker->optional()->dateTimeBetween($createdAt, 'now')?->format('Y-m-d'),
             'delivery_date' => $deliveryDate,
             'feedback' => $this->faker->optional()->boolean(),
             'created_at' => $createdAt,
-            'updated_at' => $createdAt,
+            'updated_at' => $updatedAt,
         ];
     }
 

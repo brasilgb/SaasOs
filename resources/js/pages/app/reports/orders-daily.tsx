@@ -42,7 +42,7 @@ export default function OrdersDaily({ dateRange, company }: { dateRange?: DateRa
                 to: moment(dateRange.to).format('YYYY-MM-DD'),
             },
             {
-                preserveState: false,
+                preserveState: true,
                 preserveScroll: true,
                 onSuccess: async (page: any) => {
                     const reportData = page.props?.reportData || [];
