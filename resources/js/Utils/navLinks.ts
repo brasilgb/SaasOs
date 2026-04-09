@@ -1,5 +1,6 @@
 import { type NavItem } from '@/types';
 import {
+    BanknoteArrowUpIcon,
     Building,
     Calendar,
     ClipboardList,
@@ -92,7 +93,7 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Despesas',
         href: route('app.expenses.index'),
-        icon: HandCoins,
+        icon: BanknoteArrowUpIcon,
         active: 'app.expenses.*',
         enabled: 'sales',
         permission: 'sales',

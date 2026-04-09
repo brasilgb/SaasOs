@@ -119,7 +119,7 @@ class OrderController extends Controller
             return true;
         }
 
-        return (int) $order->user_id === (int) $user->id;
+        return is_null($order->user_id) || (int) $order->user_id === (int) $user->id;
     }
 
     private function scopeOrdersQuery($query)
@@ -127,7 +127,10 @@ class OrderController extends Controller
         $user = $this->currentUser();
 
         if ($user?->isTechnician()) {
-            $query->where('user_id', $user->id);
+            $query->where(function ($q) use ($user) {
+                $q->whereNull('user_id')
+                    ->orWhere('user_id', $user->id);
+            });
         }
 
         return $query;

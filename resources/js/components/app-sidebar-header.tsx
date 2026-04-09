@@ -13,6 +13,9 @@ import { UserMenuContent } from './user-menu-content';
 type AppSidebarHeaderPageProps = SharedData & {
     notifications?: number;
     orderStatus?: unknown[];
+    auth: SharedData['auth'] & {
+        role?: string;
+    };
 };
 
 export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: BreadcrumbItemType[] }) {
@@ -28,7 +31,7 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                 <SidebarTrigger className="-ml-1" />
             </div>
             <div className="flex items-center gap-2">
-                {auth.user.tenant_id !== null && orderStatus.length > 0 ? <BudgetsApproved count={orderStatus.length} /> : ''}
+                {auth.user.tenant_id !== null && auth.role !== 'technician' && orderStatus.length > 0 ? <BudgetsApproved count={orderStatus.length} /> : ''}
 
                 {auth.user.tenant_id !== null && (
                     <Button variant="ghost" size="icon" asChild className="relative">

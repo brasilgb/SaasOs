@@ -7,6 +7,7 @@ import { BreadcrumbItem } from '@/types';
 import { Head, usePage, useRemember } from '@inertiajs/react';
 import { FileTextIcon } from 'lucide-react';
 import CustomersReport from './customers-report';
+import CashierReport from './cashier-report';
 import ExpensesReport from './expenses-report';
 import OrdersStatistics from './order-statistics';
 import OrdersDaily from './orders-daily';
@@ -39,6 +40,7 @@ export default function Parts() {
     const canViewSchedules = permissions.includes('schedules');
     const canViewSales = Boolean(permissions.includes('sales') && othersetting?.enablesales);
     const canViewExpenses = Boolean(permissions.includes('sales') && othersetting?.enablesales);
+    const canViewCashier = Boolean(permissions.includes('sales') && othersetting?.enablesales);
     const canViewParts = permissions.includes('parts');
 
     return (
@@ -116,6 +118,12 @@ export default function Parts() {
                         {canViewExpenses && (
                             <div className="w-full md:w-[15.8%]">
                                 <ExpensesReport dateRange={dateRange} company={company} />
+                            </div>
+                        )}
+
+                        {canViewCashier && (
+                            <div className="w-full md:w-[15.8%]">
+                                <CashierReport dateRange={dateRange} company={company} />
                             </div>
                         )}
                     </CardContent>

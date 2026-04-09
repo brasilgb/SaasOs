@@ -33,6 +33,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function CreateUser({ user, page, search }: any) {
     const [showPassword, setShowPassword] = useState<boolean>(false);
     const { auth } = usePage().props as any;
+    const isOperator = auth?.role === 'operator';
 
     const { data, setData, patch, progress, processing, reset, errors } = useForm({
         tenant_id: auth.user.tenant_id,
@@ -60,6 +61,7 @@ export default function CreateUser({ user, page, search }: any) {
     };
     const optionsRolesUser = rolesUser
         .filter((role: any) => role.label !== 'RootSystem' && role.label !== 'RootApp')
+        .filter((role: any) => (isOperator ? role.value === '2' || role.value === '3' : true))
         .map((role: any) => ({
             value: role.value,
             label: role.label,

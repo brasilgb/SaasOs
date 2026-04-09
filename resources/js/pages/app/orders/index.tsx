@@ -69,7 +69,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
             <div className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
                 {/* Busca */}
                 <div className="w-full md:max-w-sm">
-                    <InputSearch placeholder="Buscar por número da ordem, cliente ou cpf/cnpj" url="app.orders.index" />
+                    <InputSearch placeholder="Buscar por núm. ordem, cliente ou cpf/cnpj" url="app.orders.index" />
                 </div>
 
                 {/* Filtro */}

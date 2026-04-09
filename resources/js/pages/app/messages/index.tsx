@@ -52,7 +52,7 @@ export default function Messages({ messages, search }: any) {
 
             <div className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
                 <div className="w-full md:max-w-sm">
-                    <InputSearch placeholder="Buscar po número da mensagem nome do destinatário" url="app.messages.index" />
+                    <InputSearch placeholder="Buscar por núm. da mensagem ou destinatário" url="app.messages.index" />
                 </div>
                 <div className="flex w-full flex-col gap-2 md:w-auto md:flex-row">
                     <div className="w-full md:w-44">

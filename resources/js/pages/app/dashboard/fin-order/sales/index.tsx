@@ -5,7 +5,7 @@ import { BadgeDollarSign, ShoppingCart, TrendingUp, WalletCards } from 'lucide-r
 import moment from 'moment';
 import type { ReactNode } from 'react';
 import { useEffect, useMemo, useState } from 'react';
-import { Bar, CartesianGrid, ComposedChart, Line, XAxis, YAxis } from 'recharts';
+import { Bar, CartesianGrid, ComposedChart, Line, Pie, PieChart, XAxis, YAxis } from 'recharts';
 
 function formatIsoDate(date: Date | string) {
     const d = date instanceof Date ? date : new Date(date);
@@ -52,6 +52,13 @@ type SalesKpis = {
     average_ticket: number;
     sales_count: number;
     sales_today_count: number;
+    payment_methods?: {
+        pix?: number;
+        cartao?: number;
+        dinheiro?: number;
+        transferencia?: number;
+        boleto?: number;
+    };
 };
 
 const chartConfig = {
@@ -63,6 +70,14 @@ const chartConfig = {
         label: 'Lucro',
         color: 'var(--chart-2)',
     },
+} satisfies ChartConfig;
+
+const paymentChartConfig = {
+    pix: { label: 'Pix', color: 'var(--chart-1)' },
+    cartao: { label: 'Cartão', color: 'var(--chart-2)' },
+    dinheiro: { label: 'Dinheiro', color: 'var(--chart-3)' },
+    transferencia: { label: 'Transferência', color: 'var(--chart-4)' },
+    boleto: { label: 'Boleto', color: 'var(--chart-5)' },
 } satisfies ChartConfig;
 
 function SalesRevenueChart({ data }: { data: SalesRevenuePoint[] }) {
@@ -125,6 +140,63 @@ function SalesRevenueChart({ data }: { data: SalesRevenuePoint[] }) {
                 />
                 <ChartLegend content={<ChartLegendContent nameKey="name" />} />
             </ComposedChart>
+        </ChartContainer>
+    );
+}
+
+function SalesPaymentMethodsPie({
+    paymentMethods,
+}: {
+    paymentMethods?: {
+        pix?: number;
+        cartao?: number;
+        dinheiro?: number;
+        transferencia?: number;
+        boleto?: number;
+    };
+}) {
+    const pieData = useMemo(
+        () =>
+            [
+                { key: 'pix', label: 'Pix', value: Number(paymentMethods?.pix || 0), fill: 'var(--color-pix)' },
+                { key: 'cartao', label: 'Cartão', value: Number(paymentMethods?.cartao || 0), fill: 'var(--color-cartao)' },
+                { key: 'dinheiro', label: 'Dinheiro', value: Number(paymentMethods?.dinheiro || 0), fill: 'var(--color-dinheiro)' },
+                {
+                    key: 'transferencia',
+                    label: 'Transferência',
+                    value: Number(paymentMethods?.transferencia || 0),
+                    fill: 'var(--color-transferencia)',
+                },
+                { key: 'boleto', label: 'Boleto', value: Number(paymentMethods?.boleto || 0), fill: 'var(--color-boleto)' },
+            ].filter((item) => item.value > 0),
+        [paymentMethods],
+    );
+
+    return (
+        <ChartContainer config={paymentChartConfig} className="h-[300px] w-full">
+            <PieChart>
+                <ChartTooltip
+                    cursor={false}
+                    content={
+                        <ChartTooltipContent
+                            hideLabel
+                            formatter={(value, name) => (
+                                <div className="flex w-full items-center justify-between gap-3">
+                                    <span>{String(name)}</span>
+                                    <span className="font-mono font-medium tabular-nums">{formatCurrency(Number(value || 0))}</span>
+                                </div>
+                            )}
+                        />
+                    }
+                />
+                <Pie data={pieData} dataKey="value" nameKey="label" innerRadius={50} outerRadius={90} strokeWidth={2} />
+                <ChartLegend
+                    align="left"
+                    verticalAlign="middle"
+                    layout="vertical"
+                    content={<ChartLegendContent nameKey="key" className="flex-col items-start justify-start pl-2 pt-0" />}
+                />
+            </PieChart>
         </ChartContainer>
     );
 }
@@ -257,8 +329,18 @@ export default function FinanceiroSales({
                 />
             </div>
 
-            <div className="mt-3">
-                <Card>
+            <div className="mt-3 grid gap-4 lg:grid-cols-12">
+                <Card className="lg:col-span-4">
+                    <CardHeader>
+                        <CardTitle>Meios de pagamento</CardTitle>
+                        <CardDescription>Distribuição das vendas por forma de pagamento no período selecionado</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <SalesPaymentMethodsPie paymentMethods={kpisSales?.payment_methods} />
+                    </CardContent>
+                </Card>
+
+                <Card className="lg:col-span-8">
                     <CardHeader>
                         <CardTitle>Faturamento de vendas</CardTitle>
                         <CardDescription>Mês corrente (do dia 01 ao último dia do mês): barras de vendas e linha de lucro</CardDescription>

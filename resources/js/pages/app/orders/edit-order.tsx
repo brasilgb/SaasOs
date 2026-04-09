@@ -65,7 +65,8 @@ export default function EditOrder({
         return Number.isFinite(parsed) ? parsed : 0;
     };
 
-    const { othersetting } = usePage().props as any;
+    const { othersetting, auth } = usePage().props as any;
+    const canManageOrders = auth?.role !== 'technician' && auth?.permissions?.includes('orders');
     const [partsData, setPartsData] = useState<any>([]);
 
     const initialModelOptions = models.map((model: any) => ({
@@ -274,18 +275,20 @@ export default function EditOrder({
                     </Button>
                 </div>
                 <div className="flex items-center justify-end gap-2">
-                    {(order.service_status === 6 || order.service_status === 7 || order.service_status === 8) && (
+                    {canManageOrders && (order.service_status === 6 || order.service_status === 7 || order.service_status === 8) && (
                         <Button onClick={() => setOpenInvoiceModal(true)} className="rounded-lg py-2 text-sm font-medium">
                             <FileTextIcon className="h-4 w-4" />
                             Emitir NFSe
                         </Button>
                     )}
-                    <OrderPaymentsModal
-                        order={order}
-                        orderPayments={orderPayments}
-                        paymentSummary={paymentSummary}
-                        defaultOpen={typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('open_payments') === '1'}
-                    />
+                    {canManageOrders && (
+                        <OrderPaymentsModal
+                            order={order}
+                            orderPayments={orderPayments}
+                            paymentSummary={paymentSummary}
+                            defaultOpen={typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('open_payments') === '1'}
+                        />
+                    )}
                     <AddPartsModal onSubmit={handleModalSubmit} parts={parts} />
                 </div>
             </div>

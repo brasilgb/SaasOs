@@ -42,7 +42,10 @@ export default function CheckList({ budgets, company, search }: any) {
                 <div className="w-full">
                     <InputSearch placeholder="Pesquisar por por serviço" url="app.budgets.index" />
                 </div>
-                <div className="flex w-full justify-end">
+                <div className="w-full bg-accent text-accent-foreground rounded-md p-2 text-xs font-medium text-center">
+                    Os dados da empresa devem estar preenchidos para exibir corretamente o orçamento
+                </div>
+                <div className="flex w-auto justify-end">
                     <Button variant={'default'} asChild>
                         <Link className="w-full md:w-auto" href={route('app.budgets.create')}>
                             <Plus className="h-4 w-4" />
@@ -52,9 +55,7 @@ export default function CheckList({ budgets, company, search }: any) {
                 </div>
             </div>
             <div className="p-4">
-                <div className="bg-accent text-accent-foreground mb-2 rounded-md p-2 text-xs font-medium">
-                    Os dados da empresa devem estar preenchidos para exibir corretamente o orçamento
-                </div>
+                
                 <div className="rounded-lg border">
                     <Table>
                         <TableHeader>

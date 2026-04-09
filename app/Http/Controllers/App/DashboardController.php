@@ -422,6 +422,20 @@ class DashboardController extends Controller
         $rangeProfit = $rangeRevenue - $rangeExpenses;
         $todayProfit = $todayRevenue - $todayExpenses;
         $dailyProfitAverage = $rangeDays > 0 ? $rangeProfit / $rangeDays : 0;
+        $paymentMethodsRaw = Sale::query()
+            ->select('payment_method', DB::raw('SUM(total_amount) as total'))
+            ->where('status', 'completed')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->groupBy('payment_method')
+            ->pluck('total', 'payment_method')
+            ->toArray();
+        $paymentMethods = [
+            'pix' => (float) ($paymentMethodsRaw['pix'] ?? 0),
+            'cartao' => (float) ($paymentMethodsRaw['cartao'] ?? 0),
+            'dinheiro' => (float) ($paymentMethodsRaw['dinheiro'] ?? 0),
+            'transferencia' => (float) ($paymentMethodsRaw['transferencia'] ?? 0),
+            'boleto' => (float) ($paymentMethodsRaw['boleto'] ?? 0),
+        ];
 
         return response()->json([
             'range' => $timeRange,
@@ -440,6 +454,7 @@ class DashboardController extends Controller
                 'average_ticket' => $averageTicket,
                 'sales_count' => $salesCount,
                 'sales_today_count' => $salesTodayCount,
+                'payment_methods' => $paymentMethods,
             ],
         ]);
     }

@@ -82,7 +82,7 @@ export default function Schedules({ schedules, search, status }: any) {
 
             <div className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
                 <div className="w-full md:max-w-sm">
-                    <InputSearch placeholder="Buscar por serviço, nome do cliente ecpf/cnpj" url="app.schedules.index" />
+                    <InputSearch placeholder="Buscar por serviço, cliente ou cpf/cnpj" url="app.schedules.index" />
                 </div>
                 <div className="flex w-full flex-col gap-2 md:w-auto md:flex-row">
                     <SelectFilter dataStatus={statusAgenda} url="app.schedules.index" noOrder />

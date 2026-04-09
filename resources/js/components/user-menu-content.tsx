@@ -3,7 +3,7 @@ import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { type User } from '@/types';
 import { Link, router } from '@inertiajs/react';
-import { FileTextIcon, LogOut, Settings, User2 } from 'lucide-react';
+import { FileTextIcon, LogOut } from 'lucide-react';
 
 interface UserMenuContentProps {
     user: User;
@@ -11,6 +11,14 @@ interface UserMenuContentProps {
 
 export function UserMenuContent({ user }: UserMenuContentProps) {
     const cleanup = useMobileNavigation();
+    const roleLabelByValue: Record<number, string> = {
+        99: 'RootSystem',
+        9: 'RootApp',
+        1: 'Administrador',
+        2: 'Operador/Atendente',
+        3: 'Técnico',
+    };
+    const userRoleLabel = roleLabelByValue[Number(user?.roles)] ?? 'Usuário';
 
     const handleLogout = () => {
         cleanup();
@@ -27,30 +35,6 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
                 <DropdownMenuItem asChild>
-                    <Link
-                        className="block w-full"
-                        href={route(`${user?.tenant_id === null ? 'admin.settings.index' : 'app.other-settings.index'}`)}
-                        as="button"
-                        prefetch
-                        onClick={cleanup}
-                    >
-                        <Settings className="mr-2" />
-                        Aparência
-                    </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                    <Link
-                        className="block w-full"
-                        href={route(`${user?.tenant_id === null ? 'admin.users.edit' : 'app.users.edit'}`, user.id)}
-                        as="button"
-                        prefetch
-                        onClick={cleanup}
-                    >
-                        <User2 className="mr-2" />
-                        Usuário
-                    </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
                     <a href={import.meta.env.VITE_APP_URL + '/documentation/doc-sigmaos.pdf'} target="_blank" rel="noopener noreferrer">
                         <FileTextIcon className="mr-2" />
                         <span>Documentação</span>
@@ -64,6 +48,8 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                     Sair do sistema
                 </Link>
             </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-muted-foreground px-2 py-1 text-xs font-normal text-center">Função: {userRoleLabel}</DropdownMenuLabel>
         </>
     );
 }
