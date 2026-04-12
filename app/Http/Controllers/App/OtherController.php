@@ -5,12 +5,14 @@ namespace App\Http\Controllers\App;
 use App\Http\Controllers\Controller;
 use App\Models\App\Company;
 use App\Models\App\Other;
+use App\Support\TenantMailConfig;
 use App\Models\Tenant;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 
 class OtherController extends Controller
@@ -87,5 +89,39 @@ class OtherController extends Controller
         $other->update($data);
 
         return redirect()->route('app.other-settings.index', ['other' => $other->id])->with('success', 'Configurações alteradas com sucesso');
+    }
+
+    public function sendTestMail(Other $other): RedirectResponse
+    {
+        $this->authorizeOtherSettingsAccess();
+
+        $company = Company::query()->first();
+        $targetEmail = trim((string) ($company?->email ?? ''));
+
+        if ($targetEmail === '' || ! filter_var($targetEmail, FILTER_VALIDATE_EMAIL)) {
+            return back()->with('error', 'Cadastre um e-mail válido nos dados da empresa para enviar o teste SMTP.');
+        }
+
+        if (! TenantMailConfig::hasConfiguredForTenantId(Auth::user()?->tenant_id)) {
+            return back()->with('error', 'Configure host, porta, usuário e senha SMTP antes de enviar o teste.');
+        }
+
+        try {
+            TenantMailConfig::applyForTenantId(Auth::user()?->tenant_id);
+
+            Mail::raw(
+                "Este é um e-mail de teste da configuração SMTP do sistema.\n\nEmpresa: ".($company?->companyname ?? config('app.name'))."\nData/Hora: ".now()->format('d/m/Y H:i:s'),
+                function ($message) use ($targetEmail, $company) {
+                    $message->to($targetEmail)
+                        ->subject('Teste de configuração SMTP - '.($company?->companyname ?? config('app.name')));
+                }
+            );
+
+            return back()->with('message', "E-mail de teste enviado com sucesso para {$targetEmail}.");
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->with('error', 'Falha ao enviar e-mail de teste. Verifique host, porta, usuário, senha e criptografia SMTP.');
+        }
     }
 }

@@ -1,4 +1,4 @@
-import { toastSuccess } from '@/components/app-toast-messages';
+import { toastSuccess, toastWarning } from '@/components/app-toast-messages';
 import AppearanceTabs from '@/components/appearance-tabs';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import HeadingSmall from '@/components/heading-small';
@@ -10,8 +10,9 @@ import { Switch } from '@/components/ui/switch';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { maskCpfCnpj } from '@/Utils/mask';
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { Save, Wrench } from 'lucide-react';
+import { useEffect } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -25,7 +26,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Others({ othersettings, company, time_remaining, mailSettings }: any) {
-    const { auth } = usePage().props as any;
+    const { auth, flash } = usePage().props as any;
     const canManageOtherSettings = auth?.permissions?.includes('other_settings');
 
     const { data, setData, put, processing } = useForm({
@@ -51,6 +52,26 @@ export default function Others({ othersettings, company, time_remaining, mailSet
             },
         });
     };
+
+    const handleSendTestMail = () => {
+        router.post(
+            route('app.other-settings.test-mail', othersettings?.id),
+            {},
+            {
+                preserveScroll: true,
+            },
+        );
+    };
+
+    useEffect(() => {
+        if (flash?.message) {
+            toastSuccess('Sucesso', flash.message);
+        }
+
+        if (flash?.error) {
+            toastWarning('Erro', flash.error);
+        }
+    }, [flash?.message, flash?.error]);
 
     return (
         <AppLayout>
@@ -105,7 +126,7 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                     <div className="mt-6 space-y-6">
                         <HeadingSmall
                             title="Configuração de e-mail (SMTP)"
-                            description="Cadastre os dados da conta de e-mail para envio de notificações de status e outros e-mails automáticos."
+                            description={`Cadastre os dados da conta de e-mail para envio de notificações de status e outros e-mails automáticos. O teste será enviado para ${company?.email || 'o e-mail cadastrado da empresa'}.`}
                         />
 
                         <div className="grid gap-4 md:grid-cols-2">
@@ -194,13 +215,14 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                             </div>
                         </div>
                     </div>
-                    <div className="flex justify-end">
-                        {canManageOtherSettings && (
-                            <Button type="submit" disabled={processing}>
-                                <Save />
-                                Salvar
-                            </Button>
-                        )}
+                    <div className="flex justify-end gap-2">
+                        <Button type="button" variant="outline" onClick={handleSendTestMail} disabled={!canManageOtherSettings}>
+                            Testar envio SMTP
+                        </Button>
+                        <Button type="submit" disabled={processing || !canManageOtherSettings}>
+                            <Save />
+                            Salvar
+                        </Button>
                     </div>
                 </form>
             </div>
