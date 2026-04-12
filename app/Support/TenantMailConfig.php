@@ -10,6 +10,19 @@ use Illuminate\Support\Facades\Schema;
 
 class TenantMailConfig
 {
+    public static function applySystemDefault(): void
+    {
+        Config::set('mail.default', env('MAIL_MAILER', 'smtp'));
+        Config::set('mail.mailers.smtp.transport', 'smtp');
+        Config::set('mail.mailers.smtp.host', env('MAIL_HOST'));
+        Config::set('mail.mailers.smtp.port', (int) env('MAIL_PORT', 587));
+        Config::set('mail.mailers.smtp.encryption', env('MAIL_ENCRYPTION', 'tls'));
+        Config::set('mail.mailers.smtp.username', env('MAIL_USERNAME'));
+        Config::set('mail.mailers.smtp.password', env('MAIL_PASSWORD'));
+        Config::set('mail.from.address', env('MAIL_FROM_ADDRESS', config('mail.from.address')));
+        Config::set('mail.from.name', env('MAIL_FROM_NAME', config('app.name')));
+    }
+
     public static function hasConfiguredForTenantId(?int $tenantId): bool
     {
         if (! $tenantId || ! Schema::hasTable('others')) {
