@@ -302,6 +302,7 @@ class OrderController extends Controller
         $customerEmail = $order->customer?->email;
 
         if ($this->shouldSendCustomerMailer($order, $customerEmail)) {
+            TenantMailConfig::applyForTenantId($order->tenant_id ? (int) $order->tenant_id : null);
             Mail::to($customerEmail)->send(new OrderCreatedMail($order));
         }
 
@@ -434,6 +435,7 @@ class OrderController extends Controller
             $customerEmail = $order->customer?->email;
 
             if ($this->shouldSendCustomerMailer($order, $customerEmail)) {
+                TenantMailConfig::applyForTenantId($order->tenant_id ? (int) $order->tenant_id : null);
                 Mail::to($customerEmail)->send(
                     new OrderStatusUpdatedMail(
                         $order->fresh(['customer', 'tenant']),
@@ -624,6 +626,7 @@ class OrderController extends Controller
             $isOverdue = Carbon::parse($order->delivery_date)->lt(now()->subDays(7));
         }
 
+        TenantMailConfig::applyForTenantId($order->tenant_id ? (int) $order->tenant_id : null);
         Mail::to($customerEmail)->send(new OrderPaymentReminderMail($order, $paymentSummary, $isOverdue));
 
         return back()->with('success', 'E-mail de cobrança/lembrete enviado com sucesso.');

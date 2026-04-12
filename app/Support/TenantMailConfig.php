@@ -21,6 +21,7 @@ class TenantMailConfig
         Config::set('mail.mailers.smtp.password', env('MAIL_PASSWORD'));
         Config::set('mail.from.address', env('MAIL_FROM_ADDRESS', config('mail.from.address')));
         Config::set('mail.from.name', env('MAIL_FROM_NAME', config('app.name')));
+        app('mail.manager')->purge();
     }
 
     public static function hasConfiguredForTenantId(?int $tenantId): bool
@@ -93,5 +94,6 @@ class TenantMailConfig
         Config::set('mail.mailers.smtp.password', $password);
         Config::set('mail.from.address', $mailConfig->mail_from_address ?: config('mail.from.address'));
         Config::set('mail.from.name', $mailConfig->mail_from_name ?: config('app.name'));
+        app('mail.manager')->purge();
     }
 }
