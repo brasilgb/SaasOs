@@ -86,14 +86,42 @@ function unMasCpfCnpj(value: unknown): string {
     return String(value ?? '').replace(/\D/g, '');
 }
 
-function maskMoney(value: string): string {
-    const digits = onlyDigits(value).slice(0, 15);
-    if (!digits) return '';
-    const normalized = digits.length === 1 ? `0${digits}` : digits;
-    const cents = normalized.slice(-2);
-    const integerPart = normalized.slice(0, -2).replace(/^0+(?=\d)/, '') || '0';
-    const withThousands = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    return `${withThousands},${cents}`;
+function parseMoneyInput(value: unknown): number {
+    if (typeof value === 'number') {
+        return Number.isFinite(value) ? value : 0;
+    }
+
+    const raw = String(value ?? '').trim();
+    if (!raw) return 0;
+
+    const hasSeparator = raw.includes(',') || raw.includes('.');
+
+    if (!hasSeparator) {
+        const digits = onlyDigits(raw);
+        if (!digits) return 0;
+        return Number(digits) / 100;
+    }
+
+    const normalized = raw.includes(',')
+        ? raw.replace(/\./g, '').replace(',', '.')
+        : raw.replace(/,/g, '');
+
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function maskMoney(value: unknown): string {
+    if (value === null || value === undefined) return '';
+
+    const raw = String(value).trim();
+    if (!raw) return '';
+
+    const amount = parseMoneyInput(value);
+
+    return amount.toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    });
 }
 
 function maskMoneyDot(value: string): string {

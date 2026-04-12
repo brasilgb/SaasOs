@@ -26,11 +26,14 @@ type RevenueBreakdown = {
 
 type OrdersKpis = {
     today_revenue: RevenueBreakdown;
+    month_projection: RevenueBreakdown;
+    month_revenue: RevenueBreakdown;
     range_revenue: RevenueBreakdown;
     daily_average: RevenueBreakdown;
     average_ticket: RevenueBreakdown;
     orders_count: number;
     orders_today_count: number;
+    orders_month_count: number;
 };
 
 function formatIsoDate(date: Date | string) {
@@ -117,12 +120,13 @@ export default function FinanceiroOrders({
         <div className="min-w-0">
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 <KpiFinancial
-                    title="Faturamento - Diário"
-                    total={kpiOrders?.today_revenue?.total}
-                    services={kpiOrders?.today_revenue?.services}
-                    parts={kpiOrders?.today_revenue?.parts}
+                    title="Faturamento - Projeção mensal"
+                    total={kpiOrders?.month_projection?.total}
+                    services={kpiOrders?.month_projection?.services}
+                    parts={kpiOrders?.month_projection?.parts}
                     icon={<DollarSign size={18} />}
-                    orders={kpiOrders?.orders_today_count}
+                    orders={kpiOrders?.orders_month_count}
+                    ordersLabel={`${Number(kpiOrders?.orders_month_count || 0)} ${Number(kpiOrders?.orders_month_count || 0) === 1 ? 'ordem do mês' : 'ordens do mês'}`}
                 />
 
                 <KpiFinancial

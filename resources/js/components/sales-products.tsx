@@ -83,8 +83,9 @@ interface SalesProductsProps {
 }
 
 export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps) {
-    const { auth } = usePage<PageProps<{ auth: { user: User & { tenant?: CompanyData } } }>>().props;
+    const { auth, cashier } = usePage<PageProps<{ auth: { user: User & { tenant?: CompanyData } }; cashier?: { isOpen?: boolean } }>>().props;
     const companyData = auth?.user?.tenant;
+    const isCashierOpen = Boolean(cashier?.isOpen);
 
     const [selectedPart, setSelectedPart] = useState<Part | null>(null);
     const [open, setOpen] = useState(false);
@@ -306,13 +307,18 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger className="flex h-full cursor-pointer items-center justify-center">
-                <ShoppingCartIcon size={iconSize} className="text-green-300" />
+                <ShoppingCartIcon size={iconSize} className={isCashierOpen ? 'text-green-300' : 'text-amber-400 opacity-70'} />
             </DialogTrigger>
             <DialogContent className="sm:max-w-lvh">
                 <DialogHeader>
                     <DialogTitle>Frente de Caixa</DialogTitle>
                     <DialogDescription>Registre uma nova venda.</DialogDescription>
                 </DialogHeader>
+                {!isCashierOpen && (
+                    <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+                        O caixa diario precisa estar aberto para registrar vendas.
+                    </div>
+                )}
                 <SaleInvoiceModal open={openInvoiceModal} onClose={() => setOpenInvoiceModal(false)} sale={dataSalesTotal} />
                 <form onSubmit={handleSubmit} autoComplete="off">
                     {successMessage && <p className="mb-4 text-center text-green-500">{successMessage}</p>}
@@ -492,7 +498,7 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
                         </Button>
 
                         {!saleCompleted ? (
-                            <Button type="submit" disabled={processing || cartItems.length === 0} className="w-full sm:w-auto">
+                            <Button type="submit" disabled={processing || cartItems.length === 0 || !isCashierOpen} className="w-full sm:w-auto">
                                 {processing ? <Loader2 className="mr-2 animate-spin" /> : null}
                                 {processing ? 'Processando...' : 'Finalizar Venda'}
                             </Button>

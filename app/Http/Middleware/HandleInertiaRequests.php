@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\Admin\Plan;
 use App\Models\Admin\Setting;
 use App\Models\App\Company;
+use App\Models\App\CashSession;
 use App\Models\App\Customer;
 use App\Models\App\Equipment;
 use App\Models\App\Message;
@@ -70,8 +71,13 @@ class HandleInertiaRequests extends Middleware
         }
 
         $otherSetting = null;
+        $openCashSession = null;
         if ($user) {
             $otherSetting = Other::query()->firstOrCreate([]);
+            $openCashSession = CashSession::query()
+                ->where('status', 'open')
+                ->latest('opened_at')
+                ->first();
         }
 
         return [
@@ -92,6 +98,10 @@ class HandleInertiaRequests extends Middleware
             'setting' => $user ? Setting::first(['name', 'logo']) : null,
             'whatsapp' => $user ? WhatsappMessage::first() : null,
             'othersetting' => $otherSetting,
+            'cashier' => $user ? [
+                'isOpen' => (bool) $openCashSession,
+                'openedAt' => $openCashSession?->opened_at?->toIso8601String(),
+            ] : null,
             'orderStatus' => $user ? Order::where('service_status', 4)->get() : null,
 
             'notifications' => $user

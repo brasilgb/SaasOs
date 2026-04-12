@@ -43,6 +43,8 @@ type SalesKpis = {
     today_revenue: number;
     today_expenses: number;
     today_profit: number;
+    month_projection_revenue: number;
+    month_revenue: number;
     range_revenue: number;
     range_expenses: number;
     range_profit: number;
@@ -52,6 +54,7 @@ type SalesKpis = {
     average_ticket: number;
     sales_count: number;
     sales_today_count: number;
+    sales_month_count: number;
     payment_methods?: {
         pix?: number;
         cartao?: number;
@@ -206,12 +209,14 @@ function KpiCard({
     value,
     description,
     count,
+    countLabel,
     icon,
 }: {
     title: string;
     value?: number;
     description: string;
     count?: number;
+    countLabel?: string;
     icon: ReactNode;
 }) {
     return (
@@ -225,7 +230,7 @@ function KpiCard({
                 <CardTitle className="truncate text-2xl font-bold tabular-nums 2xl:text-3xl">{formatCurrency(value)}</CardTitle>
                 <div className="text-muted-foreground text-xs">{description}</div>
                 <div className="text-muted-foreground border-t pt-2 text-xs">
-                    {Number(count || 0)} {Number(count || 0) === 1 ? 'venda analisada' : 'vendas analisadas'}
+                    {countLabel ?? `${Number(count || 0)} ${Number(count || 0) === 1 ? 'venda analisada' : 'vendas analisadas'}`}
                 </div>
             </CardContent>
         </Card>
@@ -289,10 +294,11 @@ export default function FinanceiroSales({
 
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                 <KpiCard
-                    title="Vendas - Diário"
-                    value={kpisSales?.today_revenue}
-                    description="Faturamento de vendas concluídas hoje"
-                    count={kpisSales?.sales_today_count}
+                    title="Vendas - Projeção mensal"
+                    value={kpisSales?.month_projection_revenue}
+                    description="Projeção do faturamento de vendas concluídas no mês atual"
+                    count={kpisSales?.sales_month_count}
+                    countLabel={`${Number(kpisSales?.sales_month_count || 0)} ${Number(kpisSales?.sales_month_count || 0) === 1 ? 'venda do mês' : 'vendas do mês'}`}
                     icon={<BadgeDollarSign size={18} />}
                 />
 
