@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { maskMoney, maskMoneyDot } from '@/Utils/mask';
-import { router, useForm } from '@inertiajs/react';
+import { Link, router, useForm, usePage } from '@inertiajs/react';
 import { FileTextIcon, HandCoins, Mail } from 'lucide-react';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
@@ -21,6 +21,7 @@ export default function OrderPaymentsModal({
     compactTriggerClassName = 'bg-emerald-600 text-white hover:bg-emerald-700',
     compactTriggerTitle = 'Pagamentos da ordem',
 }: any) {
+    const { cashier } = usePage<{ cashier?: { isOpen?: boolean } }>().props;
     const [open, setOpen] = useState(defaultOpen);
     const [openInvoiceSummary, setOpenInvoiceSummary] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -41,7 +42,22 @@ export default function OrderPaymentsModal({
     const totalOrder = Number(localSummary?.total_order || 0);
     const totalPaid = Number(localSummary?.total_paid || 0);
     const isDelivered = Boolean(order?.delivery_date);
-    const canSendReminder = remaining > 0 && isDelivered;
+    const hasMailerAvailable = Boolean(order?.can_send_payment_reminder);
+    const canSendReminder = remaining > 0 && isDelivered && hasMailerAvailable;
+    const isCashierOpen = Boolean(cashier?.isOpen);
+    const syncPaymentAmountWithRemaining = (nextRemaining: number) => {
+        const normalizedRemaining = Math.max(0, Number(nextRemaining || 0));
+        const currentAmount = Number(paymentForm.data.amount || 0);
+
+        if (normalizedRemaining <= 0) {
+            paymentForm.setData('amount', '');
+            return;
+        }
+
+        if (!paymentForm.data.amount || currentAmount > normalizedRemaining) {
+            paymentForm.setData('amount', normalizedRemaining.toFixed(2));
+        }
+    };
 
     const financialStatus = (() => {
         if (totalOrder <= 0) return { label: 'Sem valor', variant: 'outline' as const, className: '' };
@@ -65,6 +81,9 @@ export default function OrderPaymentsModal({
             });
             if (!response.ok) throw new Error('Erro ao carregar pagamentos');
             const payload = await response.json();
+            if (payload?.order?.can_send_payment_reminder !== undefined) {
+                order.can_send_payment_reminder = payload.order.can_send_payment_reminder;
+            }
             setLocalPayments(payload?.orderPayments || []);
             setLocalSummary(
                 payload?.paymentSummary || {
@@ -75,6 +94,8 @@ export default function OrderPaymentsModal({
                     remaining: 0,
                 },
             );
+            paymentForm.clearErrors();
+            syncPaymentAmountWithRemaining(Number(payload?.paymentSummary?.remaining || 0));
         } catch (error) {
             console.error(error);
         } finally {
@@ -83,8 +104,8 @@ export default function OrderPaymentsModal({
     };
 
     useEffect(() => {
-        if (open && !paymentForm.data.amount && remaining > 0) {
-            paymentForm.setData('amount', String(remaining.toFixed(2)));
+        if (open) {
+            syncPaymentAmountWithRemaining(remaining);
         }
     }, [open, remaining]);
 
@@ -99,9 +120,13 @@ export default function OrderPaymentsModal({
         paymentForm.post(route('app.orders.payments.store', order.id), {
             preserveScroll: true,
             onSuccess: () => {
+                paymentForm.clearErrors();
                 paymentForm.reset('amount', 'notes');
                 paymentForm.setData('payment_method', 'pix');
                 paymentForm.setData('paid_at', moment().format('YYYY-MM-DDTHH:mm'));
+                loadPaymentsData();
+            },
+            onError: () => {
                 loadPaymentsData();
             },
         });
@@ -111,7 +136,10 @@ export default function OrderPaymentsModal({
         if (!confirm('Deseja remover este pagamento da ordem?')) return;
         router.delete(route('app.orders.payments.destroy', { order: order.id, payment: paymentId }), {
             preserveScroll: true,
-            onSuccess: () => loadPaymentsData(),
+            onSuccess: () => {
+                paymentForm.clearErrors();
+                loadPaymentsData();
+            },
         });
     };
 
@@ -170,8 +198,8 @@ export default function OrderPaymentsModal({
                                 variant="outline"
                                 size="sm"
                                 onClick={handleSendReminder}
-                                disabled={reminderForm.processing || !order?.customer?.email}
-                                title={!order?.customer?.email ? 'Cliente sem e-mail cadastrado' : 'Enviar lembrete de cobrança por e-mail'}
+                                disabled={reminderForm.processing}
+                                title="Enviar lembrete de cobrança por e-mail"
                             >
                                 <Mail className="mr-1 h-4 w-4" />
                                 {reminderForm.processing ? 'Enviando...' : 'Enviar lembrete'}
@@ -179,6 +207,15 @@ export default function OrderPaymentsModal({
                         )}
                     </div>
                 </DialogHeader>
+
+                {!isCashierOpen && (
+                    <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+                        O caixa diario precisa estar aberto para registrar pagamentos desta ordem.{' '}
+                        <Link href={route('app.cashier.index')} className="font-medium underline">
+                            Abrir caixa
+                        </Link>
+                    </div>
+                )}
 
                 <div className="grid gap-4 md:grid-cols-5">
                     <Card>
@@ -271,7 +308,7 @@ export default function OrderPaymentsModal({
                     </div>
 
                     <div className="flex justify-end md:col-span-2">
-                        <Button type="submit" disabled={paymentForm.processing || remaining <= 0}>
+                        <Button type="submit" disabled={paymentForm.processing || remaining <= 0 || !isCashierOpen}>
                             Registrar pagamento
                         </Button>
                     </div>
@@ -291,7 +328,13 @@ export default function OrderPaymentsModal({
                                     </span>
                                     {payment.notes ? <span className="text-muted-foreground text-xs">{payment.notes}</span> : null}
                                 </div>
-                                <Button type="button" size="sm" variant="outline" onClick={() => handleRemovePayment(payment.id)}>
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleRemovePayment(payment.id)}
+                                    disabled={!isCashierOpen}
+                                >
                                     Remover
                                 </Button>
                             </div>

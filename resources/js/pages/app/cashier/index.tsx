@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import CashierDailyReportPDF from '@/pages/app/reports/pdf/CashierDailyReportPDF';
 import { BreadcrumbItem } from '@/types';
-import { maskMoney } from '@/Utils/mask';
+import { maskMoney, maskMoneyDot } from '@/Utils/mask';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { pdf } from '@react-pdf/renderer';
 import { FileText, HandCoins, Loader2 } from 'lucide-react';
@@ -128,8 +128,8 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
                                         type="text"
                                         inputMode="numeric"
                                         placeholder="0,00"
-                                        value={openForm.data.opening_balance}
-                                        onChange={(e) => openForm.setData('opening_balance', maskMoney(e.target.value))}
+                                        value={maskMoney(openForm.data.opening_balance)}
+                                        onChange={(e) => openForm.setData('opening_balance', maskMoneyDot(e.target.value))}
                                     />
                                     <InputError message={openForm.errors.opening_balance} />
                                 </div>
@@ -153,10 +153,10 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
                                         type="text"
                                         inputMode="numeric"
                                         placeholder="0,00"
-                                        value={closeForm.data.closing_balance}
+                                        value={maskMoney(closeForm.data.closing_balance)}
                                         onChange={(e) => {
                                             closeForm.clearErrors('closing_balance');
-                                            closeForm.setData('closing_balance', maskMoney(e.target.value));
+                                            closeForm.setData('closing_balance', maskMoneyDot(e.target.value));
                                         }}
                                     />
                                     <InputError message={closeForm.errors.closing_balance} />
@@ -168,8 +168,8 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
                                         type="text"
                                         inputMode="numeric"
                                         placeholder="0,00"
-                                        value={closeForm.data.manual_entries}
-                                        onChange={(e) => closeForm.setData('manual_entries', maskMoney(e.target.value))}
+                                        value={maskMoney(closeForm.data.manual_entries)}
+                                        onChange={(e) => closeForm.setData('manual_entries', maskMoneyDot(e.target.value))}
                                     />
                                     <InputError message={closeForm.errors.manual_entries} />
                                 </div>
@@ -180,8 +180,8 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
                                         type="text"
                                         inputMode="numeric"
                                         placeholder="0,00"
-                                        value={closeForm.data.manual_exits}
-                                        onChange={(e) => closeForm.setData('manual_exits', maskMoney(e.target.value))}
+                                        value={maskMoney(closeForm.data.manual_exits)}
+                                        onChange={(e) => closeForm.setData('manual_exits', maskMoneyDot(e.target.value))}
                                     />
                                     <InputError message={closeForm.errors.manual_exits} />
                                 </div>

@@ -37,6 +37,16 @@ class OrderController extends Controller
         return TenantMailConfig::hasConfiguredForTenantId($order->tenant_id ? (int) $order->tenant_id : null);
     }
 
+    private function appendPaymentReminderAvailability(Order $order): Order
+    {
+        $order->setAttribute(
+            'can_send_payment_reminder',
+            $this->shouldSendCustomerMailer($order, $order->customer?->email)
+        );
+
+        return $order;
+    }
+
     private function currentUser(): ?User
     {
         $user = Auth::user() ?? Auth::guard('sanctum')->user();
@@ -236,6 +246,11 @@ class OrderController extends Controller
             ->withSum('orderPayments as total_paid', 'amount')
             ->paginate(11)
             ->withQueryString();
+        $orders->setCollection(
+            $orders->getCollection()->map(function (Order $order) {
+                return $this->appendPaymentReminderAvailability($order);
+            })
+        );
         $whats = WhatsappMessage::first();
 
         $feedbackOrders = $this->scopeOrdersQuery(Order::query())
@@ -287,6 +302,7 @@ class OrderController extends Controller
         $customerEmail = $order->customer?->email;
 
         if ($this->shouldSendCustomerMailer($order, $customerEmail)) {
+            TenantMailConfig::applyForTenantId($order->tenant_id ? (int) $order->tenant_id : null);
             Mail::to($customerEmail)->send(new OrderCreatedMail($order));
         }
 
@@ -316,6 +332,7 @@ class OrderController extends Controller
             ->get();
         $models = Order::distinct()->pluck('model');
         $paymentSummary = $this->buildPaymentSummary($order);
+        $order = $this->appendPaymentReminderAvailability($order);
 
         return Inertia::render('app/orders/edit-order', [
             'order' => $order,
@@ -418,6 +435,7 @@ class OrderController extends Controller
             $customerEmail = $order->customer?->email;
 
             if ($this->shouldSendCustomerMailer($order, $customerEmail)) {
+                TenantMailConfig::applyForTenantId($order->tenant_id ? (int) $order->tenant_id : null);
                 Mail::to($customerEmail)->send(
                     new OrderStatusUpdatedMail(
                         $order->fresh(['customer', 'tenant']),
@@ -465,6 +483,7 @@ class OrderController extends Controller
 
     public function storePayment(Request $request, Order $order): RedirectResponse
     {
+        abort_unless($this->canManageOrders(), 403);
         abort_unless($this->canAccessOrder($order), 403);
 
         $request->merge([
@@ -494,7 +513,9 @@ class OrderController extends Controller
             ->value('id');
 
         if (! $openCashSessionId) {
-            return back()->with('error', 'Abra o caixa diário antes de registrar pagamento da ordem.');
+            return back()->withErrors([
+                'amount' => 'Abra o caixa diário antes de registrar pagamento da ordem.',
+            ]);
         }
 
         OrderPayment::create([
@@ -511,6 +532,7 @@ class OrderController extends Controller
 
     public function destroyPayment(Order $order, OrderPayment $payment): RedirectResponse
     {
+        abort_unless($this->canManageOrders(), 403);
         abort_unless($this->canAccessOrder($order), 403);
         abort_unless((int) $payment->order_id === (int) $order->id, 404);
 
@@ -523,15 +545,18 @@ class OrderController extends Controller
     {
         abort_unless($this->canAccessOrder($order), 403);
 
-        $order->load('orderPayments');
+        $order->load('customer');
+        $orderPayments = $order->orderPayments()->latest('paid_at')->get();
+        $order->setRelation('orderPayments', $orderPayments);
         $paymentSummary = $this->buildPaymentSummary($order);
 
         return response()->json([
             'order' => [
                 'id' => $order->id,
                 'order_number' => $order->order_number,
+                'can_send_payment_reminder' => $this->shouldSendCustomerMailer($order, $order->customer?->email),
             ],
-            'orderPayments' => $order->orderPayments,
+            'orderPayments' => $orderPayments,
             'paymentSummary' => $paymentSummary,
         ]);
     }
@@ -601,6 +626,7 @@ class OrderController extends Controller
             $isOverdue = Carbon::parse($order->delivery_date)->lt(now()->subDays(7));
         }
 
+        TenantMailConfig::applyForTenantId($order->tenant_id ? (int) $order->tenant_id : null);
         Mail::to($customerEmail)->send(new OrderPaymentReminderMail($order, $paymentSummary, $isOverdue));
 
         return back()->with('success', 'E-mail de cobrança/lembrete enviado com sucesso.');

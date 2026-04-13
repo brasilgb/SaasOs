@@ -7,10 +7,11 @@ interface KpiFinancialProps {
     services?: number;
     parts?: number;
     orders?: number;
+    ordersLabel?: string;
     icon?: ReactNode;
 }
 
-export function KpiFinancial({ title, total = 0, services = 0, parts = 0, orders = 0, icon }: KpiFinancialProps) {
+export function KpiFinancial({ title, total = 0, services = 0, parts = 0, orders = 0, ordersLabel, icon }: KpiFinancialProps) {
     const format = (v: number) =>
         v.toLocaleString('pt-BR', {
             style: 'currency',
@@ -62,7 +63,7 @@ export function KpiFinancial({ title, total = 0, services = 0, parts = 0, orders
 
                 {/* ORDENS ANALISADAS */}
                 <div className="text-muted-foreground border-t pt-2 text-xs">
-                    {orders} {orders > 1 ? 'ordens' : 'ordem'} {orders > 1 ? 'analisadas' : 'analisada'}
+                    {ordersLabel ?? `${orders} ${orders > 1 ? 'ordens' : 'ordem'} ${orders > 1 ? 'analisadas' : 'analisada'}`}
                 </div>
             </CardContent>
         </Card>

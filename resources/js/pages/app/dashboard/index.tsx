@@ -31,7 +31,11 @@ export default function Dashboard({ reloadKey, orders, acount, parts, customers,
         ? Math.max(1, Math.ceil((new Date(dateRange.to).getTime() - new Date(dateRange.from).getTime()) / (1000 * 60 * 60 * 24)) + 1)
         : Number(timeRange);
 
-    const timerangeLabel = hasCustomRange ? `${formatDateRange(dateRange.from)} até ${formatDateRange(dateRange.to)}` : `${timeRange} dias`;
+    const timerangeLabel = hasCustomRange
+        ? `${formatDateRange(dateRange.from)} até ${formatDateRange(dateRange.to)}`
+        : timeRange === '1'
+          ? 'Hoje'
+          : `${timeRange} dias`;
 
     const onTimeRangeChange = (value: string) => {
         if (!value) return;
@@ -80,6 +84,10 @@ export default function Dashboard({ reloadKey, orders, acount, parts, customers,
                                 onValueChange={onTimeRangeChange}
                                 className="bg-muted flex w-full justify-start gap-2 overflow-x-auto rounded-lg p-1 sm:w-auto"
                             >
+                                <ToggleGroupItem value="1" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                                    Hoje
+                                </ToggleGroupItem>
+
                                 <ToggleGroupItem value="7" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
                                     7 dias
                                 </ToggleGroupItem>

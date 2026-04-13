@@ -98,7 +98,7 @@ class DashboardController extends Controller
         }
 
         $timerange = intval($timerange) > 0 ? intval($timerange) : 7;
-        $start = Carbon::now()->subDays($timerange)->startOfDay();
+        $start = Carbon::now()->subDays($timerange - 1)->startOfDay();
         $end = Carbon::now()->endOfDay();
 
         return [$start, $end];
@@ -239,37 +239,67 @@ class DashboardController extends Controller
     {
         [$startDate, $endDate] = $this->getRange($timeRange);
         $today = now()->startOfDay();
+        $monthStart = now()->startOfMonth()->startOfDay();
+        $elapsedMonthDays = max(1, $monthStart->diffInDays($today) + 1);
+        $daysInMonth = now()->daysInMonth;
 
         $rangeDays = max(1, $startDate->diffInDays($endDate) + 1);
 
         // ===== RANGE =====
         $rangeService = Order::where('service_status', 10)
-            ->whereBetween('created_at', [$startDate, $endDate])
+            ->whereNotNull('delivery_date')
+            ->whereBetween('delivery_date', [$startDate, $endDate])
             ->sum('service_value');
 
         $rangeParts = Order::where('service_status', 10)
-            ->whereBetween('created_at', [$startDate, $endDate])
+            ->whereNotNull('delivery_date')
+            ->whereBetween('delivery_date', [$startDate, $endDate])
             ->sum('parts_value');
 
         $rangeTotal = $rangeService + $rangeParts;
 
         // ===== TODAY =====
         $todayService = Order::where('service_status', 10)
-            ->whereDate('created_at', $today)
+            ->whereNotNull('delivery_date')
+            ->whereDate('delivery_date', $today)
             ->sum('service_value');
 
         $todayParts = Order::where('service_status', 10)
-            ->whereDate('created_at', $today)
+            ->whereNotNull('delivery_date')
+            ->whereDate('delivery_date', $today)
             ->sum('parts_value');
 
         $todayTotal = $todayService + $todayParts;
 
+        // ===== MÊS CORRENTE / PROJEÇÃO =====
+        $monthService = Order::where('service_status', 10)
+            ->whereNotNull('delivery_date')
+            ->whereBetween('delivery_date', [$monthStart, $today->copy()->endOfDay()])
+            ->sum('service_value');
+
+        $monthParts = Order::where('service_status', 10)
+            ->whereNotNull('delivery_date')
+            ->whereBetween('delivery_date', [$monthStart, $today->copy()->endOfDay()])
+            ->sum('parts_value');
+
+        $monthTotal = $monthService + $monthParts;
+        $monthOrdersCount = Order::where('service_status', 10)
+            ->whereNotNull('delivery_date')
+            ->whereBetween('delivery_date', [$monthStart, $today->copy()->endOfDay()])
+            ->count();
+
+        $projectedMonthService = ($monthService / $elapsedMonthDays) * $daysInMonth;
+        $projectedMonthParts = ($monthParts / $elapsedMonthDays) * $daysInMonth;
+        $projectedMonthTotal = $projectedMonthService + $projectedMonthParts;
+
         // ===== ORDERS =====
         $ordersCount = Order::where('service_status', 10)
-            ->whereBetween('created_at', [$startDate, $endDate])
+            ->whereNotNull('delivery_date')
+            ->whereBetween('delivery_date', [$startDate, $endDate])
             ->count();
         $ordersTodayCount = Order::where('service_status', 10)
-            ->whereDate('created_at', $today)
+            ->whereNotNull('delivery_date')
+            ->whereDate('delivery_date', $today)
             ->count();
 
         // ===== MÉDIA DIÁRIA =====
@@ -292,6 +322,12 @@ class DashboardController extends Controller
                     'total' => $todayTotal,
                 ],
 
+                'month_projection' => [
+                    'services' => $projectedMonthService,
+                    'parts' => $projectedMonthParts,
+                    'total' => $projectedMonthTotal,
+                ],
+
                 'range_revenue' => [
                     'services' => $rangeService,
                     'parts' => $rangeParts,
@@ -312,6 +348,12 @@ class DashboardController extends Controller
 
                 'orders_count' => $ordersCount,
                 'orders_today_count' => $ordersTodayCount,
+                'orders_month_count' => $monthOrdersCount,
+                'month_revenue' => [
+                    'services' => $monthService,
+                    'parts' => $monthParts,
+                    'total' => $monthTotal,
+                ],
             ],
         ]);
     }
@@ -321,33 +363,36 @@ class DashboardController extends Controller
         [$startDate, $endDate] = $this->getRange($timeRange);
 
         $orders = Order::select(
-            DB::raw('DATE(created_at) as date'),
+            DB::raw('DATE(delivery_date) as date'),
             DB::raw('SUM(service_value) as services'),
             DB::raw('SUM(parts_value) as parts'),
             DB::raw('SUM(service_value + parts_value) as total')
         )
             ->where('service_status', 10)
-            ->whereBetween('created_at', [$startDate, $endDate])
+            ->whereNotNull('delivery_date')
+            ->whereBetween('delivery_date', [$startDate, $endDate])
             ->groupBy('date')
             ->pluck('total', 'date')
             ->toArray();
 
         $services = Order::select(
-            DB::raw('DATE(created_at) as date'),
+            DB::raw('DATE(delivery_date) as date'),
             DB::raw('SUM(service_value) as value')
         )
             ->where('service_status', 10)
-            ->whereBetween('created_at', [$startDate, $endDate])
+            ->whereNotNull('delivery_date')
+            ->whereBetween('delivery_date', [$startDate, $endDate])
             ->groupBy('date')
             ->pluck('value', 'date')
             ->toArray();
 
         $parts = Order::select(
-            DB::raw('DATE(created_at) as date'),
+            DB::raw('DATE(delivery_date) as date'),
             DB::raw('SUM(parts_value) as value')
         )
             ->where('service_status', 10)
-            ->whereBetween('created_at', [$startDate, $endDate])
+            ->whereNotNull('delivery_date')
+            ->whereBetween('delivery_date', [$startDate, $endDate])
             ->groupBy('date')
             ->pluck('value', 'date')
             ->toArray();
@@ -375,6 +420,9 @@ class DashboardController extends Controller
     {
         [$startDate, $endDate] = $this->getRange($timeRange);
         $today = now()->startOfDay();
+        $monthStart = now()->startOfMonth()->startOfDay();
+        $elapsedMonthDays = max(1, $monthStart->diffInDays($today) + 1);
+        $daysInMonth = now()->daysInMonth;
 
         $rangeDays = max(1, $startDate->diffInDays($endDate) + 1);
 
@@ -408,6 +456,14 @@ class DashboardController extends Controller
 
         $todayExpenses = $todayCashExits + $todayRegisteredExpenses;
 
+        $monthRevenue = Sale::where('status', 'completed')
+            ->whereBetween('created_at', [$monthStart, $today->copy()->endOfDay()])
+            ->sum('total_amount');
+
+        $monthSalesCount = Sale::where('status', 'completed')
+            ->whereBetween('created_at', [$monthStart, $today->copy()->endOfDay()])
+            ->count();
+
         $salesCount = Sale::where('status', 'completed')
             ->whereBetween('created_at', [$startDate, $endDate])
             ->count();
@@ -421,6 +477,7 @@ class DashboardController extends Controller
         $averageTicket = $salesCount > 0 ? $rangeRevenue / $salesCount : 0;
         $rangeProfit = $rangeRevenue - $rangeExpenses;
         $todayProfit = $todayRevenue - $todayExpenses;
+        $monthProjectionRevenue = ($monthRevenue / $elapsedMonthDays) * $daysInMonth;
         $dailyProfitAverage = $rangeDays > 0 ? $rangeProfit / $rangeDays : 0;
         $paymentMethodsRaw = Sale::query()
             ->select('payment_method', DB::raw('SUM(total_amount) as total'))
@@ -443,6 +500,8 @@ class DashboardController extends Controller
                 'today_revenue' => $todayRevenue,
                 'today_expenses' => $todayExpenses,
                 'today_profit' => $todayProfit,
+                'month_projection_revenue' => $monthProjectionRevenue,
+                'month_revenue' => $monthRevenue,
                 'range_revenue' => $rangeRevenue,
                 'range_expenses' => $rangeExpenses,
                 'range_profit' => $rangeProfit,
@@ -454,6 +513,7 @@ class DashboardController extends Controller
                 'average_ticket' => $averageTicket,
                 'sales_count' => $salesCount,
                 'sales_today_count' => $salesTodayCount,
+                'sales_month_count' => $monthSalesCount,
                 'payment_methods' => $paymentMethods,
             ],
         ]);
