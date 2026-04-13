@@ -4,7 +4,7 @@ import { MessageCircle } from 'lucide-react';
 
 export function Footer() {
     return (
-        <footer id="contato" className="border-border bg-muted/30 border-t py-16">
+        <footer id="contato" className="border-t border-white/10 bg-[#050a13] py-16 text-white">
             <div className="mx-auto max-w-7xl px-4">
                 <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
                     {/* Logo + descrição */}
@@ -13,30 +13,31 @@ export function Footer() {
                             <SigmaOSHorizontalLogo />
                         </div>
 
-                        <p className="text-muted-foreground text-sm leading-relaxed">
-                            Sistema de gestão de ordens de serviço para empresas de manutenção em informática, eletrônicos e eletrodomésticos.
+                        <p className="text-sm leading-relaxed text-white/58">
+                            Sistema de gestão para assistências técnicas de celulares, informática e eletrônicos com mais controle sobre ordens,
+                            clientes, vendas e financeiro.
                         </p>
                     </div>
 
                     {/* Produto */}
                     <div>
-                        <h3 className="mb-4 font-semibold">Produto</h3>
+                        <h3 className="mb-4 font-semibold text-[#ffd6a3]">Produto</h3>
 
                         <ul className="space-y-3 text-sm">
                             <li>
-                                <a href="#recursos" className="text-muted-foreground hover:text-foreground transition-colors">
+                                <a href="#recursos" className="text-white/58 transition-colors hover:text-white">
                                     Recursos
                                 </a>
                             </li>
 
                             <li>
-                                <a href="#precos" className="text-muted-foreground hover:text-foreground transition-colors">
+                                <a href="#precos" className="text-white/58 transition-colors hover:text-white">
                                     Preços
                                 </a>
                             </li>
 
                             <li>
-                                <Link href={route('login')} className="text-muted-foreground hover:text-foreground transition-colors">
+                                <Link href={route('login')} className="text-white/58 transition-colors hover:text-white">
                                     Entrar
                                 </Link>
                             </li>
@@ -45,23 +46,23 @@ export function Footer() {
 
                     {/* Empresa */}
                     <div>
-                        <h3 className="mb-4 font-semibold">Empresa</h3>
+                        <h3 className="mb-4 font-semibold text-[#ffd6a3]">Empresa</h3>
 
                         <ul className="space-y-3 text-sm">
                             <li>
-                                <a href="#contato" className="text-muted-foreground hover:text-foreground transition-colors">
+                                <a href="#contato" className="text-white/58 transition-colors hover:text-white">
                                     Contato
                                 </a>
                             </li>
 
                             <li>
-                                <a href="/termos" className="text-muted-foreground hover:text-foreground transition-colors">
+                                <a href="/termos" className="text-white/58 transition-colors hover:text-white">
                                     Termos de uso
                                 </a>
                             </li>
 
                             <li>
-                                <a href="/privacidade" className="text-muted-foreground hover:text-foreground transition-colors">
+                                <a href="/privacidade" className="text-white/58 transition-colors hover:text-white">
                                     Política de privacidade
                                 </a>
                             </li>
@@ -70,7 +71,11 @@ export function Footer() {
 
                     {/* Suporte */}
                     <div>
-                        <h3 className="mb-4 font-semibold">Suporte</h3>
+                        <h3 className="mb-4 font-semibold text-[#ffd6a3]">Contato</h3>
+
+                        <p className="mb-4 text-sm leading-relaxed text-white/58">
+                            Fale com nossa equipe comercial ou tire dúvidas sobre o teste grátis.
+                        </p>
 
                         <ul className="space-y-3 text-sm">
                             <li>
@@ -78,7 +83,7 @@ export function Footer() {
                                     href="https://wa.me/5551998931325?text=Quero%20mais%20informações%20sobre%20SigmaOs"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
+                                    className="flex items-center gap-2 text-white/58 transition-colors hover:text-white"
                                 >
                                     <MessageCircle className="h-4 w-4" />
                                     WhatsApp
@@ -86,7 +91,7 @@ export function Footer() {
                             </li>
 
                             <li>
-                                <a href="mailto:suporte@sigmaos.com.br" className="text-muted-foreground hover:text-foreground transition-colors">
+                                <a href="mailto:suporte@sigmaos.com.br" className="text-white/58 transition-colors hover:text-white">
                                     suporte@sigmaos.com.br
                                 </a>
                             </li>
@@ -95,15 +100,15 @@ export function Footer() {
                 </div>
 
                 {/* Bottom */}
-                <div className="border-border mt-12 flex flex-col items-center justify-between gap-4 border-t pt-6 sm:flex-row">
-                    <p className="text-muted-foreground text-sm">© {new Date().getFullYear()} SigmaOs. Todos os direitos reservados.</p>
+                <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-6 sm:flex-row">
+                    <p className="text-sm text-white/42">© {new Date().getFullYear()} SigmaOs. Todos os direitos reservados.</p>
 
                     <div className="flex gap-6 text-sm">
-                        <a href="/privacidade" className="text-muted-foreground hover:text-foreground transition-colors">
+                        <a href="/privacidade" className="text-white/42 transition-colors hover:text-white">
                             Privacidade
                         </a>
 
-                        <a href="/termos" className="text-muted-foreground hover:text-foreground transition-colors">
+                        <a href="/termos" className="text-white/42 transition-colors hover:text-white">
                             Termos
                         </a>
                     </div>

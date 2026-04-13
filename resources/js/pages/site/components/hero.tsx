@@ -1,62 +1,62 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import authImage from '@/images/auth-images.jpg';
 import { Link } from '@inertiajs/react';
-import { ArrowRight, CheckCircle2 } from 'lucide-react';
-import { ProductCarousel } from './product-carousel';
+import { ArrowRight } from 'lucide-react';
 
 export function Hero() {
     return (
-        <section className="border-border bg-background relative overflow-hidden border-b py-20 sm:py-32">
-            <div className="mx-auto max-w-7xl px-4">
-                <div className="mx-auto max-w-3xl text-center">
-                    <Badge variant="secondary" className="mb-6 text-sm">
-                        <span className="bg-accent mr-2 inline-block h-2 w-2 rounded-full"></span>
-                        14 dias grátis • Sem cartão de crédito
+        <section className="relative overflow-hidden border-b bg-[#07111f]">
+            <div className="absolute inset-0">
+                <img src={authImage} alt="" aria-hidden="true" className="h-full w-full object-cover object-center opacity-70" />
+                <div className="absolute inset-0 bg-linear-to-r from-[#07111f]/92 via-[#08182d]/58 to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-b from-[#07111f]/18 via-transparent to-[#07111f]/68" />
+            </div>
+
+            <div className="relative mx-auto flex min-h-[78svh] max-w-7xl items-center px-4 py-20 sm:min-h-[88svh] sm:py-24">
+                <div className="max-w-4xl text-white">
+                    <Badge
+                        variant="outline"
+                        className="mb-6 rounded-full border-white/20 bg-white/8 px-5 py-2 text-[0.7rem] font-semibold tracking-[0.28em] text-[#ffd6a3] uppercase backdrop-blur-sm"
+                    >
+                        Estrutura completa para sua assistência
                     </Badge>
 
-                    <h1 className="text-4xl font-bold tracking-tight text-balance sm:text-6xl">
-                        Sistema de Ordem de Serviço para Assistência Técnica
-                        <span className="text-primary block">sem planilhas e sem papel</span>
+                    <h1 className="max-w-3xl text-balance text-5xl font-semibold tracking-tight sm:text-6xl lg:text-7xl">
+                        Organize sua
+                        <span className="block text-[#ffc980]">assistência técnica</span>
+                        com mais controle.
                     </h1>
 
-                    <p className="text-muted-foreground mt-6 text-lg leading-relaxed sm:text-xl">
-                        Gerencie clientes, ordens de serviço, equipamentos e estoque em um único sistema para assistência técnica de celulares,
-                        informática e eletrônicos. Acesse do computador ou celular e organize sua empresa com facilidade.
+                    <p className="mt-6 max-w-2xl text-base leading-relaxed text-white/72 sm:text-xl">
+                        Centralize ordens de serviço, clientes, estoque, vendas e financeiro em uma operação mais rápida, previsível e profissional.
                     </p>
 
-                    <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                        <Link href={route('register')}>
-                            <Button size="lg" className="flex items-center gap-2 text-base">
-                                Começar Teste Grátis
+                    <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+                        <Button
+                            size="lg"
+                            className="h-14 rounded-xl bg-[#f1b555] px-8 text-base font-semibold text-slate-950 shadow-[0_20px_50px_rgba(241,181,85,0.18)] hover:bg-[#f5c06c]"
+                            asChild
+                        >
+                            <Link href={route('register')}>
+                                Começar teste grátis
                                 <ArrowRight className="h-5 w-5" />
-                            </Button>
-                        </Link>
+                            </Link>
+                        </Button>
+
+                        <Button
+                            size="lg"
+                            variant="outline"
+                            className="h-14 rounded-xl border-white/18 bg-white/8 px-8 text-base font-semibold text-white backdrop-blur-sm hover:bg-white/14 hover:text-white"
+                            asChild
+                        >
+                            <a href="#recursos">Ver recursos</a>
+                        </Button>
                     </div>
 
-                    <div className="text-muted-foreground mt-12 flex flex-wrap items-center justify-center gap-6 text-sm">
-                        <div className="flex items-center gap-2">
-                            <CheckCircle2 className="text-accent h-5 w-5" />
-                            <span>Sem instalação</span>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                            <CheckCircle2 className="text-accent h-5 w-5" />
-                            <span>App Android incluído</span>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                            <CheckCircle2 className="text-accent h-5 w-5" />
-                            <span>Suporte em português</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Product Preview */}
-
-                <div className="mx-auto mt-16 max-w-5xl">
-                    <div className="bg-card rounded-xl border p-2 shadow-xl">
-                        <ProductCarousel />
-                    </div>
+                    <p className="mt-5 max-w-2xl text-sm text-white/55 sm:text-base">
+                        Teste por 14 dias, sem cartão de crédito, e veja como a rotina da equipe fica mais clara desde o primeiro acesso.
+                    </p>
                 </div>
             </div>
         </section>

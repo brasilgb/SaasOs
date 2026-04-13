@@ -77,38 +77,38 @@ html {
     --radius: 0.65rem;
 
     /* Base */
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.141 0.005 285.823);
+    --background: oklch(0.985 0.004 240);
+    --foreground: oklch(0.2 0.02 255);
 
-    /* SigmaOS Violet */
-    --primary: oklch(0.55 0.22 282);
-    --primary-foreground: oklch(0.98 0 0);
+    /* SigmaOS Light */
+    --primary: oklch(0.56 0.19 256);
+    --primary-foreground: oklch(0.98 0.004 80);
 
     /* Cards e Popovers */
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.141 0.005 285.823);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.141 0.005 285.823);
+    --card: oklch(0.995 0.002 240);
+    --card-foreground: oklch(0.2 0.02 255);
+    --popover: oklch(0.995 0.002 240);
+    --popover-foreground: oklch(0.2 0.02 255);
 
     /* Muted e Accent (Crucial para Tabs e Hovers) */
-    --muted: oklch(0.96 0.005 285);
-    --muted-foreground: oklch(0.55 0.01 285);
-    --accent: oklch(0.94 0.02 282);
-    --accent-foreground: var(--primary);
+    --muted: oklch(0.96 0.006 240);
+    --muted-foreground: oklch(0.5 0.02 250);
+    --accent: oklch(0.94 0.02 250);
+    --accent-foreground: oklch(0.3 0.08 256);
 
     /* Bordas e Inputs */
-    --border: oklch(0.92 0.004 286.32);
-    --input: oklch(0.92 0.004 286.32);
-    --ring: oklch(0.623 0.214 259.815);
+    --border: oklch(0.9 0.01 240);
+    --input: oklch(0.9 0.01 240);
+    --ring: oklch(0.58 0.16 256);
 
     /* Sidebar Light */
-    --sidebar: oklch(0.99 0.002 285);
-    --sidebar-foreground: oklch(0.141 0.005 285.823);
+    --sidebar: oklch(0.97 0.008 240);
+    --sidebar-foreground: oklch(0.22 0.02 255);
     --sidebar-primary: var(--primary);
     --sidebar-primary-foreground: var(--primary-foreground);
-    --sidebar-accent: oklch(0.94 0.02 282);
-    --sidebar-accent-foreground: var(--primary);
-    --sidebar-border: oklch(0.92 0.004 286.32);
+    --sidebar-accent: oklch(0.94 0.02 250);
+    --sidebar-accent-foreground: oklch(0.3 0.08 256);
+    --sidebar-border: oklch(0.9 0.01 240);
 
     --destructive: oklch(0.577 0.245 27.325);
     --destructive-foreground: oklch(0.98 0 0);
@@ -123,36 +123,37 @@ html {
 
 .dark {
     /* Base Dark */
-    --background: oklch(0.12 0.01 285);
-    --foreground: oklch(0.985 0 0);
+    --background: oklch(0.17 0.02 252);
+    --foreground: oklch(0.96 0.004 80);
 
-    --primary: oklch(0.6 0.2 282);
-    --primary-foreground: oklch(0.98 0 0);
+    --primary: oklch(0.74 0.14 78);
+    --primary-foreground: oklch(0.18 0.02 255);
 
     /* Cards e Popovers Dark */
-    --card: oklch(0.14 0.01 285);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.14 0.01 285);
-    --popover-foreground: oklch(0.985 0 0);
+    --card: oklch(0.21 0.02 252);
+    --card-foreground: oklch(0.96 0.004 80);
+    --popover: oklch(0.21 0.02 252);
+    --popover-foreground: oklch(0.96 0.004 80);
 
     /* Muted e Accent Dark */
-    --muted: oklch(0.18 0.02 285);
-    --muted-foreground: oklch(0.7 0.01 285);
-    --accent: oklch(0.22 0.04 282);
-    --accent-foreground: oklch(0.98 0 0);
+    --muted: oklch(0.26 0.02 252);
+    --muted-foreground: oklch(0.76 0.02 80);
+    --accent: oklch(0.3 0.03 252);
+    --accent-foreground: oklch(0.95 0.01 80);
 
     /* Bordas Dark */
-    --border: oklch(1 0 0 / 12%);
-    --input: oklch(1 0 0 / 12%);
+    --border: oklch(0.98 0.004 80 / 12%);
+    --input: oklch(0.98 0.004 80 / 12%);
+    --ring: oklch(0.7 0.12 78);
 
     /* Sidebar Dark */
-    --sidebar: oklch(0.15 0.01 285);
-    --sidebar-foreground: oklch(0.98 0 0);
+    --sidebar: oklch(0.19 0.02 252);
+    --sidebar-foreground: oklch(0.96 0.004 80);
     --sidebar-primary: var(--primary);
     --sidebar-primary-foreground: var(--primary-foreground);
-    --sidebar-accent: oklch(0.22 0.04 282);
-    --sidebar-accent-foreground: oklch(0.98 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
+    --sidebar-accent: oklch(0.3 0.03 252);
+    --sidebar-accent-foreground: oklch(0.95 0.01 80);
+    --sidebar-border: oklch(0.98 0.004 80 / 10%);
 
     /* Charts */
     --chart-1: oklch(0.72 0.16 255);

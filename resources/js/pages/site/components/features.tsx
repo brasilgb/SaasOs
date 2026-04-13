@@ -25,13 +25,12 @@ const features = [
     {
         icon: Users,
         title: 'Gestão de Clientes',
-        description: 'Centralize histórico de serviços, contatos e equipamentos em um único lugar.',
+        description: 'Centralize clientes, contatos, equipamentos e histórico de atendimento em um só lugar.',
     },
     {
         icon: MessageSquare,
-        title: 'Notificações por E-mail',
-        description:
-            'Dispare e-mails automáticos para o cliente ao cadastrar a ordem de serviço e sempre que houver atualização de status, com link de acompanhamento.',
+        title: 'E-mails Automáticos',
+        description: 'Envie e-mails automáticos com atualizações da ordem de serviço e link de acompanhamento.',
     },
     {
         icon: Calendar,
@@ -41,22 +40,22 @@ const features = [
     {
         icon: ClipboardList,
         title: 'Ordens de Serviço',
-        description: 'Controle completo de ordens com status, fotos e histórico detalhado.',
+        description: 'Controle ordens com status, fotos, histórico e andamento completo.',
     },
     {
         icon: Eye,
-        title: 'Acompanhamento da Ordem de Serviço',
-        description: 'Envie um link para que o cliente acompanhe o status da ordem de serviço em uma página exclusiva.',
+        title: 'Acompanhamento da Ordem',
+        description: 'Ofereça uma página exclusiva para o cliente acompanhar o status da ordem.',
     },
     {
         icon: CheckCircle,
-        title: 'Aprovar ou reprovar orçamentos',
-        description: 'O cliente pode aprovar ou reprovar o orçamento gerado e sua página exclusiva, e um alerta será exibido no sistema.',
+        title: 'Aprovação de Orçamentos',
+        description: 'Permita a aprovação ou reprovação de orçamentos com alerta automático no sistema.',
     },
     {
         icon: FileSpreadsheet,
-        title: 'Pré-Orçamentos Prontos',
-        description: 'Crie orçamentos em segundos com templates configurados por equipamento.',
+        title: 'Pré-Orçamentos',
+        description: 'Crie orçamentos em segundos com modelos prontos por equipamento.',
     },
     {
         icon: Package,
@@ -65,33 +64,43 @@ const features = [
     },
     {
         icon: ShoppingCart,
-        title: 'Vendas de Produtos e Peças',
-        description: 'Venda itens diretamente pelo sistema com emissão automática de recibos.',
+        title: 'Vendas de Produtos',
+        description: 'Venda produtos e peças direto no sistema com emissão automática de recibos.',
+    },
+    {
+        icon: HandCoins,
+        title: 'Controle de Despesas',
+        description: 'Cadastre despesas e registre cada lançamento no caixa diário.',
+    },
+    {
+        icon: MessageSquare,
+        title: 'Lembretes de Pagamento',
+        description: 'Envie lembretes manuais de pagamentos pendentes nas ordens de serviço.',
     },
     {
         icon: HandCoins,
         title: 'Caixa Diário',
-        description: 'Realize abertura e fechamento diário de caixa com conferência de saldo, diferença e relatório em PDF.',
+        description: 'Faça abertura e fechamento de caixa com conferência de saldo e relatório em PDF.',
     },
     {
         icon: MessageSquare,
-        title: 'Mensagens por Usuário',
-        description: 'Envie mensagens internas direcionadas por usuário, com histórico para técnicos, atendentes e administradores.',
+        title: 'Mensagens Internas',
+        description: 'Envie mensagens internas por usuário com histórico para toda a equipe.',
     },
     {
         icon: Smartphone,
         title: 'Aplicativo Android',
-        description: 'Registre fotos e atualizações de serviço diretamente pelo celular.',
+        description: 'Registre fotos e atualizações de serviço direto pelo celular.',
     },
     {
         icon: FileText,
         title: 'Integração com WhatsApp',
-        description: 'Envie mensagens automáticas para clientes sobre o status do serviço.',
+        description: 'Automatize mensagens para clientes sobre o andamento do serviço.',
     },
     {
         icon: Printer,
         title: 'Impressão de Recibos',
-        description: 'Imprima recibos, etiquetas e documentos diretamente pelo sistema.',
+        description: 'Imprima recibos, etiquetas e documentos sem sair do sistema.',
     },
     {
         icon: CheckSquare,
@@ -101,12 +110,12 @@ const features = [
     {
         icon: BarChart3,
         title: 'Relatórios Detalhados',
-        description: 'Analise desempenho, vendas e serviços com relatórios completos.',
+        description: 'Acompanhe desempenho, vendas e serviços com relatórios completos.',
     },
     {
         icon: ChartLine,
-        title: 'Dashboard com KPIs e Gráficos',
-        description: 'Visualize faturamento, ordens de serviço, clientes e desempenho do negócio em gráficos claros e indicadores em tempo real.',
+        title: 'Dashboard e KPIs',
+        description: 'Visualize faturamento, ordens, clientes e desempenho em tempo real.',
     },
     {
         icon: Tag,
@@ -115,42 +124,54 @@ const features = [
     },
     {
         icon: BookOpen,
-        title: 'Treinamento em Vídeo',
-        description: 'Acesse tutoriais completos para aprender a usar todas as funções.',
+        title: 'Tutoriais em Vídeo',
+        description: 'Acesse tutoriais e vídeos para dominar todas as funções do sistema.',
     },
     {
         icon: Settings,
         title: 'Gestão de Usuários',
-        description: 'Definição de papéis predefinidos pelo sistema para técnicos, atendentes e administradores.',
+        description: 'Defina papéis e permissões para técnicos, atendentes e administradores.',
     },
 ];
 
 export function Features() {
     return (
-        <section id="recursos" className="bg-muted/30 py-20 sm:py-32">
-            <div className="mx-auto max-w-7xl px-4">
-                <div className="mx-auto mb-16 max-w-2xl text-center">
-                    <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Tudo que sua assistência técnica precisa</h2>
+        <section id="recursos" className="relative overflow-hidden bg-[#07111f] py-20 text-white sm:py-32">
+            <div className="absolute inset-0">
+                <div className="absolute top-0 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-[#f1b555]/12 blur-3xl" />
+                <div className="absolute inset-0 bg-linear-to-b from-[#0d1c33] via-[#081223] to-[#060d18]" />
+            </div>
 
-                    <p className="text-muted-foreground mt-4 text-lg">
+            <div className="relative mx-auto max-w-7xl px-4">
+                <div className="mx-auto mb-16 max-w-2xl text-center">
+                    <span className="inline-flex rounded-full border border-white/12 bg-white/6 px-4 py-1 text-[0.7rem] font-semibold tracking-[0.26em] text-[#ffd6a3] uppercase">
+                        Recursos essenciais
+                    </span>
+
+                    <h2 className="mt-5 text-3xl font-bold tracking-tight sm:text-4xl">Tudo que sua assistência técnica precisa</h2>
+
+                    <p className="mt-4 text-lg leading-relaxed text-white/72">
                         Ferramentas completas para organizar clientes, serviços, estoque e equipe em um único sistema.
                     </p>
-                    <p className="text-muted-foreground mt-3 text-xs">A emissão de notas fiscais é realizada por sistemas externos.</p>
+                    <p className="mt-3 text-xs text-white/45">A emissão de notas fiscais é realizada por sistemas externos.</p>
                 </div>
 
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     {features.map((feature, index) => (
-                        <Card key={index} className="border-border bg-card transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+                        <Card
+                            key={index}
+                            className="border-white/10 bg-white/[0.045] text-white shadow-[0_18px_60px_rgba(0,0,0,0.2)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#f1b555]/30 hover:bg-white/[0.07]"
+                        >
                             <CardHeader>
-                                <div className="bg-primary/10 ring-primary/20 mb-3 inline-flex h-12 w-12 items-center justify-center rounded-lg ring-1">
-                                    <feature.icon className="text-primary h-6 w-6" />
+                                <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl border border-[#f1b555]/20 bg-[#f1b555]/10 ring-1 ring-[#f1b555]/12">
+                                    <feature.icon className="h-6 w-6 text-[#ffc980]" />
                                 </div>
 
-                                <CardTitle className="text-lg">{feature.title}</CardTitle>
+                                <CardTitle className="text-lg text-white">{feature.title}</CardTitle>
                             </CardHeader>
 
                             <CardContent>
-                                <CardDescription className="text-sm leading-relaxed">{feature.description}</CardDescription>
+                                <CardDescription className="text-sm leading-relaxed text-white/68">{feature.description}</CardDescription>
                             </CardContent>
                         </Card>
                     ))}
