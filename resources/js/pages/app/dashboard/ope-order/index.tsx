@@ -25,6 +25,14 @@ function formatBrDate(date: Date | string) {
     return moment(d).format('DD/MM/YYYY');
 }
 
+function formatRangeLabel(timerange: number, customRange?: boolean, dateRange?: { from?: Date | string; to?: Date | string }) {
+    if (customRange && dateRange?.from && dateRange?.to) {
+        return `${formatBrDate(dateRange.from)} a ${formatBrDate(dateRange.to)}`;
+    }
+
+    return timerange === 1 ? 'Hoje' : `${timerange} dias`;
+}
+
 export default function OrderDashboard({
     timerange,
     dateRange,
@@ -62,8 +70,7 @@ export default function OrderDashboard({
         getOrders();
     }, [timerange, customRange, dateRange]);
 
-    const rangeLabel =
-        customRange && dateRange?.from && dateRange?.to ? `${formatBrDate(dateRange.from)} a ${formatBrDate(dateRange.to)}` : `${timerange} dias`;
+    const rangeLabel = formatRangeLabel(timerange, customRange, dateRange);
 
     return (
         <div className="min-w-0">
@@ -71,51 +78,45 @@ export default function OrderDashboard({
                 <KpiDashboard
                     link={route('app.customers.index')}
                     title="Clientes"
-                    value={acount?.numcust}
+                    value={metrics?.customers ?? 0}
                     icon={<Users className="h-10 w-10" />}
                     description={`Período ${rangeLabel}`}
-                    valuedays={metrics?.customers ? metrics?.customers : '0'}
                 />
                 <KpiDashboard
                     link={route('app.orders.index')}
                     title="Ordens"
-                    value={acount?.numorde}
+                    value={metrics?.orders ?? 0}
                     icon={<Wrench className="h-10 w-10" />}
                     description={`Período ${rangeLabel}`}
-                    valuedays={metrics?.orders ? metrics?.orders : '0'}
                 />
                 <KpiDashboard
                     link={route('app.schedules.index')}
                     title="Agendamentos"
-                    value={acount?.numshed}
+                    value={metrics?.schedules ?? 0}
                     icon={<Calendar className="h-10 w-10" />}
                     description={`Período ${rangeLabel}`}
-                    valuedays={metrics?.schedules ? metrics?.schedules : '0'}
                 />
                 <KpiDashboard
                     link={route('app.messages.index')}
                     title="Mensagens"
-                    value={acount?.nummess}
+                    value={metrics?.messages ?? 0}
                     icon={<MessageSquareMore className="h-10 w-10" />}
                     description={`Período ${rangeLabel}`}
-                    valuedays={metrics?.messages ? metrics?.messages : '0'}
                 />
                 <KpiDashboard
                     link={route('app.parts.index')}
                     title="Peças"
-                    value={acount?.numparts}
+                    value={metrics?.parts ?? 0}
                     icon={<MemoryStickIcon className="h-10 w-10" />}
                     description={`Período ${rangeLabel}`}
-                    valuedays={metrics?.parts ? metrics?.parts : '0'}
                 />
 
                 <KpiDashboard
                     link={route('app.parts.index')}
                     title="Produtos"
-                    value={acount?.numproducts}
+                    value={metrics?.products ?? 0}
                     icon={<MemoryStickIcon className="h-10 w-10" />}
                     description={`Período ${rangeLabel}`}
-                    valuedays={metrics?.products ? metrics?.products : '0'}
                 />
             </div>
             <div className="mt-3 grid min-h-[210px] gap-3 2xl:grid-cols-7">
