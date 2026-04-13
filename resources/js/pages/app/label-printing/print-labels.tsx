@@ -34,7 +34,7 @@ export default function Print({ data }: any) {
                                     <div key={`${pageIndex}-${rowIndex}-${i}`} className="etiqueta">
                                         <div className="conteudo">
                                             <div className="empresa">{item.company}</div>
-                                            <div className="pedido">OS {item.order}</div>
+                                            <div className="pedido">{item.order}</div>
                                             <div className="telefone">{item.telephone}</div>
                                         </div>
                                     </div>

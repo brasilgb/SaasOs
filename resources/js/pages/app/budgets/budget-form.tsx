@@ -237,7 +237,7 @@ export default function BudgetForm({ initialData, budgets, equipments }: BudgetF
 
                 <div className="grid gap-2">
                     <Label>Validade do orçamento(dias)</Label>
-                    <Input value={maskMoney(String(data.validity))} onChange={(e) => setData('validity', e.target.value)} />
+                    <Input value={String(data.validity)} onChange={(e) => setData('validity', e.target.value)} />
                     <InputError message={errors.validity} />
                 </div>
             </div>
