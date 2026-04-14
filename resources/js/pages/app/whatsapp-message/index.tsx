@@ -27,6 +27,8 @@ type WhatsappMessageSettings = {
     servicecompleted?: string;
     feedback?: string;
     defaultmessage?: string;
+    budgetfollowup?: string;
+    pendingpayment?: string;
 };
 
 const DEFAULT_MESSAGES = {
@@ -38,6 +40,10 @@ const DEFAULT_MESSAGES = {
         '{{ saudacao }}, {{ cliente }}!\n\nEsperamos que tenha gostado do atendimento da OS {{ ordem }}.\n\nSeu feedback é muito importante para continuarmos melhorando.',
     defaultmessage:
         '{{ saudacao }}, {{ cliente }}!\n\nAtualização da sua OS {{ ordem }}.\n\nAcompanhe pelo link: {{ link_os }}\n\nQualquer dúvida, estamos à disposição.',
+    budgetfollowup:
+        '{{ saudacao }}, {{ cliente }}!\n\nSeu orçamento da OS {{ ordem }} segue aguardando retorno há {{ dias_pendentes }} dias.\n\nVocê pode aprovar ou acompanhar pelo link: {{ link_os }}\n\nSe precisar de ajuda, estamos à disposição.',
+    pendingpayment:
+        '{{ saudacao }}, {{ cliente }}!\n\nA OS {{ ordem }} segue com saldo pendente de {{ saldo }}.\n\nVocê pode acompanhar pelo link: {{ link_os }}\n\nSe já realizou o pagamento, desconsidere esta mensagem.',
 };
 
 const previewValues = {
@@ -46,6 +52,8 @@ const previewValues = {
     link_os: 'https://seusite.com.br/os/abc123',
     saudacao: 'Boa tarde',
     saudação: 'Boa tarde',
+    saldo: 'R$ 185,00',
+    dias_pendentes: '3',
 };
 
 const normalizePlaceholderKey = (key: string) =>
@@ -63,20 +71,8 @@ const renderPreview = (template?: string) => {
     return template.replace(/\{\{\s*([^}]+?)\s*\}\}/g, (_, key) => {
         const normalizedKey = normalizePlaceholderKey(String(key));
 
-        if (normalizedKey === 'saudacao') {
-            return previewValues.saudacao;
-        }
-
-        if (normalizedKey === 'cliente') {
-            return previewValues.cliente;
-        }
-
-        if (normalizedKey === 'ordem') {
-            return previewValues.ordem;
-        }
-
-        if (normalizedKey === 'link_os') {
-            return previewValues.link_os;
+        if (normalizedKey in previewValues) {
+            return previewValues[normalizedKey as keyof typeof previewValues];
         }
 
         return '';
@@ -89,6 +85,8 @@ export default function WhatsappMessage({ whatsappmessage }: { whatsappmessage: 
         servicecompleted: whatsappmessage?.servicecompleted,
         feedback: whatsappmessage?.feedback,
         defaultmessage: whatsappmessage?.defaultmessage,
+        budgetfollowup: whatsappmessage?.budgetfollowup,
+        pendingpayment: whatsappmessage?.pendingpayment,
     });
 
     const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -105,6 +103,8 @@ export default function WhatsappMessage({ whatsappmessage }: { whatsappmessage: 
         setData('servicecompleted', DEFAULT_MESSAGES.servicecompleted);
         setData('feedback', DEFAULT_MESSAGES.feedback);
         setData('defaultmessage', DEFAULT_MESSAGES.defaultmessage);
+        setData('budgetfollowup', DEFAULT_MESSAGES.budgetfollowup);
+        setData('pendingpayment', DEFAULT_MESSAGES.pendingpayment);
     };
 
     return (
@@ -130,7 +130,8 @@ export default function WhatsappMessage({ whatsappmessage }: { whatsappmessage: 
                         <div className="mt-4 grid gap-4">
                             <div className="text-muted-foreground rounded-md border border-dashed p-3 text-sm">
                                 Você pode usar placeholders nas mensagens: <code>{'{{ cliente }}'}</code>, <code>{'{{ ordem }}'}</code>,{' '}
-                                <code>{'{{ link_os }}'}</code>, <code>{'{{ saudacao }}'}</code>.
+                                <code>{'{{ link_os }}'}</code>, <code>{'{{ saudacao }}'}</code>, <code>{'{{ saldo }}'}</code> e{' '}
+                                <code>{'{{ dias_pendentes }}'}</code>.
                             </div>
 
                             <div className="grid gap-2 md:col-span-2">
@@ -174,6 +175,30 @@ export default function WhatsappMessage({ whatsappmessage }: { whatsappmessage: 
                                 />
                                 <div className="text-muted-foreground bg-muted/40 rounded-md p-2 text-xs whitespace-pre-wrap">
                                     Prévia: {renderPreview(data.defaultmessage)}
+                                </div>
+                            </div>
+
+                            <div className="grid gap-2 md:col-span-2">
+                                <Label htmlFor="budgetfollowup">Orçamento parado</Label>
+                                <Textarea
+                                    id="budgetfollowup"
+                                    value={data.budgetfollowup}
+                                    onChange={(e) => setData('budgetfollowup', e.target.value)}
+                                />
+                                <div className="text-muted-foreground bg-muted/40 rounded-md p-2 text-xs whitespace-pre-wrap">
+                                    Prévia: {renderPreview(data.budgetfollowup)}
+                                </div>
+                            </div>
+
+                            <div className="grid gap-2 md:col-span-2">
+                                <Label htmlFor="pendingpayment">Cobrança pendente</Label>
+                                <Textarea
+                                    id="pendingpayment"
+                                    value={data.pendingpayment}
+                                    onChange={(e) => setData('pendingpayment', e.target.value)}
+                                />
+                                <div className="text-muted-foreground bg-muted/40 rounded-md p-2 text-xs whitespace-pre-wrap">
+                                    Prévia: {renderPreview(data.pendingpayment)}
                                 </div>
                             </div>
                         </div>

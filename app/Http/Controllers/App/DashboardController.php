@@ -240,6 +240,36 @@ class DashboardController extends Controller
 
         $ordersCount = Order::whereBetween('created_at', [$startDate, $endDate])->count();
         $warrantyReturns = Order::where('is_warranty_return', true)->whereBetween('created_at', [$startDate, $endDate])->count();
+        $communicationThreshold = now()->subDays(2);
+
+        $budgetFollowUps = Order::query()
+            ->where('service_status', OrderStatus::BUDGET_GENERATED)
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->where('updated_at', '<=', $communicationThreshold)
+            ->count();
+
+        $pendingPaymentFollowUps = Order::query()
+            ->whereIn('service_status', [
+                OrderStatus::SERVICE_COMPLETED,
+                OrderStatus::CUSTOMER_NOTIFIED,
+                OrderStatus::DELIVERED,
+            ])
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->where(function ($query) use ($communicationThreshold) {
+                $query
+                    ->where(function ($dateQuery) use ($communicationThreshold) {
+                        $dateQuery->whereNotNull('delivery_date')
+                            ->where('delivery_date', '<=', $communicationThreshold);
+                    })
+                    ->orWhere(function ($dateQuery) use ($communicationThreshold) {
+                        $dateQuery->whereNull('delivery_date')
+                            ->where('updated_at', '<=', $communicationThreshold);
+                    });
+            })
+            ->whereRaw(
+                '(COALESCE(orders.service_cost, 0) - COALESCE((SELECT SUM(op.amount) FROM order_payments op WHERE op.order_id = orders.id), 0)) > 0.009'
+            )
+            ->count();
 
         return response()->json([
 
@@ -256,6 +286,8 @@ class DashboardController extends Controller
             'products' => Part::where('type', 'product')->whereBetween('created_at', [$startDate, $endDate])->count(),
 
             'warranty_returns' => $warrantyReturns,
+            'budget_follow_ups' => $budgetFollowUps,
+            'pending_payment_follow_ups' => $pendingPaymentFollowUps,
             ...$this->warrantyReturnIndicator($ordersCount, $warrantyReturns),
         ]);
     }

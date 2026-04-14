@@ -82,11 +82,13 @@ export default function Dashboard({ reloadKey, orders, acount, parts, customers,
 
                 <div className="p-4">
                     <div className={`${isTechnician ? 'mb-4' : 'mb-4 xl:mb-0'} flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between`}>
+                        <div className="flex items-center gap-2">
+                            <span className="text-muted-foreground text-xs font-medium">Período: {timerangeLabel}</span>
+                        </div>
                         <div className="w-full sm:w-auto">
                             <DatePicker mode={'range'} setDate={onDateRangeChange} date={dateRange} />
                         </div>
                         <div className="flex min-w-0 flex-col gap-2 xl:items-end">
-                            <span className="text-muted-foreground text-xs font-medium">Período: {timerangeLabel}</span>
                             <ToggleGroup
                                 type="single"
                                 value={timeRange}
@@ -110,7 +112,7 @@ export default function Dashboard({ reloadKey, orders, acount, parts, customers,
                                 </ToggleGroupItem>
 
                                 <ToggleGroupItem value="custom" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                                    Range
+                                    Intervalo
                                 </ToggleGroupItem>
                             </ToggleGroup>
                         </div>

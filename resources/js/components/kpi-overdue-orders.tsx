@@ -52,7 +52,7 @@ export function KpiOverdueOrders({ title, icon, link, ordersToday = 0, ordersTom
 
                 <div className="flex min-w-0 items-center justify-between gap-2 pt-1">
                     <Badge variant={hasTodayOrders ? 'destructive' : 'secondary'} className="min-w-0">
-                        <span className="truncate">Vencendo hoje e amanha</span>
+                        <span className="truncate">Vencendo hoje e amanhã</span>
                     </Badge>
 
                     {link && (

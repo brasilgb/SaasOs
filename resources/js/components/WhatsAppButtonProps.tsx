@@ -6,12 +6,17 @@ type WhatsAppButtonProps = {
     orderNumber?: string;
     status?: string | number;
     feedback?: boolean;
+    context?: 'default' | 'budget_follow_up' | 'pending_payment';
+    amountDue?: number;
+    daysPending?: number;
 
     whats?: {
         generatedbudget?: string;
         servicecompleted?: string;
         feedback?: string;
         defaultmessage?: string;
+        budgetfollowup?: string;
+        pendingpayment?: string;
         tracking_token?: string;
     };
 
@@ -72,8 +77,21 @@ const normalizePhone = (phone: string) => {
     return cleanPhone;
 };
 
-const getTemplateForContext = ({ status, feedback, whats }: Pick<WhatsAppButtonProps, 'status' | 'feedback' | 'whats'>): string | null => {
+const getTemplateForContext = ({
+    status,
+    feedback,
+    context,
+    whats,
+}: Pick<WhatsAppButtonProps, 'status' | 'feedback' | 'context' | 'whats'>): string | null => {
     const currentStatus = normalizeStatus(status);
+
+    if (context === 'budget_follow_up' && whats?.budgetfollowup) {
+        return whats.budgetfollowup;
+    }
+
+    if (context === 'pending_payment' && whats?.pendingpayment) {
+        return whats.pendingpayment;
+    }
 
     // prioridade máxima: janela de feedback
     if (feedback) {
@@ -118,7 +136,16 @@ const formatTemplateMessage = ({
     return withGreeting(greeting, customerName, parsed);
 };
 
-const buildMessage = ({ customerName, orderNumber, status, feedback, whats }: Omit<WhatsAppButtonProps, 'phone' | 'className'>) => {
+const formatCurrency = (value?: number) => {
+    if (!value || Number(value) <= 0) return 'R$ 0,00';
+
+    return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+    }).format(Number(value));
+};
+
+const buildMessage = ({ customerName, orderNumber, status, feedback, context, amountDue, daysPending, whats }: Omit<WhatsAppButtonProps, 'phone' | 'className'>) => {
     const currentStatus = normalizeStatus(status);
     const greeting = getGreeting();
     const trackingUrl = buildTrackingUrl(whats?.tracking_token);
@@ -129,9 +156,11 @@ const buildMessage = ({ customerName, orderNumber, status, feedback, whats }: Om
         ordem: String(orderNumber ?? ''),
         link_os: trackingUrl,
         status: String(currentStatus),
+        saldo: formatCurrency(amountDue),
+        dias_pendentes: String(daysPending ?? 0),
     };
 
-    const selectedTemplate = getTemplateForContext({ status, feedback, whats });
+    const selectedTemplate = getTemplateForContext({ status, feedback, context, whats });
     if (!selectedTemplate) return '';
 
     return formatTemplateMessage({
@@ -142,16 +171,24 @@ const buildMessage = ({ customerName, orderNumber, status, feedback, whats }: Om
     });
 };
 
-const canSendWhatsAppMessage = ({ status, feedback, whats }: Pick<WhatsAppButtonProps, 'status' | 'feedback' | 'whats'>) => {
-    return Boolean(getTemplateForContext({ status, feedback, whats }));
+const canSendWhatsAppMessage = ({ status, feedback, context, whats }: Pick<WhatsAppButtonProps, 'status' | 'feedback' | 'context' | 'whats'>) => {
+    return Boolean(getTemplateForContext({ status, feedback, context, whats }));
 };
 
-const getWhatsAppDisabledReason = ({ phone, status, feedback, whats }: Pick<WhatsAppButtonProps, 'phone' | 'status' | 'feedback' | 'whats'>) => {
+const getWhatsAppDisabledReason = ({ phone, status, feedback, context, whats }: Pick<WhatsAppButtonProps, 'phone' | 'status' | 'feedback' | 'context' | 'whats'>) => {
     if (!phone || !phone.replace(/\D/g, '')) {
         return 'Cliente sem WhatsApp cadastrado.';
     }
 
     const currentStatus = normalizeStatus(status);
+    if (context === 'budget_follow_up' && !whats?.budgetfollowup) {
+        return 'Mensagem não configurada para orçamento parado.';
+    }
+
+    if (context === 'pending_payment' && !whats?.pendingpayment) {
+        return 'Mensagem não configurada para cobrança pendente.';
+    }
+
     if (feedback && !whats?.feedback) {
         return 'Mensagem não configurada para este status.';
     }
@@ -164,16 +201,27 @@ const getWhatsAppDisabledReason = ({ phone, status, feedback, whats }: Pick<What
         return 'Mensagem não configurada para este status.';
     }
 
-    if (!canSendWhatsAppMessage({ status, feedback, whats })) {
+    if (!canSendWhatsAppMessage({ status, feedback, context, whats })) {
         return 'Configure uma mensagem padrão para os demais status.';
     }
 
     return '';
 };
 
-export const WhatsAppButton: React.FC<WhatsAppButtonProps> = ({ phone, customerName, orderNumber, status, feedback, whats, className }) => {
-    const canSend = canSendWhatsAppMessage({ status, feedback, whats });
-    const disabledReason = getWhatsAppDisabledReason({ phone, status, feedback, whats });
+export const WhatsAppButton: React.FC<WhatsAppButtonProps> = ({
+    phone,
+    customerName,
+    orderNumber,
+    status,
+    feedback,
+    context,
+    amountDue,
+    daysPending,
+    whats,
+    className,
+}) => {
+    const canSend = canSendWhatsAppMessage({ status, feedback, context, whats });
+    const disabledReason = getWhatsAppDisabledReason({ phone, status, feedback, context, whats });
     const isDisabled = !canSend || Boolean(disabledReason);
 
     const handleClick = () => {
@@ -191,6 +239,9 @@ export const WhatsAppButton: React.FC<WhatsAppButtonProps> = ({ phone, customerN
             orderNumber,
             status,
             feedback,
+            context,
+            amountDue,
+            daysPending,
             whats,
         });
 

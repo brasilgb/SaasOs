@@ -193,7 +193,7 @@ export default function QualityIndicators() {
                                 60 dias
                             </ToggleGroupItem>
                             <ToggleGroupItem value="custom" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                                Range
+                                Intervalo
                             </ToggleGroupItem>
                         </ToggleGroup>
                     </div>

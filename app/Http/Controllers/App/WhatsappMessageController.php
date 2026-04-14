@@ -22,6 +22,8 @@ class WhatsappMessageController extends Controller
             'servicecompleted' => "{{ saudacao }}, {{ cliente }}!\n\nSua OS {{ ordem }} foi concluída com sucesso.\n\nVocê pode acompanhar pelo link: {{ link_os }}\n\nQualquer dúvida, conte com a gente.",
             'feedback' => "{{ saudacao }}, {{ cliente }}!\n\nEsperamos que tenha gostado do atendimento da OS {{ ordem }}.\n\nSeu feedback é muito importante para continuarmos melhorando.",
             'defaultmessage' => "{{ saudacao }}, {{ cliente }}!\n\nAtualização da sua OS {{ ordem }}.\n\nAcompanhe pelo link: {{ link_os }}\n\nQualquer dúvida, estamos à disposição.",
+            'budgetfollowup' => "{{ saudacao }}, {{ cliente }}!\n\nSeu orçamento da OS {{ ordem }} segue aguardando retorno há {{ dias_pendentes }} dias.\n\nVocê pode aprovar ou acompanhar pelo link: {{ link_os }}\n\nSe precisar de ajuda, estamos à disposição.",
+            'pendingpayment' => "{{ saudacao }}, {{ cliente }}!\n\nA OS {{ ordem }} segue com saldo pendente de {{ saldo }}.\n\nVocê pode acompanhar pelo link: {{ link_os }}\n\nSe já realizou o pagamento, desconsidere esta mensagem.",
         ];
     }
 
@@ -50,6 +52,8 @@ class WhatsappMessageController extends Controller
             'servicecompleted' => 'nullable|string|max:5000',
             'feedback' => 'nullable|string|max:5000',
             'defaultmessage' => 'nullable|string|max:5000',
+            'budgetfollowup' => 'nullable|string|max:5000',
+            'pendingpayment' => 'nullable|string|max:5000',
         ]);
 
         $whatsappmessage->update($data);

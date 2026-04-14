@@ -18,6 +18,9 @@ class WhatsappMessageFactory extends Factory
             'generatedbudget' => 'Seu orcamento foi gerado e esta disponivel para aprovacao.',
             'servicecompleted' => 'Seu equipamento esta pronto para retirada.',
             'feedback' => 'Como foi sua experiencia com nosso atendimento?',
+            'defaultmessage' => 'Atualizacao da sua ordem de servico.',
+            'budgetfollowup' => 'Seu orcamento continua aguardando retorno.',
+            'pendingpayment' => 'Sua ordem segue com saldo pendente.',
         ];
     }
 

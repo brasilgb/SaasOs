@@ -49,6 +49,60 @@ class OrderController extends Controller
         return $order;
     }
 
+    private function communicationThresholdDays(): int
+    {
+        return 2;
+    }
+
+    private function isBudgetFollowUpOrder(Order $order): bool
+    {
+        if ((int) $order->service_status !== OrderStatus::BUDGET_GENERATED) {
+            return false;
+        }
+
+        return $order->updated_at?->lte(now()->subDays($this->communicationThresholdDays())) ?? false;
+    }
+
+    private function isPendingPaymentOrder(Order $order, ?array $paymentSummary = null): bool
+    {
+        $paymentSummary ??= $this->buildPaymentSummary($order);
+        $remaining = (float) ($paymentSummary['remaining'] ?? 0);
+
+        if ($remaining <= 0.009) {
+            return false;
+        }
+
+        if (! in_array((int) $order->service_status, [
+            OrderStatus::SERVICE_COMPLETED,
+            OrderStatus::CUSTOMER_NOTIFIED,
+            OrderStatus::DELIVERED,
+        ], true)) {
+            return false;
+        }
+
+        $referenceDate = $order->delivery_date ?? $order->updated_at;
+
+        return $referenceDate?->lte(now()->subDays($this->communicationThresholdDays())) ?? false;
+    }
+
+    private function communicationDaysPending(Order $order): int
+    {
+        $referenceDate = $order->delivery_date ?? $order->updated_at ?? $order->created_at;
+
+        return $referenceDate ? max(0, $referenceDate->diffInDays(now())) : 0;
+    }
+
+    private function appendCommunicationFlags(Order $order): Order
+    {
+        $paymentSummary = $this->buildPaymentSummary($order);
+
+        $order->setAttribute('communication_days_pending', $this->communicationDaysPending($order));
+        $order->setAttribute('budget_follow_up', $this->isBudgetFollowUpOrder($order));
+        $order->setAttribute('pending_payment_follow_up', $this->isPendingPaymentOrder($order, $paymentSummary));
+
+        return $order;
+    }
+
     private function currentUser(): ?User
     {
         $user = Auth::user() ?? Auth::guard('sanctum')->user();
@@ -281,6 +335,30 @@ class OrderController extends Controller
             $query->whereRaw(
                 '(COALESCE(orders.service_cost, 0) - COALESCE((SELECT SUM(op.amount) FROM order_payments op WHERE op.order_id = orders.id), 0)) > 0.009'
             );
+        } elseif ($filter === 'budget_follow_up') {
+            $query->where('service_status', OrderStatus::BUDGET_GENERATED)
+                ->where('updated_at', '<=', now()->subDays($this->communicationThresholdDays()));
+        } elseif ($filter === 'pending_payment_follow_up') {
+            $query
+                ->whereIn('service_status', [
+                    OrderStatus::SERVICE_COMPLETED,
+                    OrderStatus::CUSTOMER_NOTIFIED,
+                    OrderStatus::DELIVERED,
+                ])
+                ->where(function ($subQuery) {
+                    $subQuery
+                        ->where(function ($dateQuery) {
+                            $dateQuery->whereNotNull('delivery_date')
+                                ->where('delivery_date', '<=', now()->subDays($this->communicationThresholdDays()));
+                        })
+                        ->orWhere(function ($dateQuery) {
+                            $dateQuery->whereNull('delivery_date')
+                                ->where('updated_at', '<=', now()->subDays($this->communicationThresholdDays()));
+                        });
+                })
+                ->whereRaw(
+                    '(COALESCE(orders.service_cost, 0) - COALESCE((SELECT SUM(op.amount) FROM order_payments op WHERE op.order_id = orders.id), 0)) > 0.009'
+                );
         } elseif ($filter === 'warranty_return') {
             $query->where('is_warranty_return', true);
         }
@@ -302,7 +380,9 @@ class OrderController extends Controller
             ->withQueryString();
         $orders->setCollection(
             $orders->getCollection()->map(function (Order $order) {
-                return $this->appendPaymentReminderAvailability($order);
+                $order = $this->appendPaymentReminderAvailability($order);
+
+                return $this->appendCommunicationFlags($order);
             })
         );
         $whats = WhatsappMessage::first();

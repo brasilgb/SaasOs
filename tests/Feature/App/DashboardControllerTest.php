@@ -5,6 +5,7 @@ namespace Tests\Feature\App;
 use App\Models\App\Order;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\OrderStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -73,5 +74,29 @@ class DashboardControllerTest extends TestCase
             ->assertJsonPath('warranty_return_threshold', 10)
             ->assertJsonPath('warranty_return_rate', 50)
             ->assertJsonPath('warranty_return_alert', true);
+    }
+
+    public function test_metrics_system_returns_communication_follow_up_counts(): void
+    {
+        Order::factory()->forTenant($this->tenant->id)->create([
+            'service_status' => OrderStatus::BUDGET_GENERATED,
+            'created_at' => now()->subDays(3),
+            'updated_at' => now()->subDays(3),
+        ]);
+
+        Order::factory()->forTenant($this->tenant->id)->create([
+            'service_status' => OrderStatus::DELIVERED,
+            'service_cost' => 250,
+            'delivery_date' => now()->subDays(4),
+            'created_at' => now()->subDays(4),
+            'updated_at' => now()->subDays(4),
+        ]);
+
+        $response = $this->get(route('app.metricsSystem', ['timerange' => 7]));
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('budget_follow_ups', 1)
+            ->assertJsonPath('pending_payment_follow_ups', 1);
     }
 }

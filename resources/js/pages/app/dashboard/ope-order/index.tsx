@@ -72,33 +72,30 @@ export default function OrderDashboard({
                 ? 'Hoje'
                 : `${timerange} dias`;
 
-    const periodDescription = `Período ${rangeLabel}`;
+    const defaultKpiDescription = 'Acessar dados';
     const warrantyRate = Number(metrics?.warranty_return_rate ?? 0);
     const warrantyThreshold = Number(metrics?.warranty_return_threshold ?? 0);
     const warrantyAlert = Boolean(metrics?.warranty_return_alert);
     const warrantySeverity =
         warrantyRate <= 5 ? 'Saudável' : warrantyRate <= warrantyThreshold ? 'Atenção' : 'Crítico';
-    const warrantyDescription =
-        metrics?.orders > 0
-            ? `${warrantySeverity} | taxa ${warrantyRate}% | limite ${warrantyThreshold}%`
-            : `${periodDescription} | sem ordens no período`;
+    const warrantyDescription = metrics?.orders > 0 ? `Indicador ${warrantySeverity}` : 'Sem ordens no período';
 
     return (
         <div className="min-w-0">
-            <div className="grid gap-3 rounded-xl sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-7">
+            <div className="grid gap-3 rounded-xl sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-9">
                 <KpiDashboard
                     link={route('app.customers.index')}
                     title="Clientes"
                     value={metrics?.customers ?? 0}
                     icon={<Users className="h-10 w-10" />}
-                    description={periodDescription}
+                    description={defaultKpiDescription}
                 />
                 <KpiDashboard
                     link={route('app.orders.index')}
                     title="Ordens"
                     value={metrics?.orders ?? 0}
                     icon={<Wrench className="h-10 w-10" />}
-                    description={periodDescription}
+                    description={defaultKpiDescription}
                 />
                 <KpiDashboard
                     link={route('app.orders.index', { filter: 'warranty_return' })}
@@ -108,25 +105,39 @@ export default function OrderDashboard({
                     description={warrantyDescription}
                 />
                 <KpiDashboard
+                    link={route('app.orders.index', { filter: 'budget_follow_up' })}
+                    title="Orç. parados"
+                    value={metrics?.budget_follow_ups ?? 0}
+                    icon={<MessageSquareMore className="h-10 w-10" />}
+                    description="Cobrar retorno"
+                />
+                <KpiDashboard
+                    link={route('app.orders.index', { filter: 'pending_payment_follow_up' })}
+                    title="Cobranças"
+                    value={metrics?.pending_payment_follow_ups ?? 0}
+                    icon={<MessageSquareMore className="h-10 w-10" />}
+                    description="Cobrar saldo"
+                />
+                <KpiDashboard
                     link={route('app.schedules.index')}
                     title="Agendamentos"
                     value={metrics?.schedules ?? 0}
                     icon={<Calendar className="h-10 w-10" />}
-                    description={periodDescription}
+                    description={defaultKpiDescription}
                 />
                 <KpiDashboard
                     link={route('app.messages.index')}
                     title="Mensagens"
                     value={metrics?.messages ?? 0}
                     icon={<MessageSquareMore className="h-10 w-10" />}
-                    description={periodDescription}
+                    description={defaultKpiDescription}
                 />
                 <KpiDashboard
                     link={route('app.parts.index')}
                     title="Peças"
                     value={metrics?.parts ?? 0}
                     icon={<MemoryStickIcon className="h-10 w-10" />}
-                    description={periodDescription}
+                    description={defaultKpiDescription}
                 />
 
                 <KpiDashboard
@@ -134,7 +145,7 @@ export default function OrderDashboard({
                     title="Produtos"
                     value={metrics?.products ?? 0}
                     icon={<MemoryStickIcon className="h-10 w-10" />}
-                    description={periodDescription}
+                    description={defaultKpiDescription}
                 />
             </div>
             {warrantyAlert && (

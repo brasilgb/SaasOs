@@ -351,4 +351,88 @@ class OrderControllerTest extends TestCase
                     && ! $orderIds->contains($regularOrder->id);
             });
     }
+
+    public function test_it_filters_orders_for_budget_follow_up(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+
+        $stalledBudgetOrder = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'user_id' => $this->user->id,
+            'service_status' => OrderStatus::BUDGET_GENERATED,
+            'updated_at' => now()->subDays(3),
+        ]);
+
+        $recentBudgetOrder = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'user_id' => $this->user->id,
+            'service_status' => OrderStatus::BUDGET_GENERATED,
+            'updated_at' => now()->subDay(),
+        ]);
+
+        $response = $this->get(route('app.orders.index', ['filter' => 'budget_follow_up']));
+
+        $response
+            ->assertOk()
+            ->assertViewHas('page.props.filter', 'budget_follow_up')
+            ->assertViewHas('page.props.orders.data', function (array $orders) use ($stalledBudgetOrder, $recentBudgetOrder) {
+                $orderIds = collect($orders)->pluck('id');
+
+                return $orderIds->contains($stalledBudgetOrder->id)
+                    && ! $orderIds->contains($recentBudgetOrder->id);
+            });
+    }
+
+    public function test_it_filters_orders_for_pending_payment_follow_up(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+
+        $chargeOrder = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'user_id' => $this->user->id,
+            'service_status' => OrderStatus::DELIVERED,
+            'service_cost' => 300,
+            'delivery_date' => now()->subDays(4),
+        ]);
+
+        OrderPayment::create([
+            'order_id' => $chargeOrder->id,
+            'amount' => 100,
+            'payment_method' => 'pix',
+            'paid_at' => now()->subDays(3),
+        ]);
+
+        $settledOrder = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'user_id' => $this->user->id,
+            'service_status' => OrderStatus::DELIVERED,
+            'service_cost' => 300,
+            'delivery_date' => now()->subDays(4),
+        ]);
+
+        OrderPayment::create([
+            'order_id' => $settledOrder->id,
+            'amount' => 300,
+            'payment_method' => 'pix',
+            'paid_at' => now()->subDays(3),
+        ]);
+
+        $response = $this->get(route('app.orders.index', ['filter' => 'pending_payment_follow_up']));
+
+        $response
+            ->assertOk()
+            ->assertViewHas('page.props.filter', 'pending_payment_follow_up')
+            ->assertViewHas('page.props.orders.data', function (array $orders) use ($chargeOrder, $settledOrder) {
+                $orderIds = collect($orders)->pluck('id');
+
+                return $orderIds->contains($chargeOrder->id)
+                    && ! $orderIds->contains($settledOrder->id);
+            });
+    }
 }

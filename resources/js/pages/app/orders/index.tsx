@@ -78,9 +78,11 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                     <SelectFilter
                         dataStatus={statusServico}
                         specialFilters={[
-                            { value: 'feedback', label: 'Listar Feedback' },
-                            { value: 'due_48h', label: 'Vencendo hoje e amanha' },
-                            { value: 'financial_open', label: 'Em aberto financeiramente' },
+                            { value: 'feedback', label: 'Feedback pendente' },
+                            { value: 'budget_follow_up', label: 'Orçamento parado' },
+                            { value: 'pending_payment_follow_up', label: 'Cobrança pendente' },
+                            { value: 'due_48h', label: 'Vencendo hoje e amanhã' },
+                            { value: 'financial_open', label: 'Em aberto no financeiro' },
                             { value: 'warranty_return', label: 'Retorno em garantia' },
                         ]}
                         url="app.orders.index"
@@ -100,7 +102,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                     <Button variant="default" asChild className="w-full md:w-auto">
                         <a href="/apk/sigmaup-image-upload.apk" download="sigmaup-image-upload.apk">
                             <Plus className="mr-1 h-4 w-4" />
-                            <span>APP Upload Images</span>
+                            <span>App de upload de imagens</span>
                         </a>
                     </Button>
 
@@ -150,6 +152,14 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                         totalOrder > 0;
                                     const hasPendingPayment = remaining > 0.009;
                                     const hasFiscalRegistered = Boolean(order?.fiscal_document_number || order?.fiscal_document_url);
+                                    const hasBudgetFollowUp = Boolean(order.budget_follow_up);
+                                    const hasPendingPaymentFollowUp = Boolean(order.pending_payment_follow_up);
+                                    const communicationDaysPending = Number(order.communication_days_pending ?? 0);
+                                    const whatsappContext: 'default' | 'budget_follow_up' | 'pending_payment' = hasPendingPaymentFollowUp
+                                        ? 'pending_payment'
+                                        : hasBudgetFollowUp
+                                          ? 'budget_follow_up'
+                                          : 'default';
 
                                     return (
                                         <TableRow key={order.id}>
@@ -170,6 +180,22 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                             className="w-fit bg-amber-100 text-amber-900 hover:bg-amber-100"
                                                         >
                                                             Retorno em garantia
+                                                        </Badge>
+                                                    )}
+                                                    {hasBudgetFollowUp && (
+                                                        <Badge
+                                                            variant="secondary"
+                                                            className="w-fit bg-sky-100 text-sky-900 hover:bg-sky-100"
+                                                        >
+                                                            Orçamento parado
+                                                        </Badge>
+                                                    )}
+                                                    {hasPendingPaymentFollowUp && (
+                                                        <Badge
+                                                            variant="secondary"
+                                                            className="w-fit bg-rose-100 text-rose-900 hover:bg-rose-100"
+                                                        >
+                                                            Cobrança pendente
                                                         </Badge>
                                                     )}
                                                 </div>
@@ -251,11 +277,16 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                         orderNumber={order.order_number}
                                                         status={order.service_status}
                                                         feedback={isFeedbackWindowOpen}
+                                                        context={whatsappContext}
+                                                        amountDue={remaining}
+                                                        daysPending={communicationDaysPending}
                                                         whats={{
                                                             generatedbudget: whats?.generatedbudget,
                                                             servicecompleted: whats?.servicecompleted,
                                                             feedback: whats?.feedback,
                                                             defaultmessage: whats?.defaultmessage,
+                                                            budgetfollowup: whats?.budgetfollowup,
+                                                            pendingpayment: whats?.pendingpayment,
                                                             tracking_token: order?.tracking_token,
                                                         }}
                                                     />
