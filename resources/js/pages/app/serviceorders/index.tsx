@@ -11,6 +11,7 @@ import { useState } from 'react';
 interface Order {
     id: number;
     order_number: number;
+    tracking_token: string;
     service_status: number;
     created_at: string;
     delivery_forecast?: string;
@@ -55,9 +56,9 @@ function ServiceOrders({ order }: { order: Order }) {
 
     const remaining = getRemainingTime(order.delivery_forecast);
 
-    function budgetAlter(status: 4 | 9) {
+    function budgetAlter(status: 4 | 5) {
         router.post(
-            route('orders.budget.status', order.id),
+            route('orders.budget.status', order.tracking_token),
             { status },
             {
                 preserveScroll: true,
@@ -86,7 +87,7 @@ function ServiceOrders({ order }: { order: Order }) {
         const confirmed = window.confirm('Deseja realmente recusar o orçamento?');
         if (!confirmed) return;
 
-        budgetAlter(9);
+        budgetAlter(5);
     }
 
     return (

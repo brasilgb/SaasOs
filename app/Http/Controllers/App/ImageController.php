@@ -3,24 +3,49 @@
 namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
-use App\Models\App\Image; // Assuming you have an Image model
+use App\Models\App\Image;
 use App\Models\App\Order;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
 class ImageController extends Controller
 {
+    private function currentUser(): ?User
+    {
+        $user = Auth::user() ?? Auth::guard('sanctum')->user();
+
+        return $user instanceof User ? $user : null;
+    }
+
+    private function canAccessOrder(Order $order): bool
+    {
+        $user = $this->currentUser();
+
+        if (! $user?->hasPermission('orders')) {
+            return false;
+        }
+
+        if (! $user->isTechnician()) {
+            return true;
+        }
+
+        return is_null($order->user_id) || (int) $order->user_id === (int) $user->id;
+    }
+
     public function index(Request $request)
     {
         $query = $request->get('or');
-        $orderid = Order::where('id', $query)->first()->id;
+        $order = Order::findOrFail($query);
+        abort_unless($this->canAccessOrder($order), 403);
 
         $images = Image::where('order_id', $query)->get();
 
-        return Inertia::render('app/images/index', ['savedimages' => $images, 'orderid' => $orderid]);
+        return Inertia::render('app/images/index', ['savedimages' => $images, 'orderid' => $order->id]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -42,6 +67,9 @@ class ImageController extends Controller
                 'images.*.mimes' => 'Formato inválido. Envie apenas JPG, PNG, GIF ou SVG.',
             ]
         );
+
+        $order = Order::findOrFail($validated['order_id']);
+        abort_unless($this->canAccessOrder($order), 403);
 
         /** 🔒 REGRA DE NEGÓCIO (TOTAL POR ORDEM) */
         $existingCount = Image::where('order_id', $validated['order_id'])->count();
@@ -74,6 +102,9 @@ class ImageController extends Controller
 
     public function destroy(Image $image)
     {
+        $order = Order::findOrFail($image->order_id);
+        abort_unless($this->canAccessOrder($order), 403);
+
         $storePath = public_path('storage/orders/'.$image->order_id);
         if (file_exists($storePath.DIRECTORY_SEPARATOR.$image->filename)) {
             unlink($storePath.DIRECTORY_SEPARATOR.$image->filename);
@@ -87,6 +118,9 @@ class ImageController extends Controller
     public function deleteImageOrder(Image $image, $aimage)
     {
         $imgorder = Image::where('id', $aimage)->first();
+        abort_unless($imgorder, 404);
+        $order = Order::findOrFail($imgorder->order_id);
+        abort_unless($this->canAccessOrder($order), 403);
 
         $storePath = public_path('storage'.DIRECTORY_SEPARATOR.'orders'.DIRECTORY_SEPARATOR.$imgorder->order_id);
         if (file_exists($storePath.DIRECTORY_SEPARATOR.$imgorder->filename)) {
@@ -102,10 +136,10 @@ class ImageController extends Controller
 
     public function upload(Request $request)
     {
+        $order = Order::findOrFail($request->order_id);
+        abort_unless($this->canAccessOrder($order), 403);
+
         $image = base64_decode($request->filename);
-        //  dd($image);
-        // $image = $request->file('imagem');
-        // dd($request->all());
         $storePath = public_path('storage/orders/'.$request->order_id);
         if (! file_exists($storePath)) {
             mkdir($storePath, 0777, true);
@@ -126,6 +160,9 @@ class ImageController extends Controller
 
     public function getImages(Request $request)
     {
+        $order = Order::findOrFail($request->order);
+        abort_unless($this->canAccessOrder($order), 403);
+
         $images = Image::where('order_id', $request->order)->get();
 
         return [

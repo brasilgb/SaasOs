@@ -28,7 +28,7 @@ class Order extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'responsible_technician');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function images(): HasMany

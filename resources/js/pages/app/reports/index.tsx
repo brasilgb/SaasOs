@@ -66,63 +66,63 @@ export default function Parts() {
                             <DatePicker mode={'range'} setDate={setDateRange} date={dateRange} />
                         </div>
                     </CardContent>
-                    <CardContent className="flex flex-wrap items-start gap-4">
+                    <CardContent className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5">
                         {canViewOrders && (
-                            <div className="w-full md:w-[15.8%]">
+                            <div className="w-full">
                                 <TechnicianProductivity dateRange={dateRange} company={company} />
                             </div>
                         )}
 
                         {canViewOrders && (
-                            <div className="w-full md:w-[15.8%]">
+                            <div className="w-full">
                                 <OrdersReport dateRange={dateRange} company={company} />
                             </div>
                         )}
 
                         {canViewOrders && (
-                            <div className="w-full md:w-[15.8%]">
+                            <div className="w-full">
                                 <OrdersStatistics dateRange={dateRange} company={company} />
                             </div>
                         )}
 
                         {canViewOrders && (
-                            <div className="w-full md:w-[15.8%]">
+                            <div className="w-full">
                                 <OrdersDaily dateRange={dateRange} company={company} />
                             </div>
                         )}
 
                         {canViewCustomers && (
-                            <div className="w-full md:w-[15.8%]">
+                            <div className="w-full">
                                 <CustomersReport dateRange={dateRange} company={company} />
                             </div>
                         )}
 
                         {canViewSchedules && (
-                            <div className="w-full md:w-[15.8%]">
+                            <div className="w-full">
                                 <SchedulesReport dateRange={dateRange} company={company} />
                             </div>
                         )}
 
                         {canViewSales && (
-                            <div className="w-full md:w-[15.8%]">
+                            <div className="w-full">
                                 <SalesReport dateRange={dateRange} company={company} />
                             </div>
                         )}
 
                         {canViewParts && (
-                            <div className="w-full md:w-[15.8%]">
+                            <div className="w-full">
                                 <PartsReport dateRange={dateRange} company={company} />
                             </div>
                         )}
 
                         {canViewExpenses && (
-                            <div className="w-full md:w-[15.8%]">
+                            <div className="w-full">
                                 <ExpensesReport dateRange={dateRange} company={company} />
                             </div>
                         )}
 
                         {canViewCashier && (
-                            <div className="w-full md:w-[15.8%]">
+                            <div className="w-full">
                                 <CashierReport dateRange={dateRange} company={company} />
                             </div>
                         )}

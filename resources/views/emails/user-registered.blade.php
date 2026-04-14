@@ -85,11 +85,11 @@
                             <table width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0;font-size:14px;">
 
                                 <tr>
-                                    <td style="padding:8px 0;">✅ Em configurações cadastrar os dados de sua empresa</td>
+                                    <td style="padding:8px 0;">✅ Em configurações, cadastrar os dados da sua empresa</td>
                                 </tr>
 
                                 <tr>
-                                    <td style="padding:8px 0;">✅ Em configurações tipo de equipamento</td>
+                                    <td style="padding:8px 0;">✅ Em configurações, cadastrar os tipos de equipamento</td>
                                 </tr>
 
                                 <tr>
@@ -105,14 +105,8 @@
                             <!-- DOCUMENTAÇÃO -->
 
                             <p style="font-size:15px;line-height:1.6;margin-top:24px;">
-                                Se precisar de ajuda para utilizar o sistema, consulte nosso guia completo:
-                            </p>
-
-                            <p style="margin-top:8px;">
-                                <a href="https://sigmaos.com.br/documentation/doc-sigmaos.pdf"
-                                    style="background:#111827;border-radius:6px;color:#ffffff;display:inline-block;font-size:14px;font-weight:bold;padding:12px 22px;text-decoration:none;">
-                                    📘 Ver documentação completa
-                                </a>
+                                Se precisar de ajuda para utilizar o sistema, acesse a documentação no menu de ações do usuário,
+                                no canto superior direito, na opção <strong>Documentação</strong>.
                             </p>
 
                             <!-- BOTÃO SISTEMA -->

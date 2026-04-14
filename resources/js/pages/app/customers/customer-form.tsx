@@ -9,7 +9,7 @@ import { Customer } from '@/types';
 import { maskCep, maskCpfCnpj, maskPhone, unMask } from '@/Utils/mask';
 import { useForm } from '@inertiajs/react';
 import { Loader2Icon, Save, Search } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 export default function CustomerForm({ initialData }: { initialData?: Customer }) {
     const isEdit = !!initialData;
@@ -45,10 +45,6 @@ export default function CustomerForm({ initialData }: { initialData?: Customer }
         }
     };
 
-    useEffect(() => {
-        setData((currentData) => ({ ...currentData, cpfcnpj: unMask(currentData.cpfcnpj) ?? '' }));
-    }, [data.cpfcnpj]);
-
     const { isZipcodeLoading } = useZipcodeAutocomplete<Customer>({
         zipcode: zipcodeToSearch || '',
         paths: {
@@ -77,7 +73,7 @@ export default function CustomerForm({ initialData }: { initialData?: Customer }
                         type="text"
                         id="cpfcnpj"
                         value={maskCpfCnpj(data.cpfcnpj)}
-                        onChange={(e) => setData('cpfcnpj', e.target.value)}
+                        onChange={(e) => setData('cpfcnpj', unMask(e.target.value) ?? '')}
                         maxLength={18}
                     />
                     {errors.cpfcnpj && <div className="text-sm text-red-500">{errors.cpfcnpj}</div>}
@@ -111,7 +107,7 @@ export default function CustomerForm({ initialData }: { initialData?: Customer }
 
                 <div className="grid gap-2 md:col-span-2">
                     <Label htmlFor="email">E-mail</Label>
-                    <Input type="text" id="email" value={data.email} onChange={(e) => setData('email', e.target.value)} />
+                    <Input type="email" id="email" value={data.email} onChange={(e) => setData('email', e.target.value)} />
                     {errors.email && <div className="text-sm text-red-500">{errors.email}</div>}
                 </div>
             </div>
@@ -125,7 +121,7 @@ export default function CustomerForm({ initialData }: { initialData?: Customer }
                                 type="text"
                                 id="zipcode"
                                 value={maskCep(data.zipcode)}
-                                onChange={(e) => setData('zipcode', e.target.value)}
+                                onChange={(e) => setData('zipcode', unMask(e.target.value) ?? '')}
                                 maxLength={9}
                                 disabled={isZipcodeLoading}
                             />
@@ -169,20 +165,32 @@ export default function CustomerForm({ initialData }: { initialData?: Customer }
 
                 <div className="grid gap-2">
                     <Label htmlFor="number">Número</Label>
-                    <Input type="text" id="number" value={data.number} onChange={(e) => setData('number', Number(e.target.value))} />
+                    <Input type="text" id="number" value={data.number ?? ''} onChange={(e) => setData('number', e.target.value)} />
                 </div>
             </div>
 
             <div className="mt-4 grid gap-4 md:grid-cols-5">
                 <div className="grid gap-2">
                     <Label htmlFor="phone">Telefone</Label>
-                    <Input type="text" id="phone" value={maskPhone(data.phone)} onChange={(e) => setData('phone', e.target.value)} maxLength={15} />
+                    <Input
+                        type="text"
+                        id="phone"
+                        value={maskPhone(data.phone)}
+                        onChange={(e) => setData('phone', unMask(e.target.value) ?? '')}
+                        maxLength={15}
+                    />
                     {errors.phone && <div className="text-sm text-red-500">{errors.phone}</div>}
                 </div>
 
                 <div className="grid gap-2">
                     <Label htmlFor="whatsapp">Whatsapp</Label>
-                    <Input type="text" id="whatsapp" value={maskPhone(data.whatsapp)} onChange={(e) => setData('whatsapp', e.target.value)} maxLength={15} />
+                    <Input
+                        type="text"
+                        id="whatsapp"
+                        value={maskPhone(data.whatsapp)}
+                        onChange={(e) => setData('whatsapp', unMask(e.target.value) ?? '')}
+                        maxLength={15}
+                    />
                 </div>
 
                 <div className="grid gap-2 md:col-span-2">
@@ -196,7 +204,7 @@ export default function CustomerForm({ initialData }: { initialData?: Customer }
                         type="text"
                         id="contactphone"
                         value={maskPhone(data.contactphone)}
-                        onChange={(e) => setData('contactphone', e.target.value)}
+                        onChange={(e) => setData('contactphone', unMask(e.target.value) ?? '')}
                         maxLength={15}
                     />
                 </div>

@@ -15,16 +15,19 @@ class OsController extends Controller
         return Inertia::render('app/serviceorders/index', ['order' => $order]);
     }
 
-    public function updateBudgetStatus(Request $request, Order $order)
+    public function updateBudgetStatus(Request $request, string $token)
     {
+        $order = Order::where('tracking_token', $token)->firstOrFail();
+
         $validated = $request->validate([
-            'status' => ['required', 'in:4,9'], // 4 aprovado, 9 recusado
+            'status' => ['required', 'in:4,5'], // 4 aprovado, 5 recusado
         ]);
 
-        // // Regra de negócio (opcional, mas recomendado)
-        // if ($order->service_status != 2) {
-        //     return back()->withErrors('Orçamento não está em estado válido para alteração.');
-        // }
+        if ((int) $order->service_status !== 3) {
+            return back()->withErrors([
+                'status' => 'Este orçamento não está mais disponível para aprovação ou reprovação.',
+            ]);
+        }
 
         $order->update([
             'service_status' => $validated['status'],

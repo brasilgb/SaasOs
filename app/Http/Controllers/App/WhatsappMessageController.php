@@ -10,6 +10,11 @@ use Inertia\Inertia;
 
 class WhatsappMessageController extends Controller
 {
+    private function authorizeWhatsappMessagesAccess(): void
+    {
+        abort_unless(auth()->user()?->hasPermission('whatsapp_messages'), 403);
+    }
+
     private function defaultMessages(): array
     {
         return [
@@ -25,6 +30,8 @@ class WhatsappMessageController extends Controller
      */
     public function index(WhatsappMessage $whatsappmessage)
     {
+        $this->authorizeWhatsappMessagesAccess();
+
         if (WhatsappMessage::get()->isEmpty()) {
             WhatsappMessage::create($this->defaultMessages());
         }
@@ -36,6 +43,8 @@ class WhatsappMessageController extends Controller
 
     public function update(Request $request, WhatsappMessage $whatsappmessage): RedirectResponse
     {
+        $this->authorizeWhatsappMessagesAccess();
+
         $data = $request->validate([
             'generatedbudget' => 'nullable|string|max:5000',
             'servicecompleted' => 'nullable|string|max:5000',

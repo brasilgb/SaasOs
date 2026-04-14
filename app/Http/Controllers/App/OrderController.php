@@ -300,13 +300,19 @@ class OrderController extends Controller
 
         $order->load(['customer', 'tenant']);
         $customerEmail = $order->customer?->email;
+        $successMessage = 'Ordem cadastrada com sucesso';
 
         if ($this->shouldSendCustomerMailer($order, $customerEmail)) {
-            TenantMailConfig::applyForTenantId($order->tenant_id ? (int) $order->tenant_id : null);
-            Mail::to($customerEmail)->send(new OrderCreatedMail($order));
+            try {
+                TenantMailConfig::applyForTenantId($order->tenant_id ? (int) $order->tenant_id : null);
+                Mail::to($customerEmail)->send(new OrderCreatedMail($order));
+            } catch (\Throwable $e) {
+                report($e);
+                $successMessage = 'Ordem cadastrada com sucesso, mas houve falha ao enviar o e-mail ao cliente.';
+            }
         }
 
-        return redirect()->route('app.orders.index')->with('success', 'Ordem cadastrada com sucesso');
+        return redirect()->route('app.orders.index')->with('success', $successMessage);
     }
 
     /**
@@ -378,6 +384,7 @@ class OrderController extends Controller
         $data['service_value'] = $this->normalizeMoneyValue($data['service_value'] ?? 0);
         $data['service_cost'] = $this->normalizeMoneyValue($data['service_cost'] ?? 0);
         $oldStatus = $order->service_status;
+        $successMessage = 'Ordem atualizada com sucesso';
         $order->update([
             'customer_id' => $data['customer_id'],
             'equipment_id' => $data['equipment_id'], // equipamento
@@ -435,18 +442,23 @@ class OrderController extends Controller
             $customerEmail = $order->customer?->email;
 
             if ($this->shouldSendCustomerMailer($order, $customerEmail)) {
-                TenantMailConfig::applyForTenantId($order->tenant_id ? (int) $order->tenant_id : null);
-                Mail::to($customerEmail)->send(
-                    new OrderStatusUpdatedMail(
-                        $order->fresh(['customer', 'tenant']),
-                        $statusLabel,
-                        $data['observations'] ?? null
-                    )
-                );
+                try {
+                    TenantMailConfig::applyForTenantId($order->tenant_id ? (int) $order->tenant_id : null);
+                    Mail::to($customerEmail)->send(
+                        new OrderStatusUpdatedMail(
+                            $order->fresh(['customer', 'tenant']),
+                            $statusLabel,
+                            $data['observations'] ?? null
+                        )
+                    );
+                } catch (\Throwable $e) {
+                    report($e);
+                    $successMessage = 'Ordem atualizada com sucesso, mas houve falha ao enviar o e-mail de status ao cliente.';
+                }
             }
         }
 
-        return redirect()->route('app.orders.show', ['order' => $order->id])->with('success', 'Ordem atualizada com sucesso');
+        return redirect()->route('app.orders.show', ['order' => $order->id])->with('success', $successMessage);
     }
 
     /**
@@ -473,10 +485,25 @@ class OrderController extends Controller
 
         $order = Order::find($validatedData['order_id']);
         abort_unless($order && $this->canAccessOrder($order), 403);
-        // 1. Desvincula a peça da Ordem de Serviço na tabela pivô
+
+        $order->load('orderParts');
+        $part = $order->orderParts->firstWhere('id', (int) $validatedData['part_id']);
+
+        if (! $part) {
+            return back()->with('error', 'A peça informada não está vinculada a esta ordem.');
+        }
+
+        $removedQuantity = (float) ($part->pivot?->quantity ?? 1);
+        $removedTotal = $this->roundMoney((float) ($part->sale_price ?? 0) * $removedQuantity);
+        $nextPartsValue = $this->roundMoney(max(0, (float) ($order->parts_value ?? 0) - $removedTotal));
+        $nextServiceValue = $this->roundMoney((float) ($order->service_value ?? 0));
+        $nextServiceCost = $this->roundMoney($nextPartsValue + $nextServiceValue);
+
         $order->orderParts()->detach($validatedData['part_id']);
-        $order->update(['parts_value' => 0, 'service_value' => 0, 'service_cost' => 0]);
-        $order->orderParts()->detach();
+        $order->update([
+            'parts_value' => $nextPartsValue,
+            'service_cost' => $nextServiceCost,
+        ]);
 
         return redirect()->route('app.orders.show', $order)->with('success', 'Peça removida e estoque devolvido com sucesso.');
     }
@@ -535,6 +562,10 @@ class OrderController extends Controller
         abort_unless($this->canManageOrders(), 403);
         abort_unless($this->canAccessOrder($order), 403);
         abort_unless((int) $payment->order_id === (int) $order->id, 404);
+
+        if ($payment->cashSession?->status === 'closed') {
+            return back()->with('error', 'Não é possível remover pagamento vinculado a um caixa já fechado.');
+        }
 
         $payment->delete();
 
@@ -626,8 +657,14 @@ class OrderController extends Controller
             $isOverdue = Carbon::parse($order->delivery_date)->lt(now()->subDays(7));
         }
 
-        TenantMailConfig::applyForTenantId($order->tenant_id ? (int) $order->tenant_id : null);
-        Mail::to($customerEmail)->send(new OrderPaymentReminderMail($order, $paymentSummary, $isOverdue));
+        try {
+            TenantMailConfig::applyForTenantId($order->tenant_id ? (int) $order->tenant_id : null);
+            Mail::to($customerEmail)->send(new OrderPaymentReminderMail($order, $paymentSummary, $isOverdue));
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->with('error', 'Falha ao enviar o e-mail de cobrança. Verifique a configuração SMTP e tente novamente.');
+        }
 
         return back()->with('success', 'E-mail de cobrança/lembrete enviado com sucesso.');
     }

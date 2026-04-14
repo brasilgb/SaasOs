@@ -23,25 +23,19 @@ use Illuminate\Support\Facades\Route;
 */
 // routes/api.php (Lembre-se de excluir essa rota da verificação CSRF no VerifyCsrfToken.php)
 Route::post('/webhooks/mercadopago/{token}', [WebhookController::class, 'handle'])->name('webhook.mercadopago');
+Route::post('/loginuser', [UserController::class, 'loginuser'])->name('loginuser');
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/ordercli/{customer}', [OrderController::class, 'getOrderCli'])->name('ordercli');
     Route::get('/allorder', [OrderController::class, 'allOrder'])->name('allorder');
     Route::get('/order/{order}', [OrderController::class, 'getOrder'])->name('order');
+    Route::get('/clientes', [CustomerController::class, 'getClientes']);
+    Route::post('/orcamentos', [BudgetController::class, 'getOrcamentos']);
+    Route::post('/servicos', [ServiceController::class, 'getServicos']);
+    Route::get('/empresa', [CompanyController::class, 'getEmpresaInfo']);
+    Route::delete('/deleteimage/{aimage}', [ImageController::class, 'deleteImageOrder'])->name('deleteimage');
+    Route::get('/images/{order}', [ImageController::class, 'getImages'])->name('images');
+    Route::post('/upload', [ImageController::class, 'upload'])->name('upload');
+    Route::get('/logoutuser', [UserController::class, 'logoutuser'])->name('logoutuser');
+    Route::get('/getparts/{reference_number}', [PartController::class, 'getPartsForPartNumber'])->name('getparts');
 });
-
-Route::get('/clientes', [CustomerController::class, 'getClientes']);
-
-Route::post('/orcamentos', [BudgetController::class, 'getOrcamentos']);
-
-Route::post('/servicos', [ServiceController::class, 'getServicos']);
-
-Route::get('/empresa', [CompanyController::class, 'getEmpresaInfo']);
-
-Route::delete('/deleteimage/{aimage}', [ImageController::class, 'deleteImageOrder'])->name('deleteimage');
-Route::get('/images/{order}', [ImageController::class, 'getImages'])->name('images');
-Route::post('/upload', [ImageController::class, 'upload'])->name('upload');
-
-Route::post('/loginuser', [UserController::class, 'loginuser'])->name('loginuser');
-Route::get('/logoutuser', [UserController::class, 'logoutuser'])->middleware('auth:sanctum')->name('logoutuser');
-Route::get('/getparts/{reference_number}', [PartController::class, 'getPartsForPartNumber'])->name('getparts');

@@ -265,7 +265,7 @@ export default function EditOrder({
                 </div>
             </div>
 
-            <div className="flex items-center justify-between p-4">
+            <div className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
                 <div>
                     <Button variant={'default'} asChild>
                         <Link href={route('app.orders.index', { page: page, search: search })}>
@@ -274,7 +274,7 @@ export default function EditOrder({
                         </Link>
                     </Button>
                 </div>
-                <div className="flex items-center justify-end gap-2">
+                <div className="flex flex-wrap items-center justify-start gap-2 md:justify-end">
                     {canManageOrders && (order.service_status === 6 || order.service_status === 7 || order.service_status === 8) && (
                         <Button onClick={() => setOpenInvoiceModal(true)} className="rounded-lg py-2 text-sm font-medium">
                             <FileTextIcon className="h-4 w-4" />
@@ -339,7 +339,7 @@ export default function EditOrder({
                                         }),
                                         singleValue: (base) => ({
                                             ...base,
-                                            color: '#ebebeb', // cinza escuro (igual input padrão)
+                                            color: '#111827',
                                             fontSize: '14px',
                                         }),
                                         dropdownIndicator: (base) => ({
@@ -374,7 +374,7 @@ export default function EditOrder({
                                         }),
                                         singleValue: (base) => ({
                                             ...base,
-                                            color: '#ebebeb', // cinza escuro (igual input padrão)
+                                            color: '#111827',
                                             fontSize: '14px',
                                         }),
                                         dropdownIndicator: (base) => ({
@@ -493,7 +493,7 @@ export default function EditOrder({
                                             return (
                                                 <div
                                                     key={`${part.source}-${part.id}-${index}`}
-                                                    className="hover:bg-muted/50 flex items-center justify-between p-3 transition"
+                                                    className="hover:bg-muted/50 flex flex-col gap-3 p-3 transition sm:flex-row sm:items-center sm:justify-between"
                                                 >
                                                     {/* ESQUERDA */}
                                                     <div className="flex flex-col">
@@ -505,7 +505,7 @@ export default function EditOrder({
                                                     </div>
 
                                                     {/* DIREITA */}
-                                                    <div className="flex items-center gap-3">
+                                                    <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                                                         <span className="text-sm font-semibold">{maskMoney(String(total))}</span>
 
                                                         {/* Origem */}

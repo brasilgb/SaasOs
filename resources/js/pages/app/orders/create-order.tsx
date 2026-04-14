@@ -160,7 +160,7 @@ export default function CreateOrder({
                                         }),
                                         singleValue: (base) => ({
                                             ...base,
-                                            color: '#ebebeb', // cinza escuro (igual input padrão)
+                                            color: '#111827',
                                             fontSize: '14px',
                                         }),
                                         dropdownIndicator: (base) => ({
@@ -194,7 +194,7 @@ export default function CreateOrder({
                                         }),
                                         singleValue: (base) => ({
                                             ...base,
-                                            color: '#ebebeb', // cinza escuro (igual input padrão)
+                                            color: '#111827',
                                             fontSize: '14px',
                                         }),
                                         dropdownIndicator: (base) => ({
@@ -319,7 +319,7 @@ export default function CreateOrder({
                                         }),
                                         singleValue: (base) => ({
                                             ...base,
-                                            color: '#ebebeb', // cinza escuro (igual input padrão)
+                                            color: '#111827',
                                             fontSize: '14px',
                                         }),
                                         dropdownIndicator: (base) => ({

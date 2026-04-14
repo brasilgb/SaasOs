@@ -10,6 +10,11 @@ use Inertia\Inertia;
 
 class LabelPrintingController extends Controller
 {
+    private function authorizeLabelPrintingAccess(): void
+    {
+        abort_unless(auth()->user()?->hasPermission('label_printing'), 403);
+    }
+
     private function buildLabelsData(int $initial, int $pages): array
     {
         $company = Company::first();
@@ -30,6 +35,8 @@ class LabelPrintingController extends Controller
 
     public function index()
     {
+        $this->authorizeLabelPrintingAccess();
+
         $labels = Order::orderBy('id', 'DESC')->first();
         if ($labels) {
             $labels = Order::orderBy('id', 'DESC')->first();
@@ -42,6 +49,8 @@ class LabelPrintingController extends Controller
 
     public function print(Request $request)
     {
+        $this->authorizeLabelPrintingAccess();
+
         $validated = $request->validate([
             'initialorder' => ['required', 'integer', 'min:1'],
             'pages' => ['required', 'integer', 'min:1'],
@@ -59,6 +68,8 @@ class LabelPrintingController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorizeLabelPrintingAccess();
+
         return $this->print($request);
     }
 }

@@ -169,7 +169,7 @@ export default function OrderPaymentsModal({
             <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-3xl">
                 <DialogHeader>
                     <DialogTitle>Pagamentos da ordem #{order?.order_number}</DialogTitle>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                         <Badge variant={financialStatus.variant} className={financialStatus.className}>
                             {financialStatus.label}
                         </Badge>
@@ -320,7 +320,7 @@ export default function OrderPaymentsModal({
                         <div className="text-muted-foreground text-sm">Carregando pagamentos...</div>
                     ) : localPayments?.length ? (
                         localPayments.map((payment: any) => (
-                            <div key={payment.id} className="flex items-center justify-between rounded-md border p-3">
+                            <div key={payment.id} className="flex flex-col gap-3 rounded-md border p-3 sm:flex-row sm:items-center sm:justify-between">
                                 <div className="flex flex-col">
                                     <span className="text-sm font-medium">{maskMoney(String(payment.amount))}</span>
                                     <span className="text-muted-foreground text-xs">
@@ -332,6 +332,7 @@ export default function OrderPaymentsModal({
                                     type="button"
                                     size="sm"
                                     variant="outline"
+                                    className="w-full sm:w-auto"
                                     onClick={() => handleRemovePayment(payment.id)}
                                     disabled={!isCashierOpen}
                                 >

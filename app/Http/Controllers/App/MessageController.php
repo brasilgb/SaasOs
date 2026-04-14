@@ -99,7 +99,7 @@ class MessageController extends Controller
         $data['message_number'] = Message::exists() ? Message::latest()->first()->message_number + 1 : 1;
         Message::create($data);
 
-        return redirect()->route('app.messages.index')->with('success', 'Agenda cadastrada com sucesso');
+        return redirect()->route('app.messages.index')->with('success', 'Mensagem cadastrada com sucesso');
     }
 
     /**
@@ -145,7 +145,7 @@ class MessageController extends Controller
         $data['sender_id'] = $message->sender_id;
         $message->update($data);
 
-        return redirect()->route('app.messages.show', ['message' => $message->id])->with('success', 'Agenda editada com sucesso');
+        return redirect()->route('app.messages.show', ['message' => $message->id])->with('success', 'Mensagem editada com sucesso');
     }
 
     /**
@@ -169,6 +169,6 @@ class MessageController extends Controller
 
         $message->delete();
 
-        return redirect()->route('app.messages.index')->with('success', 'Mensagem excluida com sucesso!');
+        return redirect()->route('app.messages.index')->with('success', 'Mensagem excluída com sucesso!');
     }
 }

@@ -16,7 +16,7 @@ Route::get('/preview/email/order-status', function () {
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/os/{token}', [OsController::class, 'index'])->name('os.token');
-Route::post('/orders/{order}/budget-status', [OsController::class, 'updateBudgetStatus'])
+Route::post('/os/{token}/budget-status', [OsController::class, 'updateBudgetStatus'])
     ->name('orders.budget.status');
 
 Route::get('/privacidade', function () {

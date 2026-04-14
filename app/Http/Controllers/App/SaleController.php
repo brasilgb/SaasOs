@@ -279,22 +279,11 @@ class SaleController extends Controller
 
         try {
             DB::beginTransaction();
-
-            // Itera sobre os itens da venda para retornar as peças ao estoque
-            foreach ($sale->items as $item) {
-                $part = Part::find($item->part_id);
-                if ($part) {
-                    // Incrementa a quantidade da peça de volta ao estoque
-                    $part->increment('quantity', $item->quantity);
-                }
-            }
-
-            // Exclui a venda (os itens da venda serão excluídos em cascata se configurado no banco de dados)
             $sale->delete();
 
             DB::commit();
 
-            return redirect()->route('app.sales.index')->with('success', 'Venda excluída e estoque estornado com sucesso!');
+            return redirect()->route('app.sales.index')->with('success', 'Venda cancelada excluída com sucesso.');
         } catch (\Exception $e) {
             DB::rollBack();
 

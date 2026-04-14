@@ -98,14 +98,6 @@ class CustomerController extends Controller
         ini_set('max_execution_time', 300); // 5 minutos
         ini_set('memory_limit', '512M');
 
-        // 1. Limpa o valor removendo espaços
-        $rawCpfCnpj = isset($linha[1]) ? trim($linha[1]) : '';
-
-        // 2. Transforma "sujeira" em NULL real
-        $cpfCnpj = in_array($rawCpfCnpj, ['', '0', '---', '--', '*', 'n/a', 'NULL', 'null'])
-            ? null
-            : $rawCpfCnpj;
-
         try {
             $request->validate([
                 'arquivo' => 'required|mimes:csv,txt|max:2048',
@@ -147,6 +139,11 @@ class CustomerController extends Controller
                 if (empty($linha[0])) {
                     continue;
                 }
+
+                $rawCpfCnpj = isset($linha[1]) ? trim((string) $linha[1]) : '';
+                $cpfCnpj = in_array($rawCpfCnpj, ['', '0', '---', '--', '*', 'n/a', 'NULL', 'null'], true)
+                    ? null
+                    : $rawCpfCnpj;
 
                 $ultimoNumero++;
 
@@ -330,6 +327,13 @@ class CustomerController extends Controller
     public function destroy(Customer $customer)
     {
         $this->authorizeCustomersAccess();
+
+        if ($customer->orders()->exists() || $customer->sales()->exists() || $customer->schedules()->exists()) {
+            return redirect()->route('app.customers.index')->with(
+                'error',
+                'Não é possível excluir este cliente porque existem ordens, vendas ou agendamentos vinculados.'
+            );
+        }
 
         $customer->delete();
 

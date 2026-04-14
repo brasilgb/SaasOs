@@ -7,17 +7,41 @@ use App\Models\App\Checklist;
 use App\Models\App\Company;
 use App\Models\App\Order;
 use App\Models\App\Receipt;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class ReceiptController extends Controller
 {
+    private function authorizeReceiptsAccess(): void
+    {
+        abort_unless(Auth::user()?->hasPermission('receipts'), 403);
+    }
+
+    private function canAccessOrder(Order $order): bool
+    {
+        $user = Auth::user();
+
+        if (! $user instanceof User || ! $user->hasPermission('orders')) {
+            return false;
+        }
+
+        if (! $user->isTechnician()) {
+            return true;
+        }
+
+        return is_null($order->user_id) || (int) $order->user_id === (int) $user->id;
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index(Receipt $receipt)
     {
+        $this->authorizeReceiptsAccess();
+
         if (Receipt::get()->isEmpty()) {
             Receipt::create();
         }
@@ -29,15 +53,20 @@ class ReceiptController extends Controller
 
     public function update(Request $request, Receipt $receipt): RedirectResponse
     {
+        $this->authorizeReceiptsAccess();
+
         $data = $request->all();
         $receipt->update($data);
 
-        return redirect()->route('app.receipts.index', ['receipts' => $receipt->id])->with('success', 'Recibos editadas com sucesso');
+        return redirect()->route('app.receipts.index', ['receipts' => $receipt->id])->with('success', 'Recibos editados com sucesso');
     }
 
     public function printing($or, $tp)
     {
-        $order = Order::where('id', $or)->with(['customer', 'equipment', 'orderParts'])->first();
+        $this->authorizeReceiptsAccess();
+
+        $order = Order::where('id', $or)->with(['customer', 'equipment', 'orderParts'])->firstOrFail();
+        abort_unless($this->canAccessOrder($order), 403);
         $company = Company::first();
         $receipt = Receipt::first();
         $checklist = Checklist::where('equipment_id', $order->equipment_id)->first('checklist');

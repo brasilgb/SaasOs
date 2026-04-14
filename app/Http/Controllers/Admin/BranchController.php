@@ -68,7 +68,7 @@ class BranchController extends Controller
         $request->validated();
         $branch->update($data);
 
-        return redirect()->route('admin.branches.show', ['branch' => $branch->id])->with('success', 'Filial atualizada com sucess!');
+        return redirect()->route('admin.branches.show', ['branch' => $branch->id])->with('success', 'Filial atualizada com sucesso!');
     }
 
     /**
@@ -78,6 +78,6 @@ class BranchController extends Controller
     {
         $branch->delete();
 
-        return redirect()->route('admin.branches.index')->width('success', 'Filial excluída com sucesso!');
+        return redirect()->route('admin.branches.index')->with('success', 'Filial excluída com sucesso!');
     }
 }

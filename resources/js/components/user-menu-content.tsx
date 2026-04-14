@@ -35,7 +35,7 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
                 <DropdownMenuItem asChild>
-                    <a href={import.meta.env.VITE_APP_URL + '/documentation/doc-sigmaos.pdf'} target="_blank" rel="noopener noreferrer">
+                    <a href={import.meta.env.VITE_APP_URL + '/documentation/doc-sigmaos.html'} target="_blank" rel="noopener noreferrer">
                         <FileTextIcon className="mr-2" />
                         <span>Documentação</span>
                     </a>

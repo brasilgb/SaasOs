@@ -64,7 +64,7 @@ export interface Customer {
     district: string;
     street: string;
     complement: string;
-    number: number;
+    number: string | number;
     phone: string;
     contactname: string;
     whatsapp: string;
