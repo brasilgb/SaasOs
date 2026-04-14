@@ -1,9 +1,11 @@
 import { toastSuccess, toastWarning } from '@/components/app-toast-messages';
+import { OrderTimeline } from '@/components/order-timeline';
 import { StatusBadge } from '@/components/StatusBadge';
 import Timeline from '@/components/timeline';
 import { Button } from '@/components/ui/button';
 import { Toaster } from '@/components/ui/sonner';
 import { maskMoney } from '@/Utils/mask';
+import { ORDER_STATUS } from '@/Utils/order-status';
 import { Head, router, usePage } from '@inertiajs/react';
 import { InfoIcon } from 'lucide-react';
 import { useState } from 'react';
@@ -25,6 +27,8 @@ interface Order {
     parts_value?: number;
     service_value?: number;
     service_cost?: number;
+    status_history?: any[];
+    logs?: any[];
     customer?: { name: string };
     company?: { logo?: string; whatsapp?: string };
     equipment?: { equipment: string };
@@ -116,13 +120,13 @@ function ServiceOrders({ order }: { order: Order }) {
                     <div className="mb-4 flex justify-center">
                         {<StatusBadge category="ordem" value={order.service_status} className="px-4 py-2" />}
                     </div>
-                    {order.service_status === 7 && (
+                    {order.service_status === ORDER_STATUS.SERVICE_COMPLETED && (
                         <div className="mb-4 rounded-md border border-cyan-200 bg-cyan-50 px-4 py-3 text-sm text-slate-800">
                             <strong>Observação importante:</strong> O serviço foi concluído e seu equipamento está aguardando retirada. Entre
                             em contato com nossa equipe ou passe em nossa loja para retirar.
                         </div>
                     )}
-                    {order.service_status === 3 && (
+                    {order.service_status === ORDER_STATUS.BUDGET_GENERATED && (
                         <div className="mb-6 flex flex-1 items-center justify-center">
                             <InfoIcon className="h-4 w-4 text-red-500" />
                             <span className="text-sm font-normal text-red-600 italic">Aguardando aprovação</span>
@@ -193,7 +197,7 @@ function ServiceOrders({ order }: { order: Order }) {
                                 </div>
 
                                 {/* Ações: cliente só decide enquanto o orçamento está gerado */}
-                                {order.service_status === 3 && (
+                                {order.service_status === ORDER_STATUS.BUDGET_GENERATED && (
                                     <div className="flex items-center gap-2">
                                         <Button onClick={handleApprove} disabled={loadingA} className="bg-green-600 text-white hover:bg-green-700">
                                             {loadingA ? 'Aprovando...' : 'Aprovar'}
@@ -248,6 +252,10 @@ function ServiceOrders({ order }: { order: Order }) {
                         </p>
 
                         {remaining && <p className={`mt-1 text-sm font-medium ${remainingColor(remaining)}`}>{remaining}</p>}
+                    </div>
+
+                    <div className="border-t border-gray-200 pt-4">
+                        <OrderTimeline statusHistory={order.status_history} logs={order.logs} mode="public" />
                     </div>
 
                     {/* WhatsApp */}

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
 use App\Models\App\CashSession;
+use App\Models\App\CashSessionLog;
 use App\Models\App\Other;
 use App\Models\App\OrderPayment;
 use App\Models\App\Sale;
@@ -16,6 +17,16 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CashSessionController extends Controller
 {
+    private function logCashSessionAction(CashSession $cashSession, string $action, array $data = []): void
+    {
+        CashSessionLog::create([
+            'cash_session_id' => $cashSession->id,
+            'user_id' => Auth::id(),
+            'action' => $action,
+            'data' => $data === [] ? null : $data,
+        ]);
+    }
+
     private function normalizeMoneyInput(mixed $value): ?float
     {
         if ($value === null) {
@@ -151,11 +162,16 @@ class CashSessionController extends Controller
             'notes' => 'nullable|string|max:1000',
         ]);
 
-        CashSession::create([
+        $cashSession = CashSession::create([
             'opened_by' => Auth::id(),
             'opened_at' => now(),
             'opening_balance' => (float) ($validated['opening_balance'] ?? 0),
             'status' => 'open',
+            'notes' => $validated['notes'] ?? null,
+        ]);
+
+        $this->logCashSessionAction($cashSession, 'opened', [
+            'opening_balance' => (float) $cashSession->opening_balance,
             'notes' => $validated['notes'] ?? null,
         ]);
 
@@ -221,6 +237,18 @@ class CashSessionController extends Controller
             'manual_entries' => $manualEntries,
             'manual_exits' => $manualExits,
             'status' => 'closed',
+            'closing_notes' => $validated['closing_notes'] ?? null,
+        ]);
+
+        $this->logCashSessionAction($cashSession, 'closed', [
+            'closing_balance' => $closingBalance,
+            'expected_balance' => $expectedBalance,
+            'difference' => $difference,
+            'total_completed_sales' => (float) $totalCompletedSales,
+            'total_order_payments' => (float) $totalOrderPayments,
+            'total_cancelled_sales' => (float) $totalCancelledSales,
+            'manual_entries' => $manualEntries,
+            'manual_exits' => $manualExits,
             'closing_notes' => $validated['closing_notes'] ?? null,
         ]);
 

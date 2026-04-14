@@ -1,15 +1,6 @@
-const statusServico = [
-    { value: '1', label: 'Ordem aberta' }, // defaultmessage
-    { value: '2', label: 'Ordem cancelada' }, // defaultmessage
-    { value: '3', label: 'Orçamento gerado' }, // generatedbudget
-    { value: '4', label: 'Orçamento aprovado' }, // defaultmessage
-    { value: '5', label: 'Orçamento reprovado' },// defaultmessage
-    { value: '6', label: 'Reparo em andamento' }, // defaultmessage
-    { value: '7', label: 'Serviço concluído' },// servicecompleted
-    { value: '8', label: 'Serviço não executado' }, // defaultmessage
-    { value: '9', label: 'Cliente avisado / aguardando retirada' }, // defaultmessage
-    { value: '10', label: 'Entregue ao cliente' },  // defaultmessage
-];
+import { ORDER_BUDGET_STATUS_OPTIONS, ORDER_STATUS_OPTIONS } from './order-status';
+
+const statusServico = ORDER_STATUS_OPTIONS;
 
 const rolesUser = [
     { value: '99', label: 'RootSystem' },
@@ -55,11 +46,7 @@ const statusMessage = [
     { value: '2', label: 'Lida' },
 ];
 
-const statusOrcamento = [
-    { value: '1', label: 'Ordem Aberta' },
-    { value: '3', label: 'Orçamento Gerado' },
-    { value: '4', label: 'Orçamento Aprovado' },
-];
+const statusOrcamento = ORDER_BUDGET_STATUS_OPTIONS;
 
 const statusSaas = [
     { value: '1', label: 'Ativo' },

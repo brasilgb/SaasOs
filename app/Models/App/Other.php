@@ -14,5 +14,17 @@ class Other extends Model
         'navigation' => 'boolean',
         'enableparts' => 'boolean',
         'enablesales' => 'boolean',
+        'warranty_return_alert_threshold' => 'float',
     ];
+
+    public static function warrantyReturnAlertThreshold(): float
+    {
+        $configured = static::query()->value('warranty_return_alert_threshold');
+
+        if ($configured !== null) {
+            return (float) $configured;
+        }
+
+        return (float) config('business-metrics.warranty_return_alert_threshold', 10);
+    }
 }

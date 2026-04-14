@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Support\OrderStatus;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -27,17 +28,19 @@ class OrderRequest extends FormRequest
             'customer_id' => 'required',
             'equipment_id' => 'required',
             'defect' => 'required',
+            'service_status' => ['required', 'integer', Rule::in(OrderStatus::values())],
+            'warranty_days' => 'nullable|integer|min:0|max:3650',
 
             'budget_description' => [
-                Rule::requiredIf($this->service_status == 3),
+                Rule::requiredIf((int) $this->service_status === OrderStatus::BUDGET_GENERATED),
             ],
             'budget_value' => [
-                Rule::requiredIf($this->service_status == 3),
+                Rule::requiredIf((int) $this->service_status === OrderStatus::BUDGET_GENERATED),
                 function ($attribute, $value, $fail) {
                     // Remove pontos de milhar e troca vírgula por ponto para checar o número real
                     $numericValue = (float) str_replace(['.', ','], ['', '.'], $value);
 
-                    if ($this->service_status == 3 && $numericValue <= 0) {
+                    if ((int) $this->service_status === OrderStatus::BUDGET_GENERATED && $numericValue <= 0) {
                         $fail('O valor do orçamento deve ser maior que 0,00 quando for "Orçamento gerado".');
                     }
                 },
@@ -56,6 +59,7 @@ class OrderRequest extends FormRequest
             'equipment_id' => 'equipamento',
             'defect' => 'defeito',
             'user_id' => 'técnico',
+            'warranty_days' => 'garantia em dias',
         ];
     }
 }

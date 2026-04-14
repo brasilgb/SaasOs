@@ -142,7 +142,7 @@ const ImageUpload = ({ savedimages, orderid, errors }: any) => {
             <div className="flex h-16 items-center justify-between px-4">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={Wrench} className="h-8 w-8" />
-                    <h2 className="text-xl font-semibold">Ordens</h2>
+                    <h2 className="text-xl font-semibold tracking-tight">Imagens</h2>
                 </div>
                 <div>
                     <Breadcrumbs breadcrumbs={breadcrumbs} />

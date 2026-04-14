@@ -1,4 +1,5 @@
 import { currencyFormatter } from '@/Utils/currency-formatter';
+import { ORDER_STATUS, ORDER_STATUSES_COMPLETED } from '@/Utils/order-status';
 import { Document, Image, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 import moment from 'moment';
 
@@ -165,11 +166,11 @@ export default function OrderDailyReportPDF({
 
         statsByDay[date].entradas += 1;
 
-        if (order.service_status === 6 || order.service_status === 7) {
+        if (ORDER_STATUSES_COMPLETED.includes(order.service_status)) {
             statsByDay[date].concluidos += 1;
         }
 
-        if (order.service_status === 8) {
+        if (order.service_status === ORDER_STATUS.DELIVERED) {
             statsByDay[date].entregues += 1;
         }
 

@@ -18,6 +18,22 @@ use Inertia\Inertia;
 
 class ReportController extends Controller
 {
+    private function buildWarrantyReturnMeta(iterable $orders): array
+    {
+        $collection = collect($orders);
+        $totalOrders = $collection->count();
+        $warrantyReturns = $collection->where('is_warranty_return', true)->count();
+        $threshold = Other::warrantyReturnAlertThreshold();
+        $rate = $totalOrders > 0 ? round(($warrantyReturns / $totalOrders) * 100, 1) : 0.0;
+
+        return [
+            'warranty_return_threshold' => $threshold,
+            'warranty_return_rate' => $rate,
+            'warranty_return_alert' => $rate > $threshold,
+            'warranty_returns' => $warrantyReturns,
+        ];
+    }
+
     private function authorizeReportsAccess(): void
     {
         abort_unless(Auth::user()?->hasPermission('reports'), 403);
@@ -53,6 +69,10 @@ class ReportController extends Controller
                     ->whereBetween('created_at', [$from, $to])
                     ->orderBy('created_at', 'desc')
                     ->get();
+                $reportMeta = [
+                    ...$reportMeta,
+                    ...$this->buildWarrantyReturnMeta($data),
+                ];
                 break;
 
             case 'customers':

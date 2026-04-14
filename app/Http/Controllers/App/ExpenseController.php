@@ -4,6 +4,7 @@ namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
 use App\Models\App\Expense;
+use App\Models\App\ExpenseLog;
 use App\Models\App\Other;
 use App\Models\User;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,6 +16,16 @@ use Inertia\Inertia;
 
 class ExpenseController extends Controller
 {
+    private function logExpenseAction(Expense $expense, string $action, array $data = []): void
+    {
+        ExpenseLog::create([
+            'expense_id' => $expense->id,
+            'user_id' => Auth::id(),
+            'action' => $action,
+            'data' => $data === [] ? null : $data,
+        ]);
+    }
+
     private function canAccessExpensesFeature(): bool
     {
         $user = Auth::user();
@@ -102,10 +113,17 @@ class ExpenseController extends Controller
                 ->lockForUpdate()
                 ->max('expense_number')) + 1;
 
-            Expense::create([
+            $expense = Expense::create([
                 ...$validated,
                 'expense_number' => $nextExpenseNumber,
                 'created_by' => Auth::id(),
+            ]);
+
+            $this->logExpenseAction($expense, 'created', [
+                'expense_number' => (int) $expense->expense_number,
+                'amount' => (float) $expense->amount,
+                'category' => $expense->category,
+                'expense_date' => $expense->expense_date?->toDateString(),
             ]);
         });
 
@@ -128,6 +146,12 @@ class ExpenseController extends Controller
 
         $expense->update($validated);
 
+        $this->logExpenseAction($expense, 'updated', [
+            'amount' => (float) $expense->amount,
+            'category' => $expense->category,
+            'expense_date' => $expense->expense_date?->toDateString(),
+        ]);
+
         return back()->with('success', 'Despesa atualizada com sucesso.');
     }
 
@@ -136,6 +160,15 @@ class ExpenseController extends Controller
         if ($response = $this->authorizeExpensesAccess()) {
             return $response;
         }
+        $expenseData = [
+            'expense_number' => (int) $expense->expense_number,
+            'amount' => (float) $expense->amount,
+            'category' => $expense->category,
+            'expense_date' => $expense->expense_date?->toDateString(),
+            'description' => $expense->description,
+        ];
+
+        $this->logExpenseAction($expense, 'deleted', $expenseData);
         $expense->delete();
 
         return back()->with('success', 'Despesa excluída com sucesso.');

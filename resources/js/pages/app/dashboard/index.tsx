@@ -1,9 +1,11 @@
 import AlertSuccess from '@/components/app-alert-success';
+import { Breadcrumbs } from '@/components/breadcrumbs';
 import { DatePicker } from '@/components/date-picker';
 import { Icon } from '@/components/icon';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import AppLayout from '@/layouts/app-layout';
+import { BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 import { LayoutGridIcon } from 'lucide-react';
 import moment from 'moment';
@@ -11,6 +13,13 @@ import { useState } from 'react';
 import FinanceiroOrders from './fin-order/ordens';
 import FinanceiroSales from './fin-order/sales';
 import OrderDashboard from './ope-order';
+
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Dashboard',
+        href: route('app.dashboard'),
+    },
+];
 
 function formatDateRange(date?: Date | string) {
     if (!date) return '';
@@ -61,18 +70,18 @@ export default function Dashboard({ reloadKey, orders, acount, parts, customers,
             {flash?.message && <AlertSuccess message={flash?.message} />}
             <Head title="Dashboard" />
             <div key={reloadKey}>
-                <div className="p-3 sm:p-4">
-                    <div
-                        className={
-                            isTechnician
-                                ? 'mb-4 flex flex-col gap-3 xl:h-16 xl:flex-row xl:items-center xl:justify-between'
-                                : 'mb-4 flex flex-col gap-3 xl:mb-0 xl:h-16 xl:flex-row xl:items-center xl:justify-between'
-                        }
-                    >
-                        <div className="flex min-w-0 items-center gap-2">
-                            <Icon iconNode={LayoutGridIcon} className="h-8 w-8" />
-                            <h2 className="text-xl font-semibold tracking-tight">Dashboard</h2>
-                        </div>
+                <div className="flex h-16 items-center justify-between px-4">
+                    <div className="flex items-center gap-2">
+                        <Icon iconNode={LayoutGridIcon} className="h-8 w-8" />
+                        <h2 className="text-xl font-semibold tracking-tight">Dashboard</h2>
+                    </div>
+                    <div>
+                        <Breadcrumbs breadcrumbs={breadcrumbs} />
+                    </div>
+                </div>
+
+                <div className="p-4">
+                    <div className={`${isTechnician ? 'mb-4' : 'mb-4 xl:mb-0'} flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between`}>
                         <div className="w-full sm:w-auto">
                             <DatePicker mode={'range'} setDate={onDateRangeChange} date={dateRange} />
                         </div>

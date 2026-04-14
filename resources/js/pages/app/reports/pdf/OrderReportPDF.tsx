@@ -1,4 +1,5 @@
 import { currencyFormatter } from '@/Utils/currency-formatter';
+import { ORDER_STATUS, orderStatusLabel } from '@/Utils/order-status';
 import { Document, Image, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 import moment from 'moment';
 
@@ -29,6 +30,21 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginBottom: 12,
         color: '#666',
+    },
+    severityBox: {
+        borderRadius: 4,
+        paddingVertical: 8,
+        paddingHorizontal: 10,
+        marginBottom: 12,
+    },
+    severityTitle: {
+        fontSize: 9,
+        marginBottom: 3,
+        textTransform: 'uppercase',
+    },
+    severityText: {
+        fontSize: 11,
+        fontWeight: 'bold',
     },
     tableContainer: {
         border: '1px solid #eeeded',
@@ -87,21 +103,36 @@ const styles = StyleSheet.create({
     logoPlaceholder: { paddingVertical: 4, width: 40, height: 40, justifyContent: 'center', alignItems: 'center', minWidth: '100%' },
 });
 
-const STATUS_MAP: Record<number, string> = {
-    1: 'Ordem Aberta',
-    2: 'Ordem Fechada',
-    3: 'Orçamento Gerado',
-    4: 'Orçamento Aprovado',
-    5: 'Executando Reparo',
-    6: '(CA) Serviço Concluído',
-    7: '(CN) Serviço Concluído',
-    8: 'Entregue ao Cliente',
-};
-
-export default function OrderReportPDF({ data, dateRange, company }: any) {
+export default function OrderReportPDF({ data, reportMeta, dateRange, company }: any) {
     const totalGeral = data.reduce((acc: any, order: any) => acc + (Number(order.parts_value) + Number(order.service_value)), 0);
-    const deliveredCount = data.filter((order: any) => Number(order.service_status) === 8).length;
+    const deliveredCount = data.filter((order: any) => Number(order.service_status) === ORDER_STATUS.DELIVERED).length;
     const avgTicket = data.length ? totalGeral / data.length : 0;
+    const warrantyReturnCount = data.filter((order: any) => Boolean(order.is_warranty_return)).length;
+    const warrantyReturnRate = Number(reportMeta?.warranty_return_rate ?? 0);
+    const warrantyThreshold = Number(reportMeta?.warranty_return_threshold ?? 10);
+    const warrantyAlert = Boolean(reportMeta?.warranty_return_alert ?? false);
+    const warrantySeverity =
+        warrantyReturnRate <= 5 ? 'Saudável' : warrantyReturnRate <= warrantyThreshold ? 'Atenção' : 'Crítico';
+    const severityColors =
+        warrantySeverity === 'Crítico'
+            ? { backgroundColor: '#FEF3C7', borderColor: '#F59E0B', color: '#92400E' }
+            : warrantySeverity === 'Atenção'
+              ? { backgroundColor: '#EFF6FF', borderColor: '#60A5FA', color: '#1D4ED8' }
+              : { backgroundColor: '#ECFDF5', borderColor: '#34D399', color: '#065F46' };
+    const topWarrantyTechnicians = Object.entries(
+        data.reduce((acc: Record<string, number>, order: any) => {
+            if (!order.is_warranty_return) {
+                return acc;
+            }
+
+            const key = order.user?.name || 'Não definido';
+            acc[key] = (acc[key] ?? 0) + 1;
+            return acc;
+        }, {}),
+    )
+        .map(([label, total]) => ({ label, total }))
+        .sort((a, b) => b.total - a.total)
+        .slice(0, 5);
     const period =
         dateRange?.from && dateRange?.to
             ? `${moment(dateRange.from).format('DD/MM/YYYY')} - ${moment(dateRange.to).format('DD/MM/YYYY')}`
@@ -119,6 +150,15 @@ export default function OrderReportPDF({ data, dateRange, company }: any) {
                     Período: {period} {'\n'}
                     Emitido em: {moment().format('DD/MM/YYYY HH:mm')}
                 </Text>
+                <Text style={[styles.headerInfo, { color: warrantyAlert ? '#b45309' : '#166534' }]}>
+                    Severidade: {warrantySeverity} | Taxa de retorno em garantia: {warrantyReturnRate}% | Limite: {warrantyThreshold}%
+                </Text>
+                <View style={[styles.severityBox, { backgroundColor: severityColors.backgroundColor, border: `1px solid ${severityColors.borderColor}` }]}>
+                    <Text style={[styles.severityTitle, { color: severityColors.color }]}>Indicador de Garantia</Text>
+                    <Text style={[styles.severityText, { color: severityColors.color }]}>
+                        {warrantySeverity} | Taxa atual {warrantyReturnRate}% | Limite configurado {warrantyThreshold}%
+                    </Text>
+                </View>
 
                 {/* Tabela */}
                 <View style={styles.tableContainer}>
@@ -128,6 +168,7 @@ export default function OrderReportPDF({ data, dateRange, company }: any) {
                         <Text style={styles.colMedium}>Modelo</Text>
                         <Text style={styles.col}>Técnico</Text>
                         <Text style={styles.colMedium}>Status</Text>
+                        <Text style={styles.colMedium}>Garantia</Text>
                         <Text style={styles.colRight}>Valor (R$)</Text>
                     </View>
 
@@ -137,7 +178,8 @@ export default function OrderReportPDF({ data, dateRange, company }: any) {
                             <Text style={styles.colLarge}>{order.customer?.name || 'N/A'}</Text>
                             <Text style={styles.colMedium}>{order.model || '—'}</Text>
                             <Text style={styles.col}>{order.user?.name || '—'}</Text>
-                            <Text style={styles.colMedium}>{STATUS_MAP[order.service_status] || '—'}</Text>
+                            <Text style={styles.colMedium}>{orderStatusLabel(Number(order.service_status))}</Text>
+                            <Text style={styles.colMedium}>{order.is_warranty_return ? 'Retorno' : '—'}</Text>
                             <Text style={styles.colRight}>{currencyFormatter(Number(order.parts_value) + Number(order.service_value))}</Text>
                         </View>
                     ))}
@@ -162,8 +204,27 @@ export default function OrderReportPDF({ data, dateRange, company }: any) {
                             <Text style={styles.footerCardLabel}>Ticket Médio</Text>
                             <Text style={styles.footerCardValue}>{currencyFormatter(avgTicket)}</Text>
                         </View>
+                        <View style={styles.footerCard}>
+                            <Text style={styles.footerCardLabel}>Retorno em Garantia</Text>
+                            <Text style={styles.footerCardValue}>{warrantyReturnCount}</Text>
+                        </View>
                     </View>
                 </View>
+
+                {topWarrantyTechnicians.length > 0 && (
+                    <View style={styles.footer}>
+                        <View style={styles.footerCards}>
+                            {topWarrantyTechnicians.map((item) => (
+                                <View key={item.label} style={styles.footerCard}>
+                                    <Text style={styles.footerCardLabel}>Técnico com retorno</Text>
+                                    <Text style={styles.footerCardValue}>
+                                        {item.label}: {item.total}
+                                    </Text>
+                                </View>
+                            ))}
+                        </View>
+                    </View>
+                )}
             </Page>
         </Document>
     );

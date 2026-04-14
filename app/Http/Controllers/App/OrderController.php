@@ -11,10 +11,12 @@ use App\Models\App\Customer;
 use App\Models\App\Equipment;
 use App\Models\App\CashSession;
 use App\Models\App\Order;
+use App\Models\App\OrderLog;
 use App\Models\App\OrderPayment;
 use App\Models\App\OrderStatusHistory;
 use App\Models\App\Part;
 use App\Models\App\WhatsappMessage;
+use App\Support\OrderStatus;
 use App\Support\TenantMailConfig;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -88,6 +90,56 @@ class OrderController extends Controller
         return round($value, 2);
     }
 
+    private function detectWarrantyReturn(
+        ?int $customerId,
+        ?int $equipmentId,
+        ?string $model,
+        ?int $ignoreOrderId = null,
+    ): ?Order {
+        if (! $customerId || ! $equipmentId) {
+            return null;
+        }
+
+        $query = Order::query()
+            ->where('customer_id', $customerId)
+            ->where('equipment_id', $equipmentId)
+            ->whereNotNull('delivery_date')
+            ->whereNotNull('warranty_expires_at')
+            ->where('warranty_expires_at', '>', now())
+            ->orderByDesc('delivery_date');
+
+        if ($ignoreOrderId) {
+            $query->whereKeyNot($ignoreOrderId);
+        }
+
+        if (! empty($model)) {
+            $query->where('model', $model);
+        }
+
+        return $query->first();
+    }
+
+    private function recordStatusHistory(Order $order, int $status): void
+    {
+        OrderStatusHistory::create([
+            'order_id' => $order->id,
+            'status' => $status,
+            'changed_by' => $this->currentUser()?->id,
+            'note' => OrderStatus::label($status),
+        ]);
+    }
+
+    private function logOrderAction(Order $order, string $action, array $data = []): void
+    {
+        OrderLog::create([
+            'order_id' => $order->id,
+            'user_id' => $this->currentUser()?->id,
+            'action' => $action,
+            'data' => $data === [] ? null : $data,
+            'created_at' => now(),
+        ]);
+    }
+
     private function buildPaymentSummary(Order $order): array
     {
         $partsValue = $this->roundMoney((float) ($order->parts_value ?? 0));
@@ -153,11 +205,11 @@ class OrderController extends Controller
 
         $dashData = [
             'numorder' => $this->scopeOrdersQuery(Order::query())->count(),
-            'numabertas' => $this->scopeOrdersQuery(Order::where('service_status', 1))->count(), // aberta
-            'numgerados' => $this->scopeOrdersQuery(Order::where('service_status', 3))->count(), // orc. gerado
-            'numaprovados' => $this->scopeOrdersQuery(Order::where('service_status', 4))->count(), // orc. aprovado
-            'numconcluidosca' => $this->scopeOrdersQuery(Order::where('service_status', 9))->count(), // concluido cli nao avisado
-            'numconcluidoscn' => $this->scopeOrdersQuery(Order::where('service_status', 7))->count(), // concluido cli avisado
+            'numabertas' => $this->scopeOrdersQuery(Order::where('service_status', OrderStatus::OPEN))->count(),
+            'numgerados' => $this->scopeOrdersQuery(Order::where('service_status', OrderStatus::BUDGET_GENERATED))->count(),
+            'numaprovados' => $this->scopeOrdersQuery(Order::where('service_status', OrderStatus::BUDGET_APPROVED))->count(),
+            'numconcluidosca' => $this->scopeOrdersQuery(Order::where('service_status', OrderStatus::CUSTOMER_NOTIFIED))->count(),
+            'numconcluidoscn' => $this->scopeOrdersQuery(Order::where('service_status', OrderStatus::SERVICE_COMPLETED))->count(),
         ];
 
         return [
@@ -217,10 +269,10 @@ class OrderController extends Controller
             $tomorrow = Carbon::tomorrow();
 
             $query->whereNotNull('delivery_forecast')
-                ->whereNotIn('service_status', [2, 8, 10])
+                ->whereNotIn('service_status', [OrderStatus::CANCELLED, OrderStatus::SERVICE_NOT_EXECUTED, OrderStatus::DELIVERED])
                 ->whereBetween('delivery_forecast', [$today->toDateString(), $tomorrow->toDateString()]);
         } elseif ($filter === 'feedback') {
-            $query->where('service_status', 10)
+            $query->where('service_status', OrderStatus::DELIVERED)
                 ->whereBetween('delivery_date', [$startDate, $endDate])
                 ->where(function ($q) {
                     $q->whereNull('feedback')->orWhere('feedback', 0);
@@ -229,6 +281,8 @@ class OrderController extends Controller
             $query->whereRaw(
                 '(COALESCE(orders.service_cost, 0) - COALESCE((SELECT SUM(op.amount) FROM order_payments op WHERE op.order_id = orders.id), 0)) > 0.009'
             );
+        } elseif ($filter === 'warranty_return') {
+            $query->where('is_warranty_return', true);
         }
 
         if ($search) {
@@ -254,7 +308,7 @@ class OrderController extends Controller
         $whats = WhatsappMessage::first();
 
         $feedbackOrders = $this->scopeOrdersQuery(Order::query())
-            ->where('service_status', 10)
+            ->where('service_status', OrderStatus::DELIVERED)
             ->whereBetween('delivery_date', [$startDate, $endDate])
             ->where(function ($q) {
                 $q->whereNull('feedback')->orWhere('feedback', 0);
@@ -296,7 +350,22 @@ class OrderController extends Controller
         $request->validated();
         $data['order_number'] = Order::exists() ? Order::latest()->first()->order_number + 1 : 1;
         $data['tracking_token'] = Str::uuid();
+        $data['warranty_days'] = isset($data['warranty_days']) && $data['warranty_days'] !== '' ? max(0, (int) $data['warranty_days']) : null;
+        $warrantySourceOrder = $this->detectWarrantyReturn(
+            isset($data['customer_id']) ? (int) $data['customer_id'] : null,
+            isset($data['equipment_id']) ? (int) $data['equipment_id'] : null,
+            isset($data['model']) ? (string) $data['model'] : null,
+        );
+        $data['is_warranty_return'] = (bool) $warrantySourceOrder;
+        $data['warranty_source_order_id'] = $warrantySourceOrder?->id;
         $order = Order::create($data);
+        $this->recordStatusHistory($order, (int) $order->service_status);
+        $this->logOrderAction($order, 'created', [
+            'status' => (int) $order->service_status,
+            'status_label' => OrderStatus::label($order->service_status),
+            'is_warranty_return' => (bool) $order->is_warranty_return,
+            'warranty_source_order_number' => $warrantySourceOrder?->order_number,
+        ]);
 
         $order->load(['customer', 'tenant']);
         $customerEmail = $order->customer?->email;
@@ -326,6 +395,8 @@ class OrderController extends Controller
             'customer',
             'orderParts',
             'orderPayments',
+            'statusHistory.user:id,name',
+            'logs.user:id,name',
         ]);
 
         $equipments = Equipment::get();
@@ -339,6 +410,33 @@ class OrderController extends Controller
         $models = Order::distinct()->pluck('model');
         $paymentSummary = $this->buildPaymentSummary($order);
         $order = $this->appendPaymentReminderAvailability($order);
+        $warrantySourceOrder = $order->warrantySourceOrder()->first(['id', 'order_number', 'warranty_expires_at']);
+        $historyQuery = Order::query()
+            ->where('customer_id', $order->customer_id)
+            ->where('equipment_id', $order->equipment_id)
+            ->whereKeyNot($order->id)
+            ->whereNotNull('delivery_date');
+
+        if (! empty($order->model)) {
+            $historyQuery->where('model', $order->model);
+        }
+
+        $equipmentHistory = $historyQuery
+            ->orderByDesc('delivery_date')
+            ->limit(5)
+            ->get([
+                'id',
+                'order_number',
+                'defect',
+                'service_status',
+                'delivery_date',
+                'warranty_days',
+                'warranty_expires_at',
+                'service_cost',
+            ]);
+
+        $activeWarrantyOrder = $equipmentHistory
+            ->first(fn (Order $historyOrder) => $historyOrder->warranty_expires_at && $historyOrder->warranty_expires_at->isFuture());
 
         return Inertia::render('app/orders/edit-order', [
             'order' => $order,
@@ -350,6 +448,23 @@ class OrderController extends Controller
             'equipments' => $equipments,
             'parts' => $parts,
             'models' => $models,
+            'equipmentHistory' => [
+                'total_previous_orders' => $equipmentHistory->count(),
+                'has_recurrence' => $equipmentHistory->isNotEmpty(),
+                'same_defect_count' => $equipmentHistory->filter(function (Order $historyOrder) use ($order) {
+                    return strcasecmp(trim((string) $historyOrder->defect), trim((string) $order->defect)) === 0;
+                })->count(),
+                'active_warranty' => $activeWarrantyOrder ? [
+                    'order_number' => $activeWarrantyOrder->order_number,
+                    'warranty_expires_at' => $activeWarrantyOrder->warranty_expires_at?->toIso8601String(),
+                ] : null,
+                'is_warranty_return' => (bool) $order->is_warranty_return,
+                'warranty_source_order' => $warrantySourceOrder ? [
+                    'order_number' => $warrantySourceOrder->order_number,
+                    'warranty_expires_at' => $warrantySourceOrder->warranty_expires_at?->toIso8601String(),
+                ] : null,
+                'history' => $equipmentHistory,
+            ],
             'page' => $request->page,
             'search' => $request->search,
         ]);
@@ -383,8 +498,32 @@ class OrderController extends Controller
         $data['parts_value'] = $this->normalizeMoneyValue($data['parts_value'] ?? 0);
         $data['service_value'] = $this->normalizeMoneyValue($data['service_value'] ?? 0);
         $data['service_cost'] = $this->normalizeMoneyValue($data['service_cost'] ?? 0);
+        $warrantyDays = isset($data['warranty_days']) && $data['warranty_days'] !== '' ? max(0, (int) $data['warranty_days']) : null;
+        $deliveryDate = ! empty($data['delivery_date']) ? Carbon::parse($data['delivery_date']) : null;
+        $warrantyExpiresAt = $deliveryDate && $warrantyDays ? $deliveryDate->copy()->addDays($warrantyDays) : null;
+        $warrantySourceOrder = $this->detectWarrantyReturn(
+            isset($data['customer_id']) ? (int) $data['customer_id'] : null,
+            isset($data['equipment_id']) ? (int) $data['equipment_id'] : null,
+            isset($data['model']) ? (string) $data['model'] : null,
+            (int) $order->id,
+        );
         $oldStatus = $order->service_status;
+        $currentPartsSnapshot = $order->orderParts()
+            ->get(['parts.id'])
+            ->mapWithKeys(fn ($part) => [(int) $part->id => (int) ($part->pivot->quantity ?? 0)])
+            ->toArray();
         $successMessage = 'Ordem atualizada com sucesso';
+
+        if (! OrderStatus::canTransition($oldStatus, $data['service_status'])) {
+            return back()->withErrors([
+                'service_status' => sprintf(
+                    'Transição inválida de status: %s para %s.',
+                    OrderStatus::label($oldStatus),
+                    OrderStatus::label($data['service_status'])
+                ),
+            ]);
+        }
+
         $order->update([
             'customer_id' => $data['customer_id'],
             'equipment_id' => $data['equipment_id'], // equipamento
@@ -401,10 +540,17 @@ class OrderController extends Controller
             'service_value' => $data['service_value'] ?? 0,
             'service_cost' => $data['service_cost'] ?? 0, // custo
             'delivery_date' => $data['delivery_date'], // $data de entrega
+            'warranty_days' => $warrantyDays,
+            'warranty_expires_at' => $warrantyExpiresAt,
+            'is_warranty_return' => (bool) $warrantySourceOrder,
+            'warranty_source_order_id' => $warrantySourceOrder?->id,
             'service_status' => $data['service_status'],
             'delivery_forecast' => $data['delivery_forecast'], // previsao de entrega
             'observations' => $data['observations'],
         ]);
+        $changes = collect($order->getChanges())
+            ->except(['updated_at'])
+            ->toArray();
 
         if (isset($data['allparts'])) {
             $partsToSync = [];
@@ -413,30 +559,30 @@ class OrderController extends Controller
             }
             // 2. Sincroniza as peças à Ordem de Serviço usando a tabela pivô
             $order->orderParts()->sync($partsToSync);
-        }
 
-        $notes = [
-            1 => 'Ordem Aberta',
-            2 => 'Ordem Cancelada',
-            3 => 'Orçamento Gerado',
-            4 => 'Orçamento Aprovado',
-            5 => 'Orçamento reprovado',
-            6 => 'Reparo em andamento',
-            7 => 'Serviço concluído',
-            8 => 'Serviço não executado',
-            9 => 'Cliente avisado / aguardando retirada',
-            10 => 'Entregue ao cliente',
-        ];
+            $nextPartsSnapshot = collect($partsToSync)
+                ->mapWithKeys(fn ($part, $partId) => [(int) $partId => (int) ($part['quantity'] ?? 0)])
+                ->toArray();
+
+            if ($currentPartsSnapshot !== $nextPartsSnapshot) {
+                $this->logOrderAction($order, 'parts_synced', [
+                    'items_count' => count($nextPartsSnapshot),
+                    'total_quantity' => array_sum($nextPartsSnapshot),
+                ]);
+            }
+        }
 
         if ($data['service_status'] != $oldStatus) {
             $currentStatus = (int) $data['service_status'];
-            $statusLabel = $notes[$currentStatus] ?? 'Status atualizado';
+            $statusLabel = OrderStatus::label($currentStatus);
 
-            OrderStatusHistory::create([
-                'order_id' => $order->id,
-                'status' => $currentStatus,
-                'changed_by' => Auth::id(),
-                'note' => $statusLabel,
+            $this->recordStatusHistory($order, $currentStatus);
+            $this->logOrderAction($order, 'status_changed', [
+                'from' => (int) $oldStatus,
+                'from_label' => OrderStatus::label($oldStatus),
+                'to' => $currentStatus,
+                'to_label' => $statusLabel,
+                'changes' => $changes,
             ]);
 
             $customerEmail = $order->customer?->email;
@@ -456,6 +602,10 @@ class OrderController extends Controller
                     $successMessage = 'Ordem atualizada com sucesso, mas houve falha ao enviar o e-mail de status ao cliente.';
                 }
             }
+        } elseif ($changes !== []) {
+            $this->logOrderAction($order, 'updated', [
+                'changes' => $changes,
+            ]);
         }
 
         return redirect()->route('app.orders.show', ['order' => $order->id])->with('success', $successMessage);
@@ -504,6 +654,12 @@ class OrderController extends Controller
             'parts_value' => $nextPartsValue,
             'service_cost' => $nextServiceCost,
         ]);
+        $this->logOrderAction($order, 'part_removed', [
+            'part_id' => (int) $part->id,
+            'part_name' => $part->name,
+            'quantity_removed' => $removedQuantity,
+            'removed_total' => $removedTotal,
+        ]);
 
         return redirect()->route('app.orders.show', $order)->with('success', 'Peça removida e estoque devolvido com sucesso.');
     }
@@ -545,13 +701,20 @@ class OrderController extends Controller
             ]);
         }
 
-        OrderPayment::create([
+        $payment = OrderPayment::create([
             'order_id' => $order->id,
             'cash_session_id' => $openCashSessionId,
             'amount' => $amount,
             'payment_method' => $validated['payment_method'],
             'paid_at' => $validated['paid_at'] ?? now(),
             'notes' => $validated['notes'] ?? null,
+        ]);
+        $this->logOrderAction($order, 'payment_registered', [
+            'payment_id' => $payment->id,
+            'cash_session_id' => $openCashSessionId,
+            'amount' => $amount,
+            'payment_method' => $validated['payment_method'],
+            'paid_at' => $payment->paid_at?->toDateTimeString(),
         ]);
 
         return back()->with('success', 'Pagamento registrado com sucesso.');
@@ -567,7 +730,15 @@ class OrderController extends Controller
             return back()->with('error', 'Não é possível remover pagamento vinculado a um caixa já fechado.');
         }
 
+        $paymentData = [
+            'payment_id' => $payment->id,
+            'cash_session_id' => $payment->cash_session_id,
+            'amount' => (float) $payment->amount,
+            'payment_method' => $payment->payment_method,
+            'paid_at' => $payment->paid_at?->toDateTimeString(),
+        ];
         $payment->delete();
+        $this->logOrderAction($order, 'payment_removed', $paymentData);
 
         return back()->with('success', 'Pagamento removido com sucesso.');
     }
@@ -621,6 +792,11 @@ class OrderController extends Controller
             'fiscal_issued_at' => $validated['fiscal_issued_at'] ?? now(),
             'fiscal_registered_by' => Auth::id(),
             'fiscal_notes' => $validated['fiscal_notes'] ?? null,
+        ]);
+        $this->logOrderAction($order, 'fiscal_registered', [
+            'fiscal_document_number' => $validated['fiscal_document_number'],
+            'fiscal_document_url' => $validated['fiscal_document_url'] ?? null,
+            'fiscal_issued_at' => $validated['fiscal_issued_at'] ?? now()->toDateTimeString(),
         ]);
 
         return back()->with('success', 'Comprovante fiscal da ordem registrado com sucesso.');
@@ -677,7 +853,7 @@ class OrderController extends Controller
         $startDate = Carbon::now()->subDays(10)->startOfDay();
         $endDate = Carbon::now()->subDays(7)->endOfDay();
 
-        if ((int) $order->service_status !== 10 || ! $order->delivery_date) {
+        if ((int) $order->service_status !== OrderStatus::DELIVERED || ! $order->delivery_date) {
             return back()->with('error', 'Esta ordem não está elegível para feedback.');
         }
 
@@ -693,6 +869,10 @@ class OrderController extends Controller
         }
 
         $order->update(['feedback' => 1]);
+        $this->logOrderAction($order, 'feedback_marked', [
+            'feedback' => 1,
+            'delivery_date' => Carbon::parse($order->delivery_date)->toDateTimeString(),
+        ]);
 
         return back()->with('success', 'Feedback marcado como realizado.');
     }

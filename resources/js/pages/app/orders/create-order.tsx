@@ -71,6 +71,7 @@ export default function CreateOrder({
         accessories: '',
         budget_description: '', // descrição do orçamento
         budget_value: '', // valor do orçamento
+        warranty_days: '',
         service_status: '1',
         delivery_forecast: '', // previsao de entrega
         observations: '',
@@ -297,6 +298,19 @@ export default function CreateOrder({
                                     onChange={(e) => setData('budget_value', maskMoneyDot(e.target.value))}
                                 />
                                 {errors.budget_value && <div className="text-sm text-red-500">{errors.budget_value}</div>}
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="warranty_days">Garantia em dias</Label>
+                                <Input
+                                    id="warranty_days"
+                                    type="number"
+                                    min="0"
+                                    value={data.warranty_days}
+                                    onChange={(e) => setData('warranty_days', e.target.value)}
+                                    placeholder="Ex.: 90"
+                                />
+                                {errors.warranty_days && <div className="text-sm text-red-500">{errors.warranty_days}</div>}
                             </div>
 
                             <div className="grid gap-2">

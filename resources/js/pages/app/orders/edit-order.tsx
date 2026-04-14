@@ -5,6 +5,7 @@ import FormFieldHelp from '@/components/form-field-help';
 import { Icon } from '@/components/icon';
 import InputError from '@/components/input-error';
 import InvoiceModal from '@/components/Modals/InvoiceModal';
+import { OrderTimeline } from '@/components/order-timeline';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
@@ -15,6 +16,7 @@ import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem, OptionType } from '@/types';
 import { statusServico } from '@/Utils/dataSelect';
 import { maskMoney, maskMoneyDot } from '@/Utils/mask';
+import { ORDER_STATUS, ORDER_STATUSES_READY_FOR_INVOICE } from '@/Utils/order-status';
 import selectStyles from '@/Utils/selectStyles';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { ArrowLeft, FileTextIcon, Save, Wrench, X } from 'lucide-react';
@@ -50,6 +52,7 @@ export default function EditOrder({
     orderparts,
     orderPayments,
     paymentSummary,
+    equipmentHistory,
     page,
     search,
     models,
@@ -110,6 +113,7 @@ export default function EditOrder({
         service_value: order.service_value,
         service_cost: order.service_cost, // custo
         delivery_date: order.delivery_date,
+        warranty_days: order?.warranty_days ?? '',
         service_status: order?.service_status,
         delivery_forecast: order?.delivery_forecast, // previsao de entrega
         observations: order?.observations,
@@ -173,7 +177,7 @@ export default function EditOrder({
             service_cost: total.toFixed(2),
         }));
 
-        if (data.service_status == 8) {
+        if (Number(data.service_status) === ORDER_STATUS.SERVICE_NOT_EXECUTED) {
             setData((data: any) => ({ ...data, delivery_date: moment().format('YYYY-MM-DD HH:mm:ss') }));
         }
     }, [data.parts_value, data.service_value, data.budget_value, data.delivery_date, data.service_status]);
@@ -275,7 +279,7 @@ export default function EditOrder({
                     </Button>
                 </div>
                 <div className="flex flex-wrap items-center justify-start gap-2 md:justify-end">
-                    {canManageOrders && (order.service_status === 6 || order.service_status === 7 || order.service_status === 8) && (
+                    {canManageOrders && ORDER_STATUSES_READY_FOR_INVOICE.includes(Number(order.service_status)) && (
                         <Button onClick={() => setOpenInvoiceModal(true)} className="rounded-lg py-2 text-sm font-medium">
                             <FileTextIcon className="h-4 w-4" />
                             Emitir NFSe
@@ -590,7 +594,7 @@ export default function EditOrder({
                                         }),
                                         singleValue: (base) => ({
                                             ...base,
-                                            color: '#ebebeb', // cinza escuro (igual input padrão)
+                                            color: '#111827',
                                             fontSize: '14px',
                                         }),
                                         dropdownIndicator: (base) => ({
@@ -625,7 +629,7 @@ export default function EditOrder({
                                         }),
                                         singleValue: (base) => ({
                                             ...base,
-                                            color: '#ebebeb', // cinza escuro (igual input padrão)
+                                            color: '#111827',
                                             fontSize: '14px',
                                         }),
                                         dropdownIndicator: (base) => ({
@@ -657,6 +661,86 @@ export default function EditOrder({
                                 {errors.observations && <div className="text-sm text-red-500">{errors.observations}</div>}
                             </div>
                         </div>
+
+                        <div className="mt-4 grid gap-4 md:grid-cols-2">
+                            <div className="grid gap-2">
+                                <Label htmlFor="warranty_days">Garantia em dias</Label>
+                                <Input
+                                    id="warranty_days"
+                                    type="number"
+                                    min="0"
+                                    value={data.warranty_days}
+                                    onChange={(e) => setData('warranty_days', e.target.value)}
+                                    placeholder="Ex.: 90"
+                                />
+                                <p className="text-muted-foreground text-xs">
+                                    Se houver data de entrega, o sistema calcula automaticamente o vencimento da garantia.
+                                </p>
+                                {errors.warranty_days && <div className="text-sm text-red-500">{errors.warranty_days}</div>}
+                            </div>
+
+                            <Card>
+                                <CardTitle className="border-b px-4 pb-2">Histórico do equipamento</CardTitle>
+                                <CardContent className="space-y-3 pt-4">
+                                    <div className="flex flex-wrap gap-2">
+                                        <Badge variant={equipmentHistory?.has_recurrence ? 'default' : 'outline'}>
+                                            {equipmentHistory?.has_recurrence ? 'Com reincidência' : 'Sem reincidência'}
+                                        </Badge>
+                                        {equipmentHistory?.is_warranty_return && equipmentHistory?.warranty_source_order && (
+                                            <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">
+                                                Retorno em garantia da OS #{equipmentHistory.warranty_source_order.order_number}
+                                            </Badge>
+                                        )}
+                                        {equipmentHistory?.active_warranty && (
+                                            <Badge variant="outline">
+                                                Garantia ativa até {moment(equipmentHistory.active_warranty.warranty_expires_at).format('DD/MM/YYYY')}
+                                            </Badge>
+                                        )}
+                                    </div>
+
+                                    <div className="grid gap-2 text-sm md:grid-cols-3">
+                                        <div>
+                                            <span className="text-muted-foreground">Atendimentos anteriores</span>
+                                            <p className="font-medium">{equipmentHistory?.total_previous_orders ?? 0}</p>
+                                        </div>
+                                        <div>
+                                            <span className="text-muted-foreground">Mesmo defeito</span>
+                                            <p className="font-medium">{equipmentHistory?.same_defect_count ?? 0}</p>
+                                        </div>
+                                        <div>
+                                            <span className="text-muted-foreground">Garantia</span>
+                                            <p className="font-medium">{equipmentHistory?.active_warranty ? 'Em vigor' : 'Sem cobertura ativa'}</p>
+                                        </div>
+                                    </div>
+
+                                    {equipmentHistory?.history?.length ? (
+                                        <div className="space-y-2">
+                                            {equipmentHistory.history.map((item: any) => (
+                                                <div key={item.id} className="rounded-lg border p-3 text-sm">
+                                                    <div className="flex flex-wrap items-center justify-between gap-2">
+                                                        <span className="font-medium">OS #{item.order_number}</span>
+                                                        <Badge variant="outline">{moment(item.delivery_date).format('DD/MM/YYYY')}</Badge>
+                                                    </div>
+                                                    <p className="text-muted-foreground mt-2 line-clamp-2">{item.defect}</p>
+                                                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                                                        <Badge variant="secondary">{maskMoney(String(item.service_cost ?? 0))}</Badge>
+                                                        {item.warranty_expires_at && (
+                                                            <Badge variant="outline">
+                                                                Garantia até {moment(item.warranty_expires_at).format('DD/MM/YYYY')}
+                                                            </Badge>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="text-muted-foreground text-sm">Nenhum atendimento anterior encontrado para este equipamento/modelo.</p>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        <OrderTimeline statusHistory={order.status_history} logs={order.logs} />
 
                         <div className="flex justify-end">
                             <Button type="submit" disabled={processing}>

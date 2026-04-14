@@ -1,27 +1,20 @@
-export enum OrderStatus {
-    OPEN = 1,
-    BUDGET_CREATED = 3,
-    APPROVED = 4,
-    IN_PROGRESS = 5,
-    DONE = 6,
-    DELIVERED = 8,
-    REJECTED = 9,
-}
+import { ORDER_STATUS } from '@/Utils/order-status';
 
 const FLOW = [
-    { value: OrderStatus.OPEN, label: 'Ordem aberta' },
-    { value: OrderStatus.BUDGET_CREATED, label: 'Orçamento gerado' },
-    { value: OrderStatus.APPROVED, label: 'Orçamento aprovado' },
-    { value: OrderStatus.IN_PROGRESS, label: 'Reparo em andamento' },
-    { value: OrderStatus.DONE, label: 'Serviço concluído' },
-    { value: OrderStatus.DELIVERED, label: 'Entregue ao cliente' },
+    { value: ORDER_STATUS.OPEN, label: 'Ordem aberta' },
+    { value: ORDER_STATUS.BUDGET_GENERATED, label: 'Orçamento gerado' },
+    { value: ORDER_STATUS.BUDGET_APPROVED, label: 'Orçamento aprovado' },
+    { value: ORDER_STATUS.REPAIR_IN_PROGRESS, label: 'Reparo em andamento' },
+    { value: ORDER_STATUS.SERVICE_COMPLETED, label: 'Serviço concluído' },
+    { value: ORDER_STATUS.CUSTOMER_NOTIFIED, label: 'Cliente avisado' },
+    { value: ORDER_STATUS.DELIVERED, label: 'Entregue ao cliente' },
 ];
 
 const BRANCH_CONFIG = {
-    [OrderStatus.REJECTED]: {
+    [ORDER_STATUS.BUDGET_REJECTED]: {
         label: 'Orçamento reprovado',
         color: 'red',
-        stopAt: OrderStatus.BUDGET_CREATED,
+        stopAt: ORDER_STATUS.BUDGET_GENERATED,
     },
 };
 
@@ -34,7 +27,7 @@ const COLORS = {
 };
 
 type TimelineProps = {
-    status: OrderStatus;
+    status: number;
 };
 
 export default function Timeline({ status }: TimelineProps) {
@@ -54,7 +47,7 @@ export default function Timeline({ status }: TimelineProps) {
 
     const progressPercent = (progressIndex / (FLOW.length - 1)) * 100;
 
-    const isStepActive = (stepValue: OrderStatus) => {
+    const isStepActive = (stepValue: number) => {
         if (isBranch) return stepValue <= branch.stopAt;
         return status >= stepValue;
     };

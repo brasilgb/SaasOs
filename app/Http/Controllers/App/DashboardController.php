@@ -13,6 +13,7 @@ use App\Models\App\Other;
 use App\Models\App\Part;
 use App\Models\App\Sale;
 use App\Models\App\Schedule;
+use App\Support\OrderStatus;
 use App\Models\User;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Carbon;
@@ -21,6 +22,18 @@ use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
+    private function warrantyReturnIndicator(int $totalOrders, int $warrantyReturns): array
+    {
+        $threshold = Other::warrantyReturnAlertThreshold();
+        $rate = $totalOrders > 0 ? round(($warrantyReturns / $totalOrders) * 100, 1) : 0.0;
+
+        return [
+            'warranty_return_threshold' => $threshold,
+            'warranty_return_rate' => $rate,
+            'warranty_return_alert' => $rate > $threshold,
+        ];
+    }
+
     public function index()
     {
         $startDate = Carbon::now()->subDays(10)->startOfDay();
@@ -30,12 +43,13 @@ class DashboardController extends Controller
 
         $pendingOrdersQuery = Order::query()
             ->whereNotNull('delivery_forecast')
-            ->whereNotIn('service_status', [2, 8, 10]);
+            ->whereNotIn('service_status', [OrderStatus::CANCELLED, OrderStatus::SERVICE_NOT_EXECUTED, OrderStatus::DELIVERED]);
 
         $acount = [
             'numuser' => User::count(),
             'numcust' => Customer::count(),
             'numorde' => Order::count(),
+            'numorde_warranty_return' => Order::where('is_warranty_return', true)->count(),
             'numorde_due_today' => (clone $pendingOrdersQuery)->whereDate('delivery_forecast', $today)->count(),
             'numorde_due_tomorrow' => (clone $pendingOrdersQuery)->whereDate('delivery_forecast', $tomorrow)->count(),
             'numshed' => Schedule::count(),
@@ -45,11 +59,12 @@ class DashboardController extends Controller
         ];
         $orders = [
             'agendados' => Schedule::where('status', 1)->get('schedules_number'),
-            'gerados' => Order::where('service_status', 3)->get('order_number'),
-            'aprovados' => Order::where('service_status', 4)->get('order_number'),
-            'concluidosca' => Order::where('service_status', 9)->get('order_number'),
-            'concluidoscn' => Order::where('service_status', 7)->get('order_number'),
-            'feedback' => Order::where('service_status', 10)
+            'gerados' => Order::where('service_status', OrderStatus::BUDGET_GENERATED)->get('order_number'),
+            'aprovados' => Order::where('service_status', OrderStatus::BUDGET_APPROVED)->get('order_number'),
+            'concluidosca' => Order::where('service_status', OrderStatus::CUSTOMER_NOTIFIED)->get('order_number'),
+            'concluidoscn' => Order::where('service_status', OrderStatus::SERVICE_COMPLETED)->get('order_number'),
+            'garantia' => Order::where('is_warranty_return', true)->get(['id', 'order_number']),
+            'feedback' => Order::where('service_status', OrderStatus::DELIVERED)
                 ->whereBetween('delivery_date', [$startDate, $endDate])
                 ->get('order_number'),
         ];
@@ -74,6 +89,10 @@ class DashboardController extends Controller
                 'isOpen' => (bool) $openCashSession,
                 'openedAt' => $openCashSession?->opened_at?->toIso8601String(),
             ],
+            'warrantyIndicator' => $this->warrantyReturnIndicator(
+                (int) $acount['numorde'],
+                (int) $acount['numorde_warranty_return']
+            ),
         ]);
     }
 
@@ -196,12 +215,12 @@ class DashboardController extends Controller
         [$start, $end] = $this->getRange($timerange);
 
         $generated = Order::query()
-            ->where('service_status', 3)
+            ->where('service_status', OrderStatus::BUDGET_GENERATED)
             ->whereBetween('created_at', [$start, $end])
             ->count();
 
         $approved = Order::query()
-            ->where('service_status', 4)
+            ->where('service_status', OrderStatus::BUDGET_APPROVED)
             ->whereBetween('created_at', [$start, $end])
             ->count();
 
@@ -219,11 +238,14 @@ class DashboardController extends Controller
     {
         [$startDate, $endDate] = $this->getRange($timerange);
 
+        $ordersCount = Order::whereBetween('created_at', [$startDate, $endDate])->count();
+        $warrantyReturns = Order::where('is_warranty_return', true)->whereBetween('created_at', [$startDate, $endDate])->count();
+
         return response()->json([
 
             'customers' => Customer::whereBetween('created_at', [$startDate, $endDate])->count(),
 
-            'orders' => Order::whereBetween('created_at', [$startDate, $endDate])->count(),
+            'orders' => $ordersCount,
 
             'schedules' => Schedule::whereBetween('created_at', [$startDate, $endDate])->count(),
 
@@ -232,6 +254,9 @@ class DashboardController extends Controller
             'parts' => Part::where('type', 'part')->whereBetween('created_at', [$startDate, $endDate])->count(),
 
             'products' => Part::where('type', 'product')->whereBetween('created_at', [$startDate, $endDate])->count(),
+
+            'warranty_returns' => $warrantyReturns,
+            ...$this->warrantyReturnIndicator($ordersCount, $warrantyReturns),
         ]);
     }
 
@@ -246,12 +271,12 @@ class DashboardController extends Controller
         $rangeDays = max(1, $startDate->diffInDays($endDate) + 1);
 
         // ===== RANGE =====
-        $rangeService = Order::where('service_status', 10)
+        $rangeService = Order::where('service_status', OrderStatus::DELIVERED)
             ->whereNotNull('delivery_date')
             ->whereBetween('delivery_date', [$startDate, $endDate])
             ->sum('service_value');
 
-        $rangeParts = Order::where('service_status', 10)
+        $rangeParts = Order::where('service_status', OrderStatus::DELIVERED)
             ->whereNotNull('delivery_date')
             ->whereBetween('delivery_date', [$startDate, $endDate])
             ->sum('parts_value');
@@ -259,12 +284,12 @@ class DashboardController extends Controller
         $rangeTotal = $rangeService + $rangeParts;
 
         // ===== TODAY =====
-        $todayService = Order::where('service_status', 10)
+        $todayService = Order::where('service_status', OrderStatus::DELIVERED)
             ->whereNotNull('delivery_date')
             ->whereDate('delivery_date', $today)
             ->sum('service_value');
 
-        $todayParts = Order::where('service_status', 10)
+        $todayParts = Order::where('service_status', OrderStatus::DELIVERED)
             ->whereNotNull('delivery_date')
             ->whereDate('delivery_date', $today)
             ->sum('parts_value');
@@ -272,18 +297,18 @@ class DashboardController extends Controller
         $todayTotal = $todayService + $todayParts;
 
         // ===== MÊS CORRENTE / PROJEÇÃO =====
-        $monthService = Order::where('service_status', 10)
+        $monthService = Order::where('service_status', OrderStatus::DELIVERED)
             ->whereNotNull('delivery_date')
             ->whereBetween('delivery_date', [$monthStart, $today->copy()->endOfDay()])
             ->sum('service_value');
 
-        $monthParts = Order::where('service_status', 10)
+        $monthParts = Order::where('service_status', OrderStatus::DELIVERED)
             ->whereNotNull('delivery_date')
             ->whereBetween('delivery_date', [$monthStart, $today->copy()->endOfDay()])
             ->sum('parts_value');
 
         $monthTotal = $monthService + $monthParts;
-        $monthOrdersCount = Order::where('service_status', 10)
+        $monthOrdersCount = Order::where('service_status', OrderStatus::DELIVERED)
             ->whereNotNull('delivery_date')
             ->whereBetween('delivery_date', [$monthStart, $today->copy()->endOfDay()])
             ->count();
@@ -293,11 +318,11 @@ class DashboardController extends Controller
         $projectedMonthTotal = $projectedMonthService + $projectedMonthParts;
 
         // ===== ORDERS =====
-        $ordersCount = Order::where('service_status', 10)
+        $ordersCount = Order::where('service_status', OrderStatus::DELIVERED)
             ->whereNotNull('delivery_date')
             ->whereBetween('delivery_date', [$startDate, $endDate])
             ->count();
-        $ordersTodayCount = Order::where('service_status', 10)
+        $ordersTodayCount = Order::where('service_status', OrderStatus::DELIVERED)
             ->whereNotNull('delivery_date')
             ->whereDate('delivery_date', $today)
             ->count();
@@ -368,7 +393,7 @@ class DashboardController extends Controller
             DB::raw('SUM(parts_value) as parts'),
             DB::raw('SUM(service_value + parts_value) as total')
         )
-            ->where('service_status', 10)
+            ->where('service_status', OrderStatus::DELIVERED)
             ->whereNotNull('delivery_date')
             ->whereBetween('delivery_date', [$startDate, $endDate])
             ->groupBy('date')
@@ -379,7 +404,7 @@ class DashboardController extends Controller
             DB::raw('DATE(delivery_date) as date'),
             DB::raw('SUM(service_value) as value')
         )
-            ->where('service_status', 10)
+            ->where('service_status', OrderStatus::DELIVERED)
             ->whereNotNull('delivery_date')
             ->whereBetween('delivery_date', [$startDate, $endDate])
             ->groupBy('date')
@@ -390,7 +415,7 @@ class DashboardController extends Controller
             DB::raw('DATE(delivery_date) as date'),
             DB::raw('SUM(parts_value) as value')
         )
-            ->where('service_status', 10)
+            ->where('service_status', OrderStatus::DELIVERED)
             ->whereNotNull('delivery_date')
             ->whereBetween('delivery_date', [$startDate, $endDate])
             ->groupBy('date')

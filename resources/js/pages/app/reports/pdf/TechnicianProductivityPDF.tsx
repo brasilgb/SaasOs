@@ -1,4 +1,5 @@
 import { currencyFormatter } from '@/Utils/currency-formatter';
+import { ORDER_STATUS, ORDER_STATUSES_COMPLETED } from '@/Utils/order-status';
 import { Document, Image, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 import moment from 'moment';
 
@@ -24,6 +25,21 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginBottom: 12,
         color: '#666',
+    },
+    severityBox: {
+        borderRadius: 4,
+        paddingVertical: 8,
+        paddingHorizontal: 10,
+        marginBottom: 12,
+    },
+    severityTitle: {
+        fontSize: 9,
+        marginBottom: 3,
+        textTransform: 'uppercase',
+    },
+    severityText: {
+        fontSize: 11,
+        fontWeight: 'bold',
     },
 
     table: {
@@ -101,18 +117,34 @@ const styles = StyleSheet.create({
     logoPlaceholder: { paddingVertical: 4, width: 40, height: 40, justifyContent: 'center', alignItems: 'center', minWidth: '100%' },
 });
 
-export default function TechnicianProductivityPDF({ data, company, dateRange }: any) {
+export default function TechnicianProductivityPDF({ data, reportMeta, company, dateRange }: any) {
     const period =
         dateRange?.from && dateRange?.to
             ? `${moment(dateRange.from).format('DD/MM/YYYY')} - ${moment(dateRange.to).format('DD/MM/YYYY')}`
             : 'Período não informado';
 
     const statsByTechnician: any = {};
+    const warrantyByTechnician: Record<string, number> = {};
+    const warrantyReturnRate = Number(reportMeta?.warranty_return_rate ?? 0);
+    const warrantyThreshold = Number(reportMeta?.warranty_return_threshold ?? 10);
+    const warrantyAlert = Boolean(reportMeta?.warranty_return_alert ?? false);
+    const warrantySeverity =
+        warrantyReturnRate <= 5 ? 'Saudável' : warrantyReturnRate <= warrantyThreshold ? 'Atenção' : 'Crítico';
+    const severityColors =
+        warrantySeverity === 'Crítico'
+            ? { backgroundColor: '#FEF3C7', borderColor: '#F59E0B', color: '#92400E' }
+            : warrantySeverity === 'Atenção'
+              ? { backgroundColor: '#EFF6FF', borderColor: '#60A5FA', color: '#1D4ED8' }
+              : { backgroundColor: '#ECFDF5', borderColor: '#34D399', color: '#065F46' };
 
     data.forEach((order: any) => {
-        if (order.service_status !== 6 && order.service_status !== 7) return;
-
         const tech = order.technician?.name || 'Não definido';
+
+        if (order.is_warranty_return) {
+            warrantyByTechnician[tech] = (warrantyByTechnician[tech] ?? 0) + 1;
+        }
+
+        if (!ORDER_STATUSES_COMPLETED.includes(order.service_status)) return;
 
         if (!statsByTechnician[tech]) {
             statsByTechnician[tech] = {
@@ -131,9 +163,9 @@ export default function TechnicianProductivityPDF({ data, company, dateRange }: 
         ticketMedio: r.totalServicos / r.totalOrdens,
     }));
 
-    const completedOrders = data.filter((o: any) => o.service_status === 6 || o.service_status === 7);
+    const completedOrders = data.filter((o: any) => ORDER_STATUSES_COMPLETED.includes(o.service_status));
 
-    const deliveredOrders = data.filter((o: any) => o.service_status === 8);
+    const deliveredOrders = data.filter((o: any) => o.service_status === ORDER_STATUS.DELIVERED);
 
     const avgRepairDays =
         completedOrders.reduce((acc: number, order: any) => {
@@ -150,7 +182,7 @@ export default function TechnicianProductivityPDF({ data, company, dateRange }: 
         }, 0) / (deliveredOrders.length || 1);
 
     const pendingLongTime = data.filter((order: any) => {
-        if (order.service_status >= 6) return false;
+        if (order.service_status >= ORDER_STATUS.REPAIR_IN_PROGRESS) return false;
 
         const days = moment().diff(moment(order.created_at), 'days');
 
@@ -159,6 +191,10 @@ export default function TechnicianProductivityPDF({ data, company, dateRange }: 
 
     const totalOrdens = rows.reduce((acc: any, r: any) => acc + r.totalOrdens, 0);
     const totalServicos = rows.reduce((acc: any, r: any) => acc + r.totalServicos, 0);
+    const warrantyRows = Object.entries(warrantyByTechnician)
+        .map(([technician, totalReturns]) => ({ technician, totalReturns }))
+        .sort((a, b) => b.totalReturns - a.totalReturns);
+    const totalWarrantyReturns = warrantyRows.reduce((acc, row) => acc + row.totalReturns, 0);
 
     return (
         <Document>
@@ -172,6 +208,15 @@ export default function TechnicianProductivityPDF({ data, company, dateRange }: 
                     Período: {period} {'\n'}
                     Emitido em: {moment().format('DD/MM/YYYY HH:mm')}
                 </Text>
+                <Text style={[styles.headerInfo, { color: warrantyAlert ? '#b45309' : '#166534' }]}>
+                    Severidade: {warrantySeverity} | Taxa de retorno em garantia: {warrantyReturnRate}% | Limite: {warrantyThreshold}%
+                </Text>
+                <View style={[styles.severityBox, { backgroundColor: severityColors.backgroundColor, border: `1px solid ${severityColors.borderColor}` }]}>
+                    <Text style={[styles.severityTitle, { color: severityColors.color }]}>Indicador de Garantia</Text>
+                    <Text style={[styles.severityText, { color: severityColors.color }]}>
+                        {warrantySeverity} | Taxa atual {warrantyReturnRate}% | Limite configurado {warrantyThreshold}%
+                    </Text>
+                </View>
 
                 <View style={styles.table}>
                     <View style={styles.headerRow}>
@@ -208,6 +253,10 @@ export default function TechnicianProductivityPDF({ data, company, dateRange }: 
                             <Text style={styles.footerCardLabel}>Ticket Médio Geral</Text>
                             <Text style={styles.footerCardValue}>{currencyFormatter(totalOrdens ? totalServicos / totalOrdens : 0)}</Text>
                         </View>
+                        <View style={styles.footerCard}>
+                            <Text style={styles.footerCardLabel}>Retornos em Garantia</Text>
+                            <Text style={styles.footerCardValue}>{totalWarrantyReturns}</Text>
+                        </View>
                     </View>
                 </View>
 
@@ -220,6 +269,18 @@ export default function TechnicianProductivityPDF({ data, company, dateRange }: 
 
                     <Text>Equipamentos pendentes há mais de 7 dias: {pendingLongTime}</Text>
                 </View>
+
+                {warrantyRows.length > 0 && (
+                    <View style={styles.metricsBox}>
+                        <Text style={styles.metricTitle}>Retorno em Garantia por Técnico</Text>
+
+                        {warrantyRows.map((row) => (
+                            <Text key={row.technician}>
+                                {row.technician}: {row.totalReturns}
+                            </Text>
+                        ))}
+                    </View>
+                )}
             </Page>
         </Document>
     );

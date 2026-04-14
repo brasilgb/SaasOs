@@ -14,6 +14,7 @@ use App\Http\Controllers\App\MessageController;
 use App\Http\Controllers\App\OrderController;
 use App\Http\Controllers\App\OtherController;
 use App\Http\Controllers\App\PartController;
+use App\Http\Controllers\App\QualityIndicatorController;
 use App\Http\Controllers\App\ReceiptController;
 use App\Http\Controllers\App\ReportController;
 use App\Http\Controllers\App\SaleController;
@@ -33,6 +34,8 @@ Route::get('/kpisFinancialOrder/{timerange}', [DashboardController::class, 'kpis
 Route::get('/financialRevenueChart/{timerange}', [DashboardController::class, 'financialRevenueChart'])->name('financialRevenueChart');
 Route::get('/kpisFinancialSales/{timerange}', [DashboardController::class, 'kpisFinancialSales'])->name('kpisFinancialSales');
 Route::get('/financialSalesRevenueChart/{timerange}', [DashboardController::class, 'financialSalesRevenueChart'])->name('financialSalesRevenueChart');
+Route::get('/quality-indicators', [QualityIndicatorController::class, 'index'])->name('quality.index');
+Route::get('/quality-indicators/metrics/{timerange}', [QualityIndicatorController::class, 'metrics'])->name('quality.metrics');
 
 Route::resource('customers', CustomerController::class);
 Route::post('customers/import-customer', [CustomerController::class, 'ImportCustomer'])->name('import.customer');

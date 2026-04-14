@@ -15,6 +15,7 @@ import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { statusServico } from '@/Utils/dataSelect';
 import { maskPhone } from '@/Utils/mask';
+import { ORDER_STATUSES_READY_FOR_INVOICE } from '@/Utils/order-status';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Edit, FileTextIcon, ImageUp, LinkIcon, Plus, Wrench, X } from 'lucide-react';
 import moment from 'moment';
@@ -80,6 +81,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                             { value: 'feedback', label: 'Listar Feedback' },
                             { value: 'due_48h', label: 'Vencendo hoje e amanha' },
                             { value: 'financial_open', label: 'Em aberto financeiramente' },
+                            { value: 'warranty_return', label: 'Retorno em garantia' },
                         ]}
                         url="app.orders.index"
                     />
@@ -153,14 +155,24 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                         <TableRow key={order.id}>
                                             <TableCell>{order.order_number}</TableCell>
                                             <TableCell className="font-medium">
-                                                <Link
-                                                    className="flex items-center gap-2"
-                                                    href={route('app.orders.index', { search: order.customer.name })}
-                                                    title={`Ordens do cliente ${order.customer.name}`}
-                                                >
-                                                    <Wrench className="h-4 w-4" />
-                                                    <span>{order.customer.name}</span>
-                                                </Link>
+                                                <div className="flex flex-col gap-2">
+                                                    <Link
+                                                        className="flex items-center gap-2"
+                                                        href={route('app.orders.index', { search: order.customer.name })}
+                                                        title={`Ordens do cliente ${order.customer.name}`}
+                                                    >
+                                                        <Wrench className="h-4 w-4" />
+                                                        <span>{order.customer.name}</span>
+                                                    </Link>
+                                                    {order.is_warranty_return && (
+                                                        <Badge
+                                                            variant="secondary"
+                                                            className="w-fit bg-amber-100 text-amber-900 hover:bg-amber-100"
+                                                        >
+                                                            Retorno em garantia
+                                                        </Badge>
+                                                    )}
+                                                </div>
                                             </TableCell>
                                             <TableCell className="font-medium">{maskPhone(order.customer.phone)}</TableCell>
                                             <TableCell>{moment(order.created_at).format('DD/MM/YYYY')}</TableCell>
@@ -218,7 +230,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                     </Button>
                                                 )}
                                                 {canManageOrders &&
-                                                    (order.service_status === 6 || order.service_status === 7 || order.service_status === 8) && (
+                                                    ORDER_STATUSES_READY_FOR_INVOICE.includes(Number(order.service_status)) && (
                                                         <Button
                                                             title="Emitir Nota Fiscal"
                                                             onClick={() => {

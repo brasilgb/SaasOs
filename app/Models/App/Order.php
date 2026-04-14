@@ -16,6 +16,11 @@ class Order extends Model
 
     protected $guarded = ['allparts'];
 
+    protected $casts = [
+        'delivery_date' => 'datetime',
+        'warranty_expires_at' => 'datetime',
+    ];
+
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
@@ -49,8 +54,18 @@ class Order extends Model
         return $this->hasMany(OrderStatusHistory::class)->latest();
     }
 
+    public function logs(): HasMany
+    {
+        return $this->hasMany(OrderLog::class)->latest('created_at');
+    }
+
     public function orderPayments(): HasMany
     {
         return $this->hasMany(OrderPayment::class)->latest('paid_at');
+    }
+
+    public function warrantySourceOrder(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'warranty_source_order_id');
     }
 }

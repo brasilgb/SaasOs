@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { connectBackend } from '@/Utils/connectApi';
 import { Link } from '@inertiajs/react';
-import { Calendar, Check, MemoryStickIcon, MessageSquareMore, Users, Wrench } from 'lucide-react';
+import { Calendar, Check, MemoryStickIcon, MessageSquareMore, ShieldAlert, Users, Wrench } from 'lucide-react';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
 
@@ -73,10 +73,19 @@ export default function OrderDashboard({
                 : `${timerange} dias`;
 
     const periodDescription = `Período ${rangeLabel}`;
+    const warrantyRate = Number(metrics?.warranty_return_rate ?? 0);
+    const warrantyThreshold = Number(metrics?.warranty_return_threshold ?? 0);
+    const warrantyAlert = Boolean(metrics?.warranty_return_alert);
+    const warrantySeverity =
+        warrantyRate <= 5 ? 'Saudável' : warrantyRate <= warrantyThreshold ? 'Atenção' : 'Crítico';
+    const warrantyDescription =
+        metrics?.orders > 0
+            ? `${warrantySeverity} | taxa ${warrantyRate}% | limite ${warrantyThreshold}%`
+            : `${periodDescription} | sem ordens no período`;
 
     return (
         <div className="min-w-0">
-            <div className="grid gap-3 rounded-xl sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+            <div className="grid gap-3 rounded-xl sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-7">
                 <KpiDashboard
                     link={route('app.customers.index')}
                     title="Clientes"
@@ -90,6 +99,13 @@ export default function OrderDashboard({
                     value={metrics?.orders ?? 0}
                     icon={<Wrench className="h-10 w-10" />}
                     description={periodDescription}
+                />
+                <KpiDashboard
+                    link={route('app.orders.index', { filter: 'warranty_return' })}
+                    title="Retorno garantia"
+                    value={metrics?.warranty_returns ?? 0}
+                    icon={<ShieldAlert className="h-10 w-10" />}
+                    description={warrantyDescription}
                 />
                 <KpiDashboard
                     link={route('app.schedules.index')}
@@ -121,6 +137,32 @@ export default function OrderDashboard({
                     description={periodDescription}
                 />
             </div>
+            {warrantyAlert && (
+                <Card className="mt-3 border-amber-300 bg-amber-50">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-sm text-amber-900">
+                            Alerta de qualidade: taxa de retorno em garantia acima do limite
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0 text-sm text-amber-900">
+                        O período atual está com {warrantyRate}% de retorno em garantia, acima do limite configurado de {warrantyThreshold}%.
+                        Revise os relatórios por técnico, equipamento e defeito para identificar a origem.
+                    </CardContent>
+                </Card>
+            )}
+            {!warrantyAlert && metrics?.orders > 0 && warrantyRate > 5 && (
+                <Card className="mt-3 border-blue-200 bg-blue-50">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-sm text-blue-900">
+                            Atenção: retorno em garantia merece acompanhamento
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0 text-sm text-blue-900">
+                        O período atual está com {warrantyRate}% de retorno em garantia. Ainda está dentro do limite configurado de{' '}
+                        {warrantyThreshold}%, mas já saiu da faixa saudável sugerida de até 5%.
+                    </CardContent>
+                </Card>
+            )}
             <div className="mt-3 grid min-h-[210px] gap-3 2xl:grid-cols-7">
                 <div className="h-full min-w-0">
                     {others?.enablesales && canUsePdv ? (
@@ -194,6 +236,11 @@ export default function OrderDashboard({
                                             Equip. Entregue há 7 dias
                                             <Badge className="ml-1 text-xs">{orders?.feedback.length}</Badge>
                                         </TabsTrigger>
+
+                                        <TabsTrigger className="px-2 whitespace-nowrap" value="wg">
+                                            Retorno garantia
+                                            <Badge className="ml-1 text-xs">{orders?.garantia.length}</Badge>
+                                        </TabsTrigger>
                                     </TabsList>
                                     <TabsContent value="va" className="max-h-48 overflow-y-auto">
                                         <div className="py-1 text-xs font-semibold">Visitas agendadas pelo número do agendamento</div>
@@ -255,6 +302,23 @@ export default function OrderDashboard({
                                                     <Link href={route('app.orders.index', { q: ger.id, init: true, fd: 1 })} className="relative">
                                                         {ger.feedback && <Check className="absolute -top-1 -right-1 h-4 w-4" />}
                                                         {ger.order_number}
+                                                    </Link>
+                                                </Button>
+                                            ))}
+                                        </div>
+                                    </TabsContent>
+                                    <TabsContent value="wg" className="max-h-48 overflow-y-auto">
+                                        <div className="py-1 text-xs font-semibold">Ordens identificadas como retorno em garantia</div>
+                                        <div className="flex flex-wrap gap-2 border-t py-2">
+                                            {orders?.garantia.map((ret: any, index: number) => (
+                                                <Button key={`wg-${ret.order_number ?? index}`} variant={'secondary'} asChild>
+                                                    <Link
+                                                        href={route('app.orders.index', {
+                                                            filter: 'warranty_return',
+                                                            search: ret.order_number,
+                                                        })}
+                                                    >
+                                                        {ret.order_number}
                                                     </Link>
                                                 </Button>
                                             ))}

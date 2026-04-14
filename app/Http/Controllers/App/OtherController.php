@@ -46,8 +46,18 @@ class OtherController extends Controller
             'mail_from_name' => $othersettings->mail_from_name ?? config('app.name'),
             'mail_password_set' => ! empty($othersettings->mail_password),
         ];
+        $businessMetrics = [
+            'warranty_return_alert_threshold' => $othersettings->warranty_return_alert_threshold
+                ?? config('business-metrics.warranty_return_alert_threshold', 10),
+        ];
 
-        return Inertia::render('app/others/index', ['othersettings' => $othersettings, 'company' => $company, 'time_remaining' => $time_remaining, 'mailSettings' => $mailSettings]);
+        return Inertia::render('app/others/index', [
+            'othersettings' => $othersettings,
+            'company' => $company,
+            'time_remaining' => $time_remaining,
+            'mailSettings' => $mailSettings,
+            'businessMetrics' => $businessMetrics,
+        ]);
     }
 
     /**
@@ -70,6 +80,7 @@ class OtherController extends Controller
             'mail_encryption' => 'nullable|string|max:20',
             'mail_from_address' => 'nullable|email|max:255',
             'mail_from_name' => 'nullable|string|max:255',
+            'warranty_return_alert_threshold' => 'nullable|numeric|min:0|max:100',
         ]);
 
         $data['mail_mailer'] = isset($data['mail_mailer']) ? trim((string) $data['mail_mailer']) : null;
@@ -78,6 +89,9 @@ class OtherController extends Controller
         $data['mail_encryption'] = isset($data['mail_encryption']) ? trim((string) $data['mail_encryption']) : null;
         $data['mail_from_address'] = isset($data['mail_from_address']) ? trim((string) $data['mail_from_address']) : null;
         $data['mail_from_name'] = isset($data['mail_from_name']) ? trim((string) $data['mail_from_name']) : null;
+        $data['warranty_return_alert_threshold'] = isset($data['warranty_return_alert_threshold'])
+            ? round((float) $data['warranty_return_alert_threshold'], 2)
+            : null;
 
         $newPassword = trim((string) ($data['mail_password'] ?? ''));
         if ($newPassword !== '') {

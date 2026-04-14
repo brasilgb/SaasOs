@@ -13,6 +13,7 @@ use App\Models\App\Order;
 use App\Models\App\Other;
 use App\Models\App\WhatsappMessage;
 use App\Models\User;
+use App\Support\OrderStatus;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -102,7 +103,7 @@ class HandleInertiaRequests extends Middleware
                 'isOpen' => (bool) $openCashSession,
                 'openedAt' => $openCashSession?->opened_at?->toIso8601String(),
             ] : null,
-            'orderStatus' => $user ? Order::where('service_status', 4)->get() : null,
+            'orderStatus' => $user ? Order::where('service_status', OrderStatus::BUDGET_APPROVED)->get() : null,
 
             'notifications' => $user
                 ? Message::where('recipient_id', $user->id)->where('status', '0')->count()

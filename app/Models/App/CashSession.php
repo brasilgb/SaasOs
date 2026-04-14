@@ -66,4 +66,9 @@ class CashSession extends Model
     {
         return $this->hasMany(OrderPayment::class);
     }
+
+    public function logs(): HasMany
+    {
+        return $this->hasMany(CashSessionLog::class)->latest();
+    }
 }

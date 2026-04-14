@@ -25,7 +25,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Others({ othersettings, company, time_remaining, mailSettings }: any) {
+export default function Others({ othersettings, company, time_remaining, mailSettings, businessMetrics }: any) {
     const { auth, flash } = usePage().props as any;
     const canManageOtherSettings = auth?.permissions?.includes('other_settings');
 
@@ -42,6 +42,7 @@ export default function Others({ othersettings, company, time_remaining, mailSet
         mail_encryption: mailSettings?.mail_encryption ?? 'tls',
         mail_from_address: mailSettings?.mail_from_address ?? '',
         mail_from_name: mailSettings?.mail_from_name ?? '',
+        warranty_return_alert_threshold: businessMetrics?.warranty_return_alert_threshold ?? 10,
     });
 
     const handleSubmit = (e: any) => {
@@ -120,6 +121,39 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                             />
 
                             <span className="text-muted-foreground text-sm">{data.enablesales ? 'Habilitado' : 'Desabilitado'}</span>
+                        </div>
+                    </div>
+
+                    <div className="mt-6 space-y-6">
+                        <HeadingSmall
+                            title="Indicador de retorno em garantia"
+                            description="Defina o percentual máximo aceitável de retorno em garantia no período. Acima desse valor, o dashboard e os relatórios passam a exibir alerta visual."
+                        />
+
+                        <div className="grid gap-4 md:max-w-sm">
+                            <div className="space-y-2">
+                                <Label htmlFor="warranty_return_alert_threshold">Limite de alerta (%)</Label>
+                                <Input
+                                    id="warranty_return_alert_threshold"
+                                    type="number"
+                                    min="0"
+                                    max="100"
+                                    step="0.1"
+                                    value={data.warranty_return_alert_threshold}
+                                    disabled={!canManageOtherSettings}
+                                    onChange={(e) =>
+                                        setData(
+                                            'warranty_return_alert_threshold',
+                                            e.target.value === '' ? '' : Number(e.target.value),
+                                        )
+                                    }
+                                    placeholder="10"
+                                />
+                                <p className="text-muted-foreground text-xs leading-relaxed">
+                                    Referência sugerida: até 5% saudável, entre 5% e 10% atenção, acima de 10% crítico.
+                                    Ajuste conforme o perfil técnico e o tipo de equipamento da operação.
+                                </p>
+                            </div>
                         </div>
                     </div>
 

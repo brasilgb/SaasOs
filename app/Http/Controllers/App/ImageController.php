@@ -5,6 +5,7 @@ namespace App\Http\Controllers\App;
 use App\Http\Controllers\Controller;
 use App\Models\App\Image;
 use App\Models\App\Order;
+use App\Models\App\OrderLog;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,6 +16,17 @@ use Inertia\Inertia;
 
 class ImageController extends Controller
 {
+    private function logOrderAction(Order $order, string $action, array $data = []): void
+    {
+        OrderLog::create([
+            'order_id' => $order->id,
+            'user_id' => $this->currentUser()?->id,
+            'action' => $action,
+            'data' => $data === [] ? null : $data,
+            'created_at' => now(),
+        ]);
+    }
+
     private function currentUser(): ?User
     {
         $user = Auth::user() ?? Auth::guard('sanctum')->user();
@@ -97,6 +109,11 @@ class ImageController extends Controller
             ]);
         }
 
+        $this->logOrderAction($order, 'image_uploaded', [
+            'count' => $incomingCount,
+            'total_images' => $existingCount + $incomingCount,
+        ]);
+
         return redirect()->back()->with('success', 'Imagens enviadas com sucesso!');
     }
 
@@ -109,7 +126,11 @@ class ImageController extends Controller
         if (file_exists($storePath.DIRECTORY_SEPARATOR.$image->filename)) {
             unlink($storePath.DIRECTORY_SEPARATOR.$image->filename);
         }
+        $filename = $image->filename;
         $image->delete();
+        $this->logOrderAction($order, 'image_deleted', [
+            'filename' => $filename,
+        ]);
 
         return redirect()->back()->with('success', 'Imagem excluida com sucesso!');
     }
@@ -126,7 +147,11 @@ class ImageController extends Controller
         if (file_exists($storePath.DIRECTORY_SEPARATOR.$imgorder->filename)) {
             unlink($storePath.DIRECTORY_SEPARATOR.$imgorder->filename);
         }
+        $filename = $imgorder->filename;
         $image->where('id', $imgorder->id)->delete();
+        $this->logOrderAction($order, 'image_deleted', [
+            'filename' => $filename,
+        ]);
 
         return [
             'success' => true,
@@ -150,6 +175,11 @@ class ImageController extends Controller
             'order_id' => $request->order_id,
             'filename' => $filename,
             'tenant_id' => $request->tenant_id,
+        ]);
+
+        $this->logOrderAction($order, 'image_uploaded', [
+            'count' => 1,
+            'total_images' => Image::where('order_id', $order->id)->count(),
         ]);
 
         return [

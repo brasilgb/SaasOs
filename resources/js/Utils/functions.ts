@@ -1,27 +1,6 @@
-const statusOrdemByValue = (value: number) => {
-    switch (value) {
-        case 1:
-            return 'Ordem Aberta';
-        case 2:
-            return 'Ordem Cancelada';
-        case 3:
-            return 'Orçamento Gerado';
-        case 4:
-            return 'Orçamento Aprovado';
-        case 5:
-            return 'Orçamento reprovado';
-        case 6:
-            return 'Reparo em andamento';
-        case 7:
-            return 'Serviço concluído';
-        case 8:
-            return 'Serviço não executado';
-        case 9:
-            return 'Cliente avisado / aguardando retirada';
-        case 10:
-            return 'Entregue ao cliente';
-    }
-};
+import { orderStatusLabel } from './order-status';
+
+const statusOrdemByValue = (value: number) => orderStatusLabel(value);
 
 const statusUserByValue = (value: string) => {
     switch (value) {

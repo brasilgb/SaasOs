@@ -39,9 +39,12 @@ export default function TechnicianProductivity({ dateRange, company }: { dateRan
                 preserveScroll: true,
                 onSuccess: async (page: any) => {
                     const reportData = page.props?.reportData || [];
+                    const reportMeta = page.props?.reportMeta || {};
 
                     // Gera o PDF no frontend
-                    const blob = await pdf(<TechnicianProductivityPDF data={reportData} dateRange={dateRange} company={company} />).toBlob();
+                    const blob = await pdf(
+                        <TechnicianProductivityPDF data={reportData} reportMeta={reportMeta} dateRange={dateRange} company={company} />,
+                    ).toBlob();
 
                     const url = URL.createObjectURL(blob);
                     previewWindow.location.href = url;
