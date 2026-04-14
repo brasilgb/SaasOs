@@ -1,0 +1,282 @@
+MANUAL DO USUÁRIO
+Sistema de Gestão de Ordens de Serviço
+Versão 1.0
+Março de 2026
+Autor: Anderson Brasil
+Empresa: [SigmaOS]
+
+Aviso Importante
+Este documento está em constante desenvolvimento e poderá receber atualizações conforme novas funcionalidades forem adicionadas ao sistema ou melhorias forem implementadas.
+Recomendamos sempre consultar a versão mais recente deste manual.
+
+
+
+Índice
+1. Introdução
+2. Visão Geral do Sistema
+3. Primeiros Passos (Configuração Inicial Recomendada)
+4. Dashboard
+5. Gestão de Clientes
+6. Ordens de Serviço
+7. Orçamentos
+8. Agendamentos de Visitas
+9. Área do Cliente (Acompanhamento Online)
+10.Mensagens Internas da Equipe
+11.Cadastro de Peças e Produtos
+12.Controle de Estoque
+13.Relatórios do Sistema
+14.Configurações Gerais
+15.Gestão de Usuários
+16.Aplicativo para Upload de Imagens
+17.Importação de Clientes por CSV
+18.Módulo de Vendas
+19.Emissão de Notas Fiscais
+20.Boas Práticas de Uso do Sistema
+21.Suporte
+
+1. Introdução
+O Sistema de Gestão de Ordens de Serviço foi desenvolvido para auxiliar empresas que realizam atendimentos técnicos, manutenção, assistência técnica ou serviços externos.
+A plataforma centraliza as principais operações da empresa em um único ambiente, permitindo organizar:
+• clientes
+• ordens de serviço
+• agendamentos
+• peças e produtos
+• comunicação da equipe
+• relatórios operacionais e financeiros
+Com isso, o sistema proporciona maior organização, controle e produtividade no gerenciamento das atividades.
+* O sistema foi desenvolvido com interface responsiva, permitindo sua utilização tanto em computadores quanto em dispositivos móveis, como celulares e tablets. Dessa forma, gestores e técnicos podem acessar as informações do sistema de qualquer lugar, facilitando o acompanhamento de serviços e a gestão das atividades da empresa.
+
+2. Visão Geral do Sistema
+O sistema é dividido em módulos que organizam as funcionalidades de acordo com os processos operacionais da empresa.
+Principais módulos disponíveis:
+• Dashboard com indicadores
+• Gestão de clientes
+• Ordens de serviço
+• Orçamentos
+• Agendamentos de visitas
+• Mensagens internas da equipe
+• Cadastro de peças e produtos
+• Relatórios operacionais
+• Configurações do sistema
+• Gestão de usuários
+Além disso, o sistema também oferece recursos complementares como:
+• aplicativo para envio de imagens
+• área de acompanhamento para clientes
+• importação de clientes por arquivo
+• integração com WhatsApp
+• controle de vendas de produtos
+
+3. Primeiros Passos (Configuração Inicial Recomendada)
+Antes de iniciar o uso do sistema no dia a dia da empresa, recomendamos realizar algumas configurações iniciais.
+Essas configurações garantem o correto funcionamento das ordens de serviço, impressões e mensagens automáticas.
+Acesse o menu Configurações e realize os seguintes cadastros.
+3.1 Dados da empresa
+Informe os dados básicos da empresa.
+Essas informações serão utilizadas nos documentos gerados pelo sistema, como:
+    • recibos
+    • orçamentos
+    • comprovantes
+    • documentos impressos Dados recomendados:
+    • nome da empresa
+    • telefone
+    • endereço
+    • outras informações institucionais
+
+3.2 Cadastro de tipos de equipamento
+O cadastro de tipos de equipamento facilita o registro das ordens de serviço.
+Exemplos:
+• celular
+• notebook
+• televisão
+• impressora
+• tablet
+• outros equipamentos atendidos pela empresa
+
+3.3 Configurações adicionais
+No menu configurações também podem ser definidos:
+• mensagens padrão para envio via WhatsApp
+• textos utilizados em impressões
+• configurações de etiquetas
+• checklists de conferência de equipamentos
+Essas opções podem ser ajustadas conforme o fluxo de trabalho da empresa.
+
+4. Dashboard
+O Dashboard apresenta uma visão geral das atividades da empresa.
+Nesta tela são exibidos indicadores (KPIs) e gráficos com dados operacionais e financeiros.
+Informações que podem ser exibidas:
+• desempenho operacional
+• indicadores financeiros
+• evolução das atividades
+• informações recentes do sistema
+Caso o módulo de vendas esteja habilitado, será exibido também um ícone de carrinho de compras para acesso rápido ao registro de vendas.
+
+5. Gestão de Clientes
+O módulo de clientes permite registrar e administrar as informações dos clientes da empresa.
+Funcionalidades disponíveis
+• cadastrar novos clientes
+• editar informações
+• excluir registros
+• visualizar histórico de serviços
+• visualizar agendamentos
+• enviar mensagens via WhatsApp
+Ações disponíveis dentro do cadastro do cliente
+Em cada cliente é possível:
+• visualizar ordens de serviço vinculadas
+• visualizar agendamentos
+• enviar mensagem via WhatsApp
+• editar cadastro
+• excluir registro
+
+6. Ordens de Serviço
+As ordens de serviço registram os atendimentos realizados pela empresa.
+Cada ordem pode conter informações como:
+• cliente
+• tipo de equipamento
+• descrição do problema
+• diagnóstico
+• peças utilizadas
+• status do serviço
+Funcionalidades disponíveis
+• criar ordens de serviço
+• editar ordens existentes
+• excluir ordens
+• enviar mensagens ao cliente via WhatsApp
+• registrar imagens do equipamento
+• imprimir documentos relacionados
+
+Documentos disponíveis para impressão
+O sistema permite gerar documentos importantes relacionados ao atendimento:
+• recibo de entrada do equipamento
+• recibo de entrega
+• orçamento
+• checklist de conferência
+
+Registro de imagens
+Durante o atendimento é possível registrar imagens do equipamento.
+Essas imagens podem ser enviadas através do aplicativo auxiliar e ficam vinculadas à ordem de serviço.
+
+7. Orçamentos
+O módulo de orçamentos permite gerar propostas para os clientes.
+Funcionalidades disponíveis:
+• criação de orçamento
+• geração de orçamento em PDF
+• edição de orçamento
+• exclusão de orçamento
+
+8. Agendamentos de Visitas
+O módulo de agendamentos organiza as visitas técnicas.
+Funções disponíveis
+• criar agendamentos
+• editar agendamentos
+• excluir agendamentos
+• enviar mensagem ao técnico via WhatsApp
+
+9. Área do Cliente (Acompanhamento Online)
+O sistema possui uma área exclusiva para acompanhamento do andamento dos serviços pelos clientes.
+Após o cadastro da ordem de serviço, o sistema permite enviar ao cliente um link de acompanhamento através do WhatsApp.
+Ao acessar esse link, o cliente poderá visualizar o andamento do atendimento diretamente pelo navegador.
+Essa página funciona normalmente em computadores e também em celulares.
+Informações disponíveis para o cliente
+O cliente poderá acompanhar:
+• status atual do serviço
+• atualizações da ordem
+• informações do atendimento
+Esse recurso aumenta a transparência e reduz a necessidade de contato frequente para solicitar atualizações do serviço.
+
+10. Mensagens Internas da Equipe
+O sistema possui um módulo de comunicação interna entre usuários.
+Funcionamento:
+• o remetente pode editar ou excluir a mensagem
+• o destinatário pode visualizar e marcar a mensagem como lida
+Esse recurso facilita a comunicação da equipe dentro do próprio sistema.
+
+11. Cadastro de Peças e Produtos
+O sistema permite registrar itens utilizados nos serviços ou vendidos pela empresa.
+Durante o cadastro é possível definir o tipo do item:
+• peça
+• produto
+Funções disponíveis
+• cadastro de itens
+• edição de registros
+• exclusão de registros
+
+12. Controle de Estoque
+O sistema possui controle de estoque para peças e produtos cadastrados.
+Esse controle permite acompanhar a movimentação dos itens utilizados nos serviços ou vendidos.
+
+13. Relatórios do Sistema
+O sistema disponibiliza diversos relatórios que auxiliam na análise das atividades da empresa.
+Os relatórios podem ser filtrados por intervalo de datas.
+Relatórios disponíveis:
+• produtividade técnica
+• ordens de serviço
+• clientes
+• agendamentos
+• vendas de peças e produtos
+
+14. Configurações Gerais
+O menu de configurações centraliza diversas opções administrativas do sistema.
+Entre as configurações disponíveis estão:
+• dados da empresa
+• mensagens padrão para WhatsApp
+• textos utilizados em documentos
+• etiquetas
+• tipos de equipamento
+• checklists
+• outras configurações administrativas
+
+15. Gestão de Usuários
+O sistema permite o cadastro e gerenciamento de usuários.
+Funções disponíveis:
+• cadastro de usuários
+• edição de usuários
+• exclusão de usuários
+
+16. Aplicativo para Upload de Imagens
+O sistema possui um aplicativo auxiliar que permite registrar e enviar imagens relacionadas às ordens de serviço.
+As imagens enviadas ficam vinculadas à ordem correspondente no sistema.
+Esse recurso é útil para registrar:
+• estado do equipamento
+• diagnóstico
+• evidências do serviço realizado
+
+17. Importação de Clientes por CSV
+Para facilitar o cadastro inicial de clientes, o sistema permite importar registros utilizando arquivos 
+CSV.
+Essa funcionalidade possibilita inserir diversos clientes de uma única vez.
+
+18. Módulo de Vendas
+O sistema possui um módulo opcional para registro de vendas de produtos.
+Esse módulo pode ser habilitado nas configurações do sistema.
+Após habilitado:
+    • aparecerá um ícone de carrinho no dashboard
+    • será exibido o menu Vendas Nesse módulo será possível:
+    • registrar vendas
+    • visualizar vendas realizadas
+    • imprimir recibos ou tickets
+    • cancelar vendas registradas
+
+19. Emissão de Notas Fiscais
+O sistema não realiza emissão automática de notas fiscais.
+Entretanto, o sistema disponibiliza botões que direcionam para os sistemas de emissão utilizados pela empresa.
+Para serviços pode ser utilizada a emissão de NFSe.
+Para vendas de produtos pode ser utilizada a emissão de NFe estadual.
+Para facilitar o preenchimento da nota fiscal, o sistema apresenta um resumo das informações necessárias.
+Esse resumo pode ser visualizado:
+• no topo da tela de edição da ordem de serviço
+• na tabela inicial de listagem das ordens
+Após a conclusão do serviço, podem ser utilizados os seguintes status para acompanhamento:
+• serviço concluído
+• cliente avisado
+• entregue ao cliente
+
+20. Boas Práticas de Uso do Sistema
+Para melhor organização das atividades da empresa recomendamos:
+• manter os dados dos clientes sempre atualizados
+• registrar corretamente as ordens de serviço
+• atualizar o status das ordens conforme o andamento do atendimento
+• utilizar os relatórios para acompanhar a produtividade da equipe
+
+21. Suporte
+Em caso de dúvidas ou dificuldades na utilização do sistema, entre em contato com o suporte.
+Email: suporte@sigmaos.com.br
