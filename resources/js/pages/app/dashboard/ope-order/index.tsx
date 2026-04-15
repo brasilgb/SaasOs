@@ -82,71 +82,74 @@ export default function OrderDashboard({
 
     return (
         <div className="min-w-0">
-            <div className="grid gap-3 rounded-xl sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-9">
-                <KpiDashboard
-                    link={route('app.customers.index')}
-                    title="Clientes"
-                    value={metrics?.customers ?? 0}
-                    icon={<Users className="h-10 w-10" />}
-                    description={defaultKpiDescription}
-                />
-                <KpiDashboard
-                    link={route('app.orders.index')}
-                    title="Ordens"
-                    value={metrics?.orders ?? 0}
-                    icon={<Wrench className="h-10 w-10" />}
-                    description={defaultKpiDescription}
-                />
-                <KpiDashboard
-                    link={route('app.orders.index', { filter: 'warranty_return' })}
-                    title="Retorno garantia"
-                    value={metrics?.warranty_returns ?? 0}
-                    icon={<ShieldAlert className="h-10 w-10" />}
-                    description={warrantyDescription}
-                />
-                <KpiDashboard
-                    link={route('app.orders.index', { filter: 'budget_follow_up' })}
-                    title="Orç. parados"
-                    value={metrics?.budget_follow_ups ?? 0}
-                    icon={<MessageSquareMore className="h-10 w-10" />}
-                    description="Cobrar retorno"
-                />
-                <KpiDashboard
-                    link={route('app.orders.index', { filter: 'pending_payment_follow_up' })}
-                    title="Cobranças"
-                    value={metrics?.pending_payment_follow_ups ?? 0}
-                    icon={<MessageSquareMore className="h-10 w-10" />}
-                    description="Cobrar saldo"
-                />
-                <KpiDashboard
-                    link={route('app.schedules.index')}
-                    title="Agendamentos"
-                    value={metrics?.schedules ?? 0}
-                    icon={<Calendar className="h-10 w-10" />}
-                    description={defaultKpiDescription}
-                />
-                <KpiDashboard
-                    link={route('app.messages.index')}
-                    title="Mensagens"
-                    value={metrics?.messages ?? 0}
-                    icon={<MessageSquareMore className="h-10 w-10" />}
-                    description={defaultKpiDescription}
-                />
-                <KpiDashboard
-                    link={route('app.parts.index')}
-                    title="Peças"
-                    value={metrics?.parts ?? 0}
-                    icon={<MemoryStickIcon className="h-10 w-10" />}
-                    description={defaultKpiDescription}
-                />
-
-                <KpiDashboard
-                    link={route('app.parts.index')}
-                    title="Produtos"
-                    value={metrics?.products ?? 0}
-                    icon={<MemoryStickIcon className="h-10 w-10" />}
-                    description={defaultKpiDescription}
-                />
+            <div className='flex flex-col gap-3'>
+                <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-5">
+                    <KpiDashboard
+                        link={route('app.customers.index')}
+                        title="Clientes"
+                        value={metrics?.customers ?? 0}
+                        icon={<Users className="h-10 w-10" />}
+                        description={defaultKpiDescription}
+                    />
+                    <KpiDashboard
+                        link={route('app.orders.index')}
+                        title="Ordens"
+                        value={metrics?.orders ?? 0}
+                        icon={<Wrench className="h-10 w-10" />}
+                        description={defaultKpiDescription}
+                    />
+                    <KpiDashboard
+                        link={route('app.orders.index', { filter: 'warranty_return' })}
+                        title="Retorno garantia"
+                        value={metrics?.warranty_returns ?? 0}
+                        icon={<ShieldAlert className="h-10 w-10" />}
+                        description={warrantyDescription}
+                    />
+                    <KpiDashboard
+                        link={route('app.orders.index', { filter: 'budget_follow_up' })}
+                        title="Orç. parados"
+                        value={metrics?.budget_follow_ups ?? 0}
+                        icon={<MessageSquareMore className="h-10 w-10" />}
+                        description="Cobrar retorno"
+                    />
+                    <KpiDashboard
+                        link={route('app.orders.index', { filter: 'pending_payment_follow_up' })}
+                        title="Cobranças"
+                        value={metrics?.pending_payment_follow_ups ?? 0}
+                        icon={<MessageSquareMore className="h-10 w-10" />}
+                        description="Cobrar saldo"
+                    />
+                </div>
+                <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
+                    <KpiDashboard
+                        link={route('app.schedules.index')}
+                        title="Agendamentos"
+                        value={metrics?.schedules ?? 0}
+                        icon={<Calendar className="h-10 w-10" />}
+                        description={defaultKpiDescription}
+                    />
+                    <KpiDashboard
+                        link={route('app.messages.index')}
+                        title="Mensagens"
+                        value={metrics?.messages ?? 0}
+                        icon={<MessageSquareMore className="h-10 w-10" />}
+                        description={defaultKpiDescription}
+                    />
+                    <KpiDashboard
+                        link={route('app.parts.index')}
+                        title="Peças"
+                        value={metrics?.parts ?? 0}
+                        icon={<MemoryStickIcon className="h-10 w-10" />}
+                        description={defaultKpiDescription}
+                    />
+                    <KpiDashboard
+                        link={route('app.parts.index')}
+                        title="Produtos"
+                        value={metrics?.products ?? 0}
+                        icon={<MemoryStickIcon className="h-10 w-10" />}
+                        description={defaultKpiDescription}
+                    />
+                </div>
             </div>
             {warrantyAlert && (
                 <Card className="mt-3 border-amber-300 bg-amber-50">

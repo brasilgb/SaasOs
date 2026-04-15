@@ -2,12 +2,13 @@ import AlertSuccess from '@/components/app-alert-success';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { DatePicker } from '@/components/date-picker';
 import { Icon } from '@/components/icon';
+import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
-import { LayoutGridIcon } from 'lucide-react';
+import { Head, Link } from '@inertiajs/react';
+import { AlertTriangle, LayoutGridIcon } from 'lucide-react';
 import moment from 'moment';
 import { useState } from 'react';
 import FinanceiroOrders from './fin-order/ordens';
@@ -28,7 +29,7 @@ function formatDateRange(date?: Date | string) {
     return moment(d).format('DD/MM/YYYY');
 }
 
-export default function Dashboard({ reloadKey, orders, acount, parts, customers, others, listSchedules, cashier, flash, auth }: any) {
+export default function Dashboard({ reloadKey, orders, acount, parts, customers, others, listSchedules, cashier, flash, auth, performanceAlert }: any) {
     const [timeRange, setTimeRange] = useState('7');
     const [dateRange, setDateRange] = useState<any>({});
     const isTechnician = auth?.role === 'technician';
@@ -117,6 +118,23 @@ export default function Dashboard({ reloadKey, orders, acount, parts, customers,
                             </ToggleGroup>
                         </div>
                     </div>
+
+                    {performanceAlert?.hasAlert && (
+                        <div className="mt-2 mb-4 flex items-center justify-between rounded-lg border border-amber-300 bg-amber-50 px-4 py-3">
+                            <div className="flex items-center gap-3">
+                                <AlertTriangle className="h-5 w-5 text-amber-900" />
+                                <div className="text-sm text-amber-900">
+                                    Meta comercial abaixo do esperado.
+                                    {' '}
+                                    {performanceAlert?.budgetBelowTarget && <Badge variant="secondary" className="ml-2 bg-white text-amber-900">Orçamento</Badge>}
+                                    {performanceAlert?.paymentBelowTarget && <Badge variant="secondary" className="ml-2 bg-white text-amber-900">Cobrança</Badge>}
+                                </div>
+                            </div>
+                            <Link href={route('app.follow-ups.performance')} className="text-sm font-medium text-amber-900 underline underline-offset-4">
+                                Ver performance
+                            </Link>
+                        </div>
+                    )}
 
                     <Tabs defaultValue="account" className="w-full">
                         {!isTechnician && (

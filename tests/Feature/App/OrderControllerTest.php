@@ -4,6 +4,7 @@ namespace Tests\Feature\App;
 
 use App\Models\App\CashSession;
 use App\Models\App\Customer;
+use App\Models\App\Other;
 use App\Models\App\Equipment;
 use App\Models\App\Order;
 use App\Models\App\OrderPayment;
@@ -11,6 +12,8 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Support\OrderStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class OrderControllerTest extends TestCase
@@ -433,6 +436,119 @@ class OrderControllerTest extends TestCase
 
                 return $orderIds->contains($chargeOrder->id)
                     && ! $orderIds->contains($settledOrder->id);
+            });
+    }
+
+    public function test_it_logs_payment_reminder_sent(): void
+    {
+        Mail::fake();
+
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create([
+            'email' => 'cliente@example.com',
+        ]);
+        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'user_id' => $this->user->id,
+            'service_status' => OrderStatus::DELIVERED,
+            'service_cost' => 300,
+            'delivery_date' => now()->subDays(8),
+        ]);
+
+        Other::query()->create([
+            'tenant_id' => $this->tenant->id,
+            'mail_mailer' => 'smtp',
+            'mail_host' => 'smtp.example.com',
+            'mail_port' => 587,
+            'mail_username' => 'user@example.com',
+            'mail_password' => Crypt::encryptString('secret'),
+            'mail_encryption' => 'tls',
+            'mail_from_address' => 'noreply@example.com',
+            'mail_from_name' => 'Sigma OS',
+        ]);
+
+        $response = $this->post(route('app.orders.payments.reminder', $order));
+
+        $response->assertSessionHas('success', 'E-mail de cobrança/lembrete enviado com sucesso.');
+
+        $this->assertDatabaseHas('order_logs', [
+            'order_id' => $order->id,
+            'user_id' => $this->user->id,
+            'action' => 'payment_reminder_sent',
+        ]);
+    }
+
+    public function test_it_logs_budget_follow_up_sent(): void
+    {
+        Mail::fake();
+
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create([
+            'email' => 'cliente@example.com',
+        ]);
+        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'user_id' => $this->user->id,
+            'service_status' => OrderStatus::BUDGET_GENERATED,
+            'updated_at' => now()->subDays(3),
+        ]);
+
+        Other::query()->create([
+            'tenant_id' => $this->tenant->id,
+            'mail_mailer' => 'smtp',
+            'mail_host' => 'smtp.example.com',
+            'mail_port' => 587,
+            'mail_username' => 'user@example.com',
+            'mail_password' => Crypt::encryptString('secret'),
+            'mail_encryption' => 'tls',
+            'mail_from_address' => 'noreply@example.com',
+            'mail_from_name' => 'Sigma OS',
+        ]);
+
+        $response = $this->post(route('app.orders.budget-follow-up', $order));
+
+        $response->assertSessionHas('success', 'Follow-up de orçamento enviado com sucesso.');
+
+        $this->assertDatabaseHas('order_logs', [
+            'order_id' => $order->id,
+            'user_id' => $this->user->id,
+            'action' => 'budget_follow_up_sent',
+        ]);
+    }
+
+    public function test_it_exposes_last_communication_in_orders_listing(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'user_id' => $this->user->id,
+        ]);
+
+        $order->logs()->create([
+            'user_id' => $this->user->id,
+            'action' => 'payment_reminder_sent',
+            'data' => [
+                'channel' => 'email',
+                'recipient' => 'cliente@example.com',
+                'trigger' => 'manual',
+            ],
+            'created_at' => now()->subHour(),
+        ]);
+
+        $response = $this->get(route('app.orders.index'));
+
+        $response
+            ->assertOk()
+            ->assertViewHas('page.props.orders.data', function (array $orders) use ($order) {
+                $matched = collect($orders)->firstWhere('id', $order->id);
+
+                return is_array($matched)
+                    && ($matched['last_communication']['trigger'] ?? null) === 'manual'
+                    && ($matched['last_communication']['channel'] ?? null) === 'email';
             });
     }
 }

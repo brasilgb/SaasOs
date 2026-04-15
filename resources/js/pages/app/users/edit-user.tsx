@@ -195,7 +195,7 @@ export default function CreateUser({ user, page, search }: any) {
                                         }),
                                         singleValue: (base) => ({
                                             ...base,
-                                            color: '#ebebeb', // cinza escuro (igual input padrão)
+                                            color: 'hsl(var(--foreground))',
                                             fontSize: '14px',
                                         }),
                                         dropdownIndicator: (base) => ({

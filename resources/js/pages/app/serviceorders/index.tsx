@@ -3,12 +3,38 @@ import { OrderTimeline } from '@/components/order-timeline';
 import { StatusBadge } from '@/components/StatusBadge';
 import Timeline from '@/components/timeline';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Toaster } from '@/components/ui/sonner';
 import { maskMoney } from '@/Utils/mask';
-import { ORDER_STATUS } from '@/Utils/order-status';
+import { ORDER_STATUS, orderStatusLabel } from '@/Utils/order-status';
 import { Head, router, usePage } from '@inertiajs/react';
-import { InfoIcon } from 'lucide-react';
-import { useState } from 'react';
+import {
+    CalendarClock,
+    CheckCircle2,
+    CreditCard,
+    Expand,
+    FileText,
+    InfoIcon,
+    MessageCircle,
+    PackageSearch,
+    ReceiptText,
+    ShieldCheck,
+    Smartphone,
+    Wrench,
+} from 'lucide-react';
+import { useMemo, useState } from 'react';
+
+interface OrderPayment {
+    id: number;
+    amount: number;
+    paid_at?: string;
+    payment_method?: string;
+}
+
+interface OrderImage {
+    id: number;
+    filename: string;
+}
 
 interface Order {
     id: number;
@@ -17,6 +43,7 @@ interface Order {
     service_status: number;
     created_at: string;
     delivery_forecast?: string;
+    delivery_date?: string;
     model?: string;
     accessories?: string;
     state_conservation?: string;
@@ -27,38 +54,139 @@ interface Order {
     parts_value?: number;
     service_value?: number;
     service_cost?: number;
+    warranty_days?: number;
+    warranty_expires_at?: string;
+    is_warranty_return?: boolean;
+    customer_notification_acknowledged_at?: string;
     status_history?: any[];
     logs?: any[];
+    images?: OrderImage[];
+    order_payments?: OrderPayment[];
+    warranty_source_order?: { order_number: number; warranty_expires_at?: string };
     customer?: { name: string };
     company?: { logo?: string; whatsapp?: string };
     equipment?: { equipment: string };
 }
 
+function formatDate(value?: string) {
+    if (!value) return '-';
+    return new Date(value).toLocaleDateString('pt-BR');
+}
+
+function formatDateTime(value?: string) {
+    if (!value) return '-';
+    return new Date(value).toLocaleString('pt-BR');
+}
+
+function getRemainingTime(deliveryDate?: string) {
+    if (!deliveryDate) return null;
+
+    const today = new Date();
+    const delivery = new Date(deliveryDate);
+    const diff = delivery.getTime() - today.getTime();
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+
+    if (days < 0) return 'Prazo expirado';
+    if (days === 0) return 'Concluir hoje';
+    return `${days} dias restantes`;
+}
+
+function nextStepText(order: Order, remainingAmount: number) {
+    switch (order.service_status) {
+        case ORDER_STATUS.OPEN:
+            return 'Seu equipamento entrou na fila de análise. Nossa equipe vai avaliar o defeito e atualizar o andamento.';
+        case ORDER_STATUS.BUDGET_GENERATED:
+            return 'Seu orçamento já está pronto. Você pode aprovar ou reprovar diretamente nesta página.';
+        case ORDER_STATUS.BUDGET_APPROVED:
+            return 'Orçamento aprovado. Agora a assistência segue para execução do serviço.';
+        case ORDER_STATUS.BUDGET_REJECTED:
+            return 'O orçamento foi reprovado. Se desejar revisar essa decisão, entre em contato com a assistência.';
+        case ORDER_STATUS.REPAIR_IN_PROGRESS:
+            return 'O reparo está em andamento. Assim que houver atualização importante, ela aparecerá aqui.';
+        case ORDER_STATUS.SERVICE_COMPLETED:
+            return remainingAmount > 0.009
+                ? 'O serviço foi concluído. Falta apenas a regularização do saldo para liberação.'
+                : 'O serviço foi concluído. Agora falta apenas combinar a retirada do equipamento.';
+        case ORDER_STATUS.CUSTOMER_NOTIFIED:
+            return remainingAmount > 0.009
+                ? 'Seu equipamento está pronto e aguardando retirada, com saldo pendente em aberto.'
+                : 'Seu equipamento está pronto e aguardando retirada.';
+        case ORDER_STATUS.DELIVERED:
+            return 'Atendimento finalizado e equipamento entregue ao cliente.';
+        case ORDER_STATUS.CANCELLED:
+            return 'Esta ordem foi cancelada.';
+        default:
+            return 'Acompanhe as atualizações desta ordem por esta página.';
+    }
+}
+
+function actionChecklist(order: Order, remainingAmount: number) {
+    if (order.service_status === ORDER_STATUS.BUDGET_GENERATED) {
+        return [
+            'Revise a descrição e o valor do orçamento.',
+            'Aprove ou reprove o orçamento por esta página.',
+            'Se tiver dúvida, fale com a assistência antes de decidir.',
+        ];
+    }
+
+    if ([ORDER_STATUS.SERVICE_COMPLETED, ORDER_STATUS.CUSTOMER_NOTIFIED].includes(order.service_status)) {
+        if (remainingAmount > 0.009) {
+            return [
+                'Consulte o saldo pendente do atendimento.',
+                'Entre em contato com a assistência para combinar pagamento e retirada.',
+                'Após a quitação, confirme a retirada do equipamento.',
+            ];
+        }
+
+        return [
+            'Seu equipamento está pronto para retirada.',
+            'Entre em contato com a assistência para combinar horário.',
+            'Tenha em mãos o número da ordem no momento da retirada.',
+        ];
+    }
+
+    if (order.service_status === ORDER_STATUS.DELIVERED) {
+        return [
+            'Atendimento finalizado com sucesso.',
+            'Acompanhe o prazo de garantia informado nesta página.',
+            'Se houver novo problema dentro da garantia, informe a ordem de origem.',
+        ];
+    }
+
+    return [
+        'Acompanhe o status e a linha do tempo desta ordem.',
+        'Quando houver uma nova etapa, ela aparecerá aqui.',
+        'Se precisar de apoio, fale com a assistência pelo botão de contato.',
+    ];
+}
+
 function ServiceOrders({ order }: { order: Order }) {
     const { company } = usePage().props as any;
-    const [loadingA, setLoadingA] = useState<boolean>(false);
-    const [loadingR, setLoadingR] = useState<boolean>(false);
-    function getRemainingTime(deliveryDate?: string) {
-        if (!deliveryDate) return null;
+    const [loadingA, setLoadingA] = useState(false);
+    const [loadingR, setLoadingR] = useState(false);
+    const [loadingAck, setLoadingAck] = useState(false);
+    const [selectedImage, setSelectedImage] = useState<{ src: string; alt: string } | null>(null);
 
-        const today = new Date();
-        const delivery = new Date(deliveryDate);
+    const financialSummary = useMemo(() => {
+        const total = Number(order.service_cost ?? 0);
+        const paid = (order.order_payments ?? []).reduce((sum, payment) => sum + Number(payment.amount ?? 0), 0);
+        const remaining = Math.max(0, total - paid);
 
-        const diff = delivery.getTime() - today.getTime();
-        const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-
-        if (days < 0) return 'Prazo expirado';
-        if (days === 0) return 'Concluir hoje';
-        return `${days} dias restantes`;
-    }
-
-    function remainingColor(text: string) {
-        if (text === 'Prazo expirado') return 'text-red-500';
-        if (text === 'Concluir hoje') return 'text-yellow-500';
-        return 'text-blue-600';
-    }
+        return {
+            total,
+            paid,
+            remaining,
+        };
+    }, [order.order_payments, order.service_cost]);
 
     const remaining = getRemainingTime(order.delivery_forecast);
+    const heroNote = nextStepText(order, financialSummary.remaining);
+    const checklist = actionChecklist(order, financialSummary.remaining);
+    const imageUrls = (order.images ?? []).map((image) => ({
+        id: image.id,
+        src: `/storage/orders/${order.id}/${image.filename}`,
+        alt: `Imagem da ordem ${order.order_number}`,
+    }));
 
     function budgetAlter(status: 4 | 5) {
         router.post(
@@ -66,23 +194,18 @@ function ServiceOrders({ order }: { order: Order }) {
             { status },
             {
                 preserveScroll: true,
-
                 onStart: () => (status === 4 ? setLoadingA(true) : setLoadingR(true)),
-
                 onSuccess: () => {
                     toastSuccess('Sucesso', status === 4 ? 'Orçamento aprovado com sucesso' : 'Orçamento recusado com sucesso');
                 },
-
                 onError: () => {
                     toastWarning('Erro', 'Não foi possível atualizar o orçamento');
                 },
-
                 onFinish: () => (status === 4 ? setLoadingA(false) : setLoadingR(false)),
             },
         );
     }
 
-    // ✔ Aprovar direto
     function handleApprove() {
         budgetAlter(4);
     }
@@ -94,185 +217,412 @@ function ServiceOrders({ order }: { order: Order }) {
         budgetAlter(5);
     }
 
+    function handleAcknowledgeNotification() {
+        router.post(
+            route('orders.notification.acknowledge', order.tracking_token),
+            {},
+            {
+                preserveScroll: true,
+                onStart: () => setLoadingAck(true),
+                onSuccess: () => {
+                    toastSuccess('Sucesso', 'Recebimento do aviso confirmado com sucesso.');
+                },
+                onError: () => {
+                    toastWarning('Erro', 'Não foi possível confirmar o aviso neste momento.');
+                },
+                onFinish: () => setLoadingAck(false),
+            },
+        );
+    }
+
     return (
         <>
             <Toaster />
             <Head title={`OS #${order.order_number}`} />
 
-            <div className="py-4 shadow-sm">
-                <div className="mx-auto max-w-4xl px-4">
+            <div className="border-b bg-white/90 py-4 shadow-sm backdrop-blur-sm">
+                <div className="mx-auto max-w-6xl px-4">
                     <Timeline status={Number(order.service_status)} />
                 </div>
             </div>
 
-            <div className="flex min-h-screen justify-center bg-gray-100 px-4 py-10">
-                <div className="w-full max-w-xl rounded-xl bg-white p-6 shadow-md">
-                    {/* Header */}
-                    <div className="mb-6 text-center">
-                        {company?.logo && <img src={`/storage/logos/${company?.logo}`} className="mx-auto mb-3 h-12" />}
+            <div className="min-h-screen bg-[linear-gradient(180deg,#f7f4ec_0%,#f9fafb_34%,#ffffff_100%)] px-4 py-8">
+                <div className="mx-auto flex max-w-6xl flex-col gap-6">
+                    <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
+                        <div className="grid gap-0 lg:grid-cols-[1.35fr_0.9fr]">
+                            <div className="bg-[radial-gradient(circle_at_top_left,_rgba(245,158,11,0.15),_transparent_38%),linear-gradient(135deg,#0f172a_0%,#1e293b_55%,#334155_100%)] p-6 text-white md:p-8">
+                                <div className="flex flex-wrap items-start justify-between gap-4">
+                                    <div className="space-y-3">
+                                        {company?.logo && <img src={`/storage/logos/${company.logo}`} className="h-12 rounded-md bg-white/90 p-2" />}
+                                        <div>
+                                            <p className="text-sm font-medium uppercase tracking-[0.25em] text-amber-200">Acompanhamento online</p>
+                                            <h1 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl">
+                                                Ordem de serviço #{order.order_number}
+                                            </h1>
+                                            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-200 md:text-base">{heroNote}</p>
+                                        </div>
+                                    </div>
 
-                        <h1 className="text-2xl font-bold text-gray-800">Ordem de Serviço #{order.order_number}</h1>
-
-                        <p className="text-sm text-gray-500">Aberta em {new Date(order.created_at).toLocaleDateString('pt-BR')}</p>
-                    </div>
-
-                    {/* Status */}
-                    <div className="mb-4 flex justify-center">
-                        {<StatusBadge category="ordem" value={order.service_status} className="px-4 py-2" />}
-                    </div>
-                    {order.service_status === ORDER_STATUS.SERVICE_COMPLETED && (
-                        <div className="mb-4 rounded-md border border-cyan-200 bg-cyan-50 px-4 py-3 text-sm text-slate-800">
-                            <strong>Observação importante:</strong> O serviço foi concluído e seu equipamento está aguardando retirada. Entre
-                            em contato com nossa equipe ou passe em nossa loja para retirar.
-                        </div>
-                    )}
-                    {order.service_status === ORDER_STATUS.BUDGET_GENERATED && (
-                        <div className="mb-6 flex flex-1 items-center justify-center">
-                            <InfoIcon className="h-4 w-4 text-red-500" />
-                            <span className="text-sm font-normal text-red-600 italic">Aguardando aprovação</span>
-                        </div>
-                    )}
-                    {/* Cliente */}
-                    {order.customer?.name && (
-                        <div className="mb-4 border-t border-gray-200 pt-4">
-                            <h2 className="mb-2 font-semibold text-gray-700">Cliente</h2>
-
-                            <p className="text-sm text-gray-600">{order.customer.name}</p>
-                        </div>
-                    )}
-
-                    {/* Equipamento */}
-                    <div className="mb-4 border-t border-gray-200 pt-4">
-                        <h2 className="mb-3 font-semibold text-gray-700">Equipamento</h2>
-
-                        <div className="grid grid-cols-2 gap-3 text-sm">
-                            <div>
-                                <span className="text-gray-500">Tipo</span>
-                                <p className="font-medium text-gray-700">{order.equipment?.equipment}</p>
-                            </div>
-
-                            <div>
-                                <span className="text-gray-500">Modelo</span>
-                                <p className="font-medium text-gray-700">{order.model || '-'}</p>
-                            </div>
-
-                            <div>
-                                <span className="text-gray-500">Acessórios</span>
-                                <p className="font-medium text-gray-700">{order.accessories || '-'}</p>
-                            </div>
-
-                            <div>
-                                <span className="text-gray-500">Estado</span>
-                                <p className="font-medium text-gray-700">{order.state_conservation || '-'}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Defeito */}
-                    {order.defect && (
-                        <div className="mb-4 border-t border-gray-200 pt-4">
-                            <h2 className="mb-2 font-semibold text-gray-700">Defeito Relatado</h2>
-
-                            <p className="text-sm text-gray-600">{order.defect}</p>
-                        </div>
-                    )}
-
-                    {/* Orçamento */}
-                    {order.budget_description && order.budget_value && (
-                        <div className="mb-4 border-t border-gray-200 pt-4">
-                            <h2 className="mb-2 font-semibold text-gray-700">Orçamento</h2>
-
-                            {order.budget_description && (
-                                <p className="mb-3 rounded-md border border-gray-200 bg-gray-50 p-3 text-sm text-gray-600">
-                                    {order.budget_description}
-                                </p>
-                            )}
-
-                            <div className="flex flex-wrap items-center justify-between gap-4">
-                                {/* Valor */}
-                                <div>
-                                    <span className="text-sm text-gray-500">Valor do orçamento</span>
-
-                                    <p className="text-lg font-bold text-red-600">R$ {maskMoney(String(order.budget_value ?? ''))}</p>
+                                    <div className="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 backdrop-blur">
+                                        <p className="text-xs uppercase tracking-[0.2em] text-slate-300">Status atual</p>
+                                        <div className="mt-2">
+                                            <StatusBadge category="ordem" value={order.service_status} className="border-white/20 bg-white/10 px-3 py-1.5 text-white" />
+                                        </div>
+                                    </div>
                                 </div>
 
-                                {/* Ações: cliente só decide enquanto o orçamento está gerado */}
-                                {order.service_status === ORDER_STATUS.BUDGET_GENERATED && (
-                                    <div className="flex items-center gap-2">
-                                        <Button onClick={handleApprove} disabled={loadingA} className="bg-green-600 text-white hover:bg-green-700">
-                                            {loadingA ? 'Aprovando...' : 'Aprovar'}
-                                        </Button>
+                                <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                                    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                                        <p className="text-xs uppercase tracking-[0.18em] text-slate-300">Aberta em</p>
+                                        <p className="mt-2 text-sm font-medium">{formatDate(order.created_at)}</p>
+                                    </div>
+                                    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                                        <p className="text-xs uppercase tracking-[0.18em] text-slate-300">Equipamento</p>
+                                        <p className="mt-2 text-sm font-medium">{order.equipment?.equipment ?? '-'}</p>
+                                    </div>
+                                    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                                        <p className="text-xs uppercase tracking-[0.18em] text-slate-300">Modelo</p>
+                                        <p className="mt-2 text-sm font-medium">{order.model || '-'}</p>
+                                    </div>
+                                    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                                        <p className="text-xs uppercase tracking-[0.18em] text-slate-300">Previsão</p>
+                                        <p className="mt-2 text-sm font-medium">{formatDate(order.delivery_forecast)}</p>
+                                        {remaining && <p className="mt-1 text-xs text-amber-200">{remaining}</p>}
+                                    </div>
+                                </div>
+                            </div>
 
-                                        <Button onClick={handleReject} disabled={loadingR} className="bg-red-600 text-white hover:bg-red-700">
-                                            {loadingR ? 'Reprovando...' : 'Reprovar'}
-                                        </Button>
+                            <div className="space-y-4 bg-[#fcfbf7] p-6 md:p-8">
+                                <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+                                    <div className="flex items-center gap-3">
+                                        <CheckCircle2 className="h-5 w-5 text-amber-700" />
+                                        <div>
+                                            <p className="font-medium text-slate-900">Próximo passo</p>
+                                            <p className="text-sm text-slate-600">{heroNote}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                                    <div className="flex items-center gap-3">
+                                        <ReceiptText className="h-5 w-5 text-slate-500" />
+                                        <div>
+                                            <p className="font-medium text-slate-900">O que fazer agora</p>
+                                            <div className="mt-2 space-y-2">
+                                                {checklist.map((item) => (
+                                                    <div key={item} className="flex items-start gap-2 text-sm text-slate-600">
+                                                        <span className="mt-1 h-1.5 w-1.5 rounded-full bg-amber-500" />
+                                                        <span>{item}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="grid gap-3 sm:grid-cols-2">
+                                    <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                                        <div className="flex items-center gap-3">
+                                            <CreditCard className="h-5 w-5 text-slate-500" />
+                                            <div>
+                                                <p className="text-sm text-slate-500">Total do atendimento</p>
+                                                <p className="text-lg font-semibold text-slate-900">
+                                                    R$ {maskMoney(String(financialSummary.total))}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                                        <div className="flex items-center gap-3">
+                                            <CalendarClock className="h-5 w-5 text-slate-500" />
+                                            <div>
+                                                <p className="text-sm text-slate-500">Saldo pendente</p>
+                                                <p className={`text-lg font-semibold ${financialSummary.remaining > 0.009 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                                                    R$ {maskMoney(String(financialSummary.remaining))}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {order.service_status === ORDER_STATUS.BUDGET_GENERATED && (
+                                    <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
+                                        <div className="flex items-start gap-3">
+                                            <InfoIcon className="mt-0.5 h-5 w-5 text-red-500" />
+                                            <div className="space-y-3">
+                                                <div>
+                                                    <p className="font-medium text-slate-900">Aguardando sua decisão</p>
+                                                    <p className="text-sm text-slate-600">
+                                                        Este orçamento está disponível para aprovação ou reprovação online.
+                                                    </p>
+                                                </div>
+                                                <div className="flex flex-wrap gap-2">
+                                                    <Button onClick={handleApprove} disabled={loadingA} className="bg-green-600 text-white hover:bg-green-700">
+                                                        {loadingA ? 'Aprovando...' : 'Aprovar orçamento'}
+                                                    </Button>
+                                                    <Button onClick={handleReject} disabled={loadingR} className="bg-red-600 text-white hover:bg-red-700">
+                                                        {loadingR ? 'Reprovando...' : 'Reprovar orçamento'}
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 )}
-                            </div>
 
+                                {[ORDER_STATUS.SERVICE_COMPLETED, ORDER_STATUS.CUSTOMER_NOTIFIED].includes(order.service_status) && (
+                                    <div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-4">
+                                        <div className="flex items-start gap-3">
+                                            <InfoIcon className="mt-0.5 h-5 w-5 text-cyan-600" />
+                                            <div className="space-y-3">
+                                                <div>
+                                                    <p className="font-medium text-slate-900">Confirmação de aviso</p>
+                                                    <p className="text-sm text-slate-600">
+                                                        Use este botão para confirmar que você recebeu o aviso de conclusão e retirada do equipamento.
+                                                    </p>
+                                                </div>
+
+                                                {order.customer_notification_acknowledged_at ? (
+                                                    <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+                                                        Aviso confirmado em {formatDateTime(order.customer_notification_acknowledged_at)}.
+                                                    </div>
+                                                ) : (
+                                                    <Button onClick={handleAcknowledgeNotification} disabled={loadingAck} className="bg-cyan-600 text-white hover:bg-cyan-700">
+                                                        {loadingAck ? 'Confirmando...' : 'Recebi o aviso'}
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {order.company?.whatsapp && (
+                                    <a
+                                        href={`https://wa.me/${order.company.whatsapp}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-green-500 px-5 py-3 text-sm font-medium text-white transition hover:bg-green-600"
+                                    >
+                                        <MessageCircle className="h-4 w-4" />
+                                        Falar com a assistência
+                                    </a>
+                                )}
+                            </div>
                         </div>
-                    )}
+                    </section>
 
-                    {/* Serviços executados */}
-                    {order.services_performed && (
-                        <>
-                            <div className="mb-4 border-t border-gray-200 pt-4">
-                                <h2 className="mb-2 font-semibold text-gray-700">Serviços Executados</h2>
-
-                                <p className="mb-3 rounded-md border border-gray-200 bg-gray-50 p-3 text-sm text-gray-600">
-                                    {order.services_performed}
-                                </p>
-                            </div>
-
-                            <div className="grid grid-cols-3 gap-3 pb-4 text-sm">
-                                <div>
-                                    <span className="text-gray-500">Peças</span>
-                                    <p className="font-medium text-gray-700">R$ {maskMoney(String(order.parts_value || 0))}</p>
+                    <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+                        <div className="space-y-6">
+                            <section className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
+                                <div className="mb-4 flex items-center gap-3">
+                                    <Smartphone className="h-5 w-5 text-slate-500" />
+                                    <h2 className="text-lg font-semibold text-slate-900">Resumo do equipamento</h2>
                                 </div>
 
-                                <div>
-                                    <span className="text-gray-500">Serviço</span>
-                                    <p className="font-medium text-gray-700">R$ {maskMoney(String(order.service_value || 0))}</p>
+                                <div className="grid gap-4 sm:grid-cols-2">
+                                    <div>
+                                        <p className="text-sm text-slate-500">Cliente</p>
+                                        <p className="font-medium text-slate-900">{order.customer?.name || '-'}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-slate-500">Tipo</p>
+                                        <p className="font-medium text-slate-900">{order.equipment?.equipment || '-'}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-slate-500">Modelo</p>
+                                        <p className="font-medium text-slate-900">{order.model || '-'}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-slate-500">Acessórios</p>
+                                        <p className="font-medium text-slate-900">{order.accessories || '-'}</p>
+                                    </div>
+                                    <div className="sm:col-span-2">
+                                        <p className="text-sm text-slate-500">Estado informado na entrada</p>
+                                        <p className="font-medium text-slate-900">{order.state_conservation || '-'}</p>
+                                    </div>
+                                    <div className="sm:col-span-2">
+                                        <p className="text-sm text-slate-500">Defeito relatado</p>
+                                        <p className="font-medium text-slate-900">{order.defect || '-'}</p>
+                                    </div>
                                 </div>
+                            </section>
 
-                                <div>
-                                    <span className="text-gray-500">Total</span>
-                                    <p className="text-lg font-bold text-green-600">R$ {maskMoney(String(order.service_cost || 0))}</p>
-                                </div>
-                            </div>
-                        </>
-                    )}
+                            {(order.budget_description || Number(order.budget_value ?? 0) > 0) && (
+                                <section className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
+                                    <div className="mb-4 flex items-center gap-3">
+                                        <FileText className="h-5 w-5 text-slate-500" />
+                                        <h2 className="text-lg font-semibold text-slate-900">Orçamento e decisão</h2>
+                                    </div>
 
-                    {/* Previsão */}
-                    <div className="mb-6 border-t border-gray-200 pt-4">
-                        <h2 className="mb-2 font-semibold text-gray-700">Previsão de Entrega</h2>
+                                    <div className="grid gap-4 md:grid-cols-[1.2fr_0.8fr]">
+                                        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700">
+                                            {order.budget_description || 'Sem descrição detalhada do orçamento.'}
+                                        </div>
+                                        <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
+                                            <p className="text-sm text-slate-500">Valor do orçamento</p>
+                                            <p className="mt-2 text-2xl font-semibold text-red-600">
+                                                R$ {maskMoney(String(order.budget_value ?? 0))}
+                                            </p>
+                                            <p className="mt-3 text-sm text-slate-600">
+                                                Status atual: <span className="font-medium">{orderStatusLabel(order.service_status)}</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </section>
+                            )}
 
-                        <p className="text-sm text-gray-600">
-                            {order.delivery_forecast ? new Date(order.delivery_forecast).toLocaleDateString('pt-BR') : 'Não definida'}
-                        </p>
+                            {(order.services_performed || Number(order.service_cost ?? 0) > 0) && (
+                                <section className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
+                                    <div className="mb-4 flex items-center gap-3">
+                                        <Wrench className="h-5 w-5 text-slate-500" />
+                                        <h2 className="text-lg font-semibold text-slate-900">Serviço executado</h2>
+                                    </div>
 
-                        {remaining && <p className={`mt-1 text-sm font-medium ${remainingColor(remaining)}`}>{remaining}</p>}
-                    </div>
+                                    {order.services_performed && (
+                                        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700">
+                                            {order.services_performed}
+                                        </div>
+                                    )}
 
-                    <div className="border-t border-gray-200 pt-4">
-                        <OrderTimeline statusHistory={order.status_history} logs={order.logs} mode="public" />
-                    </div>
+                                    <div className="mt-4 grid gap-4 sm:grid-cols-3">
+                                        <div className="rounded-2xl border border-slate-200 p-4">
+                                            <p className="text-sm text-slate-500">Peças</p>
+                                            <p className="mt-2 text-lg font-semibold text-slate-900">R$ {maskMoney(String(order.parts_value || 0))}</p>
+                                        </div>
+                                        <div className="rounded-2xl border border-slate-200 p-4">
+                                            <p className="text-sm text-slate-500">Serviço</p>
+                                            <p className="mt-2 text-lg font-semibold text-slate-900">R$ {maskMoney(String(order.service_value || 0))}</p>
+                                        </div>
+                                        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+                                            <p className="text-sm text-slate-500">Total</p>
+                                            <p className="mt-2 text-lg font-semibold text-emerald-700">R$ {maskMoney(String(order.service_cost || 0))}</p>
+                                        </div>
+                                    </div>
+                                </section>
+                            )}
 
-                    {/* WhatsApp */}
-                    {order.company?.whatsapp && (
-                        <div className="mt-6 text-center">
-                            <a
-                                href={`https://wa.me/${order.company.whatsapp}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="rounded-lg bg-green-500 px-5 py-2 text-sm font-medium text-white hover:bg-green-600"
-                            >
-                                Falar com a assistência
-                            </a>
+                            {imageUrls.length > 0 && (
+                                <section className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
+                                    <div className="mb-4 flex items-center gap-3">
+                                        <PackageSearch className="h-5 w-5 text-slate-500" />
+                                        <h2 className="text-lg font-semibold text-slate-900">Imagens do atendimento</h2>
+                                    </div>
+
+                                    <div className="grid gap-4 sm:grid-cols-2">
+                                        {imageUrls.map((image) => (
+                                            <button
+                                                key={image.id}
+                                                type="button"
+                                                onClick={() => setSelectedImage({ src: image.src, alt: image.alt })}
+                                                className="group relative overflow-hidden rounded-2xl border border-slate-200 text-left"
+                                            >
+                                                <img src={image.src} alt={image.alt} className="h-52 w-full object-cover transition duration-300 group-hover:scale-[1.02]" />
+                                                <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-slate-950/75 to-transparent px-4 py-3 text-sm text-white">
+                                                    <span>Visualizar imagem</span>
+                                                    <Expand className="h-4 w-4" />
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </section>
+                            )}
                         </div>
-                    )}
+
+                        <div className="space-y-6">
+                            <section className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
+                                <div className="mb-4 flex items-center gap-3">
+                                    <ShieldCheck className="h-5 w-5 text-slate-500" />
+                                    <h2 className="text-lg font-semibold text-slate-900">Garantia e entrega</h2>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <div className="rounded-2xl border border-slate-200 p-4">
+                                        <p className="text-sm text-slate-500">Previsão de entrega</p>
+                                        <p className="mt-2 font-medium text-slate-900">{formatDate(order.delivery_forecast)}</p>
+                                        {remaining && <p className="mt-1 text-sm text-slate-600">{remaining}</p>}
+                                    </div>
+
+                                    <div className="rounded-2xl border border-slate-200 p-4">
+                                        <p className="text-sm text-slate-500">Garantia</p>
+                                        <p className="mt-2 font-medium text-slate-900">
+                                            {order.warranty_days ? `${order.warranty_days} dia(s)` : 'Não informada'}
+                                        </p>
+                                        {order.warranty_expires_at && (
+                                            <p className="mt-1 text-sm text-slate-600">Válida até {formatDate(order.warranty_expires_at)}</p>
+                                        )}
+                                    </div>
+
+                                    {order.is_warranty_return && (
+                                        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+                                            <p className="font-medium text-slate-900">Retorno em garantia</p>
+                                            <p className="mt-1 text-sm text-slate-700">
+                                                Esta ordem foi identificada como retorno em garantia
+                                                {order.warranty_source_order?.order_number ? ` da OS #${order.warranty_source_order.order_number}` : ''}.
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            </section>
+
+                            <section className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
+                                <div className="mb-4 flex items-center gap-3">
+                                    <CreditCard className="h-5 w-5 text-slate-500" />
+                                    <h2 className="text-lg font-semibold text-slate-900">Pagamentos e liberação</h2>
+                                </div>
+
+                                <div className="grid gap-3 sm:grid-cols-3">
+                                    <div className="rounded-2xl border border-slate-200 p-4">
+                                        <p className="text-sm text-slate-500">Total</p>
+                                        <p className="mt-2 font-semibold text-slate-900">R$ {maskMoney(String(financialSummary.total))}</p>
+                                    </div>
+                                    <div className="rounded-2xl border border-slate-200 p-4">
+                                        <p className="text-sm text-slate-500">Pago</p>
+                                        <p className="mt-2 font-semibold text-emerald-700">R$ {maskMoney(String(financialSummary.paid))}</p>
+                                    </div>
+                                    <div className="rounded-2xl border border-slate-200 p-4">
+                                        <p className="text-sm text-slate-500">Saldo</p>
+                                        <p className={`mt-2 font-semibold ${financialSummary.remaining > 0.009 ? 'text-rose-600' : 'text-emerald-700'}`}>
+                                            R$ {maskMoney(String(financialSummary.remaining))}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {(order.order_payments ?? []).length > 0 && (
+                                    <div className="mt-4 space-y-3">
+                                        {(order.order_payments ?? []).map((payment) => (
+                                            <div key={payment.id} className="rounded-2xl border border-slate-200 px-4 py-3">
+                                                <div className="flex items-center justify-between gap-3">
+                                                    <div>
+                                                        <p className="font-medium text-slate-900">R$ {maskMoney(String(payment.amount ?? 0))}</p>
+                                                        <p className="text-sm text-slate-500">
+                                                            {payment.payment_method || 'Pagamento'} • {formatDateTime(payment.paid_at)}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </section>
+
+                            <section className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
+                                <h2 className="text-lg font-semibold text-slate-900">Andamento da ordem</h2>
+                                <div className="mt-4 border-t border-slate-100 pt-4">
+                                    <OrderTimeline statusHistory={order.status_history} logs={order.logs} mode="public" />
+                                </div>
+                            </section>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            <Dialog open={Boolean(selectedImage)} onOpenChange={(open) => !open && setSelectedImage(null)}>
+                <DialogContent className="max-w-4xl border-none bg-slate-950 p-3 shadow-2xl">
+                    <DialogTitle className="sr-only">Imagem do atendimento</DialogTitle>
+                    {selectedImage && (
+                        <img src={selectedImage.src} alt={selectedImage.alt} className="max-h-[80vh] w-full rounded-xl object-contain" />
+                    )}
+                </DialogContent>
+            </Dialog>
         </>
     );
 }

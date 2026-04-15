@@ -19,6 +19,13 @@ class Order extends Model
     protected $casts = [
         'delivery_date' => 'datetime',
         'warranty_expires_at' => 'datetime',
+        'customer_notification_acknowledged_at' => 'datetime',
+        'budget_follow_up_paused_at' => 'datetime',
+        'payment_follow_up_paused_at' => 'datetime',
+        'budget_follow_up_snoozed_until' => 'datetime',
+        'payment_follow_up_snoozed_until' => 'datetime',
+        'budget_follow_up_response_at' => 'datetime',
+        'payment_follow_up_response_at' => 'datetime',
     ];
 
     public function customer(): BelongsTo
@@ -67,5 +74,15 @@ class Order extends Model
     public function warrantySourceOrder(): BelongsTo
     {
         return $this->belongsTo(self::class, 'warranty_source_order_id');
+    }
+
+    public function budgetFollowUpAssignee(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'budget_follow_up_assigned_to');
+    }
+
+    public function paymentFollowUpAssignee(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'payment_follow_up_assigned_to');
     }
 }

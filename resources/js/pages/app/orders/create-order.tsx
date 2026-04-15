@@ -161,7 +161,7 @@ export default function CreateOrder({
                                         }),
                                         singleValue: (base) => ({
                                             ...base,
-                                            color: '#111827',
+                                            color: 'hsl(var(--foreground))',
                                             fontSize: '14px',
                                         }),
                                         dropdownIndicator: (base) => ({
@@ -195,7 +195,7 @@ export default function CreateOrder({
                                         }),
                                         singleValue: (base) => ({
                                             ...base,
-                                            color: '#111827',
+                                            color: 'hsl(var(--foreground))',
                                             fontSize: '14px',
                                         }),
                                         dropdownIndicator: (base) => ({
@@ -333,7 +333,7 @@ export default function CreateOrder({
                                         }),
                                         singleValue: (base) => ({
                                             ...base,
-                                            color: '#111827',
+                                            color: 'hsl(var(--foreground))',
                                             fontSize: '14px',
                                         }),
                                         dropdownIndicator: (base) => ({

@@ -18,6 +18,8 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/os/{token}', [OsController::class, 'index'])->name('os.token');
 Route::post('/os/{token}/budget-status', [OsController::class, 'updateBudgetStatus'])
     ->name('orders.budget.status');
+Route::post('/os/{token}/acknowledge-notification', [OsController::class, 'acknowledgeNotification'])
+    ->name('orders.notification.acknowledge');
 
 Route::get('/privacidade', function () {
     return Inertia::render('site/privacy/index');

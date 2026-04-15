@@ -37,7 +37,7 @@ type TimelineEvent = {
     title: string;
     description?: string;
     actor?: string;
-    category: 'status' | 'payment' | 'parts' | 'fiscal' | 'feedback' | 'update' | 'creation' | 'image';
+    category: 'status' | 'payment' | 'parts' | 'fiscal' | 'feedback' | 'update' | 'creation' | 'image' | 'communication';
     statusValue?: number;
 };
 
@@ -49,6 +49,7 @@ const categoryMeta = {
     image: { icon: Camera, badge: 'Imagem' },
     fiscal: { icon: ReceiptText, badge: 'Fiscal' },
     feedback: { icon: ShieldCheck, badge: 'Feedback' },
+    communication: { icon: MessageSquareMore, badge: 'Comunicação' },
     update: { icon: MessageSquareMore, badge: 'Atualização' },
 } as const;
 
@@ -95,6 +96,126 @@ function describeLog(log: OrderLogItem): Omit<TimelineEvent, 'id' | 'createdAt' 
                 title: 'Pagamento removido',
                 description: [formatMoney(data.amount), data.payment_method].filter(Boolean).join(' • ') || undefined,
                 category: 'payment',
+            };
+        case 'payment_reminder_sent':
+            const triggerLabel =
+                data.trigger === 'automatic'
+                    ? 'automático'
+                    : data.trigger === 'manual'
+                      ? 'manual'
+                      : null;
+
+            return {
+                title: 'Lembrete de cobrança enviado',
+                description: [
+                    triggerLabel,
+                    typeof data.recipient === 'string' ? data.recipient : null,
+                    formatMoney(data.remaining),
+                    data.is_overdue ? 'cobrança vencida' : 'lembrete',
+                ]
+                    .filter(Boolean)
+                    .join(' • ') || undefined,
+                category: 'communication',
+            };
+        case 'budget_follow_up_sent':
+            return {
+                title: 'Follow-up de orçamento enviado',
+                description: [
+                    data.trigger === 'automatic'
+                        ? 'automático'
+                        : data.trigger === 'manual'
+                          ? 'manual'
+                          : null,
+                    typeof data.recipient === 'string' ? data.recipient : null,
+                    typeof data.days_pending === 'number' ? `${data.days_pending} dia(s) sem retorno` : null,
+                ]
+                    .filter(Boolean)
+                    .join(' • ') || undefined,
+                category: 'communication',
+            };
+        case 'budget_follow_up_paused':
+            return {
+                title: 'Automação de orçamento pausada',
+                description: typeof data.reason === 'string' ? data.reason : undefined,
+                category: 'communication',
+            };
+        case 'budget_follow_up_resumed':
+            return {
+                title: 'Automação de orçamento reativada',
+                category: 'communication',
+            };
+        case 'payment_follow_up_paused':
+            return {
+                title: 'Automação de cobrança pausada',
+                description: typeof data.reason === 'string' ? data.reason : undefined,
+                category: 'communication',
+            };
+        case 'payment_follow_up_resumed':
+            return {
+                title: 'Automação de cobrança reativada',
+                category: 'communication',
+            };
+        case 'budget_follow_up_response_marked':
+            return {
+                title: 'Retorno do cliente registrado no orçamento',
+                description: typeof data.label === 'string' ? data.label : undefined,
+                category: 'communication',
+            };
+        case 'payment_follow_up_response_marked':
+            return {
+                title: 'Retorno do cliente registrado na cobrança',
+                description: typeof data.label === 'string' ? data.label : undefined,
+                category: 'communication',
+            };
+        case 'budget_follow_up_task_completed':
+            return {
+                title: 'Tarefa de orçamento concluída no dia',
+                category: 'communication',
+            };
+        case 'payment_follow_up_task_completed':
+            return {
+                title: 'Tarefa de cobrança concluída no dia',
+                description: [
+                    typeof data.reason === 'string' ? data.reason : null,
+                    typeof data.assigned_to === 'string' ? `Responsável: ${data.assigned_to}` : null,
+                ]
+                    .filter(Boolean)
+                    .join(' • ') || undefined,
+                category: 'communication',
+            };
+        case 'budget_follow_up_task_snoozed':
+            return {
+                title: 'Tarefa de orçamento adiada',
+                description: [
+                    typeof data.days === 'number' ? `${data.days} dia(s)` : null,
+                    typeof data.snoozed_until === 'string' ? `até ${moment(data.snoozed_until).format('DD/MM/YYYY HH:mm')}` : null,
+                ]
+                    .filter(Boolean)
+                    .join(' • ') || undefined,
+                category: 'communication',
+            };
+        case 'budget_follow_up_task_assigned':
+            return {
+                title: 'Responsável do orçamento atualizado',
+                description: typeof data.assigned_to === 'string' ? data.assigned_to : 'Responsável removido',
+                category: 'communication',
+            };
+        case 'payment_follow_up_task_assigned':
+            return {
+                title: 'Responsável da cobrança atualizado',
+                description: typeof data.assigned_to === 'string' ? data.assigned_to : 'Responsável removido',
+                category: 'communication',
+            };
+        case 'payment_follow_up_task_snoozed':
+            return {
+                title: 'Tarefa de cobrança adiada',
+                description: [
+                    typeof data.days === 'number' ? `${data.days} dia(s)` : null,
+                    typeof data.snoozed_until === 'string' ? `até ${moment(data.snoozed_until).format('DD/MM/YYYY HH:mm')}` : null,
+                ]
+                    .filter(Boolean)
+                    .join(' • ') || undefined,
+                category: 'communication',
             };
         case 'part_removed':
             return {

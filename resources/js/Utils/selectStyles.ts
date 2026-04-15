@@ -12,8 +12,30 @@ const selectStyles: StylesConfig<OptionType, false> = {
     }),
     singleValue: (base) => ({
         ...base,
-        color: '#ebebeb', // cinza escuro (igual input padrão)
+        color: 'hsl(var(--foreground))',
         fontSize: '14px',
+    }),
+    input: (base) => ({
+        ...base,
+        color: 'hsl(var(--foreground))',
+    }),
+    placeholder: (base) => ({
+        ...base,
+        color: 'hsl(var(--muted-foreground))',
+    }),
+    menu: (base) => ({
+        ...base,
+        backgroundColor: 'hsl(var(--popover))',
+        color: 'hsl(var(--popover-foreground))',
+    }),
+    option: (base, state) => ({
+        ...base,
+        backgroundColor: state.isSelected
+            ? 'hsl(var(--accent))'
+            : state.isFocused
+              ? 'hsl(var(--accent) / 0.7)'
+              : 'transparent',
+        color: 'hsl(var(--foreground))',
     }),
     dropdownIndicator: (base) => ({
         ...base,

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\App\Customer;
 use App\Models\App\Equipment;
+use App\Models\App\OrderLog;
 use App\Models\App\Order;
 use App\Models\Tenant;
 use App\Support\OrderStatus;
@@ -64,6 +65,38 @@ class OsControllerTest extends TestCase
         $this->assertDatabaseMissing('order_status_history', [
             'order_id' => $order->id,
             'status' => OrderStatus::BUDGET_REJECTED,
+        ]);
+    }
+
+    public function test_customer_can_acknowledge_completion_notice_from_public_page(): void
+    {
+        $tenant = Tenant::factory()->create();
+        $customer = Customer::factory()->forTenant($tenant->id)->create();
+        $equipment = Equipment::factory()->forTenant($tenant->id)->create();
+        $order = Order::factory()->forTenant($tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'service_status' => OrderStatus::SERVICE_COMPLETED,
+        ]);
+
+        $response = $this->post(route('orders.notification.acknowledge', $order->tracking_token));
+
+        $response->assertSessionHas('success', 'Confirmação de aviso registrada com sucesso.');
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'service_status' => OrderStatus::CUSTOMER_NOTIFIED,
+        ]);
+
+        $this->assertDatabaseHas('order_status_history', [
+            'order_id' => $order->id,
+            'status' => OrderStatus::CUSTOMER_NOTIFIED,
+            'note' => 'Cliente confirmou que recebeu o aviso de conclusão.',
+        ]);
+
+        $this->assertDatabaseHas('order_logs', [
+            'order_id' => $order->id,
+            'action' => 'customer_notification_acknowledged',
         ]);
     }
 }

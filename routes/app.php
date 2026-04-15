@@ -7,6 +7,7 @@ use App\Http\Controllers\App\CompanyController;
 use App\Http\Controllers\App\CustomerController;
 use App\Http\Controllers\App\DashboardController;
 use App\Http\Controllers\App\ExpenseController;
+use App\Http\Controllers\App\FollowUpController;
 use App\Http\Controllers\App\EquipmentController;
 use App\Http\Controllers\App\ImageController;
 use App\Http\Controllers\App\LabelPrintingController;
@@ -36,6 +37,15 @@ Route::get('/kpisFinancialSales/{timerange}', [DashboardController::class, 'kpis
 Route::get('/financialSalesRevenueChart/{timerange}', [DashboardController::class, 'financialSalesRevenueChart'])->name('financialSalesRevenueChart');
 Route::get('/quality-indicators', [QualityIndicatorController::class, 'index'])->name('quality.index');
 Route::get('/quality-indicators/metrics/{timerange}', [QualityIndicatorController::class, 'metrics'])->name('quality.metrics');
+Route::get('/follow-ups', [FollowUpController::class, 'index'])->name('follow-ups.index');
+Route::get('/follow-ups/tasks', [FollowUpController::class, 'tasks'])->name('follow-ups.tasks');
+Route::get('/follow-ups/performance', [FollowUpController::class, 'performance'])->name('follow-ups.performance');
+Route::post('/follow-ups/{order}/pause', [FollowUpController::class, 'pause'])->name('follow-ups.pause');
+Route::post('/follow-ups/{order}/resume', [FollowUpController::class, 'resume'])->name('follow-ups.resume');
+Route::post('/follow-ups/{order}/respond', [FollowUpController::class, 'respond'])->name('follow-ups.respond');
+Route::post('/follow-ups/{order}/complete-task', [FollowUpController::class, 'completeTask'])->name('follow-ups.complete-task');
+Route::post('/follow-ups/{order}/snooze-task', [FollowUpController::class, 'snoozeTask'])->name('follow-ups.snooze-task');
+Route::post('/follow-ups/{order}/assign-task', [FollowUpController::class, 'assignTask'])->name('follow-ups.assign-task');
 
 Route::resource('customers', CustomerController::class);
 Route::post('customers/import-customer', [CustomerController::class, 'ImportCustomer'])->name('import.customer');
@@ -45,6 +55,7 @@ Route::patch('orders/{order}/feedback', [OrderController::class, 'markFeedback']
 Route::resource('orders', OrderController::class);
 Route::post('orders/{order}/payments', [OrderController::class, 'storePayment'])->name('orders.payments.store');
 Route::post('orders/{order}/payments/reminder', [OrderController::class, 'sendPaymentReminder'])->name('orders.payments.reminder');
+Route::post('orders/{order}/budget-follow-up', [OrderController::class, 'sendBudgetFollowUp'])->name('orders.budget-follow-up');
 Route::delete('orders/{order}/payments/{payment}', [OrderController::class, 'destroyPayment'])->name('orders.payments.destroy');
 Route::get('orders/{order}/payments-data', [OrderController::class, 'paymentsData'])->name('orders.payments.data');
 Route::post('orders/{order}/fiscal', [OrderController::class, 'registerFiscal'])->name('orders.fiscal.register');

@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { WhatsAppButton } from '@/components/WhatsAppButtonProps';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
@@ -17,7 +18,7 @@ import { statusServico } from '@/Utils/dataSelect';
 import { maskPhone } from '@/Utils/mask';
 import { ORDER_STATUSES_READY_FOR_INVOICE } from '@/Utils/order-status';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Edit, FileTextIcon, ImageUp, LinkIcon, Plus, Wrench, X } from 'lucide-react';
+import { AlertTriangle, Edit, FileTextIcon, ImageUp, LinkIcon, Mail, Plus, Wrench, X } from 'lucide-react';
 import moment from 'moment';
 import { useState } from 'react';
 import ModalReceipt from '../receipts/modal-receipt';
@@ -51,6 +52,27 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                 preserveState: true,
             },
         );
+    };
+
+    const handleBudgetFollowUp = (id: number) => {
+        router.post(
+            route('app.orders.budget-follow-up', id),
+            {},
+            {
+                preserveScroll: true,
+                preserveState: true,
+            },
+        );
+    };
+
+    const communicationLabel = (communication: any) => {
+        if (!communication) return '';
+
+        if (communication.action === 'budget_follow_up_sent') {
+            return 'follow-up de orçamento';
+        }
+
+        return 'cobrança';
     };
 
     return (
@@ -128,6 +150,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                 <TableHead>Recebimento</TableHead>
                                 <TableHead>Equipamento</TableHead>
                                 <TableHead>Modelo</TableHead>
+                                <TableHead>Garantia</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead>Entrega</TableHead>
                                 {canManageOrders && <TableHead>Feedback</TableHead>}
@@ -165,7 +188,6 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                         <TableRow key={order.id}>
                                             <TableCell>{order.order_number}</TableCell>
                                             <TableCell className="font-medium">
-                                                <div className="flex flex-col gap-2">
                                                     <Link
                                                         className="flex items-center gap-2"
                                                         href={route('app.orders.index', { search: order.customer.name })}
@@ -174,38 +196,44 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                         <Wrench className="h-4 w-4" />
                                                         <span>{order.customer.name}</span>
                                                     </Link>
-                                                    {order.is_warranty_return && (
-                                                        <Badge
-                                                            variant="secondary"
-                                                            className="w-fit bg-amber-100 text-amber-900 hover:bg-amber-100"
-                                                        >
-                                                            Retorno em garantia
-                                                        </Badge>
+                                                    {order.last_communication?.created_at && (
+                                                        <span className="text-muted-foreground text-xs">
+                                                            Último contato: {communicationLabel(order.last_communication)}{' '}
+                                                            {order.last_communication?.trigger === 'automatic' ? 'automático' : 'manual'} por e-mail{' '}
+                                                            {moment(order.last_communication.created_at).fromNow()}
+                                                        </span>
                                                     )}
-                                                    {hasBudgetFollowUp && (
-                                                        <Badge
-                                                            variant="secondary"
-                                                            className="w-fit bg-sky-100 text-sky-900 hover:bg-sky-100"
-                                                        >
-                                                            Orçamento parado
-                                                        </Badge>
-                                                    )}
-                                                    {hasPendingPaymentFollowUp && (
-                                                        <Badge
-                                                            variant="secondary"
-                                                            className="w-fit bg-rose-100 text-rose-900 hover:bg-rose-100"
-                                                        >
-                                                            Cobrança pendente
-                                                        </Badge>
-                                                    )}
-                                                </div>
-                                            </TableCell>
+                                                </TableCell>
                                             <TableCell className="font-medium">{maskPhone(order.customer.phone)}</TableCell>
                                             <TableCell>{moment(order.created_at).format('DD/MM/YYYY')}</TableCell>
                                             <TableCell>{order.equipment.equipment}</TableCell>
                                             <TableCell>{order.model}</TableCell>
                                             <TableCell>
-                                                <StatusBadge category="ordem" value={order.service_status} />
+                                                {Boolean(order.is_warranty_return) && (
+                                                    <Badge
+                                                        variant="secondary"
+                                                        className="w-fit bg-amber-100 text-amber-900 hover:bg-amber-100"
+                                                    >
+                                                        Retorno
+                                                    </Badge>
+                                                )}
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center gap-2">
+                                                    <StatusBadge category="ordem" value={order.service_status} />
+                                                    {hasBudgetFollowUp && (
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <span className="inline-flex cursor-help text-amber-600">
+                                                                    <AlertTriangle className="h-4 w-4" />
+                                                                </span>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                Orçamento aguardando retorno há {communicationDaysPending} dias.
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    )}
+                                                </div>
                                             </TableCell>
                                             <TableCell>{order.delivery_date ? moment(order.delivery_date).format('DD/MM/YYYY') : ''}</TableCell>
                                             {canManageOrders && (
@@ -230,6 +258,18 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                     <Badge variant="secondary" className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">
                                                         NFSe registrada
                                                     </Badge>
+                                                )}
+
+                                                {canManageOrders && hasBudgetFollowUp && order.can_send_budget_follow_up && (
+                                                    <Button
+                                                        type="button"
+                                                        size="icon"
+                                                        variant="outline"
+                                                        title="Enviar follow-up de orçamento"
+                                                        onClick={() => handleBudgetFollowUp(order.id)}
+                                                    >
+                                                        <Mail className="h-4 w-4" />
+                                                    </Button>
                                                 )}
 
                                                 {canManageOrders && hasFinancialValuesFilled && hasPendingPayment && (
@@ -258,7 +298,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                 {canManageOrders &&
                                                     ORDER_STATUSES_READY_FOR_INVOICE.includes(Number(order.service_status)) && (
                                                         <Button
-                                                            title="Emitir Nota Fiscal"
+                                                            title="Emitir NFSe"
                                                             onClick={() => {
                                                                 setSelectedInvoiceOrder(order);
                                                                 setOpenInvoiceModal(true);
@@ -266,7 +306,6 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                             className="rounded-lg py-2 text-sm font-medium"
                                                         >
                                                             <FileTextIcon className="h-4 w-4" />
-                                                            NFSe
                                                         </Button>
                                                     )}
 
@@ -315,7 +354,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                 })
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={canManageOrders ? 10 : 9} className="flex h-16 w-full items-center justify-center">
+                                    <TableCell colSpan={canManageOrders ? 11 : 10} className="flex h-16 w-full items-center justify-center">
                                         Não há dados a serem mostrados no momento.
                                     </TableCell>
                                 </TableRow>
@@ -323,7 +362,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                         </TableBody>
                         <TableFooter>
                             <TableRow>
-                                <TableCell colSpan={canManageOrders ? 10 : 9}>
+                                <TableCell colSpan={canManageOrders ? 11 : 10}>
                                     <AppPagination data={orders} />
                                 </TableCell>
                             </TableRow>

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\App;
 
+use App\Models\App\OrderLog;
 use App\Models\App\Order;
 use App\Models\Tenant;
 use App\Models\User;
@@ -47,6 +48,40 @@ class DashboardControllerTest extends TestCase
             ->assertViewHas('page.props.orders.garantia', function (array $orders) use ($warrantyReturnOrder) {
                 return collect($orders)->pluck('id')->contains($warrantyReturnOrder->id);
             });
+    }
+
+    public function test_dashboard_index_exposes_commercial_performance_alert(): void
+    {
+        $budgetOrder = Order::factory()->forTenant($this->tenant->id)->create([
+            'service_status' => OrderStatus::BUDGET_GENERATED,
+        ]);
+
+        $paymentOrder = Order::factory()->forTenant($this->tenant->id)->create([
+            'service_status' => OrderStatus::DELIVERED,
+            'service_cost' => 300,
+        ]);
+
+        OrderLog::query()->create([
+            'order_id' => $budgetOrder->id,
+            'action' => 'budget_follow_up_sent',
+            'data' => ['trigger' => 'manual'],
+            'created_at' => now()->subDay(),
+        ]);
+
+        OrderLog::query()->create([
+            'order_id' => $paymentOrder->id,
+            'action' => 'payment_reminder_sent',
+            'data' => ['trigger' => 'automatic'],
+            'created_at' => now()->subDay(),
+        ]);
+
+        $response = $this->get(route('app.dashboard'));
+
+        $response
+            ->assertOk()
+            ->assertViewHas('page.props.performanceAlert.hasAlert', true)
+            ->assertViewHas('page.props.performanceAlert.budgetBelowTarget', true)
+            ->assertViewHas('page.props.performanceAlert.paymentBelowTarget', true);
     }
 
     public function test_metrics_system_returns_warranty_return_count_for_period(): void

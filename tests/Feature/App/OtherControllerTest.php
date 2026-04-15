@@ -33,7 +33,8 @@ class OtherControllerTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertViewHas('page.props.businessMetrics.warranty_return_alert_threshold', 10);
+            ->assertViewHas('page.props.businessMetrics.warranty_return_alert_threshold', 10)
+            ->assertViewHas('page.props.businessMetrics.communication_follow_up_cooldown_days', 2);
     }
 
     public function test_it_updates_warranty_return_alert_threshold(): void
@@ -43,6 +44,7 @@ class OtherControllerTest extends TestCase
         $response = $this->put(route('app.other-settings.update', $other), [
             'enablesales' => true,
             'warranty_return_alert_threshold' => 7.5,
+            'communication_follow_up_cooldown_days' => 4,
         ]);
 
         $response->assertRedirect(route('app.other-settings.index', ['other' => $other->id]));
@@ -50,6 +52,7 @@ class OtherControllerTest extends TestCase
         $this->assertDatabaseHas('others', [
             'id' => $other->id,
             'warranty_return_alert_threshold' => 7.5,
+            'communication_follow_up_cooldown_days' => 4,
         ]);
     }
 }

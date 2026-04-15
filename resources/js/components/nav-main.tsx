@@ -1,4 +1,5 @@
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import { Badge } from '@/components/ui/badge';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 
@@ -10,10 +11,13 @@ type NavMainPageProps = {
         role?: string;
         permissions?: string[];
     };
+    performanceAlert?: {
+        hasAlert?: boolean;
+    } | null;
 };
 
 export function NavMain({ items = [] }: { items: NavItem[] }) {
-    const { othersetting, auth } = usePage<NavMainPageProps>().props;
+    const { othersetting, auth, performanceAlert } = usePage<NavMainPageProps>().props;
     const disableSales = !othersetting?.enablesales ? 'sales' : '';
     const permissions = auth?.permissions ?? [];
     const canAccessSalesModules =
@@ -33,6 +37,11 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                 <Link href={item.href} prefetch>
                                     {item.icon && <item.icon />}
                                     <span>{item.title}</span>
+                                    {item.title === 'Performance comercial' && performanceAlert?.hasAlert && (
+                                        <Badge variant="destructive" className="ml-auto h-5 px-1.5 text-[10px]">
+                                            Alerta
+                                        </Badge>
+                                    )}
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>

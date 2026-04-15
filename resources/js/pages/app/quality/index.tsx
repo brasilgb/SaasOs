@@ -19,7 +19,7 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: route('app.dashboard'),
     },
     {
-        title: 'Indicadores de qualidade',
+        title: 'Ações de garantia',
         href: route('app.quality.index'),
     },
 ];
@@ -153,12 +153,12 @@ export default function QualityIndicators() {
 
     return (
         <AppLayout>
-            <Head title="Indicadores de qualidade" />
+            <Head title="Ações de garantia" />
 
             <div className="flex h-16 items-center justify-between px-4">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={ShieldAlert} className="h-8 w-8" />
-                    <h2 className="text-xl font-semibold tracking-tight">Indicadores de qualidade</h2>
+                    <h2 className="text-xl font-semibold tracking-tight">Ações de garantia</h2>
                 </div>
                 <div>
                     <Breadcrumbs breadcrumbs={breadcrumbs} />
@@ -202,9 +202,9 @@ export default function QualityIndicators() {
                 <Card className={severity.cardClass}>
                     <CardHeader className="flex flex-row items-start justify-between gap-3">
                         <div>
-                            <CardTitle className={`text-base ${severity.textClass}`}>Saúde da garantia</CardTitle>
+                            <CardTitle className={`text-base ${severity.textClass}`}>Panorama da garantia</CardTitle>
                             <p className={`mt-2 text-sm ${severity.textClass}`}>
-                                Severidade {severity.label}. Taxa atual de retorno em garantia: {summary?.warranty_return_rate ?? 0}%,
+                                Situação {severity.label}. Taxa atual de retorno em garantia: {summary?.warranty_return_rate ?? 0}%,
                                 com limite configurado de {summary?.warranty_return_threshold ?? 0}%.
                             </p>
                             <p className={`mt-2 text-sm font-medium ${comparisonTextClass}`}>
@@ -218,7 +218,7 @@ export default function QualityIndicators() {
 
                 <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
                     <Card>
-                        <CardHeader><CardTitle className="text-base">Ordens no período</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="text-base">Ordens analisadas</CardTitle></CardHeader>
                         <CardContent className="text-3xl font-bold">{summary?.total_orders ?? 0}</CardContent>
                     </Card>
                     <Card>
@@ -226,32 +226,32 @@ export default function QualityIndicators() {
                         <CardContent className="text-3xl font-bold">{summary?.warranty_returns ?? 0}</CardContent>
                     </Card>
                     <Card>
-                        <CardHeader><CardTitle className="text-base">Retornos abertos</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="text-base">Retornos em aberto</CardTitle></CardHeader>
                         <CardContent className="text-3xl font-bold">{summary?.open_warranty_returns ?? 0}</CardContent>
                     </Card>
                     <Card>
-                        <CardHeader><CardTitle className="text-base">Clientes afetados</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="text-base">Clientes com retorno</CardTitle></CardHeader>
                         <CardContent className="text-3xl font-bold">{summary?.affected_customers ?? 0}</CardContent>
                     </Card>
                     <Card>
-                        <CardHeader><CardTitle className="text-base">Média para retorno</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="text-base">Média até o retorno</CardTitle></CardHeader>
                         <CardContent className="text-3xl font-bold">{summary?.avg_days_to_return ?? 0}d</CardContent>
                     </Card>
                 </div>
 
                 <div className="mt-4 grid gap-4 xl:grid-cols-3">
                     <RankingCard
-                        title="Equipamentos com mais retorno"
+                        title="Equipamentos com mais reincidência"
                         items={metrics?.top_equipments}
                         emptyText="Nenhum retorno em garantia no período."
                     />
                     <RankingCard
-                        title="Defeitos mais recorrentes"
+                        title="Defeitos com mais reincidência"
                         items={metrics?.top_defects}
                         emptyText="Nenhum defeito recorrente em garantia no período."
                     />
                     <RankingCard
-                        title="Técnicos com mais retorno"
+                        title="Técnicos com mais reincidência"
                         items={metrics?.top_technicians}
                         emptyText="Nenhum técnico associado a retorno no período."
                     />
@@ -263,7 +263,7 @@ export default function QualityIndicators() {
 
                 <div className="mt-4">
                     <RankingCard
-                        title="Status atuais dos retornos em garantia"
+                        title="Situação atual dos retornos em garantia"
                         items={metrics?.status_breakdown?.map((item: any) => ({ label: item.label, total: item.total }))}
                         emptyText="Nenhum retorno em garantia no período."
                     />

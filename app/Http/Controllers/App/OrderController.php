@@ -4,7 +4,9 @@ namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OrderRequest;
+use App\Mail\OrderBudgetFollowUpMail;
 use App\Mail\OrderCreatedMail;
+use App\Models\App\Other;
 use App\Mail\OrderPaymentReminderMail;
 use App\Mail\OrderStatusUpdatedMail;
 use App\Models\App\Customer;
@@ -45,13 +47,57 @@ class OrderController extends Controller
             'can_send_payment_reminder',
             $this->shouldSendCustomerMailer($order, $order->customer?->email)
         );
+        $order->setAttribute(
+            'can_send_budget_follow_up',
+            (int) $order->service_status === OrderStatus::BUDGET_GENERATED
+                && $this->shouldSendCustomerMailer($order, $order->customer?->email)
+        );
+
+        return $order;
+    }
+
+    private function latestCommunicationLog(Order $order): ?OrderLog
+    {
+        if ($order->relationLoaded('logs')) {
+            return $order->logs
+                ->whereIn('action', ['payment_reminder_sent', 'budget_follow_up_sent'])
+                ->sortByDesc('created_at')
+                ->first();
+        }
+
+        return $order->logs()
+            ->whereIn('action', ['payment_reminder_sent', 'budget_follow_up_sent'])
+            ->latest('created_at')
+            ->first();
+    }
+
+    private function appendLastCommunication(Order $order): Order
+    {
+        $log = $this->latestCommunicationLog($order);
+
+        if (! $log) {
+            $order->setAttribute('last_communication', null);
+
+            return $order;
+        }
+
+        $data = is_array($log->data) ? $log->data : [];
+
+        $order->setAttribute('last_communication', [
+            'action' => $log->action,
+            'trigger' => $data['trigger'] ?? null,
+            'channel' => $data['channel'] ?? null,
+            'recipient' => $data['recipient'] ?? null,
+            'is_overdue' => (bool) ($data['is_overdue'] ?? false),
+            'created_at' => $log->created_at?->toIso8601String(),
+        ]);
 
         return $order;
     }
 
     private function communicationThresholdDays(): int
     {
-        return 2;
+        return Other::communicationFollowUpCooldownDays();
     }
 
     private function isBudgetFollowUpOrder(Order $order): bool
@@ -100,7 +146,7 @@ class OrderController extends Controller
         $order->setAttribute('budget_follow_up', $this->isBudgetFollowUpOrder($order));
         $order->setAttribute('pending_payment_follow_up', $this->isPendingPaymentOrder($order, $paymentSummary));
 
-        return $order;
+        return $this->appendLastCommunication($order);
     }
 
     private function currentUser(): ?User
@@ -922,7 +968,53 @@ class OrderController extends Controller
             return back()->with('error', 'Falha ao enviar o e-mail de cobrança. Verifique a configuração SMTP e tente novamente.');
         }
 
+        $this->logOrderAction($order, 'payment_reminder_sent', [
+            'channel' => 'email',
+            'recipient' => $customerEmail,
+            'remaining' => (float) ($paymentSummary['remaining'] ?? 0),
+            'is_overdue' => $isOverdue,
+            'trigger' => 'manual',
+        ]);
+
         return back()->with('success', 'E-mail de cobrança/lembrete enviado com sucesso.');
+    }
+
+    public function sendBudgetFollowUp(Order $order): RedirectResponse
+    {
+        abort_unless($this->canManageOrders(), 403);
+        abort_unless($this->canAccessOrder($order), 403);
+
+        $order->load('customer', 'tenant');
+
+        if ((int) $order->service_status !== OrderStatus::BUDGET_GENERATED) {
+            return back()->with('error', 'O follow-up de orçamento só pode ser enviado quando a ordem estiver com orçamento gerado.');
+        }
+
+        $customerEmail = trim((string) ($order->customer?->email ?? ''));
+
+        if (! $this->shouldSendCustomerMailer($order, $customerEmail)) {
+            return back()->with('error', 'Envio indisponível: cliente sem e-mail válido ou SMTP do cliente não configurado.');
+        }
+
+        $daysPending = $this->communicationDaysPending($order);
+
+        try {
+            TenantMailConfig::applyForTenantId($order->tenant_id ? (int) $order->tenant_id : null);
+            Mail::to($customerEmail)->send(new OrderBudgetFollowUpMail($order, $daysPending));
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->with('error', 'Falha ao enviar o follow-up do orçamento. Verifique a configuração SMTP e tente novamente.');
+        }
+
+        $this->logOrderAction($order, 'budget_follow_up_sent', [
+            'channel' => 'email',
+            'recipient' => $customerEmail,
+            'days_pending' => $daysPending,
+            'trigger' => 'manual',
+        ]);
+
+        return back()->with('success', 'Follow-up de orçamento enviado com sucesso.');
     }
 
     public function markFeedback(Order $order)

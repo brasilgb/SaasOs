@@ -49,6 +49,12 @@ class OtherController extends Controller
         $businessMetrics = [
             'warranty_return_alert_threshold' => $othersettings->warranty_return_alert_threshold
                 ?? config('business-metrics.warranty_return_alert_threshold', 10),
+            'communication_follow_up_cooldown_days' => $othersettings->communication_follow_up_cooldown_days
+                ?? Other::communicationFollowUpCooldownDays(),
+            'budget_conversion_target' => $othersettings->budget_conversion_target
+                ?? Other::budgetConversionTarget(),
+            'payment_recovery_target' => $othersettings->payment_recovery_target
+                ?? Other::paymentRecoveryTarget(),
         ];
 
         return Inertia::render('app/others/index', [
@@ -81,6 +87,9 @@ class OtherController extends Controller
             'mail_from_address' => 'nullable|email|max:255',
             'mail_from_name' => 'nullable|string|max:255',
             'warranty_return_alert_threshold' => 'nullable|numeric|min:0|max:100',
+            'communication_follow_up_cooldown_days' => 'nullable|integer|min:1|max:30',
+            'budget_conversion_target' => 'nullable|numeric|min:0|max:100',
+            'payment_recovery_target' => 'nullable|numeric|min:0|max:100',
         ]);
 
         $data['mail_mailer'] = isset($data['mail_mailer']) ? trim((string) $data['mail_mailer']) : null;
@@ -91,6 +100,15 @@ class OtherController extends Controller
         $data['mail_from_name'] = isset($data['mail_from_name']) ? trim((string) $data['mail_from_name']) : null;
         $data['warranty_return_alert_threshold'] = isset($data['warranty_return_alert_threshold'])
             ? round((float) $data['warranty_return_alert_threshold'], 2)
+            : null;
+        $data['communication_follow_up_cooldown_days'] = isset($data['communication_follow_up_cooldown_days'])
+            ? max(1, (int) $data['communication_follow_up_cooldown_days'])
+            : null;
+        $data['budget_conversion_target'] = isset($data['budget_conversion_target'])
+            ? round((float) $data['budget_conversion_target'], 2)
+            : null;
+        $data['payment_recovery_target'] = isset($data['payment_recovery_target'])
+            ? round((float) $data['payment_recovery_target'], 2)
             : null;
 
         $newPassword = trim((string) ($data['mail_password'] ?? ''));

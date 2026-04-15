@@ -19,7 +19,7 @@ import { maskMoney, maskMoneyDot } from '@/Utils/mask';
 import { ORDER_STATUS, ORDER_STATUSES_READY_FOR_INVOICE } from '@/Utils/order-status';
 import selectStyles from '@/Utils/selectStyles';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, FileTextIcon, Save, Wrench, X } from 'lucide-react';
+import { ArrowLeft, FileTextIcon, Mail, Save, Wrench, X } from 'lucide-react';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
 import Select from 'react-select';
@@ -57,6 +57,18 @@ export default function EditOrder({
     search,
     models,
 }: any) {
+    const budgetFollowUpForm = useForm({});
+
+    const communicationLabel = (communication: any) => {
+        if (!communication) return '';
+
+        if (communication.action === 'budget_follow_up_sent') {
+            return 'Follow-up de orçamento';
+        }
+
+        return 'Cobrança';
+    };
+
     const toMoneyNumber = (value: unknown): number => {
         if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
         const raw = String(value ?? '').trim();
@@ -285,6 +297,21 @@ export default function EditOrder({
                             Emitir NFSe
                         </Button>
                     )}
+                    {canManageOrders && order.can_send_budget_follow_up && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            disabled={budgetFollowUpForm.processing}
+                            onClick={() =>
+                                budgetFollowUpForm.post(route('app.orders.budget-follow-up', order.id), {
+                                    preserveScroll: true,
+                                })
+                            }
+                        >
+                            <Mail className="h-4 w-4" />
+                            {budgetFollowUpForm.processing ? 'Enviando...' : 'Cobrar orçamento'}
+                        </Button>
+                    )}
                     {canManageOrders && (
                         <OrderPaymentsModal
                             order={order}
@@ -321,6 +348,17 @@ export default function EditOrder({
                                     </div>
                                 )}
                             </div>
+
+                            {order.last_communication?.created_at && (
+                                <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-sm">
+                                    <Badge variant="outline">Último contato</Badge>
+                                    <span>
+                                        {communicationLabel(order.last_communication)}{' '}
+                                        {order.last_communication?.trigger === 'automatic' ? 'automático' : 'manual'} por e-mail{' '}
+                                        {moment(order.last_communication.created_at).format('DD/MM/YYYY [às] HH:mm')}
+                                    </span>
+                                </div>
+                            )}
                         </div>
                         <div className="mt-4 grid gap-4 md:grid-cols-8">
                             <div className="grid gap-2 md:col-span-2">
@@ -343,7 +381,7 @@ export default function EditOrder({
                                         }),
                                         singleValue: (base) => ({
                                             ...base,
-                                            color: '#111827',
+                                            color: 'hsl(var(--foreground))',
                                             fontSize: '14px',
                                         }),
                                         dropdownIndicator: (base) => ({
@@ -378,7 +416,7 @@ export default function EditOrder({
                                         }),
                                         singleValue: (base) => ({
                                             ...base,
-                                            color: '#111827',
+                                            color: 'hsl(var(--foreground))',
                                             fontSize: '14px',
                                         }),
                                         dropdownIndicator: (base) => ({
@@ -594,7 +632,7 @@ export default function EditOrder({
                                         }),
                                         singleValue: (base) => ({
                                             ...base,
-                                            color: '#111827',
+                                            color: 'hsl(var(--foreground))',
                                             fontSize: '14px',
                                         }),
                                         dropdownIndicator: (base) => ({
@@ -629,7 +667,7 @@ export default function EditOrder({
                                         }),
                                         singleValue: (base) => ({
                                             ...base,
-                                            color: '#111827',
+                                            color: 'hsl(var(--foreground))',
                                             fontSize: '14px',
                                         }),
                                         dropdownIndicator: (base) => ({

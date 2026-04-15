@@ -43,6 +43,9 @@ export default function Others({ othersettings, company, time_remaining, mailSet
         mail_from_address: mailSettings?.mail_from_address ?? '',
         mail_from_name: mailSettings?.mail_from_name ?? '',
         warranty_return_alert_threshold: businessMetrics?.warranty_return_alert_threshold ?? 10,
+        communication_follow_up_cooldown_days: businessMetrics?.communication_follow_up_cooldown_days ?? 2,
+        budget_conversion_target: businessMetrics?.budget_conversion_target ?? 60,
+        payment_recovery_target: businessMetrics?.payment_recovery_target ?? 70,
     });
 
     const handleSubmit = (e: any) => {
@@ -152,6 +155,93 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                 <p className="text-muted-foreground text-xs leading-relaxed">
                                     Referência sugerida: até 5% saudável, entre 5% e 10% atenção, acima de 10% crítico.
                                     Ajuste conforme o perfil técnico e o tipo de equipamento da operação.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mt-6 space-y-6">
+                        <HeadingSmall
+                            title="Intervalo de follow-up com cliente"
+                            description="Define quantos dias o sistema espera para considerar orçamento parado ou cobrança pendente elegíveis para novo contato automático."
+                        />
+
+                        <div className="grid gap-4 md:max-w-sm">
+                            <div className="space-y-2">
+                                <Label htmlFor="communication_follow_up_cooldown_days">Dias entre contatos</Label>
+                                <Input
+                                    id="communication_follow_up_cooldown_days"
+                                    type="number"
+                                    min="1"
+                                    max="30"
+                                    step="1"
+                                    value={data.communication_follow_up_cooldown_days}
+                                    disabled={!canManageOtherSettings}
+                                    onChange={(e) =>
+                                        setData(
+                                            'communication_follow_up_cooldown_days',
+                                            e.target.value === '' ? '' : Number(e.target.value),
+                                        )
+                                    }
+                                    placeholder="2"
+                                />
+                                <p className="text-muted-foreground text-xs leading-relaxed">
+                                    Esse valor é usado na listagem de ordens e nas automações de orçamento parado e cobrança pendente.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mt-6 space-y-6">
+                        <HeadingSmall
+                            title="Metas de performance comercial"
+                            description="Defina as metas mínimas esperadas para conversão de orçamento e recuperação de cobrança. A página de performance comercial passa a sinalizar quando a taxa atual ficar abaixo da meta."
+                        />
+
+                        <div className="grid gap-4 md:grid-cols-2 md:max-w-3xl">
+                            <div className="space-y-2">
+                                <Label htmlFor="budget_conversion_target">Meta de conversão de orçamento (%)</Label>
+                                <Input
+                                    id="budget_conversion_target"
+                                    type="number"
+                                    min="0"
+                                    max="100"
+                                    step="0.1"
+                                    value={data.budget_conversion_target}
+                                    disabled={!canManageOtherSettings}
+                                    onChange={(e) =>
+                                        setData(
+                                            'budget_conversion_target',
+                                            e.target.value === '' ? '' : Number(e.target.value),
+                                        )
+                                    }
+                                    placeholder="60"
+                                />
+                                <p className="text-muted-foreground text-xs leading-relaxed">
+                                    Referência sugerida: abaixo de 50% atenção, acima de 60% saudável para a maioria das operações.
+                                </p>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="payment_recovery_target">Meta de recuperação de cobrança (%)</Label>
+                                <Input
+                                    id="payment_recovery_target"
+                                    type="number"
+                                    min="0"
+                                    max="100"
+                                    step="0.1"
+                                    value={data.payment_recovery_target}
+                                    disabled={!canManageOtherSettings}
+                                    onChange={(e) =>
+                                        setData(
+                                            'payment_recovery_target',
+                                            e.target.value === '' ? '' : Number(e.target.value),
+                                        )
+                                    }
+                                    placeholder="70"
+                                />
+                                <p className="text-muted-foreground text-xs leading-relaxed">
+                                    Referência sugerida: abaixo de 60% atenção, acima de 70% saudável para cobrança recorrente.
                                 </p>
                             </div>
                         </div>

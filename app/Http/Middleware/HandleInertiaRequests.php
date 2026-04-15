@@ -10,6 +10,7 @@ use App\Models\App\Customer;
 use App\Models\App\Equipment;
 use App\Models\App\Message;
 use App\Models\App\Order;
+use App\Models\App\OrderLog;
 use App\Models\App\Other;
 use App\Models\App\WhatsappMessage;
 use App\Models\User;
@@ -21,6 +22,62 @@ use Tighten\Ziggy\Ziggy;
 
 class HandleInertiaRequests extends Middleware
 {
+    private function commercialPerformanceAlert(?User $user): ?array
+    {
+        if (! $user || ! $user->hasPermission('orders')) {
+            return null;
+        }
+
+        $from = now()->subDays(29)->startOfDay();
+        $to = now()->endOfDay();
+
+        $budgetLogs = OrderLog::query()
+            ->where('action', 'budget_follow_up_sent')
+            ->whereBetween('created_at', [$from, $to])
+            ->whereHas('order')
+            ->with('order')
+            ->get();
+
+        $paymentLogs = OrderLog::query()
+            ->where('action', 'payment_reminder_sent')
+            ->whereBetween('created_at', [$from, $to])
+            ->whereHas('order')
+            ->with('order.orderPayments')
+            ->get();
+
+        $budgetRate = $budgetLogs->count() > 0
+            ? round(($budgetLogs->filter(fn ($log) => $log->order && ! in_array((int) $log->order->service_status, [
+                OrderStatus::BUDGET_GENERATED,
+                OrderStatus::BUDGET_REJECTED,
+                OrderStatus::CANCELLED,
+            ], true))->count() / $budgetLogs->count()) * 100, 1)
+            : 0.0;
+
+        $paymentRate = $paymentLogs->count() > 0
+            ? round(($paymentLogs->filter(function ($log) {
+                if (! $log->order) {
+                    return false;
+                }
+
+                $serviceCost = (float) ($log->order->service_cost ?? 0);
+                $paid = (float) $log->order->orderPayments->sum('amount');
+
+                return ($serviceCost - $paid) <= 0.009;
+            })->count() / $paymentLogs->count()) * 100, 1)
+            : 0.0;
+
+        $budgetTarget = Other::budgetConversionTarget($user->tenant_id);
+        $paymentTarget = Other::paymentRecoveryTarget($user->tenant_id);
+
+        return [
+            'hasAlert' => $budgetRate < $budgetTarget || $paymentRate < $paymentTarget,
+            'budgetBelowTarget' => $budgetRate < $budgetTarget,
+            'paymentBelowTarget' => $paymentRate < $paymentTarget,
+            'budgetRate' => $budgetRate,
+            'paymentRate' => $paymentRate,
+        ];
+    }
+
     /**
      * The root template that's loaded on the first page visit.
      *
@@ -103,6 +160,7 @@ class HandleInertiaRequests extends Middleware
                 'isOpen' => (bool) $openCashSession,
                 'openedAt' => $openCashSession?->opened_at?->toIso8601String(),
             ] : null,
+            'performanceAlert' => $this->commercialPerformanceAlert($user),
             'orderStatus' => $user ? Order::where('service_status', OrderStatus::BUDGET_APPROVED)->get() : null,
 
             'notifications' => $user
