@@ -151,7 +151,36 @@ class FollowUpControllerTest extends TestCase
             ->assertOk()
             ->assertViewHas('page.component', 'app/follow-ups/tasks')
             ->assertViewHas('page.props.summary.today_tasks')
+            ->assertViewHas('page.props.summary.by_assignee')
             ->assertViewHas('page.props.dailyAgenda');
+    }
+
+    public function test_it_includes_low_feedback_recovery_in_tasks_page(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'user_id' => $this->user->id,
+            'service_status' => OrderStatus::DELIVERED,
+            'customer_feedback_submitted_at' => now()->subDays(2),
+            'customer_feedback_rating' => 2,
+            'customer_feedback_recovery_status' => 'pending',
+        ]);
+
+        $response = $this->get(route('app.follow-ups.tasks', [
+            'type' => 'feedback',
+            'assigned_to' => 'all',
+        ]));
+
+        $response
+            ->assertOk()
+            ->assertViewHas('page.props.summary.feedback_tasks', 1)
+            ->assertViewHas('page.props.dailyAgenda', function ($agenda) use ($order) {
+                return collect($agenda)->contains(fn ($item) => ($item['id'] ?? null) === $order->id && ($item['scope'] ?? null) === 'feedback');
+            });
     }
 
     public function test_it_filters_follow_up_tasks_by_type_and_assignee(): void
@@ -196,6 +225,40 @@ class FollowUpControllerTest extends TestCase
             });
     }
 
+    public function test_it_filters_follow_up_tasks_by_priority(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+
+        Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'user_id' => $this->user->id,
+            'service_status' => OrderStatus::BUDGET_GENERATED,
+            'updated_at' => now()->subDays(12),
+        ]);
+
+        Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'user_id' => $this->user->id,
+            'service_status' => OrderStatus::BUDGET_GENERATED,
+            'updated_at' => now()->subDays(6),
+        ]);
+
+        $response = $this->get(route('app.follow-ups.tasks', [
+            'priority' => 'critica',
+            'assigned_to' => 'all',
+        ]));
+
+        $response
+            ->assertOk()
+            ->assertViewHas('page.props.filters.priority', 'critica')
+            ->assertViewHas('page.props.dailyAgenda', function ($agenda) {
+                return collect($agenda)->every(fn ($item) => ($item['priority'] ?? null) === 'critica');
+            });
+    }
+
     public function test_it_defaults_tasks_filter_to_current_user_for_common_user(): void
     {
         $operator = User::factory()->forTenant($this->tenant->id)->create([
@@ -210,6 +273,40 @@ class FollowUpControllerTest extends TestCase
         $response
             ->assertOk()
             ->assertViewHas('page.props.filters.assigned_to', (string) $operator->id);
+    }
+
+    public function test_it_assigns_selected_tasks_in_bulk(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+        $operator = User::factory()->forTenant($this->tenant->id)->create([
+            'roles' => User::ROLE_OPERATOR,
+            'status' => 1,
+        ]);
+
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'user_id' => $this->user->id,
+            'service_status' => OrderStatus::BUDGET_GENERATED,
+        ]);
+
+        $response = $this->post(route('app.follow-ups.assign-selected'), [
+            'user_id' => $operator->id,
+            'tasks' => [
+                [
+                    'order_id' => $order->id,
+                    'scope' => 'budget',
+                ],
+            ],
+        ]);
+
+        $response->assertRedirect();
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'budget_follow_up_assigned_to' => $operator->id,
+        ]);
     }
 
     public function test_it_exposes_recovery_and_technician_summary(): void
@@ -461,6 +558,38 @@ class FollowUpControllerTest extends TestCase
             'order_id' => $order->id,
             'user_id' => $this->user->id,
             'action' => 'budget_follow_up_task_assigned',
+        ]);
+    }
+
+    public function test_it_assigns_feedback_recovery_task_to_responsible_user(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+        $assignee = User::factory()->forTenant($this->tenant->id)->create([
+            'roles' => User::ROLE_OPERATOR,
+            'status' => 1,
+        ]);
+
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'service_status' => OrderStatus::DELIVERED,
+            'customer_feedback_submitted_at' => now()->subDays(2),
+            'customer_feedback_rating' => 2,
+            'customer_feedback_recovery_status' => 'pending',
+        ]);
+
+        $response = $this->post(route('app.follow-ups.assign-task', $order), [
+            'scope' => 'feedback',
+            'user_id' => $assignee->id,
+        ]);
+
+        $response->assertRedirect();
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'customer_feedback_recovery_assigned_to' => $assignee->id,
+            'customer_feedback_recovery_status' => 'in_progress',
         ]);
     }
 

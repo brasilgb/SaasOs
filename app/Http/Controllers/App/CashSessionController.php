@@ -8,15 +8,20 @@ use App\Models\App\CashSessionLog;
 use App\Models\App\Other;
 use App\Models\App\OrderPayment;
 use App\Models\App\Sale;
-use App\Models\User;
+use App\Services\CashSessionService;
+use App\Services\OperationalAuditService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
-use Symfony\Component\HttpFoundation\Response;
 
 class CashSessionController extends Controller
 {
+    public function __construct(
+        private readonly OperationalAuditService $operationalAuditService,
+        private readonly CashSessionService $cashSessionService,
+    ) {}
+
     private function logCashSessionAction(CashSession $cashSession, string $action, array $data = []): void
     {
         CashSessionLog::create([
@@ -25,6 +30,11 @@ class CashSessionController extends Controller
             'action' => $action,
             'data' => $data === [] ? null : $data,
         ]);
+    }
+
+    private function logOperationalAudit(string $action, CashSession $cashSession, array $data = []): void
+    {
+        $this->operationalAuditService->record($action, 'cash_session', $cashSession, Auth::id(), $data);
     }
 
     private function normalizeMoneyInput(mixed $value): ?float
@@ -46,44 +56,9 @@ class CashSessionController extends Controller
         return is_numeric($normalized) ? (float) $normalized : null;
     }
 
-    private function canAccessCashierFeature(): bool
-    {
-        $user = Auth::user();
-        if (! $user instanceof User) {
-            return false;
-        }
-
-        if (! $user->hasPermission('sales')) {
-            return false;
-        }
-
-        if (! ($user->isAdministrator() || $user->isOperator() || $user->isRoot())) {
-            return false;
-        }
-
-        return (bool) (Other::query()->value('enablesales') ?? false);
-    }
-
-    private function authorizeSalesAccess(): ?Response
-    {
-        if ($this->canAccessCashierFeature()) {
-            return null;
-        }
-
-        if (request()->expectsJson()) {
-            return response()->json([
-                'message' => 'Módulo de vendas desabilitado ou acesso não permitido.',
-            ], 403);
-        }
-
-        return redirect()->route('app.dashboard')->with('error', 'Módulo de vendas desabilitado ou acesso não permitido.');
-    }
-
     public function index()
     {
-        if ($response = $this->authorizeSalesAccess()) {
-            return $response;
-        }
+        $this->authorize('viewAny', CashSession::class);
 
         $currentSession = CashSession::query()
             ->with(
@@ -141,36 +116,28 @@ class CashSessionController extends Controller
 
     public function open(Request $request): RedirectResponse
     {
-        if ($response = $this->authorizeSalesAccess()) {
-            return $response;
-        }
+        $this->authorize('create', CashSession::class);
 
         $request->merge([
             'opening_balance' => $this->normalizeMoneyInput($request->input('opening_balance')),
         ]);
-
-        $hasOpenSession = CashSession::query()
-            ->where('status', 'open')
-            ->exists();
-
-        if ($hasOpenSession) {
-            return back()->with('error', 'Já existe um caixa aberto para este tenant.');
-        }
 
         $validated = $request->validate([
             'opening_balance' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string|max:1000',
         ]);
 
-        $cashSession = CashSession::create([
-            'opened_by' => Auth::id(),
-            'opened_at' => now(),
-            'opening_balance' => (float) ($validated['opening_balance'] ?? 0),
-            'status' => 'open',
-            'notes' => $validated['notes'] ?? null,
-        ]);
+        try {
+            $cashSession = $this->cashSessionService->open($validated, (int) Auth::id());
+        } catch (\RuntimeException $exception) {
+            return back()->with('error', $exception->getMessage());
+        }
 
         $this->logCashSessionAction($cashSession, 'opened', [
+            'opening_balance' => (float) $cashSession->opening_balance,
+            'notes' => $validated['notes'] ?? null,
+        ]);
+        $this->logOperationalAudit('cash_session_opened', $cashSession, [
             'opening_balance' => (float) $cashSession->opening_balance,
             'notes' => $validated['notes'] ?? null,
         ]);
@@ -180,9 +147,7 @@ class CashSessionController extends Controller
 
     public function close(Request $request, CashSession $cashSession): RedirectResponse
     {
-        if ($response = $this->authorizeSalesAccess()) {
-            return $response;
-        }
+        $this->authorize('update', $cashSession);
 
         $request->merge([
             'closing_balance' => $this->normalizeMoneyInput($request->input('closing_balance')),
@@ -190,44 +155,28 @@ class CashSessionController extends Controller
             'manual_exits' => $this->normalizeMoneyInput($request->input('manual_exits')),
         ]);
 
-        if ($cashSession->status !== 'open') {
-            return back()->with('error', 'Este caixa já está fechado.');
-        }
-
         $validated = $request->validate([
             'closing_balance' => 'required|numeric|min:0',
             'manual_entries' => 'nullable|numeric|min:0',
             'manual_exits' => 'nullable|numeric|min:0',
             'closing_notes' => 'nullable|string|max:1000',
         ]);
+        try {
+            $cashSession = $this->cashSessionService->close($cashSession, $validated, (int) Auth::id());
+        } catch (\RuntimeException $exception) {
+            return back()->with('error', $exception->getMessage());
+        }
 
-        $totalCompletedSales = Sale::query()
-            ->where('cash_session_id', $cashSession->id)
-            ->where('status', 'completed')
-            ->sum('total_amount');
+        $closingBalance = (float) $cashSession->closing_balance;
+        $expectedBalance = (float) $cashSession->expected_balance;
+        $difference = (float) $cashSession->difference;
+        $totalCompletedSales = (float) $cashSession->total_completed_sales;
+        $totalOrderPayments = (float) $cashSession->total_order_payments;
+        $totalCancelledSales = (float) $cashSession->total_cancelled_sales;
+        $manualEntries = (float) $cashSession->manual_entries;
+        $manualExits = (float) $cashSession->manual_exits;
 
-        $totalCancelledSales = Sale::query()
-            ->where('cash_session_id', $cashSession->id)
-            ->where('status', 'cancelled')
-            ->sum('total_amount');
-
-        $totalOrderPayments = OrderPayment::query()
-            ->where('cash_session_id', $cashSession->id)
-            ->sum('amount');
-
-        $manualEntries = (float) ($validated['manual_entries'] ?? 0);
-        $manualExits = (float) ($validated['manual_exits'] ?? 0);
-        $expectedBalance = (float) $cashSession->opening_balance
-            + (float) $totalCompletedSales
-            + (float) $totalOrderPayments
-            + $manualEntries
-            - $manualExits;
-        $closingBalance = (float) $validated['closing_balance'];
-        $difference = $closingBalance - $expectedBalance;
-
-        $cashSession->update([
-            'closed_by' => Auth::id(),
-            'closed_at' => now(),
+        $this->logCashSessionAction($cashSession, 'closed', [
             'closing_balance' => $closingBalance,
             'expected_balance' => $expectedBalance,
             'difference' => $difference,
@@ -236,11 +185,9 @@ class CashSessionController extends Controller
             'total_cancelled_sales' => (float) $totalCancelledSales,
             'manual_entries' => $manualEntries,
             'manual_exits' => $manualExits,
-            'status' => 'closed',
             'closing_notes' => $validated['closing_notes'] ?? null,
         ]);
-
-        $this->logCashSessionAction($cashSession, 'closed', [
+        $this->logOperationalAudit('cash_session_closed', $cashSession, [
             'closing_balance' => $closingBalance,
             'expected_balance' => $expectedBalance,
             'difference' => $difference,

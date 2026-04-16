@@ -55,6 +55,13 @@ class ExpenseControllerTest extends TestCase
             'user_id' => $this->user->id,
             'action' => 'created',
         ]);
+        $this->assertDatabaseHas('operational_audits', [
+            'tenant_id' => $this->tenant->id,
+            'user_id' => $this->user->id,
+            'entity_type' => 'expense',
+            'entity_id' => $expense->id,
+            'action' => 'expense_created',
+        ]);
 
         $updateResponse = $this->put(route('app.expenses.update', $expense), [
             'expense_date' => now()->toDateString(),
@@ -71,6 +78,13 @@ class ExpenseControllerTest extends TestCase
             'user_id' => $this->user->id,
             'action' => 'updated',
         ]);
+        $this->assertDatabaseHas('operational_audits', [
+            'tenant_id' => $this->tenant->id,
+            'user_id' => $this->user->id,
+            'entity_type' => 'expense',
+            'entity_id' => $expense->id,
+            'action' => 'expense_updated',
+        ]);
 
         $deleteResponse = $this->delete(route('app.expenses.destroy', $expense));
 
@@ -78,6 +92,13 @@ class ExpenseControllerTest extends TestCase
 
         $this->assertDatabaseMissing('expenses', [
             'id' => $expense->id,
+        ]);
+        $this->assertDatabaseHas('operational_audits', [
+            'tenant_id' => $this->tenant->id,
+            'user_id' => $this->user->id,
+            'entity_type' => 'expense',
+            'entity_id' => $expense->id,
+            'action' => 'expense_deleted',
         ]);
     }
 }

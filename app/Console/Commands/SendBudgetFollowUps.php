@@ -2,20 +2,23 @@
 
 namespace App\Console\Commands;
 
-use App\Mail\OrderBudgetFollowUpMail;
 use App\Models\App\Order;
 use App\Models\App\OrderLog;
 use App\Models\App\Other;
+use App\Services\OrderNotificationService;
 use App\Support\OrderStatus;
-use App\Support\TenantMailConfig;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Mail;
 
 class SendBudgetFollowUps extends Command
 {
     protected $signature = 'sigmaos:send-budget-followups {--tenant=} {--dry-run}';
 
     protected $description = 'Envia follow-up automático para orçamentos parados';
+
+    public function __construct(private readonly OrderNotificationService $orderNotificationService)
+    {
+        parent::__construct();
+    }
 
     private function cooldownDays(?int $tenantId): int
     {
@@ -74,7 +77,7 @@ class SendBudgetFollowUps extends Command
                 continue;
             }
 
-            if (! TenantMailConfig::hasConfiguredForTenantId($tenantId)) {
+            if (! $this->orderNotificationService->canSendToCustomer($order, $customerEmail)) {
                 $skipped++;
                 continue;
             }
@@ -97,8 +100,7 @@ class SendBudgetFollowUps extends Command
             }
 
             try {
-                TenantMailConfig::applyForTenantId($tenantId);
-                Mail::to($customerEmail)->send(new OrderBudgetFollowUpMail($order, $daysPending));
+                $this->orderNotificationService->sendBudgetFollowUp($order, $daysPending);
 
                 OrderLog::create([
                     'order_id' => $order->id,

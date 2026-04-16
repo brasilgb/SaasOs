@@ -4,27 +4,28 @@ namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
 use App\Models\App\WhatsappMessage;
+use App\Services\OperationalAuditService;
+use App\Services\WhatsappMessageTemplateService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class WhatsappMessageController extends Controller
 {
+    public function __construct(
+        private readonly OperationalAuditService $operationalAuditService,
+        private readonly WhatsappMessageTemplateService $whatsappMessageTemplateService,
+    ) {}
+
+    private function logOperationalAudit(string $action, WhatsappMessage $whatsappmessage, array $data = []): void
+    {
+        $this->operationalAuditService->record($action, 'whatsapp_message_settings', $whatsappmessage, Auth::id(), $data);
+    }
+
     private function authorizeWhatsappMessagesAccess(): void
     {
         abort_unless(auth()->user()?->hasPermission('whatsapp_messages'), 403);
-    }
-
-    private function defaultMessages(): array
-    {
-        return [
-            'generatedbudget' => "{{ saudacao }}, {{ cliente }}!\n\nSeu orçamento da OS {{ ordem }} já está disponível.\n\nVocê pode acompanhar pelo link: {{ link_os }}\n\nSe tiver dúvidas, estamos à disposição.",
-            'servicecompleted' => "{{ saudacao }}, {{ cliente }}!\n\nSua OS {{ ordem }} foi concluída com sucesso.\n\nVocê pode acompanhar pelo link: {{ link_os }}\n\nQualquer dúvida, conte com a gente.",
-            'feedback' => "{{ saudacao }}, {{ cliente }}!\n\nEsperamos que tenha gostado do atendimento da OS {{ ordem }}.\n\nSeu feedback é muito importante para continuarmos melhorando.",
-            'defaultmessage' => "{{ saudacao }}, {{ cliente }}!\n\nAtualização da sua OS {{ ordem }}.\n\nAcompanhe pelo link: {{ link_os }}\n\nQualquer dúvida, estamos à disposição.",
-            'budgetfollowup' => "{{ saudacao }}, {{ cliente }}!\n\nSeu orçamento da OS {{ ordem }} segue aguardando retorno há {{ dias_pendentes }} dias.\n\nVocê pode aprovar ou acompanhar pelo link: {{ link_os }}\n\nSe precisar de ajuda, estamos à disposição.",
-            'pendingpayment' => "{{ saudacao }}, {{ cliente }}!\n\nA OS {{ ordem }} segue com saldo pendente de {{ saldo }}.\n\nVocê pode acompanhar pelo link: {{ link_os }}\n\nSe já realizou o pagamento, desconsidere esta mensagem.",
-        ];
     }
 
     /**
@@ -34,11 +35,7 @@ class WhatsappMessageController extends Controller
     {
         $this->authorizeWhatsappMessagesAccess();
 
-        if (WhatsappMessage::get()->isEmpty()) {
-            WhatsappMessage::create($this->defaultMessages());
-        }
-        $query = WhatsappMessage::orderBy('id', 'DESC')->first();
-        $whatsappmessage = WhatsappMessage::where('id', $query->id)->first();
+        $whatsappmessage = $this->whatsappMessageTemplateService->current();
 
         return Inertia::render('app/whatsapp-message/index', ['whatsappmessage' => $whatsappmessage]);
     }
@@ -56,7 +53,10 @@ class WhatsappMessageController extends Controller
             'pendingpayment' => 'nullable|string|max:5000',
         ]);
 
-        $whatsappmessage->update($data);
+        $whatsappmessage = $this->whatsappMessageTemplateService->update($whatsappmessage, $data);
+        $this->logOperationalAudit('whatsapp_message_settings_updated', $whatsappmessage, [
+            'updated_fields' => array_keys(array_filter($data, fn ($value) => $value !== null)),
+        ]);
 
         return redirect()->route('app.whatsapp-message.index', ['whatsappmessage' => $whatsappmessage->id])->with('success', 'Mensagens do WhatsApp editadas com sucesso');
     }

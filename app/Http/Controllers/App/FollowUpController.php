@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\App\Order;
 use App\Models\App\OrderLog;
 use App\Models\App\Other;
+use App\Services\FollowUpTaskService;
 use App\Models\User;
 use App\Support\OrderStatus;
 use Carbon\CarbonPeriod;
@@ -17,6 +18,8 @@ use Inertia\Inertia;
 
 class FollowUpController extends Controller
 {
+    public function __construct(private readonly FollowUpTaskService $followUpTaskService) {}
+
     private const RESPONSE_LABELS = [
         'responded' => 'Cliente respondeu',
         'no_interest' => 'Sem interesse',
@@ -29,33 +32,6 @@ class FollowUpController extends Controller
         $user = Auth::user();
 
         return $user instanceof User ? $user : null;
-    }
-
-    private function authorizeFollowUpAccess(): void
-    {
-        abort_unless($this->currentUser()?->hasPermission('orders'), 403);
-    }
-
-    private function canManageOrders(): bool
-    {
-        $user = $this->currentUser();
-
-        return $user?->hasPermission('orders') && ! $user->isTechnician();
-    }
-
-    private function canAccessOrder(Order $order): bool
-    {
-        $user = $this->currentUser();
-
-        if (! $user?->hasPermission('orders')) {
-            return false;
-        }
-
-        if (! $user->isTechnician()) {
-            return true;
-        }
-
-        return is_null($order->user_id) || (int) $order->user_id === (int) $user->id;
     }
 
     private function logOrderAction(Order $order, string $action, array $data = []): void
@@ -71,39 +47,25 @@ class FollowUpController extends Controller
 
     private function scopeColumns(string $scope): array
     {
-        return match ($scope) {
-            'budget' => [
-                'paused_at' => 'budget_follow_up_paused_at',
-                'paused_by' => 'budget_follow_up_paused_by',
-                'reason' => 'budget_follow_up_pause_reason',
-                'snoozed_until' => 'budget_follow_up_snoozed_until',
-                'assigned_to' => 'budget_follow_up_assigned_to',
-                'response_status' => 'budget_follow_up_response_status',
-                'response_at' => 'budget_follow_up_response_at',
-                'log_pause' => 'budget_follow_up_paused',
-                'log_resume' => 'budget_follow_up_resumed',
-                'log_response' => 'budget_follow_up_response_marked',
-                'log_task_completed' => 'budget_follow_up_task_completed',
-                'log_task_snoozed' => 'budget_follow_up_task_snoozed',
-                'log_task_assigned' => 'budget_follow_up_task_assigned',
-            ],
-            'payment' => [
-                'paused_at' => 'payment_follow_up_paused_at',
-                'paused_by' => 'payment_follow_up_paused_by',
-                'reason' => 'payment_follow_up_pause_reason',
-                'snoozed_until' => 'payment_follow_up_snoozed_until',
-                'assigned_to' => 'payment_follow_up_assigned_to',
-                'response_status' => 'payment_follow_up_response_status',
-                'response_at' => 'payment_follow_up_response_at',
-                'log_pause' => 'payment_follow_up_paused',
-                'log_resume' => 'payment_follow_up_resumed',
-                'log_response' => 'payment_follow_up_response_marked',
-                'log_task_completed' => 'payment_follow_up_task_completed',
-                'log_task_snoozed' => 'payment_follow_up_task_snoozed',
-                'log_task_assigned' => 'payment_follow_up_task_assigned',
-            ],
-            default => abort(422, 'Escopo de follow-up inválido.'),
-        };
+        return $this->followUpTaskService->scopeColumns($scope);
+    }
+
+    private function feedbackRecoveryNextAction(Order $order): array
+    {
+        $daysPending = $order->customer_feedback_submitted_at?->diffInDays(now()) ?? 0;
+        $status = $order->customer_feedback_recovery_status ?: 'pending';
+
+        if (empty($order->customer_feedback_recovery_assigned_to)) {
+            return [
+                'label' => 'Assumir tratativa',
+                'priority' => $daysPending >= 3 ? 'critica' : 'alta',
+            ];
+        }
+
+        return [
+            'label' => $status === 'in_progress' ? 'Retomar contato com cliente' : 'Iniciar tratativa',
+            'priority' => $daysPending >= 3 ? 'critica' : 'alta',
+        ];
     }
 
     private function responseLabel(?string $status): ?string
@@ -343,7 +305,7 @@ class FollowUpController extends Controller
         ];
     }
 
-    private function dailyAgenda(Collection $budgetOrders, Collection $paymentOrders, ?int $limit = 8): array
+    private function dailyAgenda(Collection $budgetOrders, Collection $paymentOrders, Collection $feedbackOrders, ?int $limit = 8): array
     {
         $mapAgenda = function (Collection $orders, string $scope, string $label) {
             $columns = $this->scopeColumns($scope);
@@ -361,6 +323,8 @@ class FollowUpController extends Controller
                         ->contains(fn (OrderLog $log) => $log->created_at?->isToday());
                 })
                 ->map(function (Order $order) use ($label, $scope, $columns) {
+                $priority = $order->next_action['priority'] ?? 'normal';
+
                 return [
                     'id' => $order->id,
                     'scope' => $scope,
@@ -378,6 +342,7 @@ class FollowUpController extends Controller
                     'type' => $label,
                     'days_pending' => (int) ($order->communication_days_pending ?? 0),
                     'next_action' => $order->next_action,
+                    'priority' => $priority,
                     'snoozed_until' => optional($order->{$columns['snoozed_until']})->toIso8601String(),
                 ];
                 });
@@ -385,6 +350,28 @@ class FollowUpController extends Controller
 
         $agenda = $mapAgenda($budgetOrders, 'budget', 'orçamento')
             ->concat($mapAgenda($paymentOrders, 'payment', 'cobrança'))
+            ->concat(
+                $feedbackOrders->map(function (Order $order) {
+                    $nextAction = $this->feedbackRecoveryNextAction($order);
+
+                    return [
+                        'id' => $order->id,
+                        'scope' => 'feedback',
+                        'order_number' => $order->order_number,
+                        'customer' => $order->customer?->name,
+                        'technician' => $order->user?->name ?? 'Não definido',
+                        'assigned_to' => $order->customerFeedbackRecoveryAssignee?->name,
+                        'assigned_to_id' => $order->customer_feedback_recovery_assigned_to,
+                        'type' => 'insatisfação',
+                        'days_pending' => (int) ($order->customer_feedback_submitted_at?->diffInDays(now()) ?? 0),
+                        'next_action' => $nextAction,
+                        'priority' => $nextAction['priority'] ?? 'normal',
+                        'rating' => (int) ($order->customer_feedback_rating ?? 0),
+                        'comment' => $order->customer_feedback_comment,
+                        'recovery_status' => $order->customer_feedback_recovery_status ?: 'pending',
+                    ];
+                })
+            )
             ->sortByDesc(fn (array $item) => match ($item['next_action']['priority'] ?? 'normal') {
                 'critica' => 3,
                 'alta' => 2,
@@ -408,6 +395,7 @@ class FollowUpController extends Controller
                     'user:id,name',
                     'budgetFollowUpAssignee:id,name',
                     'paymentFollowUpAssignee:id,name',
+                    'customerFeedbackRecoveryAssignee:id,name',
                     'logs',
                 ])
                 ->withSum('orderPayments as total_paid', 'amount')
@@ -705,7 +693,7 @@ class FollowUpController extends Controller
 
     public function index(Request $request)
     {
-        $this->authorizeFollowUpAccess();
+        $this->authorize('viewAny', Order::class);
 
         $thresholdDays = $this->communicationThresholdDays();
         $type = $request->get('type', 'all');
@@ -758,6 +746,17 @@ class FollowUpController extends Controller
             ->get()
             ->map(fn (Order $order) => $this->appendFollowUpData($order));
 
+        $feedbackSummaryOrders = (clone $this->baseQuery($request))
+            ->where('service_status', OrderStatus::DELIVERED)
+            ->whereNotNull('customer_feedback_submitted_at')
+            ->where('customer_feedback_rating', '<=', 3)
+            ->where(function ($query) {
+                $query
+                    ->whereNull('customer_feedback_recovery_status')
+                    ->orWhere('customer_feedback_recovery_status', '!=', 'resolved');
+            })
+            ->get();
+
         $budgetOrders = $type === 'payment'
             ? null
             : $budgetQuery
@@ -799,14 +798,14 @@ class FollowUpController extends Controller
                     'from' => $metricsFrom->toDateString(),
                     'to' => $metricsTo->toDateString(),
                 ],
-                'today_tasks' => $budgetSummaryOrders->count() + $paymentSummaryOrders->count(),
+                'today_tasks' => $budgetSummaryOrders->count() + $paymentSummaryOrders->count() + $feedbackSummaryOrders->count(),
             ],
             'budgetOrders' => $budgetOrders,
             'paymentOrders' => $paymentOrders,
             'technicians' => $technicians,
             'technicianSummary' => $this->technicianSummary($budgetSummaryOrders, $paymentSummaryOrders),
             'technicianRanking' => $this->technicianRanking($metricsFrom, $metricsTo),
-            'dailyAgenda' => $this->dailyAgenda($budgetSummaryOrders, $paymentSummaryOrders),
+            'dailyAgenda' => $this->dailyAgenda($budgetSummaryOrders, $paymentSummaryOrders, $feedbackSummaryOrders),
             'trends' => [
                 'budget' => $this->buildTrend($this->baseLogQuery('budget_follow_up_sent', $metricsFrom, $metricsTo)->get(), $metricsFrom, $metricsTo, 'budget'),
                 'payment' => $this->buildTrend($this->baseLogQuery('payment_reminder_sent', $metricsFrom, $metricsTo)->get(), $metricsFrom, $metricsTo, 'payment'),
@@ -816,7 +815,7 @@ class FollowUpController extends Controller
 
     public function performance(Request $request)
     {
-        $this->authorizeFollowUpAccess();
+        $this->authorize('viewAny', Order::class);
 
         [$metricsFrom, $metricsTo] = $this->metricsPeriod($request);
         $commercial = $this->commercialDashboard($metricsFrom, $metricsTo);
@@ -856,7 +855,7 @@ class FollowUpController extends Controller
 
     public function tasks(Request $request)
     {
-        $this->authorizeFollowUpAccess();
+        $this->authorize('viewAny', Order::class);
         $user = $this->currentUser();
 
         $thresholdDays = $this->communicationThresholdDays();
@@ -890,6 +889,17 @@ class FollowUpController extends Controller
             ->get()
             ->map(fn (Order $order) => $this->appendFollowUpData($order));
 
+        $feedbackOrders = (clone $this->baseQuery($request))
+            ->where('service_status', OrderStatus::DELIVERED)
+            ->whereNotNull('customer_feedback_submitted_at')
+            ->where('customer_feedback_rating', '<=', 3)
+            ->where(function ($query) {
+                $query
+                    ->whereNull('customer_feedback_recovery_status')
+                    ->orWhere('customer_feedback_recovery_status', '!=', 'resolved');
+            })
+            ->get();
+
         $technicians = User::query()
             ->where('tenant_id', $this->currentUser()?->tenant_id)
             ->whereIn('roles', [User::ROLE_ADMIN, User::ROLE_OPERATOR, User::ROLE_TECHNICIAN])
@@ -897,8 +907,10 @@ class FollowUpController extends Controller
             ->orderBy('name')
             ->get(['id', 'name']);
 
-        $dailyAgenda = collect($this->dailyAgenda($budgetOrders, $paymentOrders, null));
+        $dailyAgenda = collect($this->dailyAgenda($budgetOrders, $paymentOrders, $feedbackOrders, null));
         $type = (string) $request->get('type', 'all');
+        $priority = (string) $request->get('priority', 'all');
+        $sort = (string) $request->get('sort', 'priority');
         $assignedTo = (string) $request->get(
             'assigned_to',
             $user && ! $user->isRoot() && ! $user->isAdministrator()
@@ -916,18 +928,52 @@ class FollowUpController extends Controller
             $dailyAgenda = $dailyAgenda->where('assigned_to_id', (int) $assignedTo);
         }
 
+        if ($priority !== 'all') {
+            $dailyAgenda = $dailyAgenda->where('priority', $priority);
+        }
+
+        $dailyAgenda = match ($sort) {
+            'days' => $dailyAgenda->sortByDesc('days_pending'),
+            default => $dailyAgenda->sortByDesc(fn (array $item) => match ($item['priority'] ?? 'normal') {
+                'critica' => 3,
+                'alta' => 2,
+                default => 1,
+            } * 100 + ($item['days_pending'] ?? 0)),
+        };
+
         $dailyAgenda = $dailyAgenda->values();
 
         return Inertia::render('app/follow-ups/tasks', [
             'filters' => [
                 'type' => $type,
+                'priority' => $priority,
+                'sort' => $sort,
                 'assigned_to' => $assignedTo,
             ],
             'summary' => [
                 'today_tasks' => $dailyAgenda->count(),
                 'budget_tasks' => $dailyAgenda->where('scope', 'budget')->count(),
                 'payment_tasks' => $dailyAgenda->where('scope', 'payment')->count(),
+                'feedback_tasks' => $dailyAgenda->where('scope', 'feedback')->count(),
                 'unassigned_tasks' => $dailyAgenda->filter(fn (array $item) => empty($item['assigned_to_id']))->count(),
+                'critical_tasks' => $dailyAgenda->where('priority', 'critica')->count(),
+                'my_tasks' => $user ? $dailyAgenda->where('assigned_to_id', $user->id)->count() : 0,
+                'by_assignee' => $dailyAgenda
+                    ->groupBy(fn (array $item) => $item['assigned_to_id'] ?: 'unassigned')
+                    ->map(function (Collection $items, $key) {
+                        $first = $items->first();
+
+                        return [
+                            'key' => $key,
+                            'name' => $first['assigned_to'] ?? 'Sem responsável pelo acompanhamento',
+                            'total' => $items->count(),
+                            'critical' => $items->where('priority', 'critica')->count(),
+                            'high' => $items->where('priority', 'alta')->count(),
+                        ];
+                    })
+                    ->sortByDesc(fn (array $item) => ($item['critical'] * 100) + ($item['high'] * 10) + $item['total'])
+                    ->values()
+                    ->all(),
             ],
             'dailyAgenda' => $dailyAgenda->all(),
             'technicians' => $technicians,
@@ -936,22 +982,28 @@ class FollowUpController extends Controller
 
     public function pause(Request $request, Order $order)
     {
-        $this->authorizeFollowUpAccess();
-        abort_unless($this->canManageOrders(), 403);
-        abort_unless($this->canAccessOrder($order), 403);
+        $this->authorize('update', $order);
 
         $validated = $request->validate([
-            'scope' => 'required|in:budget,payment',
+            'scope' => 'required|in:budget,payment,feedback',
             'reason' => 'required|string|max:1000',
         ]);
 
+        if ($validated['scope'] === 'feedback') {
+            $this->followUpTaskService->pause($order, 'feedback', trim((string) $validated['reason']), $this->currentUser()?->id);
+
+            $this->logOrderAction($order, 'customer_feedback_recovery_completed', [
+                'scope' => 'feedback',
+                'reason' => trim((string) $validated['reason']),
+                'assigned_to' => $order->customerFeedbackRecoveryAssignee?->name,
+            ]);
+
+            return back()->with('success', 'Tarefa marcada como concluída.');
+        }
+
         $columns = $this->scopeColumns($validated['scope']);
 
-        $order->update([
-            $columns['paused_at'] => now(),
-            $columns['paused_by'] => $this->currentUser()?->id,
-            $columns['reason'] => trim((string) $validated['reason']),
-        ]);
+        $this->followUpTaskService->pause($order, $validated['scope'], trim((string) $validated['reason']), $this->currentUser()?->id);
 
         $this->logOrderAction($order, $columns['log_pause'], [
             'scope' => $validated['scope'],
@@ -963,9 +1015,7 @@ class FollowUpController extends Controller
 
     public function resume(Request $request, Order $order)
     {
-        $this->authorizeFollowUpAccess();
-        abort_unless($this->canManageOrders(), 403);
-        abort_unless($this->canAccessOrder($order), 403);
+        $this->authorize('update', $order);
 
         $validated = $request->validate([
             'scope' => 'required|in:budget,payment',
@@ -973,11 +1023,7 @@ class FollowUpController extends Controller
 
         $columns = $this->scopeColumns($validated['scope']);
 
-        $order->update([
-            $columns['paused_at'] => null,
-            $columns['paused_by'] => null,
-            $columns['reason'] => null,
-        ]);
+        $this->followUpTaskService->resume($order, $validated['scope']);
 
         $this->logOrderAction($order, $columns['log_resume'], [
             'scope' => $validated['scope'],
@@ -988,9 +1034,7 @@ class FollowUpController extends Controller
 
     public function respond(Request $request, Order $order)
     {
-        $this->authorizeFollowUpAccess();
-        abort_unless($this->canManageOrders(), 403);
-        abort_unless($this->canAccessOrder($order), 403);
+        $this->authorize('update', $order);
 
         $validated = $request->validate([
             'scope' => 'required|in:budget,payment',
@@ -1000,13 +1044,7 @@ class FollowUpController extends Controller
         $columns = $this->scopeColumns($validated['scope']);
         $label = $this->responseLabel($validated['status']);
 
-        $order->update([
-            $columns['response_status'] => $validated['status'],
-            $columns['response_at'] => now(),
-            $columns['paused_at'] => now(),
-            $columns['paused_by'] => $this->currentUser()?->id,
-            $columns['reason'] => $label,
-        ]);
+        $this->followUpTaskService->respond($order, $validated['scope'], $validated['status'], $label ?? $validated['status'], $this->currentUser()?->id);
 
         $this->logOrderAction($order, $columns['log_response'], [
             'scope' => $validated['scope'],
@@ -1019,9 +1057,7 @@ class FollowUpController extends Controller
 
     public function completeTask(Request $request, Order $order)
     {
-        $this->authorizeFollowUpAccess();
-        abort_unless($this->canManageOrders(), 403);
-        abort_unless($this->canAccessOrder($order), 403);
+        $this->authorize('update', $order);
 
         $validated = $request->validate([
             'scope' => 'required|in:budget,payment',
@@ -1030,9 +1066,7 @@ class FollowUpController extends Controller
 
         $columns = $this->scopeColumns($validated['scope']);
 
-        $order->update([
-            $columns['snoozed_until'] => null,
-        ]);
+        $this->followUpTaskService->completeTask($order, $validated['scope']);
 
         $this->logOrderAction($order, $columns['log_task_completed'], [
             'scope' => $validated['scope'],
@@ -1048,9 +1082,7 @@ class FollowUpController extends Controller
 
     public function snoozeTask(Request $request, Order $order)
     {
-        $this->authorizeFollowUpAccess();
-        abort_unless($this->canManageOrders(), 403);
-        abort_unless($this->canAccessOrder($order), 403);
+        $this->authorize('update', $order);
 
         $validated = $request->validate([
             'scope' => 'required|in:budget,payment',
@@ -1058,11 +1090,7 @@ class FollowUpController extends Controller
         ]);
 
         $columns = $this->scopeColumns($validated['scope']);
-        $snoozedUntil = now()->addDays((int) $validated['days'])->endOfDay();
-
-        $order->update([
-            $columns['snoozed_until'] => $snoozedUntil,
-        ]);
+        $snoozedUntil = $this->followUpTaskService->snoozeTask($order, $validated['scope'], (int) $validated['days']);
 
         $this->logOrderAction($order, $columns['log_task_snoozed'], [
             'scope' => $validated['scope'],
@@ -1075,12 +1103,10 @@ class FollowUpController extends Controller
 
     public function assignTask(Request $request, Order $order)
     {
-        $this->authorizeFollowUpAccess();
-        abort_unless($this->canManageOrders(), 403);
-        abort_unless($this->canAccessOrder($order), 403);
+        $this->authorize('update', $order);
 
         $validated = $request->validate([
-            'scope' => 'required|in:budget,payment',
+            'scope' => 'required|in:budget,payment,feedback',
             'user_id' => 'nullable|integer|exists:users,id',
         ]);
 
@@ -1094,11 +1120,22 @@ class FollowUpController extends Controller
                 ->firstOrFail();
         }
 
+        if ($validated['scope'] === 'feedback') {
+            $this->followUpTaskService->assignTask($order, 'feedback', $assignee);
+
+            $this->logOrderAction($order, 'customer_feedback_recovery_updated', [
+                'scope' => 'feedback',
+                'status' => $assignee ? 'in_progress' : ($order->customer_feedback_recovery_status ?: 'pending'),
+                'assigned_to' => $assignee?->name,
+                'assigned_to_id' => $assignee?->id,
+            ]);
+
+            return back()->with('success', 'Responsável da tarefa atualizado.');
+        }
+
         $columns = $this->scopeColumns($validated['scope']);
 
-        $order->update([
-            $columns['assigned_to'] => $assignee?->id,
-        ]);
+        $this->followUpTaskService->assignTask($order, $validated['scope'], $assignee);
 
         $this->logOrderAction($order, $columns['log_task_assigned'], [
             'scope' => $validated['scope'],
@@ -1106,5 +1143,66 @@ class FollowUpController extends Controller
         ]);
 
         return back()->with('success', 'Responsável da tarefa atualizado.');
+    }
+
+    public function assignSelectedTasks(Request $request)
+    {
+        $this->authorize('create', Order::class);
+
+        $validated = $request->validate([
+            'tasks' => 'required|array|min:1',
+            'tasks.*.order_id' => 'required|integer|exists:orders,id',
+            'tasks.*.scope' => 'required|in:budget,payment,feedback',
+            'user_id' => 'nullable|integer|exists:users,id',
+        ]);
+
+        $assignee = null;
+
+        if (! empty($validated['user_id'])) {
+            $assignee = User::query()
+                ->where('tenant_id', $this->currentUser()?->tenant_id)
+                ->where('id', $validated['user_id'])
+                ->where('status', 1)
+                ->firstOrFail();
+        }
+
+        $updated = 0;
+
+        foreach ($validated['tasks'] as $task) {
+            $order = Order::findOrFail($task['order_id']);
+
+            if ($this->currentUser()?->cannot('update', $order)) {
+                continue;
+            }
+
+            if ($task['scope'] === 'feedback') {
+                $this->followUpTaskService->assignTask($order, 'feedback', $assignee);
+
+                $this->logOrderAction($order, 'customer_feedback_recovery_updated', [
+                    'scope' => 'feedback',
+                    'status' => $assignee ? 'in_progress' : ($order->customer_feedback_recovery_status ?: 'pending'),
+                    'assigned_to' => $assignee?->name,
+                    'assigned_to_id' => $assignee?->id,
+                    'bulk' => true,
+                ]);
+
+                $updated++;
+                continue;
+            }
+
+            $columns = $this->scopeColumns($task['scope']);
+
+            $this->followUpTaskService->assignTask($order, $task['scope'], $assignee);
+
+            $this->logOrderAction($order, $columns['log_task_assigned'], [
+                'scope' => $task['scope'],
+                'assigned_to' => $assignee?->name,
+                'bulk' => true,
+            ]);
+
+            $updated++;
+        }
+
+        return back()->with('success', "{$updated} tarefa(s) atualizada(s) com sucesso.");
     }
 }

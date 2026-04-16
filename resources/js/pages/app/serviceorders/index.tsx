@@ -13,6 +13,7 @@ import {
     CheckCircle2,
     CreditCard,
     Expand,
+    ExternalLink,
     FileText,
     InfoIcon,
     MessageCircle,
@@ -20,6 +21,7 @@ import {
     ReceiptText,
     ShieldCheck,
     Smartphone,
+    Star,
     Wrench,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -57,7 +59,15 @@ interface Order {
     warranty_days?: number;
     warranty_expires_at?: string;
     is_warranty_return?: boolean;
+    fiscal_document_number?: string;
+    fiscal_document_url?: string;
+    fiscal_issued_at?: string;
+    fiscal_notes?: string;
     customer_notification_acknowledged_at?: string;
+    customer_pickup_acknowledged_at?: string;
+    customer_feedback_rating?: number;
+    customer_feedback_comment?: string;
+    customer_feedback_submitted_at?: string;
     status_history?: any[];
     logs?: any[];
     images?: OrderImage[];
@@ -165,6 +175,10 @@ function ServiceOrders({ order }: { order: Order }) {
     const [loadingA, setLoadingA] = useState(false);
     const [loadingR, setLoadingR] = useState(false);
     const [loadingAck, setLoadingAck] = useState(false);
+    const [loadingPickup, setLoadingPickup] = useState(false);
+    const [loadingFeedback, setLoadingFeedback] = useState(false);
+    const [feedbackRating, setFeedbackRating] = useState<number | null>(order.customer_feedback_rating ?? null);
+    const [feedbackComment, setFeedbackComment] = useState(order.customer_feedback_comment ?? '');
     const [selectedImage, setSelectedImage] = useState<{ src: string; alt: string } | null>(null);
 
     const financialSummary = useMemo(() => {
@@ -182,6 +196,8 @@ function ServiceOrders({ order }: { order: Order }) {
     const remaining = getRemainingTime(order.delivery_forecast);
     const heroNote = nextStepText(order, financialSummary.remaining);
     const checklist = actionChecklist(order, financialSummary.remaining);
+    const canAcknowledgePickup =
+        [ORDER_STATUS.CUSTOMER_NOTIFIED, ORDER_STATUS.DELIVERED].includes(order.service_status) && financialSummary.remaining <= 0.009;
     const imageUrls = (order.images ?? []).map((image) => ({
         id: image.id,
         src: `/storage/orders/${order.id}/${image.filename}`,
@@ -235,14 +251,61 @@ function ServiceOrders({ order }: { order: Order }) {
         );
     }
 
+    function handleAcknowledgePickup() {
+        const confirmed = window.confirm('Confirma que você já retirou o equipamento?');
+        if (!confirmed) return;
+
+        router.post(
+            route('orders.pickup.acknowledge', order.tracking_token),
+            {},
+            {
+                preserveScroll: true,
+                onStart: () => setLoadingPickup(true),
+                onSuccess: () => {
+                    toastSuccess('Sucesso', 'Retirada confirmada com sucesso.');
+                },
+                onError: () => {
+                    toastWarning('Erro', 'Não foi possível confirmar a retirada neste momento.');
+                },
+                onFinish: () => setLoadingPickup(false),
+            },
+        );
+    }
+
+    function handleSubmitFeedback() {
+        if (!feedbackRating) {
+            toastWarning('Avaliação', 'Escolha uma nota de 1 a 5 antes de enviar.');
+            return;
+        }
+
+        router.post(
+            route('os.feedback.submit', order.tracking_token),
+            {
+                rating: feedbackRating,
+                comment: feedbackComment,
+            },
+            {
+                preserveScroll: true,
+                onStart: () => setLoadingFeedback(true),
+                onSuccess: () => {
+                    toastSuccess('Obrigado!', 'Seu feedback foi enviado com sucesso.');
+                },
+                onError: () => {
+                    toastWarning('Erro', 'Não foi possível enviar seu feedback neste momento.');
+                },
+                onFinish: () => setLoadingFeedback(false),
+            },
+        );
+    }
+
     return (
         <>
             <Toaster />
             <Head title={`OS #${order.order_number}`} />
 
-            <div className="border-b bg-white/90 py-4 shadow-sm backdrop-blur-sm">
+            <div className="border-b border-slate-800 bg-[linear-gradient(135deg,#020617_0%,#0f172a_48%,#1e293b_100%)] py-4 shadow-sm">
                 <div className="mx-auto max-w-6xl px-4">
-                    <Timeline status={Number(order.service_status)} />
+                    <Timeline status={Number(order.service_status)} theme="dark" />
                 </div>
             </div>
 
@@ -542,6 +605,16 @@ function ServiceOrders({ order }: { order: Order }) {
                                     </div>
 
                                     <div className="rounded-2xl border border-slate-200 p-4">
+                                        <p className="text-sm text-slate-500">Retirada confirmada</p>
+                                        <p className="mt-2 font-medium text-slate-900">
+                                            {order.customer_pickup_acknowledged_at
+                                                ? formatDateTime(order.customer_pickup_acknowledged_at)
+                                                : 'Aguardando confirmação do cliente'}
+                                        </p>
+                                        {order.delivery_date && <p className="mt-1 text-sm text-slate-600">Entrega registrada em {formatDate(order.delivery_date)}</p>}
+                                    </div>
+
+                                    <div className="rounded-2xl border border-slate-200 p-4">
                                         <p className="text-sm text-slate-500">Garantia</p>
                                         <p className="mt-2 font-medium text-slate-900">
                                             {order.warranty_days ? `${order.warranty_days} dia(s)` : 'Não informada'}
@@ -558,6 +631,147 @@ function ServiceOrders({ order }: { order: Order }) {
                                                 Esta ordem foi identificada como retorno em garantia
                                                 {order.warranty_source_order?.order_number ? ` da OS #${order.warranty_source_order.order_number}` : ''}.
                                             </p>
+                                        </div>
+                                    )}
+
+                                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                        <p className="font-medium text-slate-900">Comprovantes disponíveis</p>
+                                        <div className="mt-3 flex flex-wrap gap-2">
+                                            {(order.budget_description || Number(order.budget_value ?? 0) > 0) && (
+                                                <a
+                                                    href={route('os.receipt', { token: order.tracking_token, type: 'ororcamento' })}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-100"
+                                                >
+                                                    <FileText className="h-4 w-4" />
+                                                    Recibo do orçamento
+                                                    <ExternalLink className="h-4 w-4" />
+                                                </a>
+                                            )}
+
+                                            {[ORDER_STATUS.SERVICE_COMPLETED, ORDER_STATUS.CUSTOMER_NOTIFIED, ORDER_STATUS.DELIVERED].includes(order.service_status) && (
+                                                <a
+                                                    href={route('os.receipt', { token: order.tracking_token, type: 'orentrega' })}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-100"
+                                                >
+                                                    <ReceiptText className="h-4 w-4" />
+                                                    Recibo de entrega
+                                                    <ExternalLink className="h-4 w-4" />
+                                                </a>
+                                            )}
+
+                                            {(order.order_payments ?? []).length > 0 && (
+                                                <a
+                                                    href={route('os.payment-proof', { token: order.tracking_token })}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-100"
+                                                >
+                                                    <CreditCard className="h-4 w-4" />
+                                                    Comprovante financeiro
+                                                    <ExternalLink className="h-4 w-4" />
+                                                </a>
+                                            )}
+
+                                            {(order.fiscal_document_number || order.fiscal_document_url) && (
+                                                <a
+                                                    href={route('os.fiscal-proof', { token: order.tracking_token })}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-100"
+                                                >
+                                                    <ReceiptText className="h-4 w-4" />
+                                                    Comprovante fiscal
+                                                    <ExternalLink className="h-4 w-4" />
+                                                </a>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {canAcknowledgePickup && (
+                                        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+                                            <p className="font-medium text-slate-900">Confirmação de retirada</p>
+                                            <p className="mt-1 text-sm text-slate-700">
+                                                Use este botão para confirmar que o equipamento já foi retirado.
+                                            </p>
+
+                                            {order.customer_pickup_acknowledged_at ? (
+                                                <div className="mt-3 rounded-xl border border-emerald-200 bg-white px-3 py-2 text-sm text-emerald-700">
+                                                    Retirada confirmada em {formatDateTime(order.customer_pickup_acknowledged_at)}.
+                                                </div>
+                                            ) : (
+                                                <Button onClick={handleAcknowledgePickup} disabled={loadingPickup} className="mt-3 bg-emerald-600 text-white hover:bg-emerald-700">
+                                                    {loadingPickup ? 'Confirmando retirada...' : 'Confirmar que retirei o equipamento'}
+                                                </Button>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {order.service_status === ORDER_STATUS.DELIVERED && (
+                                        <div className="rounded-2xl border border-violet-200 bg-violet-50 p-4">
+                                            <div className="flex items-start gap-3">
+                                                <Star className="mt-0.5 h-5 w-5 text-violet-600" />
+                                                <div className="w-full space-y-3">
+                                                    <div>
+                                                        <p className="font-medium text-slate-900">Como foi seu atendimento?</p>
+                                                        <p className="text-sm text-slate-600">
+                                                            Sua avaliação ajuda a assistência a melhorar a experiência dos próximos atendimentos.
+                                                        </p>
+                                                    </div>
+
+                                                    {order.customer_feedback_submitted_at ? (
+                                                        <div className="rounded-xl border border-emerald-200 bg-white px-3 py-3 text-sm text-slate-700">
+                                                            <p className="font-medium text-emerald-700">
+                                                                Avaliação enviada em {formatDateTime(order.customer_feedback_submitted_at)}.
+                                                            </p>
+                                                            <p className="mt-1">Nota dada: {order.customer_feedback_rating ?? '-'} de 5.</p>
+                                                            {order.customer_feedback_comment && (
+                                                                <p className="mt-2 text-slate-600">Comentário: {order.customer_feedback_comment}</p>
+                                                            )}
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                {[1, 2, 3, 4, 5].map((rating) => {
+                                                                    const selected = feedbackRating === rating;
+
+                                                                    return (
+                                                                        <button
+                                                                            key={rating}
+                                                                            type="button"
+                                                                            onClick={() => setFeedbackRating(rating)}
+                                                                            className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition ${
+                                                                                selected
+                                                                                    ? 'border-violet-600 bg-violet-600 text-white'
+                                                                                    : 'border-violet-200 bg-white text-slate-700 hover:border-violet-300 hover:bg-violet-100'
+                                                                            }`}
+                                                                        >
+                                                                            <Star className="h-4 w-4" />
+                                                                            {rating}
+                                                                        </button>
+                                                                    );
+                                                                })}
+                                                            </div>
+
+                                                            <textarea
+                                                                value={feedbackComment}
+                                                                onChange={(e) => setFeedbackComment(e.target.value)}
+                                                                rows={4}
+                                                                maxLength={2000}
+                                                                placeholder="Se quiser, deixe um comentário rápido sobre o atendimento."
+                                                                className="w-full rounded-2xl border border-violet-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-violet-400"
+                                                            />
+
+                                                            <Button onClick={handleSubmitFeedback} disabled={loadingFeedback || !feedbackRating} className="bg-violet-600 text-white hover:bg-violet-700">
+                                                                {loadingFeedback ? 'Enviando avaliação...' : 'Enviar avaliação'}
+                                                            </Button>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
                                     )}
                                 </div>

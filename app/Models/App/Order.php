@@ -19,7 +19,11 @@ class Order extends Model
     protected $casts = [
         'delivery_date' => 'datetime',
         'warranty_expires_at' => 'datetime',
+        'fiscal_issued_at' => 'datetime',
         'customer_notification_acknowledged_at' => 'datetime',
+        'customer_pickup_acknowledged_at' => 'datetime',
+        'customer_feedback_submitted_at' => 'datetime',
+        'customer_feedback_recovery_updated_at' => 'datetime',
         'budget_follow_up_paused_at' => 'datetime',
         'payment_follow_up_paused_at' => 'datetime',
         'budget_follow_up_snoozed_until' => 'datetime',
@@ -84,5 +88,10 @@ class Order extends Model
     public function paymentFollowUpAssignee(): BelongsTo
     {
         return $this->belongsTo(User::class, 'payment_follow_up_assigned_to');
+    }
+
+    public function customerFeedbackRecoveryAssignee(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'customer_feedback_recovery_assigned_to');
     }
 }

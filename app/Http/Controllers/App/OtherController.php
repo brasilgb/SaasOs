@@ -12,19 +12,15 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 
 class OtherController extends Controller
 {
-    private function authorizeOtherSettingsAccess(): void
-    {
-        abort_unless(Auth::user()?->hasPermission('other_settings'), 403);
-    }
-
     public function index()
     {
-        $this->authorizeOtherSettingsAccess();
+        Gate::authorize('other-settings.access');
 
         if (Other::get()->isEmpty()) {
             Other::create();
@@ -51,6 +47,8 @@ class OtherController extends Controller
                 ?? config('business-metrics.warranty_return_alert_threshold', 10),
             'communication_follow_up_cooldown_days' => $othersettings->communication_follow_up_cooldown_days
                 ?? Other::communicationFollowUpCooldownDays(),
+            'customer_feedback_request_delay_days' => $othersettings->customer_feedback_request_delay_days
+                ?? Other::customerFeedbackRequestDelayDays(),
             'budget_conversion_target' => $othersettings->budget_conversion_target
                 ?? Other::budgetConversionTarget(),
             'payment_recovery_target' => $othersettings->payment_recovery_target
@@ -71,7 +69,7 @@ class OtherController extends Controller
      */
     public function update(Request $request, Other $other): RedirectResponse
     {
-        $this->authorizeOtherSettingsAccess();
+        Gate::authorize('other-settings.access');
 
         $data = $request->validate([
             'navigation' => 'sometimes|boolean',
@@ -88,6 +86,7 @@ class OtherController extends Controller
             'mail_from_name' => 'nullable|string|max:255',
             'warranty_return_alert_threshold' => 'nullable|numeric|min:0|max:100',
             'communication_follow_up_cooldown_days' => 'nullable|integer|min:1|max:30',
+            'customer_feedback_request_delay_days' => 'nullable|integer|min:1|max:30',
             'budget_conversion_target' => 'nullable|numeric|min:0|max:100',
             'payment_recovery_target' => 'nullable|numeric|min:0|max:100',
         ]);
@@ -103,6 +102,9 @@ class OtherController extends Controller
             : null;
         $data['communication_follow_up_cooldown_days'] = isset($data['communication_follow_up_cooldown_days'])
             ? max(1, (int) $data['communication_follow_up_cooldown_days'])
+            : null;
+        $data['customer_feedback_request_delay_days'] = isset($data['customer_feedback_request_delay_days'])
+            ? max(1, (int) $data['customer_feedback_request_delay_days'])
             : null;
         $data['budget_conversion_target'] = isset($data['budget_conversion_target'])
             ? round((float) $data['budget_conversion_target'], 2)
@@ -125,7 +127,7 @@ class OtherController extends Controller
 
     public function sendTestMail(Other $other): RedirectResponse
     {
-        $this->authorizeOtherSettingsAccess();
+        Gate::authorize('other-settings.access');
 
         $company = Company::query()->first();
         $targetEmail = trim((string) ($company?->email ?? ''));

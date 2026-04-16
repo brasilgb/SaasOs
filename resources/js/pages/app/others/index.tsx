@@ -44,6 +44,7 @@ export default function Others({ othersettings, company, time_remaining, mailSet
         mail_from_name: mailSettings?.mail_from_name ?? '',
         warranty_return_alert_threshold: businessMetrics?.warranty_return_alert_threshold ?? 10,
         communication_follow_up_cooldown_days: businessMetrics?.communication_follow_up_cooldown_days ?? 2,
+        customer_feedback_request_delay_days: businessMetrics?.customer_feedback_request_delay_days ?? 7,
         budget_conversion_target: businessMetrics?.budget_conversion_target ?? 60,
         payment_recovery_target: businessMetrics?.payment_recovery_target ?? 70,
     });
@@ -187,6 +188,38 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                 />
                                 <p className="text-muted-foreground text-xs leading-relaxed">
                                     Esse valor é usado na listagem de ordens e nas automações de orçamento parado e cobrança pendente.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mt-6 space-y-6">
+                        <HeadingSmall
+                            title="Prazo para solicitar avaliação do cliente"
+                            description="Define quantos dias após a entrega o sistema passa a sinalizar que a ordem deve receber avaliação do cliente na área pública."
+                        />
+
+                        <div className="grid gap-4 md:max-w-sm">
+                            <div className="space-y-2">
+                                <Label htmlFor="customer_feedback_request_delay_days">Dias após a entrega</Label>
+                                <Input
+                                    id="customer_feedback_request_delay_days"
+                                    type="number"
+                                    min="1"
+                                    max="30"
+                                    step="1"
+                                    value={data.customer_feedback_request_delay_days}
+                                    disabled={!canManageOtherSettings}
+                                    onChange={(e) =>
+                                        setData(
+                                            'customer_feedback_request_delay_days',
+                                            e.target.value === '' ? '' : Number(e.target.value),
+                                        )
+                                    }
+                                    placeholder="7"
+                                />
+                                <p className="text-muted-foreground text-xs leading-relaxed">
+                                    Após esse prazo, a ordem continuará como aguardando avaliação até que o cliente responda pelo painel público.
                                 </p>
                             </div>
                         </div>

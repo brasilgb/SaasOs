@@ -11,9 +11,11 @@ use App\Models\App\Other;
 use App\Models\App\Equipment;
 use App\Models\Tenant;
 use App\Support\OrderStatus;
+use App\Jobs\SendOrderPaymentReminderNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
 class SendPaymentFollowUpsCommandTest extends TestCase
@@ -22,7 +24,7 @@ class SendPaymentFollowUpsCommandTest extends TestCase
 
     public function test_it_sends_automatic_payment_follow_up_for_eligible_order(): void
     {
-        Mail::fake();
+        Queue::fake();
 
         $tenant = Tenant::factory()->create();
         $customer = Customer::factory()->forTenant($tenant->id)->create([
@@ -62,7 +64,7 @@ class SendPaymentFollowUpsCommandTest extends TestCase
             ->expectsOutputToContain('Processadas: 1 | Enviadas: 1 | Ignoradas: 0')
             ->assertExitCode(0);
 
-        Mail::assertSent(OrderPaymentReminderMail::class, 1);
+        Queue::assertPushed(SendOrderPaymentReminderNotification::class, 1);
 
         $this->assertDatabaseHas('order_logs', [
             'order_id' => $order->id,
@@ -76,7 +78,7 @@ class SendPaymentFollowUpsCommandTest extends TestCase
 
     public function test_it_skips_order_with_recent_payment_follow_up_log(): void
     {
-        Mail::fake();
+        Queue::fake();
 
         $tenant = Tenant::factory()->create();
         $customer = Customer::factory()->forTenant($tenant->id)->create([
@@ -116,12 +118,12 @@ class SendPaymentFollowUpsCommandTest extends TestCase
             ->expectsOutputToContain('Processadas: 1 | Enviadas: 0 | Ignoradas: 1')
             ->assertExitCode(0);
 
-        Mail::assertNothingSent();
+        Queue::assertNothingPushed();
     }
 
     public function test_it_skips_order_with_paused_payment_automation(): void
     {
-        Mail::fake();
+        Queue::fake();
 
         $tenant = Tenant::factory()->create();
         $customer = Customer::factory()->forTenant($tenant->id)->create([
@@ -163,11 +165,53 @@ class SendPaymentFollowUpsCommandTest extends TestCase
             ->expectsOutputToContain('Processadas: 1 | Enviadas: 0 | Ignoradas: 1')
             ->assertExitCode(0);
 
-        Mail::assertNothingSent();
+        Queue::assertNothingPushed();
 
         $this->assertDatabaseMissing('order_logs', [
             'order_id' => $order->id,
             'action' => 'payment_reminder_sent',
         ]);
+    }
+
+    public function test_payment_follow_up_delivery_sends_mail(): void
+    {
+        Mail::fake();
+
+        $tenant = Tenant::factory()->create();
+        $customer = Customer::factory()->forTenant($tenant->id)->create([
+            'email' => 'cliente@example.com',
+        ]);
+        $equipment = Equipment::factory()->forTenant($tenant->id)->create();
+
+        Other::query()->create([
+            'tenant_id' => $tenant->id,
+            'mail_mailer' => 'smtp',
+            'mail_host' => 'smtp.example.com',
+            'mail_port' => 587,
+            'mail_username' => 'user@example.com',
+            'mail_password' => Crypt::encryptString('secret'),
+            'mail_encryption' => 'tls',
+            'mail_from_address' => 'noreply@example.com',
+            'mail_from_name' => 'Sigma OS',
+        ]);
+
+        $order = Order::factory()->forTenant($tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'service_status' => OrderStatus::DELIVERED,
+            'service_cost' => 300,
+            'delivery_date' => now()->subDays(4),
+            'updated_at' => now()->subDays(4),
+        ]);
+
+        app(\App\Services\OrderNotificationService::class)->deliverPaymentReminder($order->id, [
+            'parts_value' => 0,
+            'service_value' => 300,
+            'total_order' => 300,
+            'total_paid' => 0,
+            'remaining' => 300,
+        ], false);
+
+        Mail::assertSent(OrderPaymentReminderMail::class, 1);
     }
 }

@@ -29,7 +29,19 @@ function formatDateRange(date?: Date | string) {
     return moment(d).format('DD/MM/YYYY');
 }
 
-export default function Dashboard({ reloadKey, orders, acount, parts, customers, others, listSchedules, cashier, flash, auth, performanceAlert }: any) {
+export default function Dashboard({
+    reloadKey,
+    orders,
+    acount,
+    parts,
+    customers,
+    others,
+    listSchedules,
+    cashier,
+    flash,
+    auth,
+    customerFeedbackAlert,
+}: any) {
     const [timeRange, setTimeRange] = useState('7');
     const [dateRange, setDateRange] = useState<any>({});
     const isTechnician = auth?.role === 'technician';
@@ -119,19 +131,31 @@ export default function Dashboard({ reloadKey, orders, acount, parts, customers,
                         </div>
                     </div>
 
-                    {performanceAlert?.hasAlert && (
-                        <div className="mt-2 mb-4 flex items-center justify-between rounded-lg border border-amber-300 bg-amber-50 px-4 py-3">
+                    {customerFeedbackAlert?.hasAlert && (
+                        <div className="mb-4 flex items-center justify-between rounded-lg border border-rose-300 bg-rose-50 px-4 py-3">
                             <div className="flex items-center gap-3">
-                                <AlertTriangle className="h-5 w-5 text-amber-900" />
-                                <div className="text-sm text-amber-900">
-                                    Meta comercial abaixo do esperado.
-                                    {' '}
-                                    {performanceAlert?.budgetBelowTarget && <Badge variant="secondary" className="ml-2 bg-white text-amber-900">Orçamento</Badge>}
-                                    {performanceAlert?.paymentBelowTarget && <Badge variant="secondary" className="ml-2 bg-white text-amber-900">Cobrança</Badge>}
+                                <AlertTriangle className="h-5 w-5 text-rose-900" />
+                                <div className="text-sm text-rose-900">
+                                    Há avaliações críticas aguardando tratativa.
+                                    {customerFeedbackAlert?.pending ? (
+                                        <Badge variant="secondary" className="ml-2 bg-white text-rose-900">
+                                            {customerFeedbackAlert.pending} pendente(s)
+                                        </Badge>
+                                    ) : null}
+                                    {customerFeedbackAlert?.unassigned ? (
+                                        <Badge variant="secondary" className="ml-2 bg-white text-rose-900">
+                                            {customerFeedbackAlert.unassigned} sem responsável
+                                        </Badge>
+                                    ) : null}
+                                    {customerFeedbackAlert?.overdue ? (
+                                        <Badge variant="secondary" className="ml-2 bg-white text-rose-900">
+                                            {customerFeedbackAlert.overdue} vencida(s) no SLA
+                                        </Badge>
+                                    ) : null}
                                 </div>
                             </div>
-                            <Link href={route('app.follow-ups.performance')} className="text-sm font-medium text-amber-900 underline underline-offset-4">
-                                Ver performance
+                            <Link href={route('app.quality.index')} className="text-sm font-medium text-rose-900 underline underline-offset-4">
+                                Ver tratativas
                             </Link>
                         </div>
                     )}

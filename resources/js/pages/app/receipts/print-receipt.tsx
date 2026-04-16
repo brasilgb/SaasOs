@@ -228,7 +228,21 @@ function ReceiptCopy({
     );
 }
 
-export default function Receipt({ order, company, type, receipt, checklist }: { order: any; company: any; type: any; receipt: any; checklist: any }) {
+export default function Receipt({
+    order,
+    company,
+    type,
+    receipt,
+    checklist,
+    backUrl,
+}: {
+    order: any;
+    company: any;
+    type: any;
+    receipt: any;
+    checklist: any;
+    backUrl?: string;
+}) {
     const [openAsPdf, setOpenAsPdf] = useState(false);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
@@ -283,7 +297,7 @@ export default function Receipt({ order, company, type, receipt, checklist }: { 
             {/* Botão de Impressão - oculto na impressão */}
             <div className="absolute mb-4 flex w-full items-center justify-between print:hidden">
                 <Button asChild className="gap-2">
-                    <Link href={route('app.orders.index')}>
+                    <Link href={backUrl ?? route('app.orders.index')}>
                         <ArrowLeft className="h-4 w-4" />
                     </Link>
                 </Button>

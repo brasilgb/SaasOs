@@ -14,33 +14,6 @@ use Inertia\Inertia;
 
 class ScheduleController extends Controller
 {
-    private function authorizeSchedulesAccess(): void
-    {
-        abort_unless(Auth::user()?->hasPermission('schedules'), 403);
-    }
-
-    private function canManageSchedules(): bool
-    {
-        $user = Auth::user();
-
-        return $user?->hasPermission('schedules') && ! $user->isTechnician();
-    }
-
-    private function canAccessSchedule(Schedule $schedule): bool
-    {
-        $user = Auth::user();
-
-        if (! $user?->hasPermission('schedules')) {
-            return false;
-        }
-
-        if (! $user->isTechnician()) {
-            return true;
-        }
-
-        return (int) $schedule->user_id === (int) $user->id;
-    }
-
     private function scopeSchedulesQuery($query)
     {
         $user = Auth::user();
@@ -57,7 +30,7 @@ class ScheduleController extends Controller
      */
     public function index(Request $request)
     {
-        $this->authorizeSchedulesAccess();
+        $this->authorize('viewAny', Schedule::class);
 
         $status = $request->status;
         $search = $request->search;
@@ -91,7 +64,7 @@ class ScheduleController extends Controller
      */
     public function create()
     {
-        abort_unless($this->canManageSchedules(), 403);
+        $this->authorize('create', Schedule::class);
 
         $customers = Customer::get();
         $technicals = User::where('roles', 3)->orWhere('roles', 1)->where('status', 1)->get();
@@ -104,7 +77,7 @@ class ScheduleController extends Controller
      */
     public function store(ScheduleRequest $request): RedirectResponse
     {
-        abort_unless($this->canManageSchedules(), 403);
+        $this->authorize('create', Schedule::class);
 
         $data = $request->all();
         $request->validated();
@@ -119,7 +92,7 @@ class ScheduleController extends Controller
      */
     public function show(Schedule $schedule, Request $request)
     {
-        abort_unless($this->canAccessSchedule($schedule), 403);
+        $this->authorize('view', $schedule);
 
         $customers = Customer::get();
         $technicals = User::where('roles', 3)->orWhere('roles', 1)->where('status', 1)->get();
@@ -138,7 +111,7 @@ class ScheduleController extends Controller
      */
     public function edit(Schedule $schedule, Request $request)
     {
-        abort_unless($this->canAccessSchedule($schedule), 403);
+        $this->authorize('view', $schedule);
 
         return redirect()->route('app.schedules.show', [
             'schedule' => $schedule->id,
@@ -152,7 +125,7 @@ class ScheduleController extends Controller
      */
     public function update(ScheduleRequest $request, Schedule $schedule): RedirectResponse
     {
-        abort_unless($this->canAccessSchedule($schedule), 403);
+        $this->authorize('update', $schedule);
 
         $data = $request->all();
         $request->validated();
@@ -166,7 +139,7 @@ class ScheduleController extends Controller
      */
     public function destroy(Schedule $schedule)
     {
-        abort_unless($this->canManageSchedules() && $this->canAccessSchedule($schedule), 403);
+        $this->authorize('delete', $schedule);
 
         $schedule->delete();
 

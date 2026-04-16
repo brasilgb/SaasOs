@@ -37,6 +37,7 @@ Route::get('/kpisFinancialSales/{timerange}', [DashboardController::class, 'kpis
 Route::get('/financialSalesRevenueChart/{timerange}', [DashboardController::class, 'financialSalesRevenueChart'])->name('financialSalesRevenueChart');
 Route::get('/quality-indicators', [QualityIndicatorController::class, 'index'])->name('quality.index');
 Route::get('/quality-indicators/metrics/{timerange}', [QualityIndicatorController::class, 'metrics'])->name('quality.metrics');
+Route::post('/quality-indicators/{order}/feedback-recovery', [QualityIndicatorController::class, 'updateFeedbackRecovery'])->name('quality.feedback-recovery');
 Route::get('/follow-ups', [FollowUpController::class, 'index'])->name('follow-ups.index');
 Route::get('/follow-ups/tasks', [FollowUpController::class, 'tasks'])->name('follow-ups.tasks');
 Route::get('/follow-ups/performance', [FollowUpController::class, 'performance'])->name('follow-ups.performance');
@@ -46,6 +47,7 @@ Route::post('/follow-ups/{order}/respond', [FollowUpController::class, 'respond'
 Route::post('/follow-ups/{order}/complete-task', [FollowUpController::class, 'completeTask'])->name('follow-ups.complete-task');
 Route::post('/follow-ups/{order}/snooze-task', [FollowUpController::class, 'snoozeTask'])->name('follow-ups.snooze-task');
 Route::post('/follow-ups/{order}/assign-task', [FollowUpController::class, 'assignTask'])->name('follow-ups.assign-task');
+Route::post('/follow-ups/assign-selected', [FollowUpController::class, 'assignSelectedTasks'])->name('follow-ups.assign-selected');
 
 Route::resource('customers', CustomerController::class);
 Route::post('customers/import-customer', [CustomerController::class, 'ImportCustomer'])->name('import.customer');

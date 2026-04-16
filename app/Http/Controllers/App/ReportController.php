@@ -13,7 +13,7 @@ use App\Models\App\Sale;
 use App\Models\App\Schedule;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class ReportController extends Controller
@@ -34,11 +34,6 @@ class ReportController extends Controller
         ];
     }
 
-    private function authorizeReportsAccess(): void
-    {
-        abort_unless(Auth::user()?->hasPermission('reports'), 403);
-    }
-
     private function canUseSalesReports(): bool
     {
         $user = Auth::user();
@@ -49,14 +44,14 @@ class ReportController extends Controller
 
     public function index(Request $request)
     {
-        $this->authorizeReportsAccess();
+        Gate::authorize('reports.view');
 
         return Inertia::render('app/reports/index');
     }
 
     public function store(Request $request)
     {
-        $this->authorizeReportsAccess();
+        Gate::authorize('reports.view');
 
         $type = $request->input('type');
         $from = Carbon::parse($request->input('from'))->startOfDay();

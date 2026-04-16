@@ -3,12 +3,14 @@ import { Icon } from '@/components/icon';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { CircleCheckBig, ClipboardList, Clock3, Wrench } from 'lucide-react';
+import { CircleCheckBig, ClipboardList, Clock3, Star, UserPlus, Wrench } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: route('app.dashboard') },
@@ -16,14 +18,18 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function FollowUpTasks({ filters, summary, dailyAgenda, technicians }: any) {
-    const { auth } = usePage<{ auth?: { role?: string; permissions?: string[] } }>().props;
+    const { auth } = usePage<{ auth?: { id?: number; role?: string; permissions?: string[] } }>().props;
     const canManageOrders = Boolean(auth?.role !== 'technician' && auth?.permissions?.includes('orders'));
+    const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
+    const selectedCount = selectedTasks.length;
 
     const applyFilters = (next: Record<string, string>) => {
         router.get(
             route('app.follow-ups.tasks'),
             {
                 type: next.type ?? filters?.type ?? 'all',
+                priority: next.priority ?? filters?.priority ?? 'all',
+                sort: next.sort ?? filters?.sort ?? 'priority',
                 assigned_to: next.assigned_to ?? filters?.assigned_to ?? 'all',
             },
             {
@@ -33,7 +39,7 @@ export default function FollowUpTasks({ filters, summary, dailyAgenda, technicia
         );
     };
 
-    const handleCompleteTask = (orderId: number, scope: 'budget' | 'payment') => {
+    const handleCompleteTask = (orderId: number, scope: 'budget' | 'payment' | 'feedback') => {
         const reason = window.prompt('Informe o motivo da conclusão desta tarefa:');
 
         if (!reason || !reason.trim()) {
@@ -71,7 +77,7 @@ export default function FollowUpTasks({ filters, summary, dailyAgenda, technicia
         );
     };
 
-    const handleAssignTask = (orderId: number, scope: 'budget' | 'payment', userId: string) => {
+    const handleAssignTask = (orderId: number, scope: 'budget' | 'payment' | 'feedback', userId: string) => {
         router.post(
             route('app.follow-ups.assign-task', orderId),
             {
@@ -81,6 +87,52 @@ export default function FollowUpTasks({ filters, summary, dailyAgenda, technicia
             {
                 preserveScroll: true,
                 preserveState: true,
+            },
+        );
+    };
+
+    const handleClaimTask = (orderId: number, scope: 'budget' | 'payment' | 'feedback') => {
+        if (!auth?.id) {
+            return;
+        }
+
+        handleAssignTask(orderId, scope, String(auth.id));
+    };
+
+    const taskKey = (item: any) => `${item.id}:${item.scope}`;
+
+    const selectedTaskPayload = useMemo(
+        () =>
+            dailyAgenda
+                .filter((item: any) => selectedTasks.includes(taskKey(item)))
+                .map((item: any) => ({ order_id: item.id, scope: item.scope })),
+        [dailyAgenda, selectedTasks],
+    );
+
+    const toggleTask = (item: any, checked: boolean) => {
+        const key = taskKey(item);
+        setSelectedTasks((current) => (checked ? [...new Set([...current, key])] : current.filter((value) => value !== key)));
+    };
+
+    const toggleAll = (checked: boolean) => {
+        setSelectedTasks(checked ? dailyAgenda.map((item: any) => taskKey(item)) : []);
+    };
+
+    const handleBulkAssignToMe = () => {
+        if (!auth?.id || selectedTaskPayload.length === 0) {
+            return;
+        }
+
+        router.post(
+            route('app.follow-ups.assign-selected'),
+            {
+                user_id: auth.id,
+                tasks: selectedTaskPayload,
+            },
+            {
+                preserveScroll: true,
+                preserveState: true,
+                onSuccess: () => setSelectedTasks([]),
             },
         );
     };
@@ -100,30 +152,12 @@ export default function FollowUpTasks({ filters, summary, dailyAgenda, technicia
             </div>
 
             <div className="p-4 space-y-4">
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                    <Card>
-                        <CardHeader><CardTitle className="text-base">Tarefas do dia</CardTitle></CardHeader>
-                        <CardContent className="text-3xl font-bold">{summary?.today_tasks ?? 0}</CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader><CardTitle className="text-base">Orçamento</CardTitle></CardHeader>
-                        <CardContent className="text-3xl font-bold">{summary?.budget_tasks ?? 0}</CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader><CardTitle className="text-base">Cobrança</CardTitle></CardHeader>
-                        <CardContent className="text-3xl font-bold">{summary?.payment_tasks ?? 0}</CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader><CardTitle className="text-base">Sem responsável pelo acompanhamento</CardTitle></CardHeader>
-                        <CardContent className="text-3xl font-bold">{summary?.unassigned_tasks ?? 0}</CardContent>
-                    </Card>
-                </div>
 
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-base">Filtros operacionais</CardTitle>
                     </CardHeader>
-                    <CardContent className="grid gap-4 md:grid-cols-2">
+                    <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                         <div className="space-y-2">
                             <span className="text-sm font-medium">Tipo</span>
                             <Select value={filters?.type ?? 'all'} onValueChange={(value) => applyFilters({ type: value })}>
@@ -134,6 +168,21 @@ export default function FollowUpTasks({ filters, summary, dailyAgenda, technicia
                                     <SelectItem value="all">Todos</SelectItem>
                                     <SelectItem value="budget">Orçamento</SelectItem>
                                     <SelectItem value="payment">Cobrança</SelectItem>
+                                    <SelectItem value="feedback">Insatisfação</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <span className="text-sm font-medium">Prioridade</span>
+                            <Select value={filters?.priority ?? 'all'} onValueChange={(value) => applyFilters({ priority: value })}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Todas" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Todas</SelectItem>
+                                    <SelectItem value="critica">Somente críticas</SelectItem>
+                                    <SelectItem value="alta">Somente altas</SelectItem>
+                                    <SelectItem value="normal">Somente normais</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -154,12 +203,59 @@ export default function FollowUpTasks({ filters, summary, dailyAgenda, technicia
                                 </SelectContent>
                             </Select>
                         </div>
+                        <div className="space-y-2">
+                            <span className="text-sm font-medium">Ordenação</span>
+                            <Select value={filters?.sort ?? 'priority'} onValueChange={(value) => applyFilters({ sort: value })}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Prioridade" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="priority">Prioridade e dias</SelectItem>
+                                    <SelectItem value="days">Mais tempo sem retorno</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </CardContent>
                 </Card>
 
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
+                    <Card>
+                        <CardHeader><CardTitle className="text-base">Tarefas do dia</CardTitle></CardHeader>
+                        <CardContent className="text-3xl font-bold">{summary?.today_tasks ?? 0}</CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader><CardTitle className="text-base">Orçamento</CardTitle></CardHeader>
+                        <CardContent className="text-3xl font-bold">{summary?.budget_tasks ?? 0}</CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader><CardTitle className="text-base">Cobrança</CardTitle></CardHeader>
+                        <CardContent className="text-3xl font-bold">{summary?.payment_tasks ?? 0}</CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader><CardTitle className="text-base">Insatisfação</CardTitle></CardHeader>
+                        <CardContent className="text-3xl font-bold">{summary?.feedback_tasks ?? 0}</CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader><CardTitle className="text-base">Sem responsável pelo acompanhamento</CardTitle></CardHeader>
+                        <CardContent className="text-3xl font-bold">{summary?.unassigned_tasks ?? 0}</CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader><CardTitle className="text-base">Críticas</CardTitle></CardHeader>
+                        <CardContent className="text-3xl font-bold">{summary?.critical_tasks ?? 0}</CardContent>
+                    </Card>
+                </div>
+
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-base">Central de tarefas do dia</CardTitle>
+                        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                            <CardTitle className="text-base">Central de tarefas do dia</CardTitle>
+                            {canManageOrders && (
+                                <Button type="button" variant="outline" onClick={handleBulkAssignToMe} disabled={selectedCount === 0 || !auth?.id}>
+                                    <UserPlus className="h-4 w-4" />
+                                    Assumir selecionadas{selectedCount > 0 ? ` (${selectedCount})` : ''}
+                                </Button>
+                            )}
+                        </div>
                     </CardHeader>
                     <CardContent>
                         {!dailyAgenda?.length ? (
@@ -169,6 +265,15 @@ export default function FollowUpTasks({ filters, summary, dailyAgenda, technicia
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
+                                            <TableHead className="w-10">
+                                                {canManageOrders && (
+                                                    <Checkbox
+                                                        checked={selectedCount > 0 && selectedCount === dailyAgenda.length}
+                                                        onCheckedChange={(checked) => toggleAll(Boolean(checked))}
+                                                        aria-label="Selecionar todas as tarefas"
+                                                    />
+                                                )}
+                                            </TableHead>
                                             <TableHead>#</TableHead>
                                             <TableHead>Cliente</TableHead>
                                             <TableHead>Técnico</TableHead>
@@ -181,7 +286,19 @@ export default function FollowUpTasks({ filters, summary, dailyAgenda, technicia
                                     </TableHeader>
                                     <TableBody>
                                         {dailyAgenda.map((item: any) => (
-                                            <TableRow key={`${item.scope}-${item.id}`}>
+                                            <TableRow
+                                                key={`${item.scope}-${item.id}`}
+                                                className={item.assigned_to_id ? undefined : 'bg-amber-50/70 dark:bg-amber-950/10'}
+                                            >
+                                                <TableCell>
+                                                    {canManageOrders && (
+                                                        <Checkbox
+                                                            checked={selectedTasks.includes(taskKey(item))}
+                                                            onCheckedChange={(checked) => toggleTask(item, Boolean(checked))}
+                                                            aria-label={`Selecionar tarefa ${item.order_number}`}
+                                                        />
+                                                    )}
+                                                </TableCell>
                                                 <TableCell>{item.order_number}</TableCell>
                                                 <TableCell>{item.customer}</TableCell>
                                                 <TableCell>{item.technician}</TableCell>
@@ -207,7 +324,13 @@ export default function FollowUpTasks({ filters, summary, dailyAgenda, technicia
                                                         <span className="text-sm">{item.assigned_to ?? 'Sem responsável pelo acompanhamento'}</span>
                                                     )}
                                                 </TableCell>
-                                                <TableCell className="capitalize">{item.type}</TableCell>
+                                                <TableCell className="capitalize">
+                                                    <div className="flex items-center gap-2">
+                                                        {item.scope === 'feedback' ? <Star className="h-4 w-4 text-rose-500" /> : null}
+                                                        <span>{item.type}</span>
+                                                        {item.scope === 'feedback' && item.rating ? <Badge variant="destructive">Nota {item.rating}</Badge> : null}
+                                                    </div>
+                                                </TableCell>
                                                 <TableCell>{item.days_pending}</TableCell>
                                                 <TableCell>
                                                     <div className="flex items-center gap-2">
@@ -234,6 +357,17 @@ export default function FollowUpTasks({ filters, summary, dailyAgenda, technicia
                                                     <div className="flex justify-end gap-2">
                                                         {canManageOrders && (
                                                             <>
+                                                                {!item.assigned_to_id && auth?.id && (
+                                                                    <Button
+                                                                        type="button"
+                                                                        size="icon"
+                                                                        variant="outline"
+                                                                        title="Assumir tarefa"
+                                                                        onClick={() => handleClaimTask(item.id, item.scope)}
+                                                                    >
+                                                                        <UserPlus className="h-4 w-4" />
+                                                                    </Button>
+                                                                )}
                                                                 <Button
                                                                     type="button"
                                                                     size="icon"
@@ -243,22 +377,32 @@ export default function FollowUpTasks({ filters, summary, dailyAgenda, technicia
                                                                 >
                                                                     <CircleCheckBig className="h-4 w-4" />
                                                                 </Button>
-                                                                <Button
-                                                                    type="button"
-                                                                    size="icon"
-                                                                    variant="outline"
-                                                                    title="Adiar tarefa"
-                                                                    onClick={() => handleSnoozeTask(item.id, item.scope)}
-                                                                >
-                                                                    <Clock3 className="h-4 w-4" />
-                                                                </Button>
+                                                                {item.scope !== 'feedback' && (
+                                                                    <Button
+                                                                        type="button"
+                                                                        size="icon"
+                                                                        variant="outline"
+                                                                        title="Adiar tarefa"
+                                                                        onClick={() => handleSnoozeTask(item.id, item.scope)}
+                                                                    >
+                                                                        <Clock3 className="h-4 w-4" />
+                                                                    </Button>
+                                                                )}
                                                             </>
                                                         )}
-                                                        <Button asChild size="icon" variant="outline" title="Abrir ordem">
-                                                            <Link href={route('app.orders.edit', item.id)}>
-                                                                <Wrench className="h-4 w-4" />
-                                                            </Link>
-                                                        </Button>
+                                                        {item.scope === 'feedback' ? (
+                                                            <Button asChild size="icon" variant="outline" title="Abrir tratativa">
+                                                                <Link href={route('app.quality.index')}>
+                                                                    <Star className="h-4 w-4" />
+                                                                </Link>
+                                                            </Button>
+                                                        ) : (
+                                                            <Button asChild size="icon" variant="outline" title="Abrir ordem">
+                                                                <Link href={route('app.orders.edit', item.id)}>
+                                                                    <Wrench className="h-4 w-4" />
+                                                                </Link>
+                                                            </Button>
+                                                        )}
                                                     </div>
                                                 </TableCell>
                                             </TableRow>

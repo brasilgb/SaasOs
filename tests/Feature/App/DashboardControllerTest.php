@@ -84,6 +84,29 @@ class DashboardControllerTest extends TestCase
             ->assertViewHas('page.props.performanceAlert.paymentBelowTarget', true);
     }
 
+    public function test_dashboard_index_exposes_personal_task_indicator(): void
+    {
+        Order::factory()->forTenant($this->tenant->id)->create([
+            'budget_follow_up_assigned_to' => $this->user->id,
+            'service_status' => OrderStatus::BUDGET_GENERATED,
+            'updated_at' => now()->subDays(12),
+        ]);
+
+        Order::factory()->forTenant($this->tenant->id)->create([
+            'service_status' => OrderStatus::BUDGET_GENERATED,
+            'updated_at' => now()->subDays(12),
+        ]);
+
+        $response = $this->get(route('app.dashboard'));
+
+        $response
+            ->assertOk()
+            ->assertViewHas('page.props.taskIndicator.hasTasks', true)
+            ->assertViewHas('page.props.taskIndicator.total', 1)
+            ->assertViewHas('page.props.taskIndicator.critical', 1)
+            ->assertViewHas('page.props.taskIndicator.unassigned', 1);
+    }
+
     public function test_metrics_system_returns_warranty_return_count_for_period(): void
     {
         Order::factory()->forTenant($this->tenant->id)->create([
@@ -133,5 +156,50 @@ class DashboardControllerTest extends TestCase
             ->assertOk()
             ->assertJsonPath('budget_follow_ups', 1)
             ->assertJsonPath('pending_payment_follow_ups', 1);
+    }
+
+    public function test_metrics_system_returns_customer_feedback_summary(): void
+    {
+        Order::factory()->forTenant($this->tenant->id)->create([
+            'service_status' => OrderStatus::DELIVERED,
+            'created_at' => now()->subDay(),
+            'customer_feedback_submitted_at' => now()->subHours(6),
+            'customer_feedback_rating' => 3,
+        ]);
+
+        Order::factory()->forTenant($this->tenant->id)->create([
+            'service_status' => OrderStatus::DELIVERED,
+            'created_at' => now()->subDay(),
+        ]);
+
+        $response = $this->get(route('app.metricsSystem', ['timerange' => 7]));
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('feedback_responses', 1)
+            ->assertJsonPath('feedback_average_rating', 3)
+            ->assertJsonPath('feedback_response_rate', 50)
+            ->assertJsonPath('low_feedbacks', 1)
+            ->assertJsonPath('feedback_alert', true);
+    }
+
+    public function test_dashboard_index_exposes_customer_feedback_alert(): void
+    {
+        Order::factory()->forTenant($this->tenant->id)->create([
+            'service_status' => OrderStatus::DELIVERED,
+            'customer_feedback_submitted_at' => now()->subDays(4),
+            'customer_feedback_rating' => 2,
+        ]);
+
+        $response = $this->get(route('app.dashboard'));
+
+        $response
+            ->assertOk()
+            ->assertViewHas('page.props.customerFeedbackAlert.hasAlert', true)
+            ->assertViewHas('page.props.customerFeedbackAlert.total', 1)
+            ->assertViewHas('page.props.customerFeedbackAlert.unassigned', 1)
+            ->assertViewHas('page.props.customerFeedbackAlert.pending', 1)
+            ->assertViewHas('page.props.customerFeedbackAlert.overdue', 1)
+            ->assertViewHas('page.props.customerFeedbackAlert.slaDays', 3);
     }
 }

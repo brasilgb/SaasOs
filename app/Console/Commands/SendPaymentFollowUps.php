@@ -2,21 +2,24 @@
 
 namespace App\Console\Commands;
 
-use App\Mail\OrderPaymentReminderMail;
 use App\Models\App\Order;
 use App\Models\App\OrderLog;
 use App\Models\App\Other;
+use App\Services\OrderNotificationService;
 use App\Support\OrderStatus;
-use App\Support\TenantMailConfig;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Mail;
 
 class SendPaymentFollowUps extends Command
 {
     protected $signature = 'sigmaos:send-payment-followups {--tenant=} {--dry-run}';
 
     protected $description = 'Envia lembretes automáticos de cobrança para ordens elegíveis';
+
+    public function __construct(private readonly OrderNotificationService $orderNotificationService)
+    {
+        parent::__construct();
+    }
 
     private function cooldownDays(?int $tenantId): int
     {
@@ -110,7 +113,7 @@ class SendPaymentFollowUps extends Command
                 continue;
             }
 
-            if (! TenantMailConfig::hasConfiguredForTenantId($order->tenant_id ? (int) $order->tenant_id : null)) {
+            if (! $this->orderNotificationService->canSendToCustomer($order, $customerEmail)) {
                 $skipped++;
                 continue;
             }
@@ -133,8 +136,7 @@ class SendPaymentFollowUps extends Command
             }
 
             try {
-                TenantMailConfig::applyForTenantId($order->tenant_id ? (int) $order->tenant_id : null);
-                Mail::to($customerEmail)->send(new OrderPaymentReminderMail(
+                $this->orderNotificationService->sendPaymentReminder(
                     $order->loadMissing('customer', 'tenant'),
                     [
                         'parts_value' => round((float) ($order->parts_value ?? 0), 2),
@@ -144,7 +146,7 @@ class SendPaymentFollowUps extends Command
                         'remaining' => $remaining,
                     ],
                     ! empty($order->delivery_date) && Carbon::parse($order->delivery_date)->lt(now()->subDays(7))
-                ));
+                );
 
                 OrderLog::create([
                     'order_id' => $order->id,

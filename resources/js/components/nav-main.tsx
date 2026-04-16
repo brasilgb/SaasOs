@@ -14,10 +14,14 @@ type NavMainPageProps = {
     performanceAlert?: {
         hasAlert?: boolean;
     } | null;
+    taskIndicator?: {
+        total?: number;
+        hasTasks?: boolean;
+    } | null;
 };
 
 export function NavMain({ items = [] }: { items: NavItem[] }) {
-    const { othersetting, auth, performanceAlert } = usePage<NavMainPageProps>().props;
+    const { othersetting, auth, performanceAlert, taskIndicator } = usePage<NavMainPageProps>().props;
     const disableSales = !othersetting?.enablesales ? 'sales' : '';
     const permissions = auth?.permissions ?? [];
     const canAccessSalesModules =
@@ -37,9 +41,14 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                 <Link href={item.href} prefetch>
                                     {item.icon && <item.icon />}
                                     <span>{item.title}</span>
-                                    {item.title === 'Performance comercial' && performanceAlert?.hasAlert && (
+                                    {item.title === 'Perf. comercial' && performanceAlert?.hasAlert && (
                                         <Badge variant="destructive" className="ml-auto h-5 px-1.5 text-[10px]">
                                             Alerta
+                                        </Badge>
+                                    )}
+                                    {item.title === 'Tarefas' && taskIndicator?.hasTasks && Number(taskIndicator?.total ?? 0) > 0 && (
+                                        <Badge variant="secondary" className="ml-auto h-5 min-w-5 px-1.5 text-[10px]">
+                                            {taskIndicator.total}
                                         </Badge>
                                     )}
                                 </Link>

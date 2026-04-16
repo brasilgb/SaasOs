@@ -37,7 +37,7 @@ const DEFAULT_MESSAGES = {
     servicecompleted:
         '{{ saudacao }}, {{ cliente }}!\n\nSua OS {{ ordem }} foi concluída com sucesso.\n\nVocê pode acompanhar pelo link: {{ link_os }}\n\nQualquer dúvida, conte com a gente.',
     feedback:
-        '{{ saudacao }}, {{ cliente }}!\n\nEsperamos que tenha gostado do atendimento da OS {{ ordem }}.\n\nSeu feedback é muito importante para continuarmos melhorando.',
+        '{{ saudacao }}, {{ cliente }}!\n\nSua OS {{ ordem }} foi finalizada e sua opinião é muito importante para nós.\n\nAcesse sua área do cliente pelo link {{ link_os }} e deixe uma nota com um comentário rápido sobre sua experiência.\n\nSeu feedback nos ajuda a melhorar cada atendimento.',
     defaultmessage:
         '{{ saudacao }}, {{ cliente }}!\n\nAtualização da sua OS {{ ordem }}.\n\nAcompanhe pelo link: {{ link_os }}\n\nQualquer dúvida, estamos à disposição.',
     budgetfollowup:

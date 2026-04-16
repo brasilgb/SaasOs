@@ -20,21 +20,6 @@ class ReceiptController extends Controller
         abort_unless(Auth::user()?->hasPermission('receipts'), 403);
     }
 
-    private function canAccessOrder(Order $order): bool
-    {
-        $user = Auth::user();
-
-        if (! $user instanceof User || ! $user->hasPermission('orders')) {
-            return false;
-        }
-
-        if (! $user->isTechnician()) {
-            return true;
-        }
-
-        return is_null($order->user_id) || (int) $order->user_id === (int) $user->id;
-    }
-
     /**
      * Display a listing of the resource.
      */
@@ -66,7 +51,7 @@ class ReceiptController extends Controller
         $this->authorizeReceiptsAccess();
 
         $order = Order::where('id', $or)->with(['customer', 'equipment', 'orderParts'])->firstOrFail();
-        abort_unless($this->canAccessOrder($order), 403);
+        $this->authorize('view', $order);
         $company = Company::first();
         $receipt = Receipt::first();
         $checklist = Checklist::where('equipment_id', $order->equipment_id)->first('checklist');

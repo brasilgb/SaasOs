@@ -61,7 +61,7 @@ const mainNavItems: NavItem[] = [
         permission: 'orders',
     },
     {
-        title: 'Garantias',
+        title: 'Garantia/Avaliações',
         href: route('app.quality.index'),
         icon: ShieldAlert,
         active: 'app.quality.*',

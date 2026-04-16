@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { connectBackend } from '@/Utils/connectApi';
 import { Link } from '@inertiajs/react';
-import { Calendar, Check, MemoryStickIcon, MessageSquareMore, ShieldAlert, Users, Wrench } from 'lucide-react';
+import { Calendar, Check, MemoryStickIcon, MessageSquareMore, ShieldAlert, Star, Users, Wrench } from 'lucide-react';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
 
@@ -82,8 +82,8 @@ export default function OrderDashboard({
 
     return (
         <div className="min-w-0">
-            <div className='flex flex-col gap-3'>
-                <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-5">
+            <div className="flex flex-col gap-4">
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                     <KpiDashboard
                         link={route('app.customers.index')}
                         title="Clientes"
@@ -99,11 +99,18 @@ export default function OrderDashboard({
                         description={defaultKpiDescription}
                     />
                     <KpiDashboard
-                        link={route('app.orders.index', { filter: 'warranty_return' })}
-                        title="Retorno garantia"
-                        value={metrics?.warranty_returns ?? 0}
-                        icon={<ShieldAlert className="h-10 w-10" />}
-                        description={warrantyDescription}
+                        link={route('app.schedules.index')}
+                        title="Agendamentos"
+                        value={metrics?.schedules ?? 0}
+                        icon={<Calendar className="h-10 w-10" />}
+                        description={defaultKpiDescription}
+                    />
+                    <KpiDashboard
+                        link={route('app.messages.index')}
+                        title="Mensagens"
+                        value={metrics?.messages ?? 0}
+                        icon={<MessageSquareMore className="h-10 w-10" />}
+                        description={defaultKpiDescription}
                     />
                     <KpiDashboard
                         link={route('app.orders.index', { filter: 'budget_follow_up' })}
@@ -119,21 +126,19 @@ export default function OrderDashboard({
                         icon={<MessageSquareMore className="h-10 w-10" />}
                         description="Cobrar saldo"
                     />
-                </div>
-                <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
                     <KpiDashboard
-                        link={route('app.schedules.index')}
-                        title="Agendamentos"
-                        value={metrics?.schedules ?? 0}
-                        icon={<Calendar className="h-10 w-10" />}
-                        description={defaultKpiDescription}
+                        link={route('app.orders.index', { filter: 'warranty_return' })}
+                        title="Retorno garantia"
+                        value={metrics?.warranty_returns ?? 0}
+                        icon={<ShieldAlert className="h-10 w-10" />}
+                        description={warrantyDescription}
                     />
                     <KpiDashboard
-                        link={route('app.messages.index')}
-                        title="Mensagens"
-                        value={metrics?.messages ?? 0}
-                        icon={<MessageSquareMore className="h-10 w-10" />}
-                        description={defaultKpiDescription}
+                        link={route('app.quality.index')}
+                        title="Avaliação"
+                        value={metrics?.feedback_average_rating ?? 0}
+                        icon={<Star className="h-10 w-10" />}
+                        description={`${metrics?.feedback_responses ?? 0} resposta(s) • ${metrics?.feedback_response_rate ?? 0}% retorno`}
                     />
                     <KpiDashboard
                         link={route('app.parts.index')}
@@ -174,6 +179,18 @@ export default function OrderDashboard({
                     <CardContent className="pt-0 text-sm text-blue-900">
                         O período atual está com {warrantyRate}% de retorno em garantia. Ainda está dentro do limite configurado de{' '}
                         {warrantyThreshold}%, mas já saiu da faixa saudável sugerida de até 5%.
+                    </CardContent>
+                </Card>
+            )}
+            {Boolean(metrics?.feedback_alert) && (
+                <Card className="mt-3 border-rose-300 bg-rose-50">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-sm text-rose-900">
+                            Atenção: clientes avaliaram atendimentos abaixo do esperado
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0 text-sm text-rose-900">
+                        O período atual registrou {metrics?.low_feedbacks ?? 0} avaliação(ões) com nota até 3. Revise esses casos para recuperação e melhoria operacional.
                     </CardContent>
                 </Card>
             )}

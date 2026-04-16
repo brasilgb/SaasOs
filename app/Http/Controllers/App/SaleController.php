@@ -5,20 +5,22 @@ namespace App\Http\Controllers\App;
 use App\Http\Controllers\Controller;
 use App\Models\App\CashSession;
 use App\Models\App\Other;
-use App\Models\App\Part;
 use App\Models\App\Sale;
 use App\Models\App\SaleLog;
-use App\Models\App\SaleItem;
+use App\Services\OperationalAuditService;
+use App\Services\SaleService;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Inertia\Inertia;
-use Symfony\Component\HttpFoundation\Response;
 
 class SaleController extends Controller
 {
+    public function __construct(
+        private readonly OperationalAuditService $operationalAuditService,
+        private readonly SaleService $saleService,
+    ) {}
+
     private function logSaleAction(Sale $sale, string $action, array $data = []): void
     {
         SaleLog::create([
@@ -29,50 +31,14 @@ class SaleController extends Controller
         ]);
     }
 
-    private function resolveFinancialStatus(float $totalAmount, float $paidAmount, string $saleStatus): string
+    private function logOperationalAudit(string $action, Sale $sale, array $data = []): void
     {
-        if ($saleStatus === 'cancelled') {
-            return 'cancelled';
-        }
-
-        if ($paidAmount <= 0) {
-            return 'pending';
-        }
-
-        if ($paidAmount < $totalAmount) {
-            return 'partial';
-        }
-
-        return 'paid';
-    }
-
-    private function authorizeSalesAccess(): ?Response
-    {
-        $user = Auth::user();
-
-        $canAccess = $user instanceof User
-            && $user->hasPermission('sales')
-            && ($user->isAdministrator() || $user->isOperator() || $user->isRoot())
-            && (bool) (Other::query()->value('enablesales') ?? false);
-
-        if ($canAccess) {
-            return null;
-        }
-
-        if (request()->expectsJson()) {
-            return response()->json([
-                'message' => 'Módulo de vendas desabilitado ou acesso não permitido.',
-            ], 403);
-        }
-
-        return redirect()->route('app.dashboard')->with('error', 'Módulo de vendas desabilitado ou acesso não permitido.');
+        $this->operationalAuditService->record($action, 'sale', $sale, Auth::id(), $data);
     }
 
     public function index(Request $request)
     {
-        if ($response = $this->authorizeSalesAccess()) {
-            return $response;
-        }
+        $this->authorize('viewAny', Sale::class);
 
         $search = $request->search;
         $financialStatus = $request->get('financial_status');
@@ -117,9 +83,7 @@ class SaleController extends Controller
 
     public function store(Request $request)
     {
-        if ($response = $this->authorizeSalesAccess()) {
-            return $response;
-        }
+        $this->authorize('create', Sale::class);
 
         $request->validate([
             'customer_id' => 'nullable|exists:customers,id',
@@ -132,53 +96,13 @@ class SaleController extends Controller
         ]);
 
         try {
-            DB::beginTransaction();
-
-            $openCashSession = CashSession::query()
-                ->where('status', 'open')
-                ->latest('opened_at')
-                ->first();
-
-            if (! $openCashSession) {
-                throw new \Exception('Abra o caixa diário antes de concluir uma venda.');
-            }
-
-            $totalAmount = round((float) $request->total_amount, 2);
-            $paidAmount = round((float) ($request->paid_amount ?? $request->total_amount), 2);
-
-            if ($paidAmount > $totalAmount) {
-                throw new \Exception('O valor pago não pode ser maior que o total da venda.');
-            }
-
-            $financialStatus = $this->resolveFinancialStatus($totalAmount, $paidAmount, 'completed');
-
-            $sale = Sale::create([
-                'sales_number' => Sale::max('sales_number') + 1,
-                'customer_id' => $request->customer_id,
-                'cash_session_id' => $openCashSession->id,
-                'total_amount' => $totalAmount,
-                'paid_amount' => $paidAmount,
-                'financial_status' => $financialStatus,
-                'payment_method' => $request->payment_method,
-                'status' => 'completed',
-            ]);
-
-            foreach ($request->parts as $item) {
-                $part = Part::lockForUpdate()->findOrFail($item['part_id']);
-
-                if ($part->quantity < $item['quantity']) {
-                    throw new \Exception("Estoque insuficiente para {$part->name}");
-                }
-
-                SaleItem::create([
-                    'sale_id' => $sale->id,
-                    'part_id' => $part->id,
-                    'quantity' => $item['quantity'],
-                    'unit_price' => $part->sale_price,
-                ]);
-
-                $part->decrement('quantity', $item['quantity']);
-            }
+            $sale = $this->saleService->create($request->only([
+                'customer_id',
+                'total_amount',
+                'paid_amount',
+                'payment_method',
+                'parts',
+            ]));
 
             $this->logSaleAction($sale, 'created', [
                 'payment_method' => $sale->payment_method,
@@ -186,8 +110,6 @@ class SaleController extends Controller
                 'paid_amount' => (float) $sale->paid_amount,
                 'financial_status' => $sale->financial_status,
             ]);
-
-            DB::commit();
 
             return response()->json([
                 'success' => true,
@@ -202,8 +124,6 @@ class SaleController extends Controller
                 ],
             ]);
         } catch (\Throwable $e) {
-            DB::rollBack();
-
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),
@@ -213,93 +133,62 @@ class SaleController extends Controller
 
     public function cancel(Sale $sale)
     {
-        if ($response = $this->authorizeSalesAccess()) {
-            return $response;
-        }
+        $this->authorize('update', $sale);
         $user = Auth::user();
 
         $validated = request()->validate([
             'cancel_reason' => 'required|string|min:8|max:500',
         ]);
 
-        if ($sale->status === 'cancelled') {
-            return back()->with('error', 'Venda já está cancelada.');
+        try {
+            $sale = $this->saleService->cancel($sale, $validated['cancel_reason'], $user instanceof User ? $user : null);
+        } catch (\RuntimeException $exception) {
+            return back()->with('error', $exception->getMessage());
         }
 
-        if ($sale->cashSession && $sale->cashSession->status === 'closed') {
-            return back()->with('error', 'Não é possível cancelar venda vinculada a caixa já fechado.');
-        }
+        $this->logSaleAction($sale, 'cancelled', [
+            'reason' => $validated['cancel_reason'],
+        ]);
 
-        if ($user?->roles === User::ROLE_OPERATOR && $sale->created_at->diffInMinutes(now()) > 60) {
-            return back()->with('error', 'Operador só pode cancelar vendas com até 60 minutos. Solicite um administrador.');
-        }
-
-        DB::transaction(function () use ($sale, $validated) {
-
-            foreach ($sale->items as $item) {
-                $part = Part::find($item->part_id);
-                $part->quantity += $item->quantity;
-                $part->save();
-            }
-
-            $sale->update([
-                'status' => 'cancelled',
-                'cancelled_at' => now(),
-                'cancelled_by' => Auth::id(),
-                'cancel_reason' => $validated['cancel_reason'],
-                'financial_status' => 'cancelled',
-            ]);
-
-            $this->logSaleAction($sale, 'cancelled', [
-                'reason' => $validated['cancel_reason'],
-            ]);
-        });
+        $this->logOperationalAudit('sale_cancelled', $sale, [
+            'reason' => $validated['cancel_reason'],
+            'status' => $sale->status,
+            'financial_status' => $sale->financial_status,
+            'cash_session_id' => $sale->cash_session_id,
+            'total_amount' => (float) $sale->total_amount,
+            'paid_amount' => (float) $sale->paid_amount,
+        ]);
 
         return back()->with('success', 'Venda cancelada com sucesso.');
     }
 
     public function destroy(Sale $sale)
     {
-        if ($response = $this->authorizeSalesAccess()) {
-            return $response;
-        }
+        $this->authorize('delete', $sale);
         $user = Auth::user();
 
-        if (! $user?->isRoot() && ! $user?->isAdministrator()) {
-            return back()->with('error', 'Apenas administradores podem excluir vendas.');
-        }
-
-        if ($sale->status !== 'cancelled') {
-            return back()->with('error', 'Somente vendas canceladas podem ser excluídas.');
-        }
-
-        if ($sale->cashSession && $sale->cashSession->status === 'closed') {
-            return back()->with('error', 'Não é possível excluir venda de caixa já fechado.');
-        }
-
         try {
-            DB::beginTransaction();
-            $sale->delete();
+            $this->logOperationalAudit('sale_deleted', $sale, [
+                'status' => $sale->status,
+                'financial_status' => $sale->financial_status,
+                'cash_session_id' => $sale->cash_session_id,
+                'cancelled_by' => $sale->cancelled_by,
+                'cancel_reason' => $sale->cancel_reason,
+                'total_amount' => (float) $sale->total_amount,
+                'paid_amount' => (float) $sale->paid_amount,
+            ]);
 
-            DB::commit();
+            $this->saleService->delete($sale, $user instanceof User ? $user : null);
 
             return redirect()->route('app.sales.index')->with('success', 'Venda cancelada excluída com sucesso.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            return back()->with('error', 'Erro ao excluir a venda: '.$e->getMessage());
+        } catch (\RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
         }
     }
 
     public function registerFiscal(Request $request, Sale $sale)
     {
-        if ($response = $this->authorizeSalesAccess()) {
-            return $response;
-        }
-
-        if ($sale->status === 'cancelled') {
-            return back()->with('error', 'Não é possível registrar comprovante fiscal em venda cancelada.');
-        }
+        $this->authorize('update', $sale);
 
         $validated = $request->validate([
             'fiscal_document_number' => 'required|string|max:120',
@@ -308,25 +197,11 @@ class SaleController extends Controller
             'fiscal_notes' => 'nullable|string|max:2000',
         ]);
 
-        $fiscalDocumentKey = $sale->fiscal_document_key;
-
-        if (empty($fiscalDocumentKey)) {
-            $fiscalDocumentKey = hash('sha256', implode('|', [
-                (string) $sale->tenant_id,
-                (string) $sale->id,
-                (string) $validated['fiscal_document_number'],
-                (string) Str::uuid(),
-            ]));
+        try {
+            $sale = $this->saleService->registerFiscal($sale, $validated, (int) Auth::id());
+        } catch (\RuntimeException $exception) {
+            return back()->with('error', $exception->getMessage());
         }
-
-        $sale->update([
-            'fiscal_document_number' => $validated['fiscal_document_number'],
-            'fiscal_document_key' => $fiscalDocumentKey,
-            'fiscal_document_url' => $validated['fiscal_document_url'] ?? null,
-            'fiscal_issued_at' => $validated['fiscal_issued_at'] ?? now(),
-            'fiscal_registered_by' => Auth::id(),
-            'fiscal_notes' => $validated['fiscal_notes'] ?? null,
-        ]);
 
         $this->logSaleAction($sale, 'fiscal_registered', [
             'fiscal_document_number' => $sale->fiscal_document_number,

@@ -8,16 +8,11 @@ use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class CompanyController extends Controller
 {
-    private function authorizeCompanyAccess(): void
-    {
-        abort_unless(Auth::user()?->hasPermission('company'), 403);
-    }
-
     public function getEmpresaInfo()
     {
         $empresa = Company::first();
@@ -33,7 +28,7 @@ class CompanyController extends Controller
      */
     public function index(Company $company)
     {
-        $this->authorizeCompanyAccess();
+        Gate::authorize('company.access');
 
         if (Company::get()->isEmpty()) {
             Company::create();
@@ -49,7 +44,7 @@ class CompanyController extends Controller
      */
     public function update(Request $request, Company $company): RedirectResponse
     {
-        $this->authorizeCompanyAccess();
+        Gate::authorize('company.access');
 
         $data = $request->all();
         $storePath = public_path('storage/logos');

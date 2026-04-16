@@ -22,6 +22,125 @@ use Tighten\Ziggy\Ziggy;
 
 class HandleInertiaRequests extends Middleware
 {
+    private const FEEDBACK_RECOVERY_SLA_DAYS = 3;
+
+    private function personalTaskIndicator(?User $user): ?array
+    {
+        if (! $user || ! $user->hasPermission('orders')) {
+            return null;
+        }
+
+        $thresholdDays = Other::communicationFollowUpCooldownDays();
+
+        $budgetOrders = Order::query()
+            ->where('budget_follow_up_assigned_to', $user->id)
+            ->where('service_status', OrderStatus::BUDGET_GENERATED)
+            ->where('updated_at', '<=', now()->subDays($thresholdDays))
+            ->where(function ($query) {
+                $query->whereNull('budget_follow_up_snoozed_until')
+                    ->orWhere('budget_follow_up_snoozed_until', '<=', now());
+            })
+            ->whereDoesntHave('logs', function ($query) {
+                $query->where('action', 'budget_follow_up_task_completed')
+                    ->whereDate('created_at', now()->toDateString());
+            })
+            ->get(['id', 'updated_at']);
+
+        $paymentOrders = Order::query()
+            ->where('payment_follow_up_assigned_to', $user->id)
+            ->whereIn('service_status', [
+                OrderStatus::SERVICE_COMPLETED,
+                OrderStatus::CUSTOMER_NOTIFIED,
+                OrderStatus::DELIVERED,
+            ])
+            ->where(function ($subQuery) use ($thresholdDays) {
+                $subQuery
+                    ->where(function ($dateQuery) use ($thresholdDays) {
+                        $dateQuery->whereNotNull('delivery_date')
+                            ->where('delivery_date', '<=', now()->subDays($thresholdDays));
+                    })
+                    ->orWhere(function ($dateQuery) use ($thresholdDays) {
+                        $dateQuery->whereNull('delivery_date')
+                            ->where('updated_at', '<=', now()->subDays($thresholdDays));
+                    });
+            })
+            ->where(function ($query) {
+                $query->whereNull('payment_follow_up_snoozed_until')
+                    ->orWhere('payment_follow_up_snoozed_until', '<=', now());
+            })
+            ->whereRaw(
+                '(COALESCE(orders.service_cost, 0) - COALESCE((SELECT SUM(op.amount) FROM order_payments op WHERE op.order_id = orders.id), 0)) > 0.009'
+            )
+            ->whereDoesntHave('logs', function ($query) {
+                $query->where('action', 'payment_follow_up_task_completed')
+                    ->whereDate('created_at', now()->toDateString());
+            })
+            ->get(['id', 'updated_at', 'delivery_date']);
+
+        $criticalBudget = $budgetOrders->filter(fn ($order) => optional($order->updated_at)->diffInDays(now()) >= 10)->count();
+        $criticalPayment = $paymentOrders->filter(function ($order) {
+            $reference = $order->delivery_date ?? $order->updated_at;
+
+            return $reference && $reference->diffInDays(now()) >= 10;
+        })->count();
+
+        $unassignedBudget = Order::query()
+            ->whereNull('budget_follow_up_assigned_to')
+            ->where('service_status', OrderStatus::BUDGET_GENERATED)
+            ->where('updated_at', '<=', now()->subDays($thresholdDays))
+            ->where(function ($query) {
+                $query->whereNull('budget_follow_up_snoozed_until')
+                    ->orWhere('budget_follow_up_snoozed_until', '<=', now());
+            })
+            ->whereDoesntHave('logs', function ($query) {
+                $query->where('action', 'budget_follow_up_task_completed')
+                    ->whereDate('created_at', now()->toDateString());
+            })
+            ->count();
+
+        $unassignedPayment = Order::query()
+            ->whereNull('payment_follow_up_assigned_to')
+            ->whereIn('service_status', [
+                OrderStatus::SERVICE_COMPLETED,
+                OrderStatus::CUSTOMER_NOTIFIED,
+                OrderStatus::DELIVERED,
+            ])
+            ->where(function ($subQuery) use ($thresholdDays) {
+                $subQuery
+                    ->where(function ($dateQuery) use ($thresholdDays) {
+                        $dateQuery->whereNotNull('delivery_date')
+                            ->where('delivery_date', '<=', now()->subDays($thresholdDays));
+                    })
+                    ->orWhere(function ($dateQuery) use ($thresholdDays) {
+                        $dateQuery->whereNull('delivery_date')
+                            ->where('updated_at', '<=', now()->subDays($thresholdDays));
+                    });
+            })
+            ->where(function ($query) {
+                $query->whereNull('payment_follow_up_snoozed_until')
+                    ->orWhere('payment_follow_up_snoozed_until', '<=', now());
+            })
+            ->whereRaw(
+                '(COALESCE(orders.service_cost, 0) - COALESCE((SELECT SUM(op.amount) FROM order_payments op WHERE op.order_id = orders.id), 0)) > 0.009'
+            )
+            ->whereDoesntHave('logs', function ($query) {
+                $query->where('action', 'payment_follow_up_task_completed')
+                    ->whereDate('created_at', now()->toDateString());
+            })
+            ->count();
+
+        $total = $budgetOrders->count() + $paymentOrders->count();
+
+        return [
+            'total' => $total,
+            'budget' => $budgetOrders->count(),
+            'payment' => $paymentOrders->count(),
+            'critical' => $criticalBudget + $criticalPayment,
+            'unassigned' => $unassignedBudget + $unassignedPayment,
+            'hasTasks' => ($total + $unassignedBudget + $unassignedPayment) > 0,
+        ];
+    }
+
     private function commercialPerformanceAlert(?User $user): ?array
     {
         if (! $user || ! $user->hasPermission('orders')) {
@@ -75,6 +194,39 @@ class HandleInertiaRequests extends Middleware
             'paymentBelowTarget' => $paymentRate < $paymentTarget,
             'budgetRate' => $budgetRate,
             'paymentRate' => $paymentRate,
+        ];
+    }
+
+    private function customerFeedbackAlert(?User $user): ?array
+    {
+        if (! $user || ! $user->hasPermission('reports')) {
+            return null;
+        }
+
+        $baseQuery = Order::query()
+            ->whereNotNull('customer_feedback_submitted_at')
+            ->where('customer_feedback_rating', '<=', 3);
+
+        return [
+            'hasAlert' => (clone $baseQuery)->exists(),
+            'total' => (clone $baseQuery)->count(),
+            'unassigned' => (clone $baseQuery)->whereNull('customer_feedback_recovery_assigned_to')->count(),
+            'pending' => (clone $baseQuery)
+                ->where(function ($query) {
+                    $query
+                    ->whereNull('customer_feedback_recovery_status')
+                    ->orWhere('customer_feedback_recovery_status', 'pending');
+                })
+                ->count(),
+            'overdue' => (clone $baseQuery)
+                ->where(function ($query) {
+                    $query
+                        ->whereNull('customer_feedback_recovery_status')
+                        ->orWhere('customer_feedback_recovery_status', '!=', 'resolved');
+                })
+                ->where('customer_feedback_submitted_at', '<=', now()->subDays(self::FEEDBACK_RECOVERY_SLA_DAYS))
+                ->count(),
+            'slaDays' => self::FEEDBACK_RECOVERY_SLA_DAYS,
         ];
     }
 
@@ -161,6 +313,8 @@ class HandleInertiaRequests extends Middleware
                 'openedAt' => $openCashSession?->opened_at?->toIso8601String(),
             ] : null,
             'performanceAlert' => $this->commercialPerformanceAlert($user),
+            'customerFeedbackAlert' => $this->customerFeedbackAlert($user),
+            'taskIndicator' => $this->personalTaskIndicator($user),
             'orderStatus' => $user ? Order::where('service_status', OrderStatus::BUDGET_APPROVED)->get() : null,
 
             'notifications' => $user

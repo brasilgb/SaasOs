@@ -10,19 +10,15 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 
 class PartController extends Controller
 {
-    private function authorizePartsAccess(): void
-    {
-        abort_unless(Auth::user()?->hasPermission('parts'), 403);
-    }
-
     public function getPartsForPartNumber(Request $request)
     {
-        $this->authorizePartsAccess();
+        Gate::authorize('parts.access');
 
         $parts = Part::where('reference_number', $request->reference_number)->first();
 
@@ -37,7 +33,7 @@ class PartController extends Controller
      */
     public function index(Request $request)
     {
-        $this->authorizePartsAccess();
+        Gate::authorize('parts.access');
 
         $search = $request->search;
 
@@ -63,7 +59,7 @@ class PartController extends Controller
      */
     public function create()
     {
-        $this->authorizePartsAccess();
+        Gate::authorize('parts.access');
 
         $categories = Part::distinct()->pluck('category');
         $manufacturers = Part::distinct()->pluck('manufacturer');
@@ -76,7 +72,7 @@ class PartController extends Controller
      */
     public function store(PartRequest $request): RedirectResponse
     {
-        $this->authorizePartsAccess();
+        Gate::authorize('parts.access');
 
         $data = $request->all();
         $request->validated();
@@ -124,7 +120,7 @@ class PartController extends Controller
      */
     public function show(Part $part, Request $request)
     {
-        $this->authorizePartsAccess();
+        Gate::authorize('parts.access');
 
         $categories = Part::distinct()->pluck('category');
         $manufacturers = Part::distinct()->pluck('manufacturer');
@@ -143,7 +139,7 @@ class PartController extends Controller
      */
     public function edit(Part $part, Request $request)
     {
-        $this->authorizePartsAccess();
+        Gate::authorize('parts.access');
 
         return Redirect::route('app.parts.show', [
             'part' => $part->id,
@@ -157,7 +153,7 @@ class PartController extends Controller
      */
     public function update(PartRequest $request, Part $part): RedirectResponse
     {
-        $this->authorizePartsAccess();
+        Gate::authorize('parts.access');
 
         $data = $request->all();
         $request->validated();
@@ -188,7 +184,7 @@ class PartController extends Controller
      */
     public function destroy(Part $part)
     {
-        $this->authorizePartsAccess();
+        Gate::authorize('parts.access');
 
         DB::transaction(function () use ($part) {
             PartMovement::create([

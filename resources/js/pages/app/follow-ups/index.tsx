@@ -24,6 +24,13 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Acompanhamentos', href: route('app.follow-ups.index') },
 ];
 
+function formatDateRange(date?: Date | string) {
+    if (!date) return '';
+
+    const d = date instanceof Date ? date : new Date(date);
+    return moment(d).format('DD/MM/YYYY');
+}
+
 function communicationLabel(communication: any) {
     if (!communication) return 'Sem contato';
     if (communication.action === 'budget_follow_up_sent') return 'Acompanhamento de orçamento';
@@ -383,8 +390,8 @@ export default function FollowUps({ filters, summary, budgetOrders, paymentOrder
 
     const activeType = filters?.type ?? 'all';
     const metricsPeriodLabel =
-        summary?.metrics_period?.from && summary?.metrics_period?.to
-            ? `${moment(summary.metrics_period.from).format('DD/MM/YYYY')} até ${moment(summary.metrics_period.to).format('DD/MM/YYYY')}`
+        metricsDateRange?.from && metricsDateRange?.to
+            ? `${formatDateRange(metricsDateRange.from)} até ${formatDateRange(metricsDateRange.to)}`
             : '';
 
     return (

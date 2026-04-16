@@ -36,8 +36,8 @@ class DashboardController extends Controller
 
     public function index()
     {
-        $startDate = Carbon::now()->subDays(10)->startOfDay();
-        $endDate = Carbon::now()->subDays(7)->endOfDay();
+        $feedbackDelay = Other::customerFeedbackRequestDelayDays(auth()->user()?->tenant_id);
+        $feedbackThreshold = Carbon::now()->subDays($feedbackDelay)->endOfDay();
         $today = Carbon::today();
         $tomorrow = Carbon::tomorrow();
 
@@ -65,7 +65,9 @@ class DashboardController extends Controller
             'concluidoscn' => Order::where('service_status', OrderStatus::SERVICE_COMPLETED)->get('order_number'),
             'garantia' => Order::where('is_warranty_return', true)->get(['id', 'order_number']),
             'feedback' => Order::where('service_status', OrderStatus::DELIVERED)
-                ->whereBetween('delivery_date', [$startDate, $endDate])
+                ->whereNotNull('delivery_date')
+                ->where('delivery_date', '<=', $feedbackThreshold)
+                ->whereNull('customer_feedback_submitted_at')
                 ->get('order_number'),
         ];
         $listSchedules= Schedule::with('user', 'customer')->get();
@@ -240,6 +242,24 @@ class DashboardController extends Controller
 
         $ordersCount = Order::whereBetween('created_at', [$startDate, $endDate])->count();
         $warrantyReturns = Order::where('is_warranty_return', true)->whereBetween('created_at', [$startDate, $endDate])->count();
+        $deliveredOrders = Order::where('service_status', OrderStatus::DELIVERED)
+            ->whereBetween('created_at', [$startDate, $endDate]);
+        $feedbackResponses = (clone $deliveredOrders)
+            ->whereNotNull('customer_feedback_submitted_at')
+            ->count();
+        $feedbackAverageRating = round(
+            (float) ((clone $deliveredOrders)
+                ->whereNotNull('customer_feedback_submitted_at')
+                ->avg('customer_feedback_rating') ?? 0),
+            1
+        );
+        $lowFeedbackCount = (clone $deliveredOrders)
+            ->whereNotNull('customer_feedback_submitted_at')
+            ->where('customer_feedback_rating', '<=', 3)
+            ->count();
+        $feedbackResponseRate = (clone $deliveredOrders)->count() > 0
+            ? round(($feedbackResponses / (clone $deliveredOrders)->count()) * 100, 1)
+            : 0.0;
         $communicationThreshold = now()->subDays(2);
 
         $budgetFollowUps = Order::query()
@@ -286,6 +306,11 @@ class DashboardController extends Controller
             'products' => Part::where('type', 'product')->whereBetween('created_at', [$startDate, $endDate])->count(),
 
             'warranty_returns' => $warrantyReturns,
+            'feedback_responses' => $feedbackResponses,
+            'feedback_average_rating' => $feedbackAverageRating,
+            'feedback_response_rate' => $feedbackResponseRate,
+            'low_feedbacks' => $lowFeedbackCount,
+            'feedback_alert' => $lowFeedbackCount > 0,
             'budget_follow_ups' => $budgetFollowUps,
             'pending_payment_follow_ups' => $pendingPaymentFollowUps,
             ...$this->warrantyReturnIndicator($ordersCount, $warrantyReturns),

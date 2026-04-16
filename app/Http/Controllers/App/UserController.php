@@ -9,66 +9,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 
 class UserController extends Controller
 {
-    private function authorizeUsersViewAccess(): void
-    {
-        $authUser = Auth::user();
-        abort_unless($authUser?->hasPermission('users') || $authUser?->hasPermission('users.view'), 403);
-    }
-
-    private function authorizeUsersCreateAccess(): void
-    {
-        $authUser = Auth::user();
-        abort_unless($authUser?->hasPermission('users') || $authUser?->hasPermission('users.create'), 403);
-    }
-
-    private function authorizeUsersUpdateAccess(): void
-    {
-        $authUser = Auth::user();
-        abort_unless($authUser?->hasPermission('users') || $authUser?->hasPermission('users.update'), 403);
-    }
-
-    private function authorizeUsersDeleteAccess(): void
-    {
-        $authUser = Auth::user();
-        abort_unless($authUser?->hasPermission('users') || $authUser?->hasPermission('users.delete'), 403);
-    }
-
-    private function canOperatorManageRole(mixed $role): bool
-    {
-        return in_array((int) $role, [User::ROLE_OPERATOR, User::ROLE_TECHNICIAN], true);
-    }
-
-    private function canManageTargetUser(User $target): bool
-    {
-        $authUser = Auth::user();
-        if (! $authUser instanceof User) {
-            return false;
-        }
-
-        if ($authUser->isRoot() || $authUser->isAdministrator()) {
-            return true;
-        }
-
-        if ($authUser->isOperator()) {
-            return $this->canOperatorManageRole($target->roles);
-        }
-
-        return false;
-    }
-
-    private function assertCreateRoleAllowed(mixed $role): void
-    {
-        $authUser = Auth::user();
-        if ($authUser instanceof User && $authUser->isOperator()) {
-            abort_unless($this->canOperatorManageRole($role), 403);
-        }
-    }
-
     private function scopeUserListingByActor($query)
     {
         $authUser = Auth::user();
@@ -84,7 +30,7 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $this->authorizeUsersViewAccess();
+        $this->authorize('viewAny', User::class);
 
         $search = $request->search;
         $query = $this->scopeUserListingByActor(User::query())->orderBy('id', 'DESC');
@@ -102,7 +48,7 @@ class UserController extends Controller
      */
     public function create()
     {
-        $this->authorizeUsersCreateAccess();
+        $this->authorize('create', User::class);
 
         return Inertia::render('app/users/create-user');
     }
@@ -112,11 +58,11 @@ class UserController extends Controller
      */
     public function store(UserRequest $request): RedirectResponse
     {
-        $this->authorizeUsersCreateAccess();
+        $this->authorize('create', User::class);
 
         $data = $request->all();
         $request->validated();
-        $this->assertCreateRoleAllowed($data['roles'] ?? null);
+        Gate::authorize('assignRole', [User::class, $data['roles'] ?? null]);
         $data['password'] = Hash::make($request->password);
         $data['user_number'] = User::exists() ? User::latest()->first()->user_number + 1 : 1;
         Model::reguard();
@@ -131,8 +77,7 @@ class UserController extends Controller
      */
     public function show(User $user, Request $request)
     {
-        $this->authorizeUsersViewAccess();
-        abort_unless($this->canManageTargetUser($user), 403);
+        $this->authorize('view', $user);
 
         return Inertia::render('app/users/edit-user', [
             'user' => $user,
@@ -146,8 +91,7 @@ class UserController extends Controller
      */
     public function edit(User $user, Request $request)
     {
-        $this->authorizeUsersUpdateAccess();
-        abort_unless($this->canManageTargetUser($user), 403);
+        $this->authorize('update', $user);
 
         return redirect()->route('app.users.show', [
             'user' => $user->id,
@@ -161,12 +105,11 @@ class UserController extends Controller
      */
     public function update(UserRequest $request, User $user): RedirectResponse
     {
-        $this->authorizeUsersUpdateAccess();
-        abort_unless($this->canManageTargetUser($user), 403);
+        $this->authorize('update', $user);
 
         $data = $request->all();
         $request->validated();
-        $this->assertCreateRoleAllowed($data['roles'] ?? null);
+        Gate::authorize('assignRole', [User::class, $data['roles'] ?? null]);
         $data['password'] = $request->password ? Hash::make($request->password) : $user->password;
         Model::reguard();
         $user->update($data);
@@ -180,8 +123,7 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        $this->authorizeUsersDeleteAccess();
-        abort_unless($this->canManageTargetUser($user), 403);
+        $this->authorize('delete', $user);
 
         $user->delete();
 

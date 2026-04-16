@@ -20,6 +20,16 @@ Route::post('/os/{token}/budget-status', [OsController::class, 'updateBudgetStat
     ->name('orders.budget.status');
 Route::post('/os/{token}/acknowledge-notification', [OsController::class, 'acknowledgeNotification'])
     ->name('orders.notification.acknowledge');
+Route::post('/os/{token}/acknowledge-pickup', [OsController::class, 'acknowledgePickup'])
+    ->name('orders.pickup.acknowledge');
+Route::get('/os/{token}/receipt/{type}', [OsController::class, 'receipt'])
+    ->name('os.receipt');
+Route::get('/os/{token}/payment-proof', [OsController::class, 'paymentProof'])
+    ->name('os.payment-proof');
+Route::get('/os/{token}/fiscal-proof', [OsController::class, 'fiscalProof'])
+    ->name('os.fiscal-proof');
+Route::post('/os/{token}/feedback', [OsController::class, 'submitFeedback'])
+    ->name('os.feedback.submit');
 
 Route::get('/privacidade', function () {
     return Inertia::render('site/privacy/index');

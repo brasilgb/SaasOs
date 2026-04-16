@@ -16,6 +16,7 @@ class Other extends Model
         'enablesales' => 'boolean',
         'warranty_return_alert_threshold' => 'float',
         'communication_follow_up_cooldown_days' => 'integer',
+        'customer_feedback_request_delay_days' => 'integer',
         'budget_conversion_target' => 'float',
         'payment_recovery_target' => 'float',
     ];
@@ -63,6 +64,23 @@ class Other extends Model
         }
 
         return 60.0;
+    }
+
+    public static function customerFeedbackRequestDelayDays(?int $tenantId = null): int
+    {
+        $query = static::query();
+
+        if ($tenantId) {
+            $query->where('tenant_id', $tenantId);
+        }
+
+        $configured = $query->value('customer_feedback_request_delay_days');
+
+        if ($configured !== null) {
+            return max(1, (int) $configured);
+        }
+
+        return 7;
     }
 
     public static function paymentRecoveryTarget(?int $tenantId = null): float

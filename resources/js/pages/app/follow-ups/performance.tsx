@@ -17,6 +17,13 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Performance comercial', href: route('app.follow-ups.performance') },
 ];
 
+function formatDateRange(date?: Date | string) {
+    if (!date) return '';
+
+    const d = date instanceof Date ? date : new Date(date);
+    return moment(d).format('DD/MM/YYYY');
+}
+
 export default function FollowUpPerformance({ filters, summary, technicianRanking, trends }: any) {
     const [dateRange, setDateRange] = useState<any>({
         from: filters?.from,
@@ -42,8 +49,8 @@ export default function FollowUpPerformance({ filters, summary, technicianRankin
     };
 
     const metricsPeriodLabel =
-        summary?.metrics_period?.from && summary?.metrics_period?.to
-            ? `${moment(summary.metrics_period.from).format('DD/MM/YYYY')} até ${moment(summary.metrics_period.to).format('DD/MM/YYYY')}`
+        dateRange?.from && dateRange?.to
+            ? `${formatDateRange(dateRange.from)} até ${formatDateRange(dateRange.to)}`
             : '';
     const previousPeriodLabel =
         summary?.comparison?.period?.from && summary?.comparison?.period?.to

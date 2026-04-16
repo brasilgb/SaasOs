@@ -4,11 +4,7 @@ namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OrderRequest;
-use App\Mail\OrderBudgetFollowUpMail;
-use App\Mail\OrderCreatedMail;
 use App\Models\App\Other;
-use App\Mail\OrderPaymentReminderMail;
-use App\Mail\OrderStatusUpdatedMail;
 use App\Models\App\Customer;
 use App\Models\App\Equipment;
 use App\Models\App\CashSession;
@@ -18,19 +14,28 @@ use App\Models\App\OrderPayment;
 use App\Models\App\OrderStatusHistory;
 use App\Models\App\Part;
 use App\Models\App\WhatsappMessage;
+use App\Services\OrderStatusService;
+use App\Services\OrderPaymentService;
+use App\Services\OrderNotificationService;
+use App\Services\OperationalAuditService;
 use App\Support\OrderStatus;
-use App\Support\TenantMailConfig;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class OrderController extends Controller
 {
+    public function __construct(
+        private readonly OperationalAuditService $operationalAuditService,
+        private readonly OrderPaymentService $orderPaymentService,
+        private readonly OrderStatusService $orderStatusService,
+        private readonly OrderNotificationService $orderNotificationService,
+    ) {}
+
     private function shouldSendCustomerMailer(Order $order, ?string $customerEmail): bool
     {
         $email = trim((string) ($customerEmail ?? ''));
@@ -38,7 +43,7 @@ class OrderController extends Controller
             return false;
         }
 
-        return TenantMailConfig::hasConfiguredForTenantId($order->tenant_id ? (int) $order->tenant_id : null);
+        return $this->orderNotificationService->canSendToCustomer($order, $customerEmail);
     }
 
     private function appendPaymentReminderAvailability(Order $order): Order
@@ -98,6 +103,13 @@ class OrderController extends Controller
     private function communicationThresholdDays(): int
     {
         return Other::communicationFollowUpCooldownDays();
+    }
+
+    private function customerFeedbackRequestThreshold(): Carbon
+    {
+        $delay = Other::customerFeedbackRequestDelayDays($this->currentUser()?->tenant_id);
+
+        return Carbon::now()->subDays($delay)->endOfDay();
     }
 
     private function isBudgetFollowUpOrder(Order $order): bool
@@ -219,16 +231,6 @@ class OrderController extends Controller
         return $query->first();
     }
 
-    private function recordStatusHistory(Order $order, int $status): void
-    {
-        OrderStatusHistory::create([
-            'order_id' => $order->id,
-            'status' => $status,
-            'changed_by' => $this->currentUser()?->id,
-            'note' => OrderStatus::label($status),
-        ]);
-    }
-
     private function logOrderAction(Order $order, string $action, array $data = []): void
     {
         OrderLog::create([
@@ -238,6 +240,11 @@ class OrderController extends Controller
             'data' => $data === [] ? null : $data,
             'created_at' => now(),
         ]);
+    }
+
+    private function logOperationalAudit(string $action, Order $order, array $data = []): void
+    {
+        $this->operationalAuditService->record($action, 'order', $order, $this->currentUser()?->id, $data);
     }
 
     private function buildPaymentSummary(Order $order): array
@@ -257,33 +264,6 @@ class OrderController extends Controller
         ];
     }
 
-    private function authorizeOrdersAccess(): void
-    {
-        abort_unless($this->currentUser()?->hasPermission('orders'), 403);
-    }
-
-    private function canManageOrders(): bool
-    {
-        $user = $this->currentUser();
-
-        return $user?->hasPermission('orders') && ! $user->isTechnician();
-    }
-
-    private function canAccessOrder(Order $order): bool
-    {
-        $user = $this->currentUser();
-
-        if (! $user?->hasPermission('orders')) {
-            return false;
-        }
-
-        if (! $user->isTechnician()) {
-            return true;
-        }
-
-        return is_null($order->user_id) || (int) $order->user_id === (int) $user->id;
-    }
-
     private function scopeOrdersQuery($query)
     {
         $user = $this->currentUser();
@@ -301,7 +281,7 @@ class OrderController extends Controller
     // Display and linting order for id
     public function allOrder()
     {
-        $this->authorizeOrdersAccess();
+        $this->authorize('viewAny', Order::class);
 
         $dashData = [
             'numorder' => $this->scopeOrdersQuery(Order::query())->count(),
@@ -321,7 +301,7 @@ class OrderController extends Controller
     // Display and linting order for id
     public function getOrder($order)
     {
-        $this->authorizeOrdersAccess();
+        $this->authorize('viewAny', Order::class);
 
         $query = $this->scopeOrdersQuery(Order::where('order_number', $order))->with('customer')->with('equipment')->get();
 
@@ -334,7 +314,7 @@ class OrderController extends Controller
     // Display and listing customers for id order
     public function getOrderCli($customer)
     {
-        $this->authorizeOrdersAccess();
+        $this->authorize('viewAny', Order::class);
 
         $query = $this->scopeOrdersQuery(Order::where('customer_id', $customer))->with('customer')->with('equipment')->get();
 
@@ -349,10 +329,9 @@ class OrderController extends Controller
      */
     public function index(Request $request)
     {
-        $this->authorizeOrdersAccess();
+        $this->authorize('viewAny', Order::class);
 
-        $startDate = Carbon::now()->subDays(10)->startOfDay();
-        $endDate = Carbon::now()->subDays(7)->endOfDay();
+        $feedbackThreshold = $this->customerFeedbackRequestThreshold();
 
         $status = $request->status;
         $search = $request->search;
@@ -435,10 +414,9 @@ class OrderController extends Controller
 
         $feedbackOrders = $this->scopeOrdersQuery(Order::query())
             ->where('service_status', OrderStatus::DELIVERED)
-            ->whereBetween('delivery_date', [$startDate, $endDate])
-            ->where(function ($q) {
-                $q->whereNull('feedback')->orWhere('feedback', 0);
-            })
+            ->whereNotNull('delivery_date')
+            ->where('delivery_date', '<=', $feedbackThreshold)
+            ->whereNull('customer_feedback_submitted_at')
             ->get(['id', 'order_number']);
 
         return Inertia::render('app/orders/index', [
@@ -456,7 +434,7 @@ class OrderController extends Controller
      */
     public function create()
     {
-        abort_unless($this->canManageOrders(), 403);
+        $this->authorize('create', Order::class);
 
         $equipments = Equipment::get();
         $customers = Customer::get();
@@ -470,7 +448,7 @@ class OrderController extends Controller
      */
     public function store(OrderRequest $request): RedirectResponse
     {
-        abort_unless($this->canManageOrders(), 403);
+        $this->authorize('create', Order::class);
 
         $data = $request->all();
         $request->validated();
@@ -485,26 +463,34 @@ class OrderController extends Controller
         $data['is_warranty_return'] = (bool) $warrantySourceOrder;
         $data['warranty_source_order_id'] = $warrantySourceOrder?->id;
         $order = Order::create($data);
-        $this->recordStatusHistory($order, (int) $order->service_status);
+        OrderStatusHistory::create([
+            'order_id' => $order->id,
+            'status' => (int) $order->service_status,
+            'changed_by' => $this->currentUser()?->id,
+            'note' => OrderStatus::label((int) $order->service_status),
+        ]);
         $this->logOrderAction($order, 'created', [
             'status' => (int) $order->service_status,
             'status_label' => OrderStatus::label($order->service_status),
             'is_warranty_return' => (bool) $order->is_warranty_return,
             'warranty_source_order_number' => $warrantySourceOrder?->order_number,
         ]);
+        $this->logOperationalAudit('order_created', $order, [
+            'status' => (int) $order->service_status,
+            'status_label' => OrderStatus::label($order->service_status),
+            'customer_id' => $order->customer_id,
+            'equipment_id' => $order->equipment_id,
+            'is_warranty_return' => (bool) $order->is_warranty_return,
+            'warranty_source_order_number' => $warrantySourceOrder?->order_number,
+        ]);
 
-        $order->load(['customer', 'tenant']);
-        $customerEmail = $order->customer?->email;
         $successMessage = 'Ordem cadastrada com sucesso';
 
-        if ($this->shouldSendCustomerMailer($order, $customerEmail)) {
-            try {
-                TenantMailConfig::applyForTenantId($order->tenant_id ? (int) $order->tenant_id : null);
-                Mail::to($customerEmail)->send(new OrderCreatedMail($order));
-            } catch (\Throwable $e) {
-                report($e);
-                $successMessage = 'Ordem cadastrada com sucesso, mas houve falha ao enviar o e-mail ao cliente.';
-            }
+        try {
+            $this->orderNotificationService->sendCreated($order);
+        } catch (\Throwable $e) {
+            report($e);
+            $successMessage = 'Ordem cadastrada com sucesso, mas houve falha ao enviar o e-mail ao cliente.';
         }
 
         return redirect()->route('app.orders.index')->with('success', $successMessage);
@@ -515,7 +501,7 @@ class OrderController extends Controller
      */
     public function show(Order $order, Request $request)
     {
-        abort_unless($this->canAccessOrder($order), 403);
+        $this->authorize('view', $order);
 
         $order->load([
             'customer',
@@ -601,7 +587,7 @@ class OrderController extends Controller
      */
     public function edit(Order $order, Request $request)
     {
-        abort_unless($this->canAccessOrder($order), 403);
+        $this->authorize('view', $order);
 
         return redirect()->route('app.orders.show', [
             'order' => $order->id,
@@ -616,7 +602,7 @@ class OrderController extends Controller
      */
     public function update(OrderRequest $request, Order $order): RedirectResponse
     {
-        abort_unless($this->canAccessOrder($order), 403);
+        $this->authorize('update', $order);
 
         $data = $request->all();
         $request->validated();
@@ -640,16 +626,6 @@ class OrderController extends Controller
             ->toArray();
         $successMessage = 'Ordem atualizada com sucesso';
 
-        if (! OrderStatus::canTransition($oldStatus, $data['service_status'])) {
-            return back()->withErrors([
-                'service_status' => sprintf(
-                    'Transição inválida de status: %s para %s.',
-                    OrderStatus::label($oldStatus),
-                    OrderStatus::label($data['service_status'])
-                ),
-            ]);
-        }
-
         $order->update([
             'customer_id' => $data['customer_id'],
             'equipment_id' => $data['equipment_id'], // equipamento
@@ -670,7 +646,7 @@ class OrderController extends Controller
             'warranty_expires_at' => $warrantyExpiresAt,
             'is_warranty_return' => (bool) $warrantySourceOrder,
             'warranty_source_order_id' => $warrantySourceOrder?->id,
-            'service_status' => $data['service_status'],
+            'service_status' => $oldStatus,
             'delivery_forecast' => $data['delivery_forecast'], // previsao de entrega
             'observations' => $data['observations'],
         ]);
@@ -702,7 +678,11 @@ class OrderController extends Controller
             $currentStatus = (int) $data['service_status'];
             $statusLabel = OrderStatus::label($currentStatus);
 
-            $this->recordStatusHistory($order, $currentStatus);
+            try {
+                $order = $this->orderStatusService->transition($order, $currentStatus, $this->currentUser()?->id);
+            } catch (\Illuminate\Validation\ValidationException $exception) {
+                return back()->withErrors($exception->errors());
+            }
             $this->logOrderAction($order, 'status_changed', [
                 'from' => (int) $oldStatus,
                 'from_label' => OrderStatus::label($oldStatus),
@@ -710,23 +690,19 @@ class OrderController extends Controller
                 'to_label' => $statusLabel,
                 'changes' => $changes,
             ]);
+            $this->logOperationalAudit('order_status_changed', $order, [
+                'from' => (int) $oldStatus,
+                'from_label' => OrderStatus::label($oldStatus),
+                'to' => $currentStatus,
+                'to_label' => $statusLabel,
+                'changes' => $changes,
+            ]);
 
-            $customerEmail = $order->customer?->email;
-
-            if ($this->shouldSendCustomerMailer($order, $customerEmail)) {
-                try {
-                    TenantMailConfig::applyForTenantId($order->tenant_id ? (int) $order->tenant_id : null);
-                    Mail::to($customerEmail)->send(
-                        new OrderStatusUpdatedMail(
-                            $order->fresh(['customer', 'tenant']),
-                            $statusLabel,
-                            $data['observations'] ?? null
-                        )
-                    );
-                } catch (\Throwable $e) {
-                    report($e);
-                    $successMessage = 'Ordem atualizada com sucesso, mas houve falha ao enviar o e-mail de status ao cliente.';
-                }
+            try {
+                $this->orderNotificationService->sendStatusUpdated($order->fresh(['customer', 'tenant']), $statusLabel, $data['observations'] ?? null);
+            } catch (\Throwable $e) {
+                report($e);
+                $successMessage = 'Ordem atualizada com sucesso, mas houve falha ao enviar o e-mail de status ao cliente.';
             }
         } elseif ($changes !== []) {
             $this->logOrderAction($order, 'updated', [
@@ -742,7 +718,7 @@ class OrderController extends Controller
      */
     public function destroy(Order $order)
     {
-        abort_unless($this->canManageOrders() && $this->canAccessOrder($order), 403);
+        $this->authorize('delete', $order);
 
         $order->delete();
         $order->orderParts()->detach();
@@ -752,7 +728,7 @@ class OrderController extends Controller
 
     public function removePart(Request $request)
     {
-        abort_unless($this->canManageOrders(), 403);
+        $this->authorize('create', Order::class);
 
         $validatedData = $request->validate([
             'order_id' => 'required|integer|exists:orders,id',
@@ -760,7 +736,8 @@ class OrderController extends Controller
         ]);
 
         $order = Order::find($validatedData['order_id']);
-        abort_unless($order && $this->canAccessOrder($order), 403);
+        abort_unless($order, 404);
+        $this->authorize('update', $order);
 
         $order->load('orderParts');
         $part = $order->orderParts->firstWhere('id', (int) $validatedData['part_id']);
@@ -792,8 +769,7 @@ class OrderController extends Controller
 
     public function storePayment(Request $request, Order $order): RedirectResponse
     {
-        abort_unless($this->canManageOrders(), 403);
-        abort_unless($this->canAccessOrder($order), 403);
+        $this->authorize('update', $order);
 
         $request->merge([
             'amount' => $this->normalizeMoneyFloat($request->input('amount')),
@@ -806,39 +782,21 @@ class OrderController extends Controller
             'notes' => 'nullable|string|max:1000',
         ]);
 
-        $order->load('orderPayments');
-        $paymentSummary = $this->buildPaymentSummary($order);
-        $amount = $this->roundMoney((float) $validated['amount']);
-
-        if ($amount > $paymentSummary['remaining']) {
-            return back()->withErrors([
-                'amount' => 'O valor informado é maior que o saldo restante da ordem.',
-            ]);
-        }
-
-        $openCashSessionId = CashSession::query()
-            ->where('status', 'open')
-            ->latest('opened_at')
-            ->value('id');
-
-        if (! $openCashSessionId) {
-            return back()->withErrors([
-                'amount' => 'Abra o caixa diário antes de registrar pagamento da ordem.',
-            ]);
-        }
-
-        $payment = OrderPayment::create([
-            'order_id' => $order->id,
-            'cash_session_id' => $openCashSessionId,
-            'amount' => $amount,
-            'payment_method' => $validated['payment_method'],
-            'paid_at' => $validated['paid_at'] ?? now(),
-            'notes' => $validated['notes'] ?? null,
+        $payment = $this->orderPaymentService->register($order, [
+            ...$validated,
+            'amount' => $this->roundMoney((float) $validated['amount']),
         ]);
         $this->logOrderAction($order, 'payment_registered', [
             'payment_id' => $payment->id,
-            'cash_session_id' => $openCashSessionId,
-            'amount' => $amount,
+            'cash_session_id' => $payment->cash_session_id,
+            'amount' => (float) $payment->amount,
+            'payment_method' => $validated['payment_method'],
+            'paid_at' => $payment->paid_at?->toDateTimeString(),
+        ]);
+        $this->logOperationalAudit('order_payment_registered', $order, [
+            'payment_id' => $payment->id,
+            'cash_session_id' => $payment->cash_session_id,
+            'amount' => (float) $payment->amount,
             'payment_method' => $validated['payment_method'],
             'paid_at' => $payment->paid_at?->toDateTimeString(),
         ]);
@@ -848,30 +806,24 @@ class OrderController extends Controller
 
     public function destroyPayment(Order $order, OrderPayment $payment): RedirectResponse
     {
-        abort_unless($this->canManageOrders(), 403);
-        abort_unless($this->canAccessOrder($order), 403);
+        $this->authorize('update', $order);
         abort_unless((int) $payment->order_id === (int) $order->id, 404);
 
-        if ($payment->cashSession?->status === 'closed') {
-            return back()->with('error', 'Não é possível remover pagamento vinculado a um caixa já fechado.');
+        try {
+            $paymentData = $this->orderPaymentService->remove($payment);
+        } catch (\RuntimeException $exception) {
+            return back()->with('error', $exception->getMessage());
         }
 
-        $paymentData = [
-            'payment_id' => $payment->id,
-            'cash_session_id' => $payment->cash_session_id,
-            'amount' => (float) $payment->amount,
-            'payment_method' => $payment->payment_method,
-            'paid_at' => $payment->paid_at?->toDateTimeString(),
-        ];
-        $payment->delete();
         $this->logOrderAction($order, 'payment_removed', $paymentData);
+        $this->logOperationalAudit('order_payment_removed', $order, $paymentData);
 
         return back()->with('success', 'Pagamento removido com sucesso.');
     }
 
     public function paymentsData(Order $order)
     {
-        abort_unless($this->canAccessOrder($order), 403);
+        $this->authorize('view', $order);
 
         $order->load('customer');
         $orderPayments = $order->orderPayments()->latest('paid_at')->get();
@@ -891,8 +843,7 @@ class OrderController extends Controller
 
     public function registerFiscal(Request $request, Order $order): RedirectResponse
     {
-        abort_unless($this->canManageOrders(), 403);
-        abort_unless($this->canAccessOrder($order), 403);
+        $this->authorize('update', $order);
 
         $validated = $request->validate([
             'fiscal_document_number' => 'required|string|max:120',
@@ -930,8 +881,7 @@ class OrderController extends Controller
 
     public function sendPaymentReminder(Order $order): RedirectResponse
     {
-        abort_unless($this->canManageOrders(), 403);
-        abort_unless($this->canAccessOrder($order), 403);
+        $this->authorize('update', $order);
 
         $order->load('customer', 'orderPayments');
         $paymentSummary = $this->buildPaymentSummary($order);
@@ -960,8 +910,7 @@ class OrderController extends Controller
         }
 
         try {
-            TenantMailConfig::applyForTenantId($order->tenant_id ? (int) $order->tenant_id : null);
-            Mail::to($customerEmail)->send(new OrderPaymentReminderMail($order, $paymentSummary, $isOverdue));
+            $this->orderNotificationService->sendPaymentReminder($order, $paymentSummary, $isOverdue);
         } catch (\Throwable $e) {
             report($e);
 
@@ -981,8 +930,7 @@ class OrderController extends Controller
 
     public function sendBudgetFollowUp(Order $order): RedirectResponse
     {
-        abort_unless($this->canManageOrders(), 403);
-        abort_unless($this->canAccessOrder($order), 403);
+        $this->authorize('update', $order);
 
         $order->load('customer', 'tenant');
 
@@ -999,8 +947,7 @@ class OrderController extends Controller
         $daysPending = $this->communicationDaysPending($order);
 
         try {
-            TenantMailConfig::applyForTenantId($order->tenant_id ? (int) $order->tenant_id : null);
-            Mail::to($customerEmail)->send(new OrderBudgetFollowUpMail($order, $daysPending));
+            $this->orderNotificationService->sendBudgetFollowUp($order, $daysPending);
         } catch (\Throwable $e) {
             report($e);
 
@@ -1019,21 +966,19 @@ class OrderController extends Controller
 
     public function markFeedback(Order $order)
     {
-        abort_unless($this->canManageOrders(), 403);
-        abort_unless($this->canAccessOrder($order), 403);
+        $this->authorize('update', $order);
 
-        $startDate = Carbon::now()->subDays(10)->startOfDay();
-        $endDate = Carbon::now()->subDays(7)->endOfDay();
+        $feedbackThreshold = $this->customerFeedbackRequestThreshold();
 
         if ((int) $order->service_status !== OrderStatus::DELIVERED || ! $order->delivery_date) {
             return back()->with('error', 'Esta ordem não está elegível para feedback.');
         }
 
         $deliveryDate = Carbon::parse($order->delivery_date);
-        $isInWindow = $deliveryDate->betweenIncluded($startDate, $endDate);
+        $isInWindow = $deliveryDate->lte($feedbackThreshold);
 
         if (! $isInWindow) {
-            return back()->with('error', 'A janela de feedback desta ordem já expirou ou ainda não foi iniciada.');
+            return back()->with('error', 'Esta ordem ainda não está elegível para feedback.');
         }
 
         if ((bool) $order->feedback) {

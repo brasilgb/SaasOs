@@ -8,7 +8,6 @@ import SelectFilter from '@/components/SelectFilter';
 import { StatusBadge } from '@/components/StatusBadge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { WhatsAppButton } from '@/components/WhatsAppButtonProps';
@@ -42,17 +41,6 @@ export default function Orders({ orders, whats, feedback, search, status, filter
     const hasActiveFilters = Boolean(search || status || filter);
     const canManageOrders = auth?.role !== 'technician' && auth?.permissions?.includes('orders');
     const feedbackWindowIds = new Set((feedback || []).map((feed: any) => feed.id));
-
-    const handleFeedbackCheck = (id: number) => {
-        router.patch(
-            route('app.orders.feedback', id),
-            {},
-            {
-                preserveScroll: true,
-                preserveState: true,
-            },
-        );
-    };
 
     const handleBudgetFollowUp = (id: number) => {
         router.post(
@@ -160,10 +148,8 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                         <TableBody>
                             {orders?.data.length > 0 ? (
                                 orders?.data?.map((order: any) => {
-                                    const isFeedbackDone = order.feedback === 1 || order.feedback === true;
+                                    const hasCustomerFeedback = Boolean(order.customer_feedback_submitted_at);
                                     const isFeedbackWindowOpen = feedbackWindowIds.has(order.id);
-                                    const isDelivered = Number(order.service_status) === 10;
-                                    const isFeedbackExpired = isDelivered && !isFeedbackDone && !isFeedbackWindowOpen;
                                     const totalOrder = Number(order.service_cost ?? 0);
                                     const totalPaid = Number(order.total_paid ?? 0);
                                     const remaining = Math.max(0, totalOrder - totalPaid);
@@ -178,6 +164,8 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                     const hasBudgetFollowUp = Boolean(order.budget_follow_up);
                                     const hasPendingPaymentFollowUp = Boolean(order.pending_payment_follow_up);
                                     const communicationDaysPending = Number(order.communication_days_pending ?? 0);
+                                    const feedbackDaysPending =
+                                        !hasCustomerFeedback && order.delivery_date ? Math.max(0, moment().diff(moment(order.delivery_date), 'days')) : 0;
                                     const whatsappContext: 'default' | 'budget_follow_up' | 'pending_payment' = hasPendingPaymentFollowUp
                                         ? 'pending_payment'
                                         : hasBudgetFollowUp
@@ -238,19 +226,20 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                             <TableCell>{order.delivery_date ? moment(order.delivery_date).format('DD/MM/YYYY') : ''}</TableCell>
                                             {canManageOrders && (
                                                 <TableCell>
-                                                    {isFeedbackDone && <Badge>OK</Badge>}
-
-                                                    {!isFeedbackDone && isFeedbackWindowOpen && (
-                                                        <div className="flex items-center gap-2">
-                                                            <Badge variant="secondary">Pendente</Badge>
-                                                            <Switch
-                                                                checked={false}
-                                                                onCheckedChange={(checked) => checked && handleFeedbackCheck(order.id)}
-                                                            />
+                                                    {hasCustomerFeedback && (
+                                                        <div className="flex flex-wrap items-center gap-2">
+                                                            <Badge>Avaliado</Badge>
+                                                            {order.customer_feedback_rating ? (
+                                                                <Badge variant="secondary">Nota {order.customer_feedback_rating}/5</Badge>
+                                                            ) : null}
                                                         </div>
                                                     )}
 
-                                                    {isFeedbackExpired && <Badge variant="outline">Fora da janela</Badge>}
+                                                    {!hasCustomerFeedback && isFeedbackWindowOpen && (
+                                                        <Badge variant="secondary">
+                                                            {feedbackDaysPending > 0 ? `Aguardando ${feedbackDaysPending} dias` : 'Aguardando'}
+                                                        </Badge>
+                                                    )}
                                                 </TableCell>
                                             )}
                                             <TableCell className="flex justify-end gap-2">
@@ -315,7 +304,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                         customerName={order.customer.name}
                                                         orderNumber={order.order_number}
                                                         status={order.service_status}
-                                                        feedback={isFeedbackWindowOpen}
+                                                        feedback={isFeedbackWindowOpen && !hasCustomerFeedback}
                                                         context={whatsappContext}
                                                         amountDue={remaining}
                                                         daysPending={communicationDaysPending}

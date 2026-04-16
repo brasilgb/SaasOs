@@ -34,26 +34,11 @@ class ImageController extends Controller
         return $user instanceof User ? $user : null;
     }
 
-    private function canAccessOrder(Order $order): bool
-    {
-        $user = $this->currentUser();
-
-        if (! $user?->hasPermission('orders')) {
-            return false;
-        }
-
-        if (! $user->isTechnician()) {
-            return true;
-        }
-
-        return is_null($order->user_id) || (int) $order->user_id === (int) $user->id;
-    }
-
     public function index(Request $request)
     {
         $query = $request->get('or');
         $order = Order::findOrFail($query);
-        abort_unless($this->canAccessOrder($order), 403);
+        $this->authorize('view', $order);
 
         $images = Image::where('order_id', $query)->get();
 
@@ -81,7 +66,7 @@ class ImageController extends Controller
         );
 
         $order = Order::findOrFail($validated['order_id']);
-        abort_unless($this->canAccessOrder($order), 403);
+        $this->authorize('update', $order);
 
         /** 🔒 REGRA DE NEGÓCIO (TOTAL POR ORDEM) */
         $existingCount = Image::where('order_id', $validated['order_id'])->count();
@@ -120,7 +105,7 @@ class ImageController extends Controller
     public function destroy(Image $image)
     {
         $order = Order::findOrFail($image->order_id);
-        abort_unless($this->canAccessOrder($order), 403);
+        $this->authorize('update', $order);
 
         $storePath = public_path('storage/orders/'.$image->order_id);
         if (file_exists($storePath.DIRECTORY_SEPARATOR.$image->filename)) {
@@ -141,7 +126,7 @@ class ImageController extends Controller
         $imgorder = Image::where('id', $aimage)->first();
         abort_unless($imgorder, 404);
         $order = Order::findOrFail($imgorder->order_id);
-        abort_unless($this->canAccessOrder($order), 403);
+        $this->authorize('update', $order);
 
         $storePath = public_path('storage'.DIRECTORY_SEPARATOR.'orders'.DIRECTORY_SEPARATOR.$imgorder->order_id);
         if (file_exists($storePath.DIRECTORY_SEPARATOR.$imgorder->filename)) {
@@ -162,7 +147,7 @@ class ImageController extends Controller
     public function upload(Request $request)
     {
         $order = Order::findOrFail($request->order_id);
-        abort_unless($this->canAccessOrder($order), 403);
+        $this->authorize('update', $order);
 
         $image = base64_decode($request->filename);
         $storePath = public_path('storage/orders/'.$request->order_id);
@@ -191,7 +176,7 @@ class ImageController extends Controller
     public function getImages(Request $request)
     {
         $order = Order::findOrFail($request->order);
-        abort_unless($this->canAccessOrder($order), 403);
+        $this->authorize('view', $order);
 
         $images = Image::where('order_id', $request->order)->get();
 

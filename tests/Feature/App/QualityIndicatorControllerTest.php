@@ -4,6 +4,7 @@ namespace Tests\Feature\App;
 
 use App\Models\App\Order;
 use App\Models\App\Other;
+use App\Models\App\OrderLog;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -59,6 +60,9 @@ class QualityIndicatorControllerTest extends TestCase
         Order::factory()->forTenant($this->tenant->id)->create([
             'is_warranty_return' => false,
             'created_at' => now()->subDay(),
+            'service_status' => \App\Support\OrderStatus::DELIVERED,
+            'customer_feedback_submitted_at' => now()->subHours(2),
+            'customer_feedback_rating' => 4,
         ]);
 
         Order::factory()->forTenant($this->tenant->id)->create([
@@ -85,9 +89,119 @@ class QualityIndicatorControllerTest extends TestCase
             ->assertJsonPath('summary.warranty_return_threshold', 8)
             ->assertJsonPath('summary.warranty_return_rate', 50)
             ->assertJsonPath('summary.severity', 'Critico')
+            ->assertJsonPath('summary.feedback_responses', 1)
+            ->assertJsonPath('summary.feedback_average_rating', 4)
+            ->assertJsonPath('summary.feedback_response_rate', 100)
+            ->assertJsonPath('summary.low_feedbacks', 0)
             ->assertJsonPath('trend.granularity', 'daily')
             ->assertJsonPath('comparison.previous_warranty_return_rate', 33.3)
             ->assertJsonPath('comparison.delta_rate', 16.7)
             ->assertJsonPath('comparison.direction', 'piorou');
+    }
+
+    public function test_quality_metrics_endpoint_returns_low_feedback_recovery_list(): void
+    {
+        Order::factory()->forTenant($this->tenant->id)->create([
+            'service_status' => \App\Support\OrderStatus::DELIVERED,
+            'created_at' => now()->subDay(),
+            'customer_feedback_submitted_at' => now()->subHours(3),
+            'customer_feedback_rating' => 2,
+            'customer_feedback_comment' => 'Demorou mais do que eu esperava.',
+        ]);
+
+        $response = $this->get(route('app.quality.metrics', ['timerange' => 7]));
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('summary.low_feedbacks', 1)
+            ->assertJsonPath('low_feedback_orders.0.rating', 2)
+            ->assertJsonPath('low_feedback_orders.0.comment', 'Demorou mais do que eu esperava.');
+    }
+
+    public function test_quality_feedback_recovery_can_be_updated(): void
+    {
+        $assignee = User::factory()->forTenant($this->tenant->id)->create();
+
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'service_status' => \App\Support\OrderStatus::DELIVERED,
+            'customer_feedback_submitted_at' => now()->subHour(),
+            'customer_feedback_rating' => 2,
+            'customer_feedback_comment' => 'Não gostei do prazo.',
+        ]);
+
+        $response = $this->post(route('app.quality.feedback-recovery', $order), [
+            'assigned_to' => $assignee->id,
+            'status' => 'in_progress',
+            'notes' => 'Contato realizado para entender o atraso.',
+        ]);
+
+        $response->assertSessionHas('success', 'Tratativa da avaliação atualizada com sucesso.');
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'customer_feedback_recovery_assigned_to' => $assignee->id,
+            'customer_feedback_recovery_status' => 'in_progress',
+            'customer_feedback_recovery_notes' => 'Contato realizado para entender o atraso.',
+        ]);
+
+        $this->assertDatabaseHas('order_logs', [
+            'order_id' => $order->id,
+            'action' => 'customer_feedback_recovery_updated',
+        ]);
+    }
+
+    public function test_quality_metrics_can_filter_low_feedback_queue(): void
+    {
+        $assignee = User::factory()->forTenant($this->tenant->id)->create();
+
+        Order::factory()->forTenant($this->tenant->id)->create([
+            'service_status' => \App\Support\OrderStatus::DELIVERED,
+            'created_at' => now()->subHour(),
+            'customer_feedback_submitted_at' => now()->subHour(),
+            'customer_feedback_rating' => 2,
+            'customer_feedback_recovery_status' => 'pending',
+        ]);
+
+        $target = Order::factory()->forTenant($this->tenant->id)->create([
+            'service_status' => \App\Support\OrderStatus::DELIVERED,
+            'created_at' => now()->subHour(),
+            'customer_feedback_submitted_at' => now()->subHour(),
+            'customer_feedback_rating' => 3,
+            'customer_feedback_recovery_status' => 'in_progress',
+            'customer_feedback_recovery_assigned_to' => $assignee->id,
+        ]);
+
+        $response = $this->get(route('app.quality.metrics', [
+            'timerange' => 7,
+            'recovery_status' => 'in_progress',
+            'assigned_to' => (string) $assignee->id,
+        ]));
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('summary.low_feedbacks', 2)
+            ->assertJsonPath('summary.unassigned_low_feedbacks', 1)
+            ->assertJsonPath('summary.recovery_pending', 1)
+            ->assertJsonPath('summary.recovery_in_progress', 1)
+            ->assertJsonPath('low_feedback_orders.0.id', $target->id);
+    }
+
+    public function test_quality_metrics_reports_overdue_low_feedback_cases(): void
+    {
+        Order::factory()->forTenant($this->tenant->id)->create([
+            'service_status' => \App\Support\OrderStatus::DELIVERED,
+            'created_at' => now()->subDays(2),
+            'customer_feedback_submitted_at' => now()->subDays(4),
+            'customer_feedback_rating' => 2,
+            'customer_feedback_recovery_status' => 'pending',
+        ]);
+
+        $response = $this->get(route('app.quality.metrics', ['timerange' => 7]));
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('summary.recovery_overdue', 1)
+            ->assertJsonPath('summary.recovery_sla_days', 3)
+            ->assertJsonPath('low_feedback_orders.0.recovery_overdue', true);
     }
 }

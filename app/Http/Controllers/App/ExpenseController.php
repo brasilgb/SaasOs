@@ -6,16 +6,25 @@ use App\Http\Controllers\Controller;
 use App\Models\App\Expense;
 use App\Models\App\ExpenseLog;
 use App\Models\App\Other;
-use App\Models\User;
-use Symfony\Component\HttpFoundation\Response;
+use App\Services\ExpenseService;
+use App\Services\OperationalAuditService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class ExpenseController extends Controller
 {
+    public function __construct(
+        private readonly OperationalAuditService $operationalAuditService,
+        private readonly ExpenseService $expenseService,
+    ) {}
+
+    private function logOperationalAudit(string $action, Expense $expense, array $data = []): void
+    {
+        $this->operationalAuditService->record($action, 'expense', $expense, Auth::id(), $data);
+    }
+
     private function logExpenseAction(Expense $expense, string $action, array $data = []): void
     {
         ExpenseLog::create([
@@ -26,44 +35,9 @@ class ExpenseController extends Controller
         ]);
     }
 
-    private function canAccessExpensesFeature(): bool
-    {
-        $user = Auth::user();
-        if (! $user instanceof User) {
-            return false;
-        }
-
-        if (! $user->hasPermission('sales')) {
-            return false;
-        }
-
-        if (! ($user->isAdministrator() || $user->isOperator() || $user->isRoot())) {
-            return false;
-        }
-
-        return (bool) (Other::query()->value('enablesales') ?? false);
-    }
-
-    private function authorizeExpensesAccess(): ?Response
-    {
-        if ($this->canAccessExpensesFeature()) {
-            return null;
-        }
-
-        if (request()->expectsJson()) {
-            return response()->json([
-                'message' => 'Módulo de vendas desabilitado ou acesso não permitido.',
-            ], 403);
-        }
-
-        return redirect()->route('app.dashboard')->with('error', 'Módulo de vendas desabilitado ou acesso não permitido.');
-    }
-
     public function index(Request $request)
     {
-        if ($response = $this->authorizeExpensesAccess()) {
-            return $response;
-        }
+        $this->authorize('viewAny', Expense::class);
 
         $search = trim((string) $request->get('search', ''));
         $category = trim((string) $request->get('category', ''));
@@ -96,9 +70,7 @@ class ExpenseController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        if ($response = $this->authorizeExpensesAccess()) {
-            return $response;
-        }
+        $this->authorize('create', Expense::class);
 
         $validated = $request->validate([
             'expense_date' => 'required|date',
@@ -108,33 +80,27 @@ class ExpenseController extends Controller
             'notes' => 'nullable|string|max:2000',
         ]);
 
-        DB::transaction(function () use ($validated) {
-            $nextExpenseNumber = ((int) Expense::query()
-                ->lockForUpdate()
-                ->max('expense_number')) + 1;
+        $expense = $this->expenseService->create($validated, (int) Auth::id());
 
-            $expense = Expense::create([
-                ...$validated,
-                'expense_number' => $nextExpenseNumber,
-                'created_by' => Auth::id(),
-            ]);
-
-            $this->logExpenseAction($expense, 'created', [
-                'expense_number' => (int) $expense->expense_number,
-                'amount' => (float) $expense->amount,
-                'category' => $expense->category,
-                'expense_date' => $expense->expense_date?->toDateString(),
-            ]);
-        });
+        $this->logExpenseAction($expense, 'created', [
+            'expense_number' => (int) $expense->expense_number,
+            'amount' => (float) $expense->amount,
+            'category' => $expense->category,
+            'expense_date' => $expense->expense_date?->toDateString(),
+        ]);
+        $this->logOperationalAudit('expense_created', $expense, [
+            'expense_number' => (int) $expense->expense_number,
+            'amount' => (float) $expense->amount,
+            'category' => $expense->category,
+            'expense_date' => $expense->expense_date?->toDateString(),
+        ]);
 
         return back()->with('success', 'Despesa cadastrada com sucesso.');
     }
 
     public function update(Request $request, Expense $expense): RedirectResponse
     {
-        if ($response = $this->authorizeExpensesAccess()) {
-            return $response;
-        }
+        $this->authorize('update', $expense);
 
         $validated = $request->validate([
             'expense_date' => 'required|date',
@@ -144,9 +110,14 @@ class ExpenseController extends Controller
             'notes' => 'nullable|string|max:2000',
         ]);
 
-        $expense->update($validated);
+        $expense = $this->expenseService->update($expense, $validated);
 
         $this->logExpenseAction($expense, 'updated', [
+            'amount' => (float) $expense->amount,
+            'category' => $expense->category,
+            'expense_date' => $expense->expense_date?->toDateString(),
+        ]);
+        $this->logOperationalAudit('expense_updated', $expense, [
             'amount' => (float) $expense->amount,
             'category' => $expense->category,
             'expense_date' => $expense->expense_date?->toDateString(),
@@ -157,9 +128,7 @@ class ExpenseController extends Controller
 
     public function destroy(Expense $expense): RedirectResponse
     {
-        if ($response = $this->authorizeExpensesAccess()) {
-            return $response;
-        }
+        $this->authorize('delete', $expense);
         $expenseData = [
             'expense_number' => (int) $expense->expense_number,
             'amount' => (float) $expense->amount,
@@ -169,7 +138,8 @@ class ExpenseController extends Controller
         ];
 
         $this->logExpenseAction($expense, 'deleted', $expenseData);
-        $expense->delete();
+        $this->logOperationalAudit('expense_deleted', $expense, $expenseData);
+        $this->expenseService->delete($expense);
 
         return back()->with('success', 'Despesa excluída com sucesso.');
     }
