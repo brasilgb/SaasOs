@@ -17,7 +17,9 @@ class AppAccessMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::user()->tenant_id === null) {
+        $user = $request->user();
+
+        if (! $user || $user->tenant_id === null) {
             return Redirect::to(config('app.url').'/admin');
         }
 

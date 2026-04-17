@@ -64,16 +64,21 @@ export default function Terms() {
                         1. Descrição do serviço
                     </h2>
 
-                    <p>O SigmaOS é uma plataforma online de gestão de ordens de serviço destinada a empresas de manutenção e assistência técnica.</p>
+                    <p>
+                        O SigmaOS é uma plataforma online de gestão operacional destinada a empresas de assistência técnica, manutenção e serviços
+                        recorrentes.
+                    </p>
 
                     <p>A plataforma permite:</p>
 
                     <ul className="list-disc pl-6">
                         <li>Cadastro de clientes</li>
                         <li>Registro de equipamentos</li>
-                        <li>Gerenciamento de ordens de serviço</li>
+                        <li>Gerenciamento de ordens e atendimentos</li>
                         <li>Controle de peças e estoque</li>
                         <li>Armazenamento de informações de atendimento</li>
+                        <li>Controle financeiro, caixa, despesas e vendas</li>
+                        <li>Acompanhamento público do cliente, follow-ups e indicadores operacionais</li>
                     </ul>
 
                     {/* CADASTRO */}
@@ -108,7 +113,7 @@ export default function Terms() {
 
                     <p>
                         O usuário é responsável pela veracidade, legalidade e integridade dos dados inseridos na plataforma, incluindo informações de
-                        clientes, equipamentos, ordens de serviço e registros operacionais.
+                        clientes, equipamentos, ordens, vendas, despesas e registros operacionais.
                     </p>
 
                     {/* NOTAS FISCAIS */}

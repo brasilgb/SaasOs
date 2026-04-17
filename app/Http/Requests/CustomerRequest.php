@@ -24,7 +24,7 @@ class CustomerRequest extends FormRequest
     {
         return [
             'name' => 'required',
-            'cpfcnpj' => ($this->getMethod() == 'POST') ? 'required|cpf_ou_cnpj|unique:customers' : 'required|cpf_ou_cnpj|unique:customers,cpfcnpj,'.$this->customer->id,
+            'cpfcnpj' => 'required',
             // 'email'  => ($this->getMethod() == 'POST') ? 'required|unique:customers' : 'required|unique:customers,email,' . $this->customer->id,
             'phone' => 'required',
         ];

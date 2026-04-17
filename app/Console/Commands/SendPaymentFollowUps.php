@@ -26,6 +26,11 @@ class SendPaymentFollowUps extends Command
         return Other::communicationFollowUpCooldownDays($tenantId);
     }
 
+    private function automaticFollowUpsEnabled(?int $tenantId): bool
+    {
+        return Other::automaticFollowUpsEnabled($tenantId);
+    }
+
     private function remainingAmount(Order $order): float
     {
         $totalOrder = round((float) ($order->service_cost ?? 0), 2);
@@ -86,6 +91,12 @@ class SendPaymentFollowUps extends Command
         foreach ($eligibleOrders as $order) {
             $processed++;
             $tenantId = $order->tenant_id ? (int) $order->tenant_id : null;
+
+            if (! $this->automaticFollowUpsEnabled($tenantId)) {
+                $skipped++;
+                continue;
+            }
+
             $cooldownDays = $this->cooldownDays($tenantId);
             $referenceDate = $order->delivery_date ?? $order->updated_at ?? $order->created_at;
             $daysPending = $referenceDate ? max(0, $referenceDate->diffInDays(now())) : 0;

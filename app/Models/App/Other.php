@@ -14,8 +14,13 @@ class Other extends Model
         'navigation' => 'boolean',
         'enableparts' => 'boolean',
         'enablesales' => 'boolean',
+        'show_follow_ups_menu' => 'boolean',
+        'show_tasks_menu' => 'boolean',
+        'show_commercial_performance_menu' => 'boolean',
+        'show_quality_menu' => 'boolean',
         'warranty_return_alert_threshold' => 'float',
         'communication_follow_up_cooldown_days' => 'integer',
+        'automatic_follow_ups_enabled' => 'boolean',
         'customer_feedback_request_delay_days' => 'integer',
         'budget_conversion_target' => 'float',
         'payment_recovery_target' => 'float',
@@ -47,6 +52,23 @@ class Other extends Model
         }
 
         return 2;
+    }
+
+    public static function automaticFollowUpsEnabled(?int $tenantId = null): bool
+    {
+        $query = static::query();
+
+        if ($tenantId) {
+            $query->where('tenant_id', $tenantId);
+        }
+
+        $configured = $query->value('automatic_follow_ups_enabled');
+
+        if ($configured !== null) {
+            return (bool) $configured;
+        }
+
+        return false;
     }
 
     public static function budgetConversionTarget(?int $tenantId = null): float

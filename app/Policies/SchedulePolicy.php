@@ -7,6 +7,11 @@ use App\Models\User;
 
 class SchedulePolicy
 {
+    private function sameTenant(User $user, Schedule $schedule): bool
+    {
+        return (int) $user->tenant_id === (int) $schedule->tenant_id;
+    }
+
     public function viewAny(User $user): bool
     {
         return $user->hasPermission('schedules');
@@ -15,6 +20,10 @@ class SchedulePolicy
     public function view(User $user, Schedule $schedule): bool
     {
         if (! $user->hasPermission('schedules')) {
+            return false;
+        }
+
+        if (! $this->sameTenant($user, $schedule)) {
             return false;
         }
 

@@ -19,9 +19,20 @@ class OsController extends Controller
 {
     public function __construct(private readonly OrderStatusService $orderStatusService) {}
 
+    private function publicOrderQuery()
+    {
+        return Order::withoutGlobalScopes();
+    }
+
+    private function publicOrderByToken(string $token)
+    {
+        return $this->publicOrderQuery()
+            ->where('tracking_token', $token);
+    }
+
     public function index($token)
     {
-        $order = Order::where('tracking_token', $token)
+        $order = $this->publicOrderByToken($token)
             ->with('equipment')
             ->with('customer')
             ->with('statusHistory')
@@ -43,8 +54,9 @@ class OsController extends Controller
 
     private function remainingAmount(Order $order): float
     {
-        $totalPaid = OrderPayment::query()
+        $totalPaid = OrderPayment::withoutGlobalScopes()
             ->where('order_id', $order->id)
+            ->where('tenant_id', $order->tenant_id)
             ->sum('amount');
 
         return max(0, (float) ($order->service_cost ?? 0) - (float) $totalPaid);
@@ -52,7 +64,7 @@ class OsController extends Controller
 
     public function updateBudgetStatus(Request $request, string $token)
     {
-        $order = Order::where('tracking_token', $token)->firstOrFail();
+        $order = $this->publicOrderByToken($token)->firstOrFail();
 
         $validated = $request->validate([
             'status' => ['required', 'integer'],
@@ -83,7 +95,7 @@ class OsController extends Controller
 
     public function acknowledgeNotification(string $token)
     {
-        $order = Order::where('tracking_token', $token)->firstOrFail();
+        $order = $this->publicOrderByToken($token)->firstOrFail();
 
         if (! in_array((int) $order->service_status, [OrderStatus::SERVICE_COMPLETED, OrderStatus::CUSTOMER_NOTIFIED], true)) {
             return back()->withErrors([
@@ -122,7 +134,7 @@ class OsController extends Controller
 
     public function acknowledgePickup(string $token)
     {
-        $order = Order::where('tracking_token', $token)->firstOrFail();
+        $order = $this->publicOrderByToken($token)->firstOrFail();
 
         if (! in_array((int) $order->service_status, [OrderStatus::CUSTOMER_NOTIFIED, OrderStatus::DELIVERED], true)) {
             return back()->withErrors([
@@ -175,7 +187,7 @@ class OsController extends Controller
         $allowedTypes = ['orentrega', 'ororcamento'];
         abort_unless(in_array($type, $allowedTypes, true), 404);
 
-        $order = Order::where('tracking_token', $token)
+        $order = $this->publicOrderByToken($token)
             ->with(['customer', 'equipment', 'orderParts'])
             ->firstOrFail();
 
@@ -209,7 +221,7 @@ class OsController extends Controller
 
     public function paymentProof(string $token)
     {
-        $order = Order::where('tracking_token', $token)
+        $order = $this->publicOrderByToken($token)
             ->with(['customer', 'equipment', 'orderPayments'])
             ->firstOrFail();
 
@@ -226,7 +238,7 @@ class OsController extends Controller
 
     public function fiscalProof(string $token)
     {
-        $order = Order::where('tracking_token', $token)
+        $order = $this->publicOrderByToken($token)
             ->with(['customer', 'equipment'])
             ->firstOrFail();
 
@@ -243,7 +255,7 @@ class OsController extends Controller
 
     public function submitFeedback(Request $request, string $token)
     {
-        $order = Order::where('tracking_token', $token)->firstOrFail();
+        $order = $this->publicOrderByToken($token)->firstOrFail();
 
         if ((int) $order->service_status !== OrderStatus::DELIVERED) {
             return back()->withErrors([

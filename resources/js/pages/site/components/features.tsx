@@ -30,7 +30,7 @@ const features = [
     {
         icon: MessageSquare,
         title: 'E-mails Automáticos',
-        description: 'Envie e-mails automáticos com atualizações da ordem de serviço e link de acompanhamento.',
+        description: 'Envie e-mails automáticos com atualizações do atendimento, link de acompanhamento e lembretes operacionais.',
     },
     {
         icon: Calendar,
@@ -45,7 +45,7 @@ const features = [
     {
         icon: Eye,
         title: 'Acompanhamento da Ordem',
-        description: 'Ofereça uma página exclusiva para o cliente acompanhar o status da ordem.',
+        description: 'Ofereça uma página exclusiva para o cliente acompanhar status, comprovantes, orçamento e próximos passos.',
     },
     {
         icon: CheckCircle,
@@ -75,7 +75,17 @@ const features = [
     {
         icon: MessageSquare,
         title: 'Lembretes de Pagamento',
-        description: 'Envie lembretes manuais de pagamentos pendentes nas ordens de serviço.',
+        description: 'Envie lembretes manuais de pagamentos pendentes e mantenha a recuperação de cobrança sob controle.',
+    },
+    {
+        icon: ChartLine,
+        title: 'Performance Comercial',
+        description: 'Acompanhe conversão de orçamento, recuperação de cobrança e resultado dos follow-ups.',
+    },
+    {
+        icon: CheckSquare,
+        title: 'Garantia e Avaliações',
+        description: 'Monitore retorno em garantia, feedbacks críticos e ações de recuperação com a equipe.',
     },
     {
         icon: HandCoins,
@@ -148,10 +158,10 @@ export function Features() {
                         Recursos essenciais
                     </span>
 
-                    <h2 className="mt-5 text-3xl font-bold tracking-tight sm:text-4xl">Tudo que sua assistência técnica precisa</h2>
+                    <h2 className="mt-5 text-3xl font-bold tracking-tight sm:text-4xl">Uma plataforma completa para sua operação</h2>
 
                     <p className="mt-4 text-lg leading-relaxed text-white/72">
-                        Ferramentas completas para organizar clientes, serviços, estoque e equipe em um único sistema.
+                        Ferramentas completas para organizar atendimento, equipe, financeiro, clientes e crescimento da operação em um único sistema.
                     </p>
                     <p className="mt-3 text-xs text-white/45">A emissão de notas fiscais é realizada por sistemas externos.</p>
                 </div>

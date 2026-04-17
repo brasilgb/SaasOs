@@ -18,7 +18,14 @@ class ExpensePolicy
             return false;
         }
 
-        return (bool) (Other::query()->value('enablesales') ?? false);
+        return (bool) (Other::query()
+            ->where('tenant_id', $user->tenant_id)
+            ->value('enablesales') ?? false);
+    }
+
+    private function sameTenant(User $user, Expense $expense): bool
+    {
+        return (int) $user->tenant_id === (int) $expense->tenant_id;
     }
 
     public function viewAny(User $user): bool
@@ -33,11 +40,11 @@ class ExpensePolicy
 
     public function update(User $user, Expense $expense): bool
     {
-        return $this->canAccessSalesModule($user);
+        return $this->canAccessSalesModule($user) && $this->sameTenant($user, $expense);
     }
 
     public function delete(User $user, Expense $expense): bool
     {
-        return $this->canAccessSalesModule($user);
+        return $this->canAccessSalesModule($user) && $this->sameTenant($user, $expense);
     }
 }

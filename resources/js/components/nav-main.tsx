@@ -6,6 +6,10 @@ import { Link, usePage } from '@inertiajs/react';
 type NavMainPageProps = {
     othersetting?: {
         enablesales?: boolean;
+        show_follow_ups_menu?: boolean;
+        show_tasks_menu?: boolean;
+        show_commercial_performance_menu?: boolean;
+        show_quality_menu?: boolean;
     };
     auth: {
         role?: string;
@@ -31,6 +35,7 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
         <SidebarMenu>
             {items.map(
                 (item) =>
+                    (item.visibilitySetting ? othersetting?.[item.visibilitySetting as keyof typeof othersetting] ?? true : true) &&
                     (item.title !== 'Vendas' && item.title !== 'Despesas' && item.title !== 'Caixa diário'
                         ? true
                         : canAccessSalesModules && !!othersetting?.enablesales) &&

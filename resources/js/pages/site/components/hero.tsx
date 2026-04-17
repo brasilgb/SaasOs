@@ -29,7 +29,8 @@ export function Hero() {
                     </h1>
 
                     <p className="mt-6 max-w-2xl text-base leading-relaxed text-white/72 sm:text-xl">
-                        Centralize ordens de serviço, clientes, estoque, vendas e financeiro em uma operação mais rápida, previsível e profissional.
+                        Centralize atendimento, ordens, clientes, estoque, vendas, financeiro e acompanhamento do cliente em uma operação mais
+                        rápida, previsível e profissional.
                     </p>
 
                     <div className="mt-10 flex flex-col gap-4 sm:flex-row">

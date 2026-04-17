@@ -18,19 +18,38 @@ use Inertia\Inertia;
 
 class OtherController extends Controller
 {
+    private function currentTenantId(): ?int
+    {
+        return Auth::user()?->tenant_id ? (int) Auth::user()->tenant_id : null;
+    }
+
     public function index()
     {
         Gate::authorize('other-settings.access');
 
-        if (Other::get()->isEmpty()) {
-            Other::create();
+        $tenantId = $this->currentTenantId();
+        $othersettings = Other::query()->firstOrCreate([
+            'tenant_id' => $tenantId,
+        ], [
+            'enablesales' => false,
+            'show_follow_ups_menu' => false,
+            'show_tasks_menu' => false,
+            'show_commercial_performance_menu' => false,
+            'show_quality_menu' => false,
+            'automatic_follow_ups_enabled' => false,
+        ]);
+        $company = Company::query()
+            ->where('tenant_id', $tenantId)
+            ->first();
+        $tenant = $tenantId ? Tenant::query()->find($tenantId) : null;
+        $time_remaining = '';
+
+        if ($tenant?->expires_at) {
+            $expiresAt = Carbon::parse($tenant->expires_at);
+            $diff = Carbon::now()->diff($expiresAt);
+            $time_remaining = ',  '.$diff->days.' dias restantes';
         }
-        $query = Other::orderBy('id', 'DESC')->first();
-        $othersettings = Other::where('id', $query->id)->first();
-        $company = Company::first();
-        $expiresAt = Carbon::parse(Tenant::first()->expires_at);
-        $diff = Carbon::now()->diff($expiresAt);
-        $time_remaining = ',  '.$diff->days.' dias restantes';
+
         $mailSettings = [
             'mail_mailer' => $othersettings->mail_mailer ?? 'smtp',
             'mail_host' => $othersettings->mail_host ?? '',
@@ -46,13 +65,15 @@ class OtherController extends Controller
             'warranty_return_alert_threshold' => $othersettings->warranty_return_alert_threshold
                 ?? config('business-metrics.warranty_return_alert_threshold', 10),
             'communication_follow_up_cooldown_days' => $othersettings->communication_follow_up_cooldown_days
-                ?? Other::communicationFollowUpCooldownDays(),
+                ?? Other::communicationFollowUpCooldownDays($tenantId),
+            'automatic_follow_ups_enabled' => $othersettings->automatic_follow_ups_enabled
+                ?? Other::automaticFollowUpsEnabled($tenantId),
             'customer_feedback_request_delay_days' => $othersettings->customer_feedback_request_delay_days
-                ?? Other::customerFeedbackRequestDelayDays(),
+                ?? Other::customerFeedbackRequestDelayDays($tenantId),
             'budget_conversion_target' => $othersettings->budget_conversion_target
-                ?? Other::budgetConversionTarget(),
+                ?? Other::budgetConversionTarget($tenantId),
             'payment_recovery_target' => $othersettings->payment_recovery_target
-                ?? Other::paymentRecoveryTarget(),
+                ?? Other::paymentRecoveryTarget($tenantId),
         ];
 
         return Inertia::render('app/others/index', [
@@ -71,11 +92,17 @@ class OtherController extends Controller
     {
         Gate::authorize('other-settings.access');
 
+        abort_if((int) $other->tenant_id !== (int) $this->currentTenantId(), 403);
+
         $data = $request->validate([
             'navigation' => 'sometimes|boolean',
             'budget' => 'sometimes|boolean',
             'enableparts' => 'sometimes|boolean',
             'enablesales' => 'sometimes|boolean',
+            'show_follow_ups_menu' => 'sometimes|boolean',
+            'show_tasks_menu' => 'sometimes|boolean',
+            'show_commercial_performance_menu' => 'sometimes|boolean',
+            'show_quality_menu' => 'sometimes|boolean',
             'mail_mailer' => 'nullable|string|max:30',
             'mail_host' => 'nullable|string|max:255',
             'mail_port' => 'nullable|integer|min:1|max:65535',
@@ -86,6 +113,7 @@ class OtherController extends Controller
             'mail_from_name' => 'nullable|string|max:255',
             'warranty_return_alert_threshold' => 'nullable|numeric|min:0|max:100',
             'communication_follow_up_cooldown_days' => 'nullable|integer|min:1|max:30',
+            'automatic_follow_ups_enabled' => 'sometimes|boolean',
             'customer_feedback_request_delay_days' => 'nullable|integer|min:1|max:30',
             'budget_conversion_target' => 'nullable|numeric|min:0|max:100',
             'payment_recovery_target' => 'nullable|numeric|min:0|max:100',

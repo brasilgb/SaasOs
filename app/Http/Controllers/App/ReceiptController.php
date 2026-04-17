@@ -10,11 +10,17 @@ use App\Models\App\Receipt;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class ReceiptController extends Controller
 {
+    private function currentTenantId(): ?int
+    {
+        return Auth::user()?->tenant_id ? (int) Auth::user()->tenant_id : null;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -47,7 +53,9 @@ class ReceiptController extends Controller
 
         $order = Order::where('id', $or)->with(['customer', 'equipment', 'orderParts'])->firstOrFail();
         $this->authorize('view', $order);
-        $company = Company::first();
+        $company = Company::query()
+            ->where('tenant_id', $this->currentTenantId())
+            ->first();
         $receipt = Receipt::first();
         $checklist = Checklist::where('equipment_id', $order->equipment_id)->first('checklist');
 

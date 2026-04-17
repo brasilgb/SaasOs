@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
@@ -140,6 +141,65 @@ class CustomerController extends Controller
         return $value;
     }
 
+    private function normalizeCsvEmail(?string $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $email = trim($value);
+
+        if ($email === '') {
+            return null;
+        }
+
+        // E-mails repetidos sao permitidos na importacao; apenas normalizamos o valor.
+        return mb_strtolower($email);
+    }
+
+    private function limitString(?string $value, int $length): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $value = trim($value);
+
+        if ($value === '') {
+            return null;
+        }
+
+        return mb_substr($value, 0, $length);
+    }
+
+    private function flushCustomerImportBatch(array &$batch, array &$errors, int &$inserted): void
+    {
+        if (empty($batch)) {
+            return;
+        }
+
+        try {
+            Customer::insert(array_column($batch, 'data'));
+            $inserted += count($batch);
+            $batch = [];
+
+            return;
+        } catch (\Throwable $batchException) {
+            // Cai para insercao individual para identificar quais linhas estao invalidas.
+        }
+
+        foreach ($batch as $entry) {
+            try {
+                DB::table('customers')->insert($entry['data']);
+                $inserted++;
+            } catch (\Throwable $rowException) {
+                $errors[] = 'Linha ' . $entry['line'] . ': ' . $rowException->getMessage();
+            }
+        }
+
+        $batch = [];
+    }
+
     public function ImportCustomer(Request $request)
     {
         Gate::authorize('customers.access');
@@ -183,19 +243,12 @@ class CustomerController extends Controller
             fgetcsv($file, 0, $delimiter);
 
             $ultimoNumero = Customer::where('tenant_id', $tenantId)->max('customer_number') ?? 0;
-            $existingCpfCnpjs = Customer::where('tenant_id', $tenantId)
-                ->whereNotNull('cpfcnpj')
-                ->pluck('cpfcnpj')
-                ->map(fn ($value) => preg_replace('/\D+/', '', (string) $value))
-                ->filter()
-                ->flip()
-                ->all();
-
             $dadosParaInserir = [];
             $inserted = 0;
             $skippedEmpty = 0;
-            $normalizedCpfAsNull = 0;
+            $truncatedFields = 0;
             $lineNumber = 1;
+            $errors = [];
 
             while (($linha = fgetcsv($file, 0, $delimiter)) !== false) {
                 $lineNumber++;
@@ -209,17 +262,7 @@ class CustomerController extends Controller
                 $rawCpfCnpj = $this->normalizeCsvValue($linha, 1) ?? '';
                 $cpfCnpj = in_array($rawCpfCnpj, ['', '0', '---', '--', '*', 'n/a', 'NULL', 'null'], true)
                     ? null
-                    : preg_replace('/\D+/', '', $rawCpfCnpj);
-
-                if ($cpfCnpj && ! in_array(strlen($cpfCnpj), [11, 14], true)) {
-                    $cpfCnpj = null;
-                    $normalizedCpfAsNull++;
-                }
-
-                if ($cpfCnpj && isset($existingCpfCnpjs[$cpfCnpj])) {
-                    $cpfCnpj = null;
-                    $normalizedCpfAsNull++;
-                }
+                    : $this->limitString($rawCpfCnpj, 50);
 
                 $ultimoNumero++;
 
@@ -227,62 +270,87 @@ class CustomerController extends Controller
                 $whatsapp = $this->normalizeSpreadsheetNumber($this->normalizeCsvValue($linha, 13));
                 $contactPhone = $this->normalizeSpreadsheetNumber($this->normalizeCsvValue($linha, 14));
 
+                $email = $this->limitString($this->normalizeCsvEmail($this->normalizeCsvValue($linha, 3)), 50);
+                $zipcode = $this->limitString($this->normalizeCsvValue($linha, 4), 20);
+                $state = $this->limitString($this->normalizeCsvValue($linha, 5), 20);
+                $city = $this->limitString($this->normalizeCsvValue($linha, 6), 50);
+                $district = $this->limitString($this->normalizeCsvValue($linha, 7), 50);
+                $street = $this->limitString($this->normalizeCsvValue($linha, 8), 80);
+                $complement = $this->limitString($this->normalizeCsvValue($linha, 9), 80);
+                $contactName = $this->limitString($this->normalizeCsvValue($linha, 12), 50);
+                $observations = $this->normalizeCsvValue($linha, 15);
+
                 $dadosParaInserir[] = [
-                    'tenant_id' => $tenantId,
-                    'customer_number' => $ultimoNumero,
-                    'name' => $name,
-                    'cpfcnpj' => $cpfCnpj,
-                    'birth' => $this->normalizeCsvDate($this->normalizeCsvValue($linha, 2)),
-                    'email' => $this->normalizeCsvValue($linha, 3),
-                    'zipcode' => $this->normalizeCsvValue($linha, 4),
-                    'state' => $this->normalizeCsvValue($linha, 5),
-                    'city' => $this->normalizeCsvValue($linha, 6),
-                    'district' => $this->normalizeCsvValue($linha, 7),
-                    'street' => $this->normalizeCsvValue($linha, 8),
-                    'complement' => $this->normalizeCsvValue($linha, 9),
-                    'number' => is_numeric((string) $this->normalizeCsvValue($linha, 10)) ? (int) $this->normalizeCsvValue($linha, 10) : null,
-                    'phone' => $phone,
-                    'contactname' => $this->normalizeCsvValue($linha, 12),
-                    'whatsapp' => $whatsapp,
-                    'contactphone' => $contactPhone,
-                    'observations' => $this->normalizeCsvValue($linha, 15),
-                    'created_at' => now(),
-                    'updated_at' => now(),
+                    'line' => $lineNumber,
+                    'data' => [
+                        'tenant_id' => $tenantId,
+                        'customer_number' => $ultimoNumero,
+                        'name' => $name,
+                        'cpfcnpj' => $cpfCnpj,
+                        'birth' => $this->normalizeCsvDate($this->normalizeCsvValue($linha, 2)),
+                        'email' => $email,
+                        'zipcode' => $zipcode,
+                        'state' => $state,
+                        'city' => $city,
+                        'district' => $district,
+                        'street' => $street,
+                        'complement' => $complement,
+                        'number' => is_numeric((string) $this->normalizeCsvValue($linha, 10)) ? (int) $this->normalizeCsvValue($linha, 10) : null,
+                        'phone' => $this->limitString($phone, 20),
+                        'contactname' => $contactName,
+                        'whatsapp' => $this->limitString($whatsapp, 255),
+                        'contactphone' => $this->limitString($contactPhone, 20),
+                        'observations' => $observations,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ],
                 ];
 
-                if ($cpfCnpj) {
-                    $existingCpfCnpjs[$cpfCnpj] = true;
-                }
+                $truncatedFields += (int) ($email !== $this->normalizeCsvEmail($this->normalizeCsvValue($linha, 3)));
+                $truncatedFields += (int) ($zipcode !== $this->normalizeCsvValue($linha, 4));
+                $truncatedFields += (int) ($state !== $this->normalizeCsvValue($linha, 5));
+                $truncatedFields += (int) ($city !== $this->normalizeCsvValue($linha, 6));
+                $truncatedFields += (int) ($district !== $this->normalizeCsvValue($linha, 7));
+                $truncatedFields += (int) ($street !== $this->normalizeCsvValue($linha, 8));
+                $truncatedFields += (int) ($complement !== $this->normalizeCsvValue($linha, 9));
+                $truncatedFields += (int) ($contactName !== $this->normalizeCsvValue($linha, 12));
+                $truncatedFields += (int) ($this->limitString($phone, 20) !== $phone);
+                $truncatedFields += (int) ($this->limitString($whatsapp, 255) !== $whatsapp);
+                $truncatedFields += (int) ($this->limitString($contactPhone, 20) !== $contactPhone);
 
-                if (count($dadosParaInserir) >= 500) {
-                    Customer::insert($dadosParaInserir);
-                    $inserted += count($dadosParaInserir);
-                    $dadosParaInserir = [];
+                if (count($dadosParaInserir) >= 100) {
+                    $this->flushCustomerImportBatch($dadosParaInserir, $errors, $inserted);
                 }
             }
 
             if (! empty($dadosParaInserir)) {
-                Customer::insert($dadosParaInserir);
-                $inserted += count($dadosParaInserir);
+                $this->flushCustomerImportBatch($dadosParaInserir, $errors, $inserted);
             }
 
             fclose($file);
 
             $message = "Importação concluída: {$inserted} clientes salvos.";
-            if ($normalizedCpfAsNull > 0 || $skippedEmpty > 0) {
+            if ($skippedEmpty > 0 || $truncatedFields > 0 || count($errors) > 0) {
                 $message .= ' Ajustados:';
-                if ($normalizedCpfAsNull > 0) {
-                    $message .= " {$normalizedCpfAsNull} CPF/CNPJ inválidos ou repetidos salvos sem documento";
-                }
                 if ($skippedEmpty > 0) {
-                    $message .= ($normalizedCpfAsNull > 0 ? ' e' : '')." {$skippedEmpty} linhas sem nome ignoradas";
+                    $message .= " {$skippedEmpty} linhas sem nome ignoradas";
+                }
+                if ($truncatedFields > 0) {
+                    $message .= ($skippedEmpty > 0 ? ' e' : '') . " {$truncatedFields} campos longos truncados";
+                }
+                if (count($errors) > 0) {
+                    $message .= ($skippedEmpty > 0 || $truncatedFields > 0 ? ' e' : '') . ' ' . count($errors) . ' linhas com erro';
                 }
                 $message .= '.';
             }
 
+            if (count($errors) > 0) {
+                $message .= ' Primeiros erros: ' . implode(' | ', array_slice($errors, 0, 3)) . '.';
+            }
+
             return redirect()->back()->with('success', $message);
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Falha na importação: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Falha na importação: ' . $e->getMessage());
         }
     }
 
@@ -332,8 +400,8 @@ class CustomerController extends Controller
 
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('customers.name', 'like', '%'.$search.'%')
-                    ->orWhere('customers.cpfcnpj', 'like', '%'.$search.'%');
+                $q->where('customers.name', 'like', '%' . $search . '%')
+                    ->orWhere('customers.cpfcnpj', 'like', '%' . $search . '%');
             });
         }
 

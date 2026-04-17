@@ -73,7 +73,9 @@ class DashboardController extends Controller
         $listSchedules= Schedule::with('user', 'customer')->get();
         $parts = Part::where('is_sellable', true)->get();
         $customers = Customer::get();
-        $others = Other::first();
+        $others = Other::query()
+            ->where('tenant_id', auth()->user()?->tenant_id)
+            ->first();
         $openCashSession = CashSession::query()
             ->where('status', 'open')
             ->latest('opened_at')

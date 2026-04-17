@@ -45,6 +45,10 @@ type AppHeaderPageProps = SharedData & {
     othersetting?: {
         budget?: boolean;
         enableparts?: boolean;
+        show_follow_ups_menu?: boolean;
+        show_tasks_menu?: boolean;
+        show_commercial_performance_menu?: boolean;
+        show_quality_menu?: boolean;
     };
     auth: {
         user: SharedData['auth']['user'];
@@ -81,6 +85,9 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                         <div className="flex flex-col space-y-4">
                                             {mainNavItems.map(
                                                 (item) =>
+                                                    (item.visibilitySetting
+                                                        ? othersetting?.[item.visibilitySetting as keyof NonNullable<typeof othersetting>] ?? true
+                                                        : true) &&
                                                     item.enabled !== disableParts &&
                                                     (!item.permission || permissions.includes(item.permission)) && (
                                                         <Link key={item.title} href={item.href} className="flex items-center space-x-2 font-medium">
@@ -132,6 +139,9 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                             <NavigationMenuList className="flex h-full items-stretch space-x-2">
                                 {mainNavItems.map(
                                     (item, index) =>
+                                        (item.visibilitySetting
+                                            ? othersetting?.[item.visibilitySetting as keyof NonNullable<typeof othersetting>] ?? true
+                                            : true) &&
                                         item.enabled !== disableParts &&
                                         (!item.permission || permissions.includes(item.permission)) && (
                                             <NavigationMenuItem key={index} className="relative flex h-full items-center">

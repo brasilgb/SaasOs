@@ -349,10 +349,10 @@
     <div class="layout">
         <aside class="sidebar">
             <h1>SigmaOS</h1>
-            <p>Manual do usuário com foco operacional, financeiro e de configuração do sistema.</p>
+            <p>Manual do cliente com foco operacional, financeiro e de configuração do sistema.</p>
 
             <div class="meta">
-                <div><strong>Versão do manual</strong>1.1</div>
+                <div><strong>Versão do manual</strong>1.2</div>
                 <div><strong>Atualizado em</strong>Abril de 2026</div>
                 <div><strong>Formato</strong>HTML navegável e pronto para impressão em PDF</div>
             </div>
@@ -392,13 +392,12 @@
         <main class="content">
             <article class="paper">
                 <header class="hero">
-                    <p class="eyebrow">Manual do Usuário</p>
-                    <h2>Sistema de gestão de ordens de serviço, vendas, caixa e atendimento técnico</h2>
+                    <p class="eyebrow">Manual do Cliente</p>
+                    <h2>Plataforma de gestão operacional para atendimento técnico, financeiro e relacionamento com clientes</h2>
                     <p>
-                        Esta documentação foi revisada para cobrir os módulos principais do SigmaOS, incluindo os pontos
-                        que faltavam
-                        no material anterior, como caixa diário, pagamentos de ordens, envio de e-mails automáticos,
-                        despesas, apoio à emissão fiscal e relatórios financeiros.
+                        Este manual foi organizado para orientar o uso prático do SigmaOS no dia a dia da assistência
+                        técnica. O conteúdo cobre os módulos principais, as configurações mais importantes e os fluxos
+                        recentes de acompanhamento online, follow-up e comunicação com clientes.
                     </p>
                 </header>
 
@@ -419,7 +418,8 @@
                         controle operacional, fluxo financeiro e comunicação com clientes e equipe.
                     </p>
                     <p>A plataforma possui interface responsiva e pode ser utilizada em computadores, tablets e
-                        celulares.</p>
+                        celulares. A proposta deste manual é mostrar o que cada área faz e quando usar cada recurso na
+                        rotina da empresa.</p>
                 </section>
 
                 <section id="visao-geral">
@@ -427,8 +427,8 @@
                     <div class="grid">
                         <div class="card">
                             <strong>Operação</strong>
-                            Dashboard, clientes, ordens de serviço, orçamentos, agendamentos, mensagens internas e
-                            acompanhamento online.
+                            Dashboard, clientes, ordens, orçamentos, agendamentos, mensagens internas,
+                            acompanhamentos e atendimento online.
                         </div>
                         <div class="card">
                             <strong>Financeiro</strong>
@@ -464,11 +464,15 @@
                         operação.</p>
                     <h4>3.6 Módulos opcionais</h4>
                     <p>Em Outras configurações, é possível habilitar ou desabilitar recursos como orçamentos,
-                        peças/estoque e vendas.</p>
+                        peças/estoque, vendas e partes do menu operacional conforme a necessidade da empresa.</p>
                     <h4>3.7 Configuração de e-mail</h4>
                     <p>Para usar e-mails automáticos, configure SMTP com host, porta, usuário, senha, criptografia,
                         endereço remetente e nome do remetente. O sistema também possui envio de e-mail de teste para
                         validação.</p>
+                    <h4>3.8 Abas de configurações</h4>
+                    <p>As Outras configurações estão divididas em duas abas. Em <strong>Sistema e SMTP</strong> ficam
+                        os habilitadores gerais e os dados do servidor de e-mail. Em <strong>Operacionais</strong>
+                        ficam metas, indicadores, visibilidade de menus e regras de follow-up.</p>
                 </section>
 
                 <section id="dashboard">
@@ -476,6 +480,24 @@
                     <p>O dashboard reúne indicadores operacionais e financeiros com gráficos, métricas e atalhos
                         rápidos. Quando o módulo de vendas está ativo, o sistema também destaca informações comerciais e
                         acesso rápido ao fluxo de vendas.</p>
+                    <div class="grid">
+                        <div class="card">
+                            <strong>Visão operacional</strong>
+                            Exibe ordens em andamento, status mais usados e alertas de pendências do atendimento.
+                        </div>
+                        <div class="card">
+                            <strong>Visão financeira</strong>
+                            Consolida valores de ordens, vendas, despesas e indicadores do caixa.
+                        </div>
+                        <div class="card">
+                            <strong>Alertas de qualidade</strong>
+                            Pode sinalizar aumento de retorno em garantia e avaliações críticas de clientes.
+                        </div>
+                        <div class="card">
+                            <strong>Atalhos rápidos</strong>
+                            Facilita o acesso aos módulos mais usados da rotina diária.
+                        </div>
+                    </div>
                 </section>
 
                 <section id="clientes">
@@ -489,6 +511,15 @@
                         <li>Visualizar total de ordens, total pago e saldo pendente por cliente.</li>
                         <li>Enviar mensagem via WhatsApp.</li>
                     </ul>
+                    <h4>5.1 Fluxo recomendado</h4>
+                    <ol>
+                        <li>Cadastrar o cliente com nome, telefone e formas principais de contato.</li>
+                        <li>Revisar documento, endereço e observações antes de salvar.</li>
+                        <li>Usar a ficha do cliente como ponto de consulta de ordens e pendências.</li>
+                    </ol>
+                    <h4>5.2 Importação em lote</h4>
+                    <p>Quando a empresa já possui uma base anterior, a importação por CSV ajuda a acelerar a
+                        implantação e reduzir retrabalho de cadastro manual.</p>
                 </section>
 
                 <section id="ordens">
@@ -571,6 +602,19 @@
 
                     <p>Se o SMTP estiver configurado e o cliente tiver e-mail válido, o sistema pode enviar e-mail
                         automático na criação da ordem e sempre que houver atualização de status.</p>
+                    <p>Quando houver garantia ativa, o sistema também pode ajudar a identificar retorno em garantia e
+                        manter o histórico do atendimento vinculado à ordem anterior.</p>
+                    <h4>6.1 Fluxo recomendado da OS</h4>
+                    <ol>
+                        <li>Abrir a ordem com o máximo de detalhes do equipamento e do defeito.</li>
+                        <li>Registrar acessórios, senha, observações e estado do item.</li>
+                        <li>Atualizar o status sempre que a etapa operacional mudar.</li>
+                        <li>Gerar orçamento e enviar ao cliente quando necessário.</li>
+                        <li>Registrar conclusão, aviso ao cliente, retirada e entrega final.</li>
+                    </ol>
+                    <h4>6.2 Documentação do atendimento</h4>
+                    <p>Use imagens, checklist, observações e histórico de status para manter rastreabilidade do
+                        atendimento e reduzir dúvidas futuras.</p>
                 </section>
 
                 <section id="pagamentos-ordens">
@@ -600,6 +644,12 @@
                         válido, o sistema pode enviar lembrete de cobrança por e-mail.</p>
                     <p>Dentro do modal de pagamentos também existe um resumo de apoio à emissão de NFS-e para a ordem.
                     </p>
+                    <h4>7.1 Boas práticas no recebimento</h4>
+                    <ol>
+                        <li>Conferir o saldo antes de lançar o pagamento.</li>
+                        <li>Selecionar a forma de pagamento correta.</li>
+                        <li>Evitar deixar recebimentos para registrar depois, para não distorcer caixa e relatórios.</li>
+                    </ol>
                 </section>
 
                 <section id="orcamentos">
@@ -617,6 +667,7 @@
                         <li>Enviar mensagem ao técnico por WhatsApp.</li>
                     </ul>
                     <p>Os status usuais do agendamento são aberto, em atendimento e fechado.</p>
+                    <p>Esse módulo é útil para assistência externa, coleta, entrega técnica e visitas programadas.</p>
                 </section>
 
                 <section id="area-cliente">
@@ -628,14 +679,24 @@
                         <li>Status atual da ordem.</li>
                         <li>Dados do equipamento.</li>
                         <li>Informações principais do atendimento.</li>
+                        <li>Resumo financeiro da ordem.</li>
+                        <li>Links para comprovantes, orçamento, pagamentos e nota quando disponíveis.</li>
                         <li>Acompanhamento online com mais transparência para o cliente.</li>
                     </ul>
+                    <p>Dependendo do status da ordem, o cliente também pode executar ações no próprio painel público:
+                        aprovar ou reprovar orçamento, confirmar o recebimento do aviso de conclusão, confirmar a
+                        retirada do equipamento e deixar avaliação com nota em 5 estrelas e opinião textual.</p>
+                    <h4>10.1 Quando compartilhar o link</h4>
+                    <p>O ideal é enviar o link logo após a abertura da ordem ou junto da primeira atualização relevante.
+                        Isso reduz consultas repetidas por telefone e melhora a percepção de transparência.</p>
                 </section>
 
                 <section id="mensagens">
                     <h3>11. Mensagens Internas Da Equipe</h3>
                     <p>O módulo de mensagens internas serve para comunicação operacional entre usuários do sistema. O
                         remetente pode editar ou excluir a mensagem, e o destinatário pode marcar como lida.</p>
+                    <p>Esse recurso é indicado para alinhamentos rápidos da equipe sem misturar a comunicação interna
+                        com as mensagens enviadas ao cliente.</p>
                 </section>
 
                 <section id="estoque">
@@ -708,6 +769,36 @@
                     </ul>
                     <p>Dependendo do relatório, o sistema também monta totais consolidados para impressão e exportação
                         em PDF.</p>
+                    <h4>16.1 Indicadores de qualidade</h4>
+                    <p>Além dos relatórios tradicionais, o sistema possui acompanhamento de qualidade com foco em
+                        retorno em garantia e avaliações de clientes.</p>
+                    <ul>
+                        <li>Quantidade e taxa de retorno em garantia.</li>
+                        <li>Limite percentual configurável para gerar alerta visual.</li>
+                        <li>Notas médias e avaliações com nota baixa.</li>
+                        <li>Tratativa de avaliações críticas com responsável e status.</li>
+                    </ul>
+                    <h4>16.2 Acompanhamentos e tarefas</h4>
+                    <p>O módulo de acompanhamentos ajuda a localizar contatos pendentes com clientes em orçamento e
+                        cobrança, enquanto a área de tarefas organiza a tratativa operacional do time.</p>
+                    <ul>
+                        <li>Fila de follow-up de orçamento.</li>
+                        <li>Fila de follow-up de cobrança.</li>
+                        <li>Pausa e retomada de cadências.</li>
+                        <li>Resposta manual do cliente e encerramento da pendência.</li>
+                        <li>Atribuição de tarefas para usuários da equipe.</li>
+                    </ul>
+                    <h4>16.3 Performance comercial</h4>
+                    <p>A performance comercial compara os contatos realizados com a recuperação efetiva, permitindo
+                        acompanhar a conversão de orçamentos e a recuperação de cobranças ao longo do período.</p>
+                    <h4>16.4 Como usar na rotina</h4>
+                    <ol>
+                        <li>Revisar o dashboard diariamente para alertas rápidos.</li>
+                        <li>Usar Acompanhamentos para priorizar contatos com clientes.</li>
+                        <li>Usar Tarefas para distribuir pendências entre os responsáveis.</li>
+                        <li>Usar Performance comercial para medir resultado real dos contatos.</li>
+                        <li>Usar Garantia/Avaliações para identificar falhas recorrentes e clientes insatisfeitos.</li>
+                    </ol>
                 </section>
 
                 <section id="configuracoes">
@@ -722,8 +813,52 @@
                         <li>Checklists.</li>
                         <li>Outras configurações.</li>
                     </ul>
-                    <p>Em Outras configurações também ficam os parâmetros de SMTP, o habilitador de módulos opcionais e
-                        o disparo do e-mail de teste.</p>
+                    <p>Em Outras configurações também ficam os parâmetros de SMTP, o habilitador de módulos opcionais,
+                        o disparo do e-mail de teste e as regras operacionais do sistema.</p>
+                    <div class="grid">
+                        <div class="card">
+                            <strong>Sistema e SMTP</strong>
+                            Reúne habilitadores gerais do sistema, configurações de envio de e-mail e teste SMTP.
+                        </div>
+                        <div class="card">
+                            <strong>Operacionais</strong>
+                            Reúne metas, indicadores, regras de avaliação, intervalo de follow-up e visibilidade dos
+                            menus operacionais.
+                        </div>
+                        <div class="card">
+                            <strong>Menus operacionais</strong>
+                            É possível mostrar ou ocultar Acompanhamentos, Tarefas, Performance comercial e
+                            Garantia/Avaliações.
+                        </div>
+                        <div class="card">
+                            <strong>Follow-up automático</strong>
+                            O envio automático pode ser ligado ou desligado. Se estiver desligado, o sistema não envia
+                            novos contatos automáticos de orçamento ou cobrança.
+                        </div>
+                    </div>
+                    <h4>17.1 Visibilidade dos menus operacionais</h4>
+                    <p>Em Operacionais, é possível decidir se alguns menus devem aparecer ou não para a empresa. Isso
+                        ajuda a simplificar a navegação quando um recurso ainda não faz parte da rotina.</p>
+                    <ul>
+                        <li>Acompanhamentos.</li>
+                        <li>Tarefas.</li>
+                        <li>Performance comercial.</li>
+                        <li>Garantia/Avaliações.</li>
+                    </ul>
+                    <h4>17.2 Regras de follow-up</h4>
+                    <p>O intervalo de follow-up define quantos dias o sistema deve esperar antes de considerar um novo
+                        contato automático elegível. Se a opção de envio automático estiver desligada, o sistema não
+                        dispara follow-ups automáticos.</p>
+                    <h4>17.3 Avaliações e metas</h4>
+                    <p>Também é possível configurar o prazo para solicitar avaliação do cliente após a entrega e definir
+                        metas mínimas para conversão de orçamento e recuperação de cobrança.</p>
+                    <h4>17.4 Ordem sugerida de configuração</h4>
+                    <ol>
+                        <li>Preencher dados da empresa e validar impressões.</li>
+                        <li>Configurar e testar SMTP.</li>
+                        <li>Definir módulos e menus que ficarão visíveis.</li>
+                        <li>Revisar limites de garantia, follow-up e metas comerciais.</li>
+                    </ol>
                 </section>
 
                 <section id="usuarios">
@@ -735,6 +870,8 @@
                         <li>Operador / atendente.</li>
                         <li>Técnico.</li>
                     </ul>
+                    <p>As permissões ajudam a separar rotinas administrativas, atendimento, operação técnica e gestão do
+                        sistema.</p>
                 </section>
 
                 <section id="imagens">
@@ -750,6 +887,14 @@
                     <p>O sistema permite importar clientes em lote por arquivo CSV ou TXT. O delimitador do arquivo é
                         identificado automaticamente entre os formatos mais comuns, reduzindo trabalho manual na
                         migração de base antiga.</p>
+                    <ul>
+                        <li>E-mails repetidos são aceitos na importação.</li>
+                        <li>O sistema tenta importar em lote e, se necessário, faz tratamento individual por linha.</li>
+                        <li>Ao final, a importação informa quantos clientes foram salvos e se houve linhas com erro.</li>
+                        <li>Datas precisam estar em formato consistente para evitar falhas durante a leitura do arquivo.</li>
+                    </ul>
+                    <p>Antes de importar grandes volumes, vale revisar um arquivo de amostra com alguns registros para
+                        validar nomes de colunas, documentos e datas.</p>
                 </section>
 
                 <section id="emissao-fiscal">
@@ -770,6 +915,8 @@
                         <li>Abrir e fechar o caixa diariamente com conferência.</li>
                         <li>Revisar despesas e diferenças de caixa no mesmo dia.</li>
                         <li>Configurar e testar o SMTP antes de usar e-mails automáticos em produção.</li>
+                        <li>Revisar a aba Operacionais para decidir quais menus e automações devem ficar ativos.</li>
+                        <li>Deixar o follow-up automático desligado enquanto a operação ainda estiver em fase de ajuste.</li>
                         <li>Usar relatórios para acompanhar desempenho, faturamento e pendências.</li>
                     </ul>
                 </section>

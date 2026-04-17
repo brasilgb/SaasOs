@@ -1169,7 +1169,11 @@ class FollowUpController extends Controller
         $updated = 0;
 
         foreach ($validated['tasks'] as $task) {
-            $order = Order::findOrFail($task['order_id']);
+            $order = Order::query()->find($task['order_id']);
+
+            if (! $order) {
+                continue;
+            }
 
             if ($this->currentUser()?->cannot('update', $order)) {
                 continue;

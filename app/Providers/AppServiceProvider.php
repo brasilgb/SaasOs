@@ -19,7 +19,6 @@ use App\Policies\SchedulePolicy;
 use App\Policies\UserPolicy;
 use App\Support\TenantMailConfig;
 use Illuminate\Auth\Events\Login;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -67,7 +66,7 @@ class AppServiceProvider extends ServiceProvider
             Login::class,
             SetTenantIdInSession::class
         );
-        $tenantId = Auth::user()?->tenant_id ?? session('tenant_id');
+        $tenantId = resolveCurrentTenantId();
         TenantMailConfig::applyForTenantId($tenantId ? (int) $tenantId : null);
     }
 }

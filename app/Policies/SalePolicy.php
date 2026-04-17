@@ -18,7 +18,14 @@ class SalePolicy
             return false;
         }
 
-        return (bool) (Other::query()->value('enablesales') ?? false);
+        return (bool) (Other::query()
+            ->where('tenant_id', $user->tenant_id)
+            ->value('enablesales') ?? false);
+    }
+
+    private function sameTenant(User $user, Sale $sale): bool
+    {
+        return (int) $user->tenant_id === (int) $sale->tenant_id;
     }
 
     public function viewAny(User $user): bool
@@ -28,7 +35,7 @@ class SalePolicy
 
     public function view(User $user, Sale $sale): bool
     {
-        return $this->canAccessSalesModule($user);
+        return $this->canAccessSalesModule($user) && $this->sameTenant($user, $sale);
     }
 
     public function create(User $user): bool
@@ -38,11 +45,11 @@ class SalePolicy
 
     public function update(User $user, Sale $sale): bool
     {
-        return $this->canAccessSalesModule($user);
+        return $this->canAccessSalesModule($user) && $this->sameTenant($user, $sale);
     }
 
     public function delete(User $user, Sale $sale): bool
     {
-        return $this->canAccessSalesModule($user);
+        return $this->canAccessSalesModule($user) && $this->sameTenant($user, $sale);
     }
 }

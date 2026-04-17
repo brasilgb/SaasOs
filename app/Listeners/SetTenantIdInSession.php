@@ -17,6 +17,12 @@ class SetTenantIdInSession
      */
     public function handle(object $event): void
     {
-        session(['tenant_id' => $event->user->tenant_id]);
+        if (is_null($event->user->tenant_id)) {
+            session()->forget('tenant_id');
+
+            return;
+        }
+
+        session(['tenant_id' => (int) $event->user->tenant_id]);
     }
 }

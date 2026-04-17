@@ -11,8 +11,8 @@ interface Product {
 const products: Product[] = [
     {
         id: 1,
-        title: 'Dashboard de ordens de serviço',
-        description: 'Acompanhe rapidamente o andamento das ordens, status dos serviços e indicadores operacionais em um único painel.',
+        title: 'Dashboard operacional',
+        description: 'Acompanhe rapidamente ordens, serviços, alertas e indicadores operacionais em um único painel.',
         image: '/images/slide/1.png',
     },
     {
@@ -35,14 +35,14 @@ const products: Product[] = [
     },
     {
         id: 5,
-        title: 'Ordens de serviço',
-        description: 'Controle todo o fluxo de atendimento, da entrada do equipamento até a entrega ao cliente.',
+        title: 'Fluxo completo de atendimento',
+        description: 'Controle todo o fluxo do atendimento, da entrada do equipamento até a entrega ao cliente.',
         image: '/images/slide/5.png',
     },
     {
         id: 6,
-        title: 'Atualizações e lembretes',
-        description: 'Envie avisos, acompanhe status e faça lembretes manuais de pagamentos pendentes.',
+        title: 'Atualizações, follow-ups e lembretes',
+        description: 'Envie avisos, acompanhe status, organize follow-ups e faça lembretes de pagamentos pendentes.',
         image: '/images/slide/6.png',
     },
 ];

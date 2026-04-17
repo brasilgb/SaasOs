@@ -29,6 +29,7 @@ export interface NavItem {
     active?: string;
     enabled?: string;
     permission?: string;
+    visibilitySetting?: string;
 }
 
 export interface SharedData {
@@ -37,7 +38,14 @@ export interface SharedData {
     auth: Auth;
     ziggy: Config & { location: string };
     sidebarOpen: boolean;
-    othersettings: { budget: boolean; navigation: boolean };
+    othersettings: {
+        budget: boolean;
+        navigation: boolean;
+        show_follow_ups_menu?: boolean;
+        show_tasks_menu?: boolean;
+        show_commercial_performance_menu?: boolean;
+        show_quality_menu?: boolean;
+    };
     [key: string]: unknown;
 }
 

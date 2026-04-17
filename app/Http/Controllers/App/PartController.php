@@ -16,6 +16,11 @@ use Inertia\Inertia;
 
 class PartController extends Controller
 {
+    private function currentTenantId(): ?int
+    {
+        return Auth::user()?->tenant_id ? (int) Auth::user()->tenant_id : null;
+    }
+
     public function getPartsForPartNumber(Request $request)
     {
         Gate::authorize('parts.access');
@@ -79,6 +84,7 @@ class PartController extends Controller
         DB::transaction(function () use ($data) {
             $part = Part::firstOrCreate(
                 [
+                    'tenant_id' => $this->currentTenantId(),
                     'reference_number' => $data['reference_number'],
                 ],
                 [

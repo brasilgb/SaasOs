@@ -17,7 +17,12 @@ class OtherFactory extends Factory
         return [
             'navigation' => $this->faker->boolean(60),
             'enableparts' => $this->faker->boolean(75),
-            'enablesales' => $this->faker->boolean(75),
+            'enablesales' => false,
+            'show_follow_ups_menu' => false,
+            'show_tasks_menu' => false,
+            'show_commercial_performance_menu' => false,
+            'show_quality_menu' => false,
+            'automatic_follow_ups_enabled' => false,
         ];
     }
 

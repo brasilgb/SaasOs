@@ -1,12 +1,11 @@
-MANUAL DO USUÁRIO
+MANUAL DO CLIENTE
 SigmaOS - Sistema de Gestão de Ordens de Serviço
-Versão 1.1
+Versão 1.2
 Abril de 2026
-Autor: Anderson Brasil
 
 Aviso importante
-Este manual é uma base operacional do sistema e pode ser atualizado sempre que novas funcionalidades forem adicionadas.
-Recomendamos manter esta documentação alinhada com a versão mais recente do sistema.
+Este manual descreve o uso prático do SigmaOS na rotina da assistência técnica.
+Mantenha este material alinhado com a versão instalada do sistema.
 
 ÍNDICE
 1. Introdução
@@ -24,7 +23,7 @@ Recomendamos manter esta documentação alinhada com a versão mais recente do s
 13. Vendas
 14. Despesas
 15. Caixa diário
-16. Relatórios
+16. Relatórios, acompanhamentos e indicadores
 17. Configurações gerais
 18. Gestão de usuários
 19. Aplicativo e upload de imagens
@@ -34,24 +33,12 @@ Recomendamos manter esta documentação alinhada com a versão mais recente do s
 23. Suporte
 
 1. INTRODUÇÃO
-O SigmaOS foi desenvolvido para empresas que trabalham com assistência técnica, manutenção, eletrônica, informática, oficinas técnicas e atendimentos externos.
-O sistema concentra em um único ambiente as principais rotinas da operação:
-- clientes
-- ordens de serviço
-- orçamentos
-- agendamentos
-- peças e produtos
-- estoque
-- vendas
-- caixa
-- despesas
-- relatórios
-- comunicação com equipe e clientes
-
-O sistema possui interface responsiva e pode ser utilizado em computadores, tablets e celulares.
+O SigmaOS foi desenvolvido para empresas que trabalham com assistência técnica, manutenção, eletrônica, informática, oficinas e atendimentos externos.
+O sistema reúne atendimento, operação, financeiro, comunicação com clientes e gestão interna em um único ambiente.
+Pode ser usado em computadores, tablets e celulares.
 
 2. VISÃO GERAL DO SISTEMA
-Os principais módulos disponíveis são:
+Os principais módulos são:
 - Dashboard
 - Clientes
 - Ordens de serviço
@@ -67,79 +54,76 @@ Os principais módulos disponíveis são:
 - Usuários
 
 Recursos complementares:
-- área de acompanhamento online da ordem
+- área pública de acompanhamento da ordem
 - upload de imagens do equipamento
 - importação de clientes por CSV
 - mensagens por WhatsApp
-- envio de e-mails automáticos
+- e-mails automáticos
 - apoio à emissão fiscal
 
 3. CONFIGURAÇÃO INICIAL RECOMENDADA
-Antes de usar o sistema no dia a dia, configure os pontos abaixo.
-
 3.1 Dados da empresa
-Cadastre as informações da empresa, pois elas são usadas em recibos, comprovantes, impressões e comunicações.
-Dados recomendados:
-- nome da empresa
-- telefone
-- endereço
-- e-mail
-- informações adicionais
+Cadastre nome, telefone, endereço, e-mail e dados institucionais.
+Essas informações são usadas em recibos, comprovantes, impressões e comunicações.
 
 3.2 Tipos de equipamento
 Cadastre os equipamentos atendidos pela empresa.
 Exemplos:
 - celular
 - notebook
-- televisão
 - impressora
+- televisão
 - tablet
 
 3.3 Checklists
 Cadastre checklists por tipo de equipamento para padronizar a conferência de entrada e saída.
 
 3.4 Mensagens padrão
-Configure mensagens de WhatsApp para facilitar o contato com cliente e equipe em diferentes etapas do atendimento.
+Configure mensagens de WhatsApp para orçamento, atualização de status, retirada e outros contatos recorrentes.
 
 3.5 Impressões e etiquetas
-Ajuste os textos de recibos, comprovantes e etiquetas conforme o padrão da empresa.
+Ajuste textos de recibos, comprovantes e etiquetas para manter o padrão da empresa.
 
-3.6 Outras configurações
-No menu de outras configurações podem ser habilitados módulos opcionais, como:
-- orçamentos
-- peças e estoque
-- vendas
+3.6 Módulos opcionais
+Em Outras configurações é possível habilitar ou desabilitar recursos como orçamentos, peças/estoque, vendas e partes do menu operacional.
 
 3.7 Configuração de e-mail
-Se a empresa deseja enviar e-mails automáticos, configure SMTP em Outras configurações.
-Também é possível enviar um e-mail de teste para validar host, porta, usuário, senha, criptografia e remetente.
+Para usar e-mails automáticos, configure SMTP com host, porta, usuário, senha, criptografia, endereço remetente e nome do remetente.
+Também existe envio de e-mail de teste para validação.
+
+3.8 Abas de configurações
+As Outras configurações estão divididas em:
+- Sistema e SMTP
+- Operacionais
 
 4. DASHBOARD
-O dashboard apresenta uma visão rápida do sistema com indicadores operacionais e financeiros.
-Exemplos de informações exibidas:
-- quantidade de ordens
-- desempenho da operação
-- indicadores financeiros
-- gráficos de evolução
+O dashboard reúne indicadores operacionais e financeiros com gráficos, métricas e atalhos rápidos.
+
+Pode exibir:
+- visão operacional das ordens
+- visão financeira
+- alertas de qualidade
 - atalhos para ações rápidas
 
-Quando o módulo de vendas está ativo, o sistema também apresenta acesso rápido ao fluxo de vendas.
+Quando o módulo de vendas está ativo, o sistema também destaca informações comerciais.
 
 5. GESTÃO DE CLIENTES
 O módulo de clientes permite:
-- cadastrar novos clientes
-- editar informações
-- excluir registros
+- cadastrar
+- editar
+- excluir
 - pesquisar por nome ou documento
-- visualizar histórico financeiro do cliente
 - visualizar ordens e agendamentos
-- enviar mensagem por WhatsApp
+- consultar total pago e saldo pendente
+- enviar mensagem via WhatsApp
 
-Também é possível filtrar clientes com valores pendentes, com base nas ordens emitidas e nos pagamentos já registrados.
+Fluxo recomendado:
+1. Cadastrar o cliente com nome, telefone e formas principais de contato.
+2. Revisar documento, endereço e observações.
+3. Usar a ficha do cliente como ponto de consulta de ordens e pendências.
 
 6. ORDENS DE SERVIÇO
-As ordens de serviço registram os atendimentos realizados pela empresa.
-
+A ordem de serviço é o núcleo operacional do sistema.
 Cada ordem pode conter:
 - número da ordem
 - cliente
@@ -158,9 +142,9 @@ Cada ordem pode conter:
 - técnico responsável
 
 Ações disponíveis:
-- criar ordem
-- editar ordem
-- excluir ordem
+- criar
+- editar
+- excluir
 - vincular peças
 - registrar imagens
 - imprimir documentos
@@ -173,7 +157,7 @@ Documentos relacionados:
 - orçamento
 - checklist
 
-Status disponíveis da ordem:
+Status disponíveis:
 - 1. Ordem aberta
 - 2. Ordem cancelada
 - 3. Orçamento gerado
@@ -185,21 +169,27 @@ Status disponíveis da ordem:
 - 9. Cliente avisado / aguardando retirada
 - 10. Entregue ao cliente
 
-Sempre que o status da ordem é alterado, o sistema grava um histórico da mudança.
-Se o SMTP estiver configurado e o cliente tiver e-mail válido, o sistema pode enviar e-mail automático na criação da ordem e também nas atualizações de status.
+Fluxo recomendado da OS:
+1. Abrir a ordem com o máximo de detalhes.
+2. Registrar acessórios, senha e observações.
+3. Atualizar o status a cada mudança real da operação.
+4. Gerar orçamento quando necessário.
+5. Registrar conclusão, aviso, retirada e entrega final.
+
+Se o SMTP estiver configurado e o cliente tiver e-mail válido, o sistema pode enviar e-mail automático na criação da ordem e nas atualizações de status.
+Quando houver garantia ativa, o sistema pode identificar retorno em garantia e manter o vínculo com a ordem anterior.
 
 7. PAGAMENTOS DE ORDENS DE SERVIÇO
-O SigmaOS possui controle financeiro por ordem.
-Esse recurso permite registrar pagamentos totais ou parciais diretamente dentro da ordem de serviço.
+O SigmaOS possui controle financeiro por ordem com pagamentos totais ou parciais.
 
-Informações exibidas no resumo financeiro da ordem:
+Resumo financeiro da ordem:
 - valor de peças
 - valor de serviço
 - total da ordem
-- valor já pago
+- valor pago
 - saldo restante
 
-Formas de pagamento disponíveis:
+Formas de pagamento:
 - Pix
 - cartão
 - dinheiro
@@ -208,225 +198,240 @@ Formas de pagamento disponíveis:
 
 Regras importantes:
 - o valor pago não pode ser maior que o saldo restante
-- para registrar pagamento é necessário haver um caixa diário aberto
-- pagamentos podem ser removidos antes do fechamento do fluxo operacional, conforme permissão de uso
+- para registrar pagamento é necessário haver caixa aberto
+- pagamentos podem ser removidos conforme permissão de uso
 
-Quando a ordem já possui data de entrega, ainda tem saldo pendente e o SMTP está configurado, o sistema pode enviar lembrete de cobrança por e-mail ao cliente.
+Boas práticas:
+1. Conferir o saldo antes de lançar.
+2. Selecionar a forma de pagamento correta.
+3. Registrar o recebimento no momento em que ele acontece.
 
-Também existe um resumo financeiro de apoio para emissão de NFS-e dentro do fluxo da ordem.
+Quando a ordem já possui data de entrega, ainda tem saldo pendente e o cliente possui e-mail válido, o sistema pode enviar lembrete de cobrança por e-mail.
 
 8. ORÇAMENTOS
 O módulo de orçamentos permite:
-- criar orçamento
-- editar orçamento
-- excluir orçamento
-- gerar impressão/PDF
+- criar
+- editar
+- excluir
+- imprimir
 
-O orçamento pode ser usado como parte do fluxo da ordem de serviço.
-Na área do cliente, também pode existir retorno de aprovação ou reprovação do orçamento, conforme processo adotado.
+O orçamento pode fazer parte do fluxo da ordem de serviço.
+Na área pública do cliente também pode haver aprovação ou reprovação do orçamento.
 
 9. AGENDAMENTOS DE VISITAS
 O módulo de agendamentos organiza visitas técnicas e atendimentos externos.
 
-Funções disponíveis:
-- cadastrar agendamento
-- editar agendamento
-- excluir agendamento
+Funções:
+- cadastrar
+- editar
+- excluir
 - vincular cliente e técnico
-- acompanhar status do agendamento
+- acompanhar status
 - enviar mensagem ao técnico por WhatsApp
 
-Status comuns do agendamento:
+Status comuns:
 - aberto
 - em atendimento
 - fechado
 
 10. ÁREA DO CLIENTE
-O sistema possui uma página de acompanhamento online da ordem.
-Ao criar a ordem, é gerado um link de acompanhamento por token.
-Esse link pode ser enviado ao cliente para consulta pelo navegador, sem necessidade de login administrativo.
+Cada ordem pode gerar um link público de acompanhamento por token.
+Esse link pode ser enviado ao cliente sem necessidade de login administrativo.
 
 Na área do cliente podem ser exibidos:
-- status atual da ordem
+- status atual
 - dados do equipamento
-- informações básicas do atendimento
-- andamento do serviço
+- informações principais do atendimento
+- resumo financeiro
+- links para comprovantes, orçamento, pagamentos e nota quando disponíveis
 
-Esse recurso reduz consultas repetidas por telefone e melhora a transparência do atendimento.
+Dependendo do status da ordem, o cliente também pode:
+- aprovar ou reprovar orçamento
+- confirmar o aviso de conclusão
+- confirmar retirada
+- enviar avaliação com nota em 5 estrelas e opinião
 
 11. MENSAGENS INTERNAS DA EQUIPE
-O sistema conta com um módulo de comunicação interna entre usuários do sistema.
-
-Operações disponíveis:
-- criar mensagem
-- editar mensagem
-- excluir mensagem
-- marcar mensagem como lida
-
-Esse módulo é útil para comunicação operacional dentro da equipe.
+O sistema possui um módulo de comunicação interna entre usuários.
+O remetente pode editar ou excluir a mensagem e o destinatário pode marcá-la como lida.
+Esse recurso é indicado para alinhamentos internos sem misturar com a comunicação enviada ao cliente.
 
 12. PEÇAS, PRODUTOS E ESTOQUE
-O cadastro de peças e produtos permite registrar itens usados em serviços ou vendidos no balcão.
+O sistema permite cadastrar peças e produtos para uso em ordens e em vendas.
 
-Funções disponíveis:
-- cadastrar item
-- editar cadastro
-- excluir item
-- definir tipo do item
-- controlar quantidade em estoque
-- acompanhar movimentações
-
-Esse módulo atende tanto ordens de serviço quanto vendas.
+Funções:
+- cadastro, edição e exclusão de itens
+- controle de estoque por quantidade
+- uso de peças em ordens
+- baixa automática em vendas
+- devolução ao estoque quando uma venda é cancelada
 
 13. VENDAS
-O módulo de vendas pode ser habilitado nas configurações.
-Quando ativo, o sistema permite:
-- registrar vendas de produtos
-- selecionar cliente opcionalmente
-- adicionar itens da venda
-- controlar baixa de estoque
-- registrar valor total e valor pago
-- acompanhar status financeiro da venda
-- cancelar venda
-- imprimir comprovante
-- consultar histórico
+O módulo de vendas é opcional e pode ser habilitado nas configurações.
 
-Status financeiros da venda:
-- pendente
-- parcial
-- pago
-- cancelado
+Permite:
+- registrar venda com cliente opcional
+- escolher forma de pagamento
+- informar valor total e valor pago
+- acompanhar status financeiro
+- cancelar venda com devolução de estoque
+- usar apoio à emissão fiscal
 
-Regras importantes:
-- para concluir venda, o caixa diário deve estar aberto
-- o sistema não permite registrar valor pago maior que o total
-- ao cancelar uma venda, o estoque é devolvido
-- em algumas regras, operadores têm limite de tempo para cancelar vendas
+O sistema exige caixa aberto para concluir venda e não permite valor pago acima do total.
 
 14. DESPESAS
-O módulo de despesas complementa o controle financeiro diário.
+O módulo de despesas registra saídas financeiras da rotina.
 
-Funções disponíveis:
-- lançar despesa
-- editar despesa
-- excluir despesa
-- informar data, descrição, categoria, valor e observações
-- pesquisar e filtrar por categoria
-
-Esse módulo ajuda a confrontar entradas e saídas no acompanhamento financeiro.
+Cada despesa pode ter:
+- número
+- data
+- descrição
+- categoria
+- valor
+- observações
 
 15. CAIXA DIÁRIO
-O caixa diário controla a movimentação operacional do dia.
+O caixa diário centraliza a operação financeira do dia.
+Ele precisa estar aberto para registrar vendas e pagamentos de ordens.
 
-Fluxo básico:
-- abrir caixa
-- informar saldo inicial
-- registrar observações de abertura
-- lançar vendas e pagamentos de ordens durante o dia
-- fechar caixa
-- informar saldo de fechamento
-- registrar entradas e saídas manuais
-- acompanhar diferença entre valor esperado e valor informado
+Fluxo recomendado:
+1. Abrir o caixa com saldo inicial.
+2. Registrar vendas e recebimentos ao longo do dia.
+3. Informar entradas e saídas manuais no fechamento.
+4. Fechar o caixa com saldo contado.
+5. Conferir diferença entre saldo esperado e informado.
 
-No fechamento, o sistema calcula:
-- total de vendas concluídas
-- total de vendas canceladas
-- total recebido em pagamentos de ordens
-- total de entradas manuais
-- total de saídas manuais
-- saldo esperado
-- saldo de fechamento
-- diferença apurada
+16. RELATÓRIOS, ACOMPANHAMENTOS E INDICADORES
+Os relatórios podem ser filtrados por período e ajudam no acompanhamento operacional e gerencial.
 
-16. RELATÓRIOS
-O sistema disponibiliza relatórios com filtro por período.
-
-Relatórios disponíveis no sistema:
+Relatórios mais comuns:
 - ordens de serviço
 - clientes
 - agendamentos
 - vendas
-- peças/produtos
+- peças e produtos
 - caixa diário
 - despesas
 
-Dependendo do relatório, o sistema pode exibir totais consolidados e gerar visualizações para impressão/PDF.
+Indicadores de qualidade:
+- quantidade e taxa de retorno em garantia
+- limite percentual configurável
+- notas médias e avaliações com nota baixa
+- tratativa de avaliações críticas
+
+Acompanhamentos e tarefas:
+- fila de follow-up de orçamento
+- fila de follow-up de cobrança
+- pausa e retomada de cadências
+- resposta manual do cliente
+- atribuição de tarefas para usuários da equipe
+
+Performance comercial:
+- comparação entre contatos realizados e recuperação efetiva
+- taxa de conversão de orçamento
+- taxa de recuperação de cobrança
+
+Como usar na rotina:
+1. Revisar o dashboard diariamente.
+2. Usar Acompanhamentos para priorizar contatos.
+3. Usar Tarefas para distribuir pendências.
+4. Usar Performance comercial para medir resultado.
+5. Usar Garantia/Avaliações para localizar falhas recorrentes.
 
 17. CONFIGURAÇÕES GERAIS
-O menu de configurações centraliza os cadastros administrativos do sistema.
+O menu de configurações concentra os cadastros administrativos e o comportamento do sistema.
 
-Itens normalmente disponíveis:
+Itens principais:
 - dados da empresa
 - mensagens do WhatsApp
 - impressões de recibos
 - impressão de etiquetas
 - tipos de equipamento
 - checklists
-- outras configurações
+- Outras configurações
 
-Em Outras configurações também podem ser definidos:
-- módulos habilitados
-- dados SMTP para envio de e-mail
-- remetente padrão
-- teste de envio de e-mail
+Em Outras configurações também ficam:
+- parâmetros de SMTP
+- habilitadores de módulos
+- disparo do e-mail de teste
+- regras operacionais
+
+Sistema e SMTP:
+- habilitadores gerais
+- dados do servidor de e-mail
+- teste SMTP
+
+Operacionais:
+- metas
+- indicadores
+- regras de avaliação
+- intervalo de follow-up
+- visibilidade de menus
+
+Menus operacionais que podem ser exibidos ou ocultados:
+- Acompanhamentos
+- Tarefas
+- Performance comercial
+- Garantia/Avaliações
+
+Regras de follow-up:
+O intervalo de follow-up define quantos dias o sistema deve esperar antes de considerar um novo contato automático elegível.
+Se o envio automático estiver desligado, o sistema não envia follow-ups automáticos.
+
+Avaliações e metas:
+Também é possível configurar:
+- prazo para solicitar avaliação do cliente
+- meta de conversão de orçamento
+- meta de recuperação de cobrança
+- limite de alerta de retorno em garantia
+
+Ordem sugerida de configuração:
+1. Preencher dados da empresa.
+2. Configurar e testar SMTP.
+3. Definir módulos e menus visíveis.
+4. Revisar garantia, follow-up e metas comerciais.
 
 18. GESTÃO DE USUÁRIOS
-O sistema permite gerenciar usuários e perfis de acesso.
+O sistema permite cadastrar, editar, excluir, ativar e inativar usuários.
+Também é possível definir permissões de acesso conforme o perfil operacional.
 
-Funções disponíveis:
-- cadastrar usuários
-- editar usuários
-- excluir usuários
-- ativar ou inativar usuários
-- definir permissões de acesso
-
-Perfis operacionais comuns:
-- administrador
-- operador / atendente
-- técnico
+Perfis comuns:
+- Administrador
+- Operador / atendente
+- Técnico
 
 19. APLICATIVO E UPLOAD DE IMAGENS
-O sistema permite vincular imagens às ordens de serviço.
-As imagens podem ser enviadas pela tela do sistema ou por aplicativo/fluxo auxiliar de upload.
-
-Usos mais comuns:
-- registrar estado de entrada
-- documentar defeitos
-- anexar evidências do serviço
-- comprovar condições do equipamento
-
-Observação importante:
-- cada ordem possui limite máximo de imagens cadastradas
+As ordens podem receber imagens pela interface do sistema.
+Esse recurso ajuda a documentar o estado de entrada, o defeito e as evidências do serviço executado.
+Há limite máximo de imagens por ordem.
 
 20. IMPORTAÇÃO DE CLIENTES POR CSV
-Para facilitar o cadastro inicial, o sistema possui importação de clientes por arquivo CSV ou TXT.
+O sistema permite importar clientes em lote por CSV ou TXT.
+O delimitador é identificado automaticamente entre formatos mais comuns.
 
-Esse recurso permite:
-- importar vários clientes de uma vez
-- aproveitar base antiga do sistema
-- reduzir tempo de digitação manual
+Regras práticas:
+- e-mails repetidos são aceitos
+- o sistema tenta importar em lote e, se necessário, processa linha a linha
+- ao final, informa quantos clientes foram salvos e se houve erros
+- datas precisam estar em formato consistente
 
-Durante a importação, o sistema identifica automaticamente o delimitador mais comum do arquivo.
+Antes de importar grandes volumes, vale testar com um arquivo menor.
 
 21. EMISSÃO FISCAL
-O sistema não faz emissão fiscal automática própria.
-Porém, ele oferece apoio ao processo de emissão:
-- resumo para NFS-e em ordens de serviço
-- resumo para emissão fiscal em vendas
-- botões e informações de apoio para preenchimento
-
-Esse fluxo facilita a utilização de sistemas externos já adotados pela empresa.
+O SigmaOS não substitui um emissor fiscal próprio, mas oferece apoio ao processo.
+Nas ordens existe resumo para NFS-e e, nas vendas, apoio para emissão fiscal de produtos conforme o fluxo da empresa.
 
 22. BOAS PRÁTICAS DE USO
-Para manter a operação organizada, recomenda-se:
-- manter o cadastro dos clientes atualizado
-- preencher corretamente os dados da ordem
-- atualizar os status conforme o andamento real do serviço
+- manter clientes e equipamentos sempre atualizados
+- preencher corretamente defeito, acessórios e observações
+- atualizar o status da ordem conforme a etapa real do atendimento
 - registrar pagamentos e vendas no momento em que acontecerem
-- manter o caixa diário coerente com a movimentação real
-- revisar despesas e fechamentos diariamente
-- usar relatórios para acompanhamento gerencial
-- configurar e testar o SMTP antes de depender de e-mails automáticos
+- abrir e fechar o caixa diariamente com conferência
+- revisar despesas e diferenças de caixa no mesmo dia
+- configurar e testar o SMTP antes de usar e-mails automáticos em produção
+- revisar a aba Operacionais para decidir quais menus e automações devem ficar ativos
+- deixar o follow-up automático desligado enquanto a operação ainda estiver em fase de ajuste
+- usar relatórios para acompanhar desempenho, faturamento e pendências
 
 23. SUPORTE
-Em caso de dúvidas sobre utilização, configuração ou melhorias, mantenha este manual atualizado junto com a versão do sistema e utilize o canal de suporte definido pela empresa.
+Em caso de dúvidas de uso, configuração ou melhoria, mantenha este manual atualizado junto da versão instalada do sistema e utilize o canal de suporte definido pela empresa.

@@ -10,11 +10,17 @@ use App\Models\App\Equipment;
 use App\Models\App\Service;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 
 class BudgetController extends Controller
 {
+    private function currentTenantId(): ?int
+    {
+        return Auth::user()?->tenant_id ? (int) Auth::user()->tenant_id : null;
+    }
+
     public function getOrcamentos(Request $request)
     {
         if (! $request->marca && ! $request->modelo) {
@@ -52,7 +58,9 @@ class BudgetController extends Controller
             $query->where('service', 'like', '%'.$search.'%');
         }
         $budgets = $query->with('equipment')->paginate(11)->withQueryString();
-        $company = Company::first();
+        $company = Company::query()
+            ->where('tenant_id', $this->currentTenantId())
+            ->first();
 
         return Inertia::render('app/budgets/index', ['budgets' => $budgets, 'company' => $company, 'search' => $search]);
     }

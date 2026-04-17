@@ -43,6 +43,7 @@ const mainNavItems: NavItem[] = [
         active: 'app.follow-ups.index',
         enabled: 'orders',
         permission: 'orders',
+        visibilitySetting: 'show_follow_ups_menu',
     },
     {
         title: 'Tarefas',
@@ -51,6 +52,7 @@ const mainNavItems: NavItem[] = [
         active: 'app.follow-ups.tasks',
         enabled: 'orders',
         permission: 'orders',
+        visibilitySetting: 'show_tasks_menu',
     },
     {
         title: 'Perf. comercial',
@@ -59,6 +61,7 @@ const mainNavItems: NavItem[] = [
         active: 'app.follow-ups.performance',
         enabled: 'orders',
         permission: 'orders',
+        visibilitySetting: 'show_commercial_performance_menu',
     },
     {
         title: 'Garantia/Avaliações',
@@ -67,6 +70,7 @@ const mainNavItems: NavItem[] = [
         active: 'app.quality.*',
         enabled: 'reports',
         permission: 'reports',
+        visibilitySetting: 'show_quality_menu',
     },
     {
         title: 'Clientes',

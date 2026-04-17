@@ -7,6 +7,11 @@ use App\Models\User;
 
 class OrderPolicy
 {
+    private function sameTenant(User $user, Order $order): bool
+    {
+        return (int) $user->tenant_id === (int) $order->tenant_id;
+    }
+
     public function viewAny(User $user): bool
     {
         return $user->hasPermission('orders');
@@ -15,6 +20,10 @@ class OrderPolicy
     public function view(User $user, Order $order): bool
     {
         if (! $user->hasPermission('orders')) {
+            return false;
+        }
+
+        if (! $this->sameTenant($user, $order)) {
             return false;
         }
 

@@ -156,7 +156,7 @@ function actionChecklist(order: Order, remainingAmount: number) {
         ];
     }
 
-    if ([ORDER_STATUS.SERVICE_COMPLETED, ORDER_STATUS.CUSTOMER_NOTIFIED].includes(order.service_status)) {
+    if (order.service_status === ORDER_STATUS.SERVICE_COMPLETED || order.service_status === ORDER_STATUS.CUSTOMER_NOTIFIED) {
         if (remainingAmount > 0.009) {
             return [
                 'Consulte o saldo pendente do atendimento.',
@@ -214,14 +214,18 @@ function ServiceOrders({ order }: { order: Order }) {
     const heroNote = nextStepText(order, financialSummary.remaining);
     const checklist = actionChecklist(order, financialSummary.remaining);
     const canAcknowledgePickup =
-        [ORDER_STATUS.CUSTOMER_NOTIFIED, ORDER_STATUS.DELIVERED].includes(order.service_status) && financialSummary.remaining <= 0.009;
+        (order.service_status === ORDER_STATUS.CUSTOMER_NOTIFIED || order.service_status === ORDER_STATUS.DELIVERED) &&
+        financialSummary.remaining <= 0.009;
     const imageUrls = (order.images ?? []).map((image) => ({
         id: image.id,
         src: `/storage/orders/${order.id}/${image.filename}`,
         alt: `Imagem da ordem ${order.order_number}`,
     }));
     const hasBudgetReceipt = Boolean(order.budget_description || Number(order.budget_value ?? 0) > 0);
-    const hasDeliveryReceipt = [ORDER_STATUS.SERVICE_COMPLETED, ORDER_STATUS.CUSTOMER_NOTIFIED, ORDER_STATUS.DELIVERED].includes(order.service_status);
+    const hasDeliveryReceipt =
+        order.service_status === ORDER_STATUS.SERVICE_COMPLETED ||
+        order.service_status === ORDER_STATUS.CUSTOMER_NOTIFIED ||
+        order.service_status === ORDER_STATUS.DELIVERED;
     const hasPaymentProof = (order.order_payments ?? []).length > 0;
     const hasFiscalProof = Boolean(order.fiscal_document_number || order.fiscal_document_url);
     const canSubmitFeedback = order.service_status === ORDER_STATUS.DELIVERED && !order.customer_feedback_submitted_at;
@@ -339,7 +343,8 @@ function ServiceOrders({ order }: { order: Order }) {
             <div className="min-h-screen bg-[linear-gradient(180deg,#f7f4ec_0%,#f9fafb_34%,#ffffff_100%)] px-4 py-8">
                 <div className="mx-auto flex max-w-6xl flex-col gap-6">
                     <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
-                        <div className="grid gap-0 lg:grid-cols-[1.35fr_0.9fr]">
+                        {/* deixar um abaixo do outro*/}
+                        <div className="grid gap-0">
                             <div className="bg-[radial-gradient(circle_at_top_left,_rgba(245,158,11,0.15),_transparent_38%),linear-gradient(135deg,#0f172a_0%,#1e293b_55%,#334155_100%)] p-6 text-white md:p-8">
                                 <div className="flex flex-wrap items-start justify-between gap-4">
                                     <div className="space-y-3">
@@ -381,171 +386,179 @@ function ServiceOrders({ order }: { order: Order }) {
                                     </div>
                                 </div>
                             </div>
-
-                            <div className="space-y-4 bg-[#fcfbf7] p-6 md:p-8">
-                                <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
-                                    <div className="flex items-center gap-3">
-                                        <CheckCircle2 className="h-5 w-5 text-amber-700" />
-                                        <div>
-                                            <p className="font-medium text-slate-900">Próximo passo</p>
-                                            <p className="text-sm text-slate-600">{heroNote}</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                                    <div className="flex items-center gap-3">
-                                        <ReceiptText className="h-5 w-5 text-slate-500" />
-                                        <div>
-                                            <p className="font-medium text-slate-900">O que fazer agora</p>
-                                            <div className="mt-2 space-y-2">
-                                                {checklist.map((item) => (
-                                                    <div key={item} className="flex items-start gap-2 text-sm text-slate-600">
-                                                        <span className="mt-1 h-1.5 w-1.5 rounded-full bg-amber-500" />
-                                                        <span>{item}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                                    <p className="text-sm font-medium text-slate-900">Ações rápidas</p>
-                                    <div className="mt-3 flex flex-wrap gap-2">
-                                        {hasBudgetReceipt && (
-                                            <a
-                                                href={route('os.receipt', { token: order.tracking_token, type: 'ororcamento' })}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
-                                            >
-                                                <FileText className="h-4 w-4" />
-                                                Ver orçamento
-                                            </a>
-                                        )}
-                                        {hasPaymentProof && (
-                                            <a
-                                                href={route('os.payment-proof', { token: order.tracking_token })}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
-                                            >
-                                                <CreditCard className="h-4 w-4" />
-                                                Ver pagamentos
-                                            </a>
-                                        )}
-                                        {hasDeliveryReceipt && (
-                                            <a
-                                                href={route('os.receipt', { token: order.tracking_token, type: 'orentrega' })}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
-                                            >
-                                                <ReceiptText className="h-4 w-4" />
-                                                Recibo de entrega
-                                            </a>
-                                        )}
-                                        {hasFiscalProof && (
-                                            <a
-                                                href={route('os.fiscal-proof', { token: order.tracking_token })}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
-                                            >
-                                                <ExternalLink className="h-4 w-4" />
-                                                Nota ou fiscal
-                                            </a>
-                                        )}
-                                    </div>
-                                </div>
-
-                                <div className="grid gap-3 sm:grid-cols-2">
-                                    <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                                        <div className="flex items-center gap-3">
-                                            <CreditCard className="h-5 w-5 text-slate-500" />
-                                            <div>
-                                                <p className="text-sm text-slate-500">Total do atendimento</p>
-                                                <p className="text-lg font-semibold text-slate-900">
-                                                    R$ {maskMoney(String(financialSummary.total))}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                                        <div className="flex items-center gap-3">
-                                            <CalendarClock className="h-5 w-5 text-slate-500" />
-                                            <div>
-                                                <p className="text-sm text-slate-500">Saldo pendente</p>
-                                                <p className={`text-lg font-semibold ${financialSummary.remaining > 0.009 ? 'text-rose-600' : 'text-emerald-600'}`}>
-                                                    R$ {maskMoney(String(financialSummary.remaining))}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {order.service_status === ORDER_STATUS.BUDGET_GENERATED && (
-                                    <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
-                                        <div className="flex items-start gap-3">
-                                            <InfoIcon className="mt-0.5 h-5 w-5 text-red-500" />
-                                            <div className="space-y-3">
+                            <div className="bg-[#fcfbf7] p-6 md:p-8">
+                                <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+                                    <div className="space-y-4">
+                                        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+                                            <div className="flex items-center gap-3">
+                                                <CheckCircle2 className="h-5 w-5 text-amber-700" />
                                                 <div>
-                                                    <p className="font-medium text-slate-900">Aguardando sua decisão</p>
-                                                    <p className="text-sm text-slate-600">
-                                                        Este orçamento está disponível para aprovação ou reprovação online.
-                                                    </p>
-                                                </div>
-                                                <div className="flex flex-wrap gap-2">
-                                                    <Button onClick={handleApprove} disabled={loadingA} className="bg-green-600 text-white hover:bg-green-700">
-                                                        {loadingA ? 'Aprovando...' : 'Aprovar orçamento'}
-                                                    </Button>
-                                                    <Button onClick={handleReject} disabled={loadingR} className="bg-red-600 text-white hover:bg-red-700">
-                                                        {loadingR ? 'Reprovando...' : 'Reprovar orçamento'}
-                                                    </Button>
+                                                    <p className="font-medium text-slate-900">Próximo passo</p>
+                                                    <p className="text-sm text-slate-600">{heroNote}</p>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                )}
 
-                                {[ORDER_STATUS.SERVICE_COMPLETED, ORDER_STATUS.CUSTOMER_NOTIFIED].includes(order.service_status) && (
-                                    <div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-4">
-                                        <div className="flex items-start gap-3">
-                                            <InfoIcon className="mt-0.5 h-5 w-5 text-cyan-600" />
-                                            <div className="space-y-3">
+                                        <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                                            <div className="flex items-center gap-3">
+                                                <ReceiptText className="h-5 w-5 text-slate-500" />
                                                 <div>
-                                                    <p className="font-medium text-slate-900">Confirmação de aviso</p>
-                                                    <p className="text-sm text-slate-600">
-                                                        Use este botão para confirmar que você recebeu o aviso de conclusão e retirada do equipamento.
-                                                    </p>
-                                                </div>
-
-                                                {order.customer_notification_acknowledged_at ? (
-                                                    <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-                                                        Aviso confirmado em {formatDateTime(order.customer_notification_acknowledged_at)}.
+                                                    <p className="font-medium text-slate-900">O que fazer agora</p>
+                                                    <div className="mt-2 space-y-2">
+                                                        {checklist.map((item) => (
+                                                            <div key={item} className="flex items-start gap-2 text-sm text-slate-600">
+                                                                <span className="mt-1 h-1.5 w-1.5 rounded-full bg-amber-500" />
+                                                                <span>{item}</span>
+                                                            </div>
+                                                        ))}
                                                     </div>
-                                                ) : (
-                                                    <Button onClick={handleAcknowledgeNotification} disabled={loadingAck} className="bg-cyan-600 text-white hover:bg-cyan-700">
-                                                        {loadingAck ? 'Confirmando...' : 'Recebi o aviso'}
-                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {order.service_status === ORDER_STATUS.BUDGET_GENERATED && (
+                                            <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
+                                                <div className="flex items-start gap-3">
+                                                    <InfoIcon className="mt-0.5 h-5 w-5 text-red-500" />
+                                                    <div className="space-y-3">
+                                                        <div>
+                                                            <p className="font-medium text-slate-900">Aguardando sua decisão</p>
+                                                            <p className="text-sm text-slate-600">
+                                                                Este orçamento está disponível para aprovação ou reprovação online.
+                                                            </p>
+                                                        </div>
+                                                        <div className="flex flex-wrap gap-2">
+                                                            <Button onClick={handleApprove} disabled={loadingA} className="bg-green-600 text-white hover:bg-green-700">
+                                                                {loadingA ? 'Aprovando...' : 'Aprovar orçamento'}
+                                                            </Button>
+                                                            <Button onClick={handleReject} disabled={loadingR} className="bg-red-600 text-white hover:bg-red-700">
+                                                                {loadingR ? 'Reprovando...' : 'Reprovar orçamento'}
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {(order.service_status === ORDER_STATUS.SERVICE_COMPLETED ||
+                                            order.service_status === ORDER_STATUS.CUSTOMER_NOTIFIED) && (
+                                            <div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-4">
+                                                <div className="flex items-start gap-3">
+                                                    <InfoIcon className="mt-0.5 h-5 w-5 text-cyan-600" />
+                                                    <div className="space-y-3">
+                                                        <div>
+                                                            <p className="font-medium text-slate-900">Confirmação de aviso</p>
+                                                            <p className="text-sm text-slate-600">
+                                                                Use este botão para confirmar que você recebeu o aviso de conclusão e retirada do equipamento.
+                                                            </p>
+                                                        </div>
+
+                                                        {order.customer_notification_acknowledged_at ? (
+                                                            <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+                                                                Aviso confirmado em {formatDateTime(order.customer_notification_acknowledged_at)}.
+                                                            </div>
+                                                        ) : (
+                                                            <Button onClick={handleAcknowledgeNotification} disabled={loadingAck} className="bg-cyan-600 text-white hover:bg-cyan-700">
+                                                                {loadingAck ? 'Confirmando...' : 'Recebi o aviso'}
+                                                            </Button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                                            <p className="text-sm font-medium text-slate-900">Ações rápidas</p>
+                                            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                                                {hasBudgetReceipt && (
+                                                    <a
+                                                        href={route('os.receipt', { token: order.tracking_token, type: 'ororcamento' })}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+                                                    >
+                                                        <FileText className="h-4 w-4" />
+                                                        Ver orçamento
+                                                    </a>
+                                                )}
+                                                {hasPaymentProof && (
+                                                    <a
+                                                        href={route('os.payment-proof', { token: order.tracking_token })}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+                                                    >
+                                                        <CreditCard className="h-4 w-4" />
+                                                        Ver pagamentos
+                                                    </a>
+                                                )}
+                                                {hasDeliveryReceipt && (
+                                                    <a
+                                                        href={route('os.receipt', { token: order.tracking_token, type: 'orentrega' })}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+                                                    >
+                                                        <ReceiptText className="h-4 w-4" />
+                                                        Recibo de entrega
+                                                    </a>
+                                                )}
+                                                {hasFiscalProof && (
+                                                    <a
+                                                        href={route('os.fiscal-proof', { token: order.tracking_token })}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+                                                    >
+                                                        <ExternalLink className="h-4 w-4" />
+                                                        Nota ou fiscal
+                                                    </a>
                                                 )}
                                             </div>
                                         </div>
-                                    </div>
-                                )}
 
-                                {order.company?.whatsapp && (
-                                    <a
-                                        href={`https://wa.me/${order.company.whatsapp}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-green-500 px-5 py-3 text-sm font-medium text-white transition hover:bg-green-600"
-                                    >
-                                        <MessageCircle className="h-4 w-4" />
-                                        Falar com a assistência
-                                    </a>
-                                )}
+                                        <div className="grid gap-3 sm:grid-cols-2">
+                                            <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                                                <div className="flex h-full items-center gap-3">
+                                                    <CreditCard className="h-5 w-5 text-slate-500" />
+                                                    <div>
+                                                        <p className="text-sm text-slate-500">Total do atendimento</p>
+                                                        <p className="text-lg font-semibold text-slate-900">
+                                                            R$ {maskMoney(String(financialSummary.total))}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                                                <div className="flex h-full items-center gap-3">
+                                                    <CalendarClock className="h-5 w-5 text-slate-500" />
+                                                    <div>
+                                                        <p className="text-sm text-slate-500">Saldo pendente</p>
+                                                        <p
+                                                            className={`text-lg font-semibold ${financialSummary.remaining > 0.009 ? 'text-rose-600' : 'text-emerald-600'}`}
+                                                        >
+                                                            R$ {maskMoney(String(financialSummary.remaining))}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {order.company?.whatsapp && (
+                                            <a
+                                                href={`https://wa.me/${order.company.whatsapp}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-green-500 px-5 py-3 text-sm font-medium text-white transition hover:bg-green-600"
+                                            >
+                                                <MessageCircle className="h-4 w-4" />
+                                                Falar com a assistência
+                                            </a>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </section>
@@ -798,34 +811,26 @@ function ServiceOrders({ order }: { order: Order }) {
                                             <div className="flex items-start gap-3">
                                                 <Star className="mt-0.5 h-5 w-5 text-violet-600" />
                                                 <div className="w-full space-y-3">
-                                                    <div>
-                                                        <p className="font-medium text-slate-900">Como foi seu atendimento?</p>
-                                                        <p className="text-sm text-slate-600">
-                                                            Sua avaliação ajuda a assistência a melhorar a experiência dos próximos atendimentos.
-                                                        </p>
-                                                    </div>
+                                                    <p className="font-medium text-slate-900">Como foi seu atendimento?</p>
 
                                                     {order.customer_feedback_submitted_at ? (
-                                                        <div className="rounded-xl border border-emerald-200 bg-white px-3 py-3 text-sm text-slate-700">
-                                                            <p className="font-medium text-emerald-700">
-                                                                Avaliação enviada em {formatDateTime(order.customer_feedback_submitted_at)}.
-                                                            </p>
-                                                            <p className="mt-1">
-                                                                Nota dada: {order.customer_feedback_rating ?? '-'} de 5 • {feedbackLabel(order.customer_feedback_rating ?? 0)}
-                                                            </p>
+                                                        <div className="rounded-xl border border-emerald-200 bg-white px-4 py-4 text-sm text-slate-700">
+                                                            <div className="flex gap-1 text-amber-500">
+                                                                {[1, 2, 3, 4, 5].map((rating) => (
+                                                                    <Star
+                                                                        key={rating}
+                                                                        className={`h-5 w-5 ${rating <= (order.customer_feedback_rating ?? 0) ? 'fill-current' : ''}`}
+                                                                    />
+                                                                ))}
+                                                            </div>
                                                             {order.customer_feedback_comment && (
-                                                                <p className="mt-2 text-slate-600">Comentário: {order.customer_feedback_comment}</p>
+                                                                <p className="mt-3 text-slate-600">{order.customer_feedback_comment}</p>
                                                             )}
                                                         </div>
                                                     ) : (
                                                         <>
                                                             <div className="rounded-2xl border border-violet-200 bg-white p-4">
-                                                                <p className="text-sm font-medium text-slate-900">Escolha sua nota</p>
-                                                                <p className="mt-1 text-sm text-slate-500">
-                                                                    {feedbackRating ? `Você selecionou: ${feedbackLabel(feedbackRating)}` : 'Selecione de 1 a 5 estrelas.'}
-                                                                </p>
-
-                                                                <div className="mt-3 flex flex-wrap gap-2">
+                                                                <div className="flex flex-wrap gap-2">
                                                                 {[1, 2, 3, 4, 5].map((rating) => {
                                                                     const selected = feedbackRating === rating;
 
@@ -834,18 +839,18 @@ function ServiceOrders({ order }: { order: Order }) {
                                                                             key={rating}
                                                                             type="button"
                                                                             onClick={() => setFeedbackRating(rating)}
-                                                                            className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition ${
+                                                                            aria-label={`${rating} estrela${rating > 1 ? 's' : ''}`}
+                                                                            className={`inline-flex items-center justify-center rounded-xl border p-3 transition ${
                                                                                 selected
                                                                                     ? 'border-violet-600 bg-violet-600 text-white'
-                                                                                    : 'border-violet-200 bg-white text-slate-700 hover:border-violet-300 hover:bg-violet-100'
+                                                                                    : 'border-violet-200 bg-white text-violet-500 hover:border-violet-300 hover:bg-violet-100'
                                                                             }`}
                                                                         >
-                                                                            <Star className="h-4 w-4" />
-                                                                            {rating} - {feedbackLabel(rating)}
+                                                                            <Star className={`h-5 w-5 ${selected ? 'fill-current' : ''}`} />
                                                                         </button>
                                                                     );
                                                                 })}
-                                                            </div>
+                                                                </div>
                                                             </div>
 
                                                             <textarea
@@ -856,10 +861,6 @@ function ServiceOrders({ order }: { order: Order }) {
                                                                 placeholder="Se quiser, deixe um comentário rápido sobre o atendimento."
                                                                 className="w-full rounded-2xl border border-violet-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-violet-400"
                                                             />
-                                                            <div className="flex items-center justify-between text-xs text-slate-500">
-                                                                <span>{canSubmitFeedback ? 'Conte rapidamente como foi o atendimento.' : 'Avaliação já registrada.'}</span>
-                                                                <span>{feedbackComment.length}/2000</span>
-                                                            </div>
 
                                                             <Button onClick={handleSubmitFeedback} disabled={loadingFeedback || !feedbackRating} className="bg-violet-600 text-white hover:bg-violet-700">
                                                                 {loadingFeedback ? 'Enviando avaliação...' : 'Enviar avaliação'}
@@ -914,14 +915,18 @@ function ServiceOrders({ order }: { order: Order }) {
                                 )}
                             </section>
 
-                            <section className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
-                                <h2 className="text-lg font-semibold text-slate-900">Andamento da ordem</h2>
-                                <div className="mt-4 border-t border-slate-100 pt-4">
-                                    <OrderTimeline statusHistory={order.status_history} logs={order.logs} mode="public" />
-                                </div>
-                            </section>
                         </div>
                     </div>
+
+                    <section className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
+                        <div className="flex items-center gap-4">
+                            <h2 className="whitespace-nowrap text-lg font-semibold text-slate-900">Andamento da ordem</h2>
+                            <div className="h-px flex-1 bg-slate-200" />
+                        </div>
+                        <div className="mt-4 border-t border-slate-100 pt-4">
+                            <OrderTimeline statusHistory={order.status_history} logs={order.logs} mode="public" />
+                        </div>
+                    </section>
                 </div>
             </div>
 

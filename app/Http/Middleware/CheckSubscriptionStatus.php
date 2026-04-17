@@ -11,7 +11,8 @@ class CheckSubscriptionStatus
 {
     public function handle(Request $request, Closure $next)
     {
-        $tenant = auth()->user()->tenant;
+        $user = $request->user();
+        $tenant = $user?->tenant;
 
         if (! $tenant) {
             return $next($request);

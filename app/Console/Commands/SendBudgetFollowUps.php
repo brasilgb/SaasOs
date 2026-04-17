@@ -25,6 +25,11 @@ class SendBudgetFollowUps extends Command
         return Other::communicationFollowUpCooldownDays($tenantId);
     }
 
+    private function automaticFollowUpsEnabled(?int $tenantId): bool
+    {
+        return Other::automaticFollowUpsEnabled($tenantId);
+    }
+
     private function hasRecentFollowUp(Order $order): bool
     {
         return OrderLog::query()
@@ -58,6 +63,12 @@ class SendBudgetFollowUps extends Command
             $processed++;
 
             $tenantId = $order->tenant_id ? (int) $order->tenant_id : null;
+
+            if (! $this->automaticFollowUpsEnabled($tenantId)) {
+                $skipped++;
+                continue;
+            }
+
             $cooldownDays = $this->cooldownDays($tenantId);
             $customerEmail = trim((string) ($order->customer?->email ?? ''));
             $daysPending = max(0, ($order->updated_at ?? $order->created_at)?->diffInDays(now()) ?? 0);

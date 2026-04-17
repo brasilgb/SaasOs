@@ -283,7 +283,16 @@ class HandleInertiaRequests extends Middleware
         $otherSetting = null;
         $openCashSession = null;
         if ($user) {
-            $otherSetting = Other::query()->firstOrCreate([]);
+            $otherSetting = Other::query()->firstOrCreate([
+                'tenant_id' => $user->tenant_id,
+            ], [
+                'enablesales' => false,
+                'show_follow_ups_menu' => false,
+                'show_tasks_menu' => false,
+                'show_commercial_performance_menu' => false,
+                'show_quality_menu' => false,
+                'automatic_follow_ups_enabled' => false,
+            ]);
             $openCashSession = CashSession::query()
                 ->where('status', 'open')
                 ->latest('opened_at')
@@ -305,10 +314,21 @@ class HandleInertiaRequests extends Middleware
             ],
             'subscription' => $subscription,
 
-            'company' => $user ? Company::first(['shortname', 'logo', 'companyname', 'cnpj']) : null,
+            'company' => $user
+                ? Company::query()
+                    ->where('tenant_id', $user->tenant_id)
+                    ->first(['shortname', 'logo', 'companyname', 'cnpj'])
+                : null,
             'setting' => $user ? Setting::first(['name', 'logo']) : null,
             'whatsapp' => $user ? WhatsappMessage::first() : null,
-            'othersetting' => $otherSetting,
+            'othersetting' => $otherSetting ? [
+                ...$otherSetting->toArray(),
+                'enablesales' => $otherSetting->enablesales ?? false,
+                'show_follow_ups_menu' => $otherSetting->show_follow_ups_menu ?? false,
+                'show_tasks_menu' => $otherSetting->show_tasks_menu ?? false,
+                'show_commercial_performance_menu' => $otherSetting->show_commercial_performance_menu ?? false,
+                'show_quality_menu' => $otherSetting->show_quality_menu ?? false,
+            ] : null,
             'cashier' => $user ? [
                 'isOpen' => (bool) $openCashSession,
                 'openedAt' => $openCashSession?->opened_at?->toIso8601String(),

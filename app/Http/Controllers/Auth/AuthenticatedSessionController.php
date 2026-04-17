@@ -51,6 +51,7 @@ class AuthenticatedSessionController extends Controller
     {
         Auth::guard('web')->logout();
 
+        $request->session()->forget('tenant_id');
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 

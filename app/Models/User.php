@@ -7,7 +7,6 @@ use App\Models\App\Message;
 use App\Models\App\Order;
 use App\Models\App\Expense;
 use App\Models\App\Schedule;
-use App\Tenantable;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -19,7 +18,7 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable, Tenantable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     public const ROLE_ROOT_SYSTEM = 99;
     public const ROLE_ROOT_APP = 9;

@@ -19,7 +19,8 @@ export function CTA() {
                     <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Pronto para transformar sua gestão?</h2>
 
                     <p className="mt-6 text-lg leading-relaxed text-white/76">
-                        Centralize ordens de serviço, estoque, financeiro e atendimento em um único sistema. Teste o SigmaOs gratuitamente por 14 dias.
+                        Centralize atendimento, ordens, estoque, financeiro, vendas e relacionamento com clientes em uma única plataforma. Teste o
+                        SigmaOs gratuitamente por 14 dias.
                     </p>
 
                     <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">

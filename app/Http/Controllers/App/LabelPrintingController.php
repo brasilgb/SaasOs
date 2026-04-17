@@ -6,14 +6,22 @@ use App\Http\Controllers\Controller;
 use App\Models\App\Company;
 use App\Models\App\Order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class LabelPrintingController extends Controller
 {
+    private function currentTenantId(): ?int
+    {
+        return Auth::user()?->tenant_id ? (int) Auth::user()->tenant_id : null;
+    }
+
     private function buildLabelsData(int $initial, int $pages): array
     {
-        $company = Company::first();
+        $company = Company::query()
+            ->where('tenant_id', $this->currentTenantId())
+            ->first();
         $totalLabels = max(1, $pages) * 96;
         $final = $initial + $totalLabels - 1;
         $data = [];
