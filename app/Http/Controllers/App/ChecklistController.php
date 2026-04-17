@@ -8,22 +8,17 @@ use App\Models\App\Checklist;
 use App\Models\App\Equipment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class ChecklistController extends Controller
 {
-    private function authorizeChecklistAccess(): void
-    {
-        abort_unless(Auth::user()?->hasPermission('register_checklists'), 403);
-    }
-
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        $this->authorizeChecklistAccess();
+        Gate::authorize('checklists.access');
 
         $search = $request->search;
         $query = Checklist::with('equipment')->orderBy('id', 'DESC');
@@ -54,7 +49,7 @@ class ChecklistController extends Controller
      */
     public function store(ChecklistRequest $request): RedirectResponse
     {
-        $this->authorizeChecklistAccess();
+        Gate::authorize('checklists.access');
 
         $data = $request->all();
         $request->validated();
@@ -85,7 +80,7 @@ class ChecklistController extends Controller
      */
     public function update(ChecklistRequest $request, Checklist $checklist): RedirectResponse
     {
-        $this->authorizeChecklistAccess();
+        Gate::authorize('checklists.access');
 
         $data = $request->all();
         $request->validated();
@@ -99,7 +94,7 @@ class ChecklistController extends Controller
      */
     public function destroy(Checklist $checklist): RedirectResponse
     {
-        $this->authorizeChecklistAccess();
+        Gate::authorize('checklists.access');
 
         $checklist->delete();
 

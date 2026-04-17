@@ -1,6 +1,7 @@
 import { toastSuccess } from '@/components/app-toast-messages';
 import { DatePicker } from '@/components/date-picker';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -66,7 +67,10 @@ export default function CustomerForm({ initialData }: { initialData?: Customer }
 
     return (
         <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
-            <div className="mt-4 grid gap-4 md:grid-cols-6">
+            <Card>
+                <CardTitle className="border-b px-6 pb-4">Dados principais</CardTitle>
+                <CardContent className="pt-6">
+            <div className="grid gap-4 md:grid-cols-6">
                 <div className="grid gap-2">
                     <Label htmlFor="cpfcnpj">CPF/CNPJ</Label>
                     <Input
@@ -111,8 +115,13 @@ export default function CustomerForm({ initialData }: { initialData?: Customer }
                     {errors.email && <div className="text-sm text-red-500">{errors.email}</div>}
                 </div>
             </div>
+                </CardContent>
+            </Card>
 
-            <div className="mt-4 grid gap-4 md:grid-cols-6">
+            <Card>
+                <CardTitle className="border-b px-6 pb-4">Endereço</CardTitle>
+                <CardContent className="space-y-4 pt-6">
+            <div className="grid gap-4 md:grid-cols-6">
                 <div className="grid gap-2">
                     <Label htmlFor="zipcode">CEP</Label>
                     <div className="relative flex gap-2">
@@ -152,7 +161,7 @@ export default function CustomerForm({ initialData }: { initialData?: Customer }
                 </div>
             </div>
 
-            <div className="mt-4 grid gap-4 md:grid-cols-4">
+            <div className="grid gap-4 md:grid-cols-4">
                 <div className="grid gap-2 md:col-span-2">
                     <Label htmlFor="street">Endereço</Label>
                     <Input type="text" id="street" value={data.street} onChange={(e) => setData('street', e.target.value)} />
@@ -168,8 +177,13 @@ export default function CustomerForm({ initialData }: { initialData?: Customer }
                     <Input type="text" id="number" value={data.number ?? ''} onChange={(e) => setData('number', e.target.value)} />
                 </div>
             </div>
+                </CardContent>
+            </Card>
 
-            <div className="mt-4 grid gap-4 md:grid-cols-5">
+            <Card>
+                <CardTitle className="border-b px-6 pb-4">Contato</CardTitle>
+                <CardContent className="pt-6">
+            <div className="grid gap-4 md:grid-cols-5">
                 <div className="grid gap-2">
                     <Label htmlFor="phone">Telefone</Label>
                     <Input
@@ -209,11 +223,18 @@ export default function CustomerForm({ initialData }: { initialData?: Customer }
                     />
                 </div>
             </div>
+                </CardContent>
+            </Card>
 
+            <Card>
+                <CardTitle className="border-b px-6 pb-4">Observações</CardTitle>
+                <CardContent className="pt-6">
             <div className="grid gap-2">
                 <Label htmlFor="observations">Observações</Label>
                 <Textarea id="observations" value={data.observations} onChange={(e) => setData('observations', e.target.value)} />
             </div>
+                </CardContent>
+            </Card>
 
             <div className="flex justify-end">
                 <Button type="submit" disabled={processing}>

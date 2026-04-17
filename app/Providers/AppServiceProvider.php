@@ -55,12 +55,18 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('parts.access', fn ($user) => $user->hasPermission('parts'));
         Gate::define('company.access', fn ($user) => $user->hasPermission('company'));
         Gate::define('other-settings.access', fn ($user) => $user->hasPermission('other_settings'));
+        Gate::define('receipts.access', fn ($user) => $user->hasPermission('receipts'));
+        Gate::define('whatsapp-messages.access', fn ($user) => $user->hasPermission('whatsapp_messages'));
+        Gate::define('customers.access', fn ($user) => $user->hasPermission('customers'));
+        Gate::define('equipments.access', fn ($user) => $user->hasPermission('register_equipments'));
+        Gate::define('checklists.access', fn ($user) => $user->hasPermission('register_checklists'));
+        Gate::define('services.access', fn ($user) => $user->hasPermission('settings'));
+        Gate::define('label-printing.access', fn ($user) => $user->hasPermission('label_printing'));
 
         Event::listen(
             Login::class,
             SetTenantIdInSession::class
         );
-
         $tenantId = Auth::user()?->tenant_id ?? session('tenant_id');
         TenantMailConfig::applyForTenantId($tenantId ? (int) $tenantId : null);
     }

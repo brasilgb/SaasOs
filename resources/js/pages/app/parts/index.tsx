@@ -62,13 +62,9 @@ export default function Parts({ parts, search }: any) {
                         <TableHeader>
                             <TableRow>
                                 <TableHead className="min-w-max">#</TableHead>
-                                <TableHead className="min-w-max">N° Peça/Produto</TableHead>
-                                <TableHead>Tipo</TableHead>
-                                <TableHead>Vendável</TableHead>
-                                <TableHead>Categoria</TableHead>
-                                <TableHead>Name</TableHead>
-                                <TableHead>Valor</TableHead>
-                                <TableHead>Est. mínimo</TableHead>
+                                <TableHead>Item</TableHead>
+                                <TableHead>Classificação</TableHead>
+                                <TableHead>Valores</TableHead>
                                 <TableHead>Estoque</TableHead>
                                 <TableHead>Cadastro</TableHead>
                                 <TableHead></TableHead>
@@ -79,21 +75,26 @@ export default function Parts({ parts, search }: any) {
                                 parts?.data?.map((part: any) => (
                                     <TableRow key={part.id}>
                                         <TableCell>{part.part_number}</TableCell>
-                                        <TableCell>{part.reference_number}</TableCell>
-                                        <TableCell>{part.type === 'part' ? 'Peça' : 'Produto'}</TableCell>
                                         <TableCell>
-                                            <span>
-                                                {part.is_sellable ? (
-                                                    <Check className="h-4 w-4 text-green-600" />
-                                                ) : (
-                                                    <X className="h-4 w-4 text-gray-400" />
-                                                )}
-                                            </span>
+                                            <div className="space-y-1">
+                                                <div className="font-medium">{part.name}</div>
+                                                <div className="text-muted-foreground text-xs">Ref: {part.reference_number || '-'}</div>
+                                            </div>
                                         </TableCell>
-                                        <TableCell>{part.category}</TableCell>
-                                        <TableCell className="font-medium">{part.name}</TableCell>
-                                        <TableCell>{maskMoney(part.sale_price)}</TableCell>
-                                        <TableCell>{part.minimum_stock_level}</TableCell>
+                                        <TableCell>
+                                            <div className="space-y-1">
+                                                <div>{part.type === 'part' ? 'Peça' : 'Produto'}</div>
+                                                <div className="text-muted-foreground text-xs">
+                                                    {part.category || 'Sem categoria'} · {part.is_sellable ? 'Vendável' : 'Uso interno'}
+                                                </div>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="space-y-1 text-sm">
+                                                <div>Venda: {maskMoney(part.sale_price)}</div>
+                                                <div className="text-muted-foreground text-xs">Mínimo: {part.minimum_stock_level}</div>
+                                            </div>
+                                        </TableCell>
                                         <TableCell>
                                             {part.quantity <= part.minimum_stock_level ? (
                                                 <Badge variant={'destructive'}>{part.quantity}</Badge>
@@ -118,7 +119,7 @@ export default function Parts({ parts, search }: any) {
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={11} className="flex h-16 w-full items-center justify-center">
+                                    <TableCell colSpan={7} className="flex h-16 w-full items-center justify-center">
                                         Não há dados a serem mostrados no momento.
                                     </TableCell>
                                 </TableRow>
@@ -126,7 +127,7 @@ export default function Parts({ parts, search }: any) {
                         </TableBody>
                         <TableFooter>
                             <TableRow>
-                                <TableCell colSpan={11}>
+                                <TableCell colSpan={7}>
                                     <AppPagination data={parts} />
                                 </TableCell>
                             </TableRow>

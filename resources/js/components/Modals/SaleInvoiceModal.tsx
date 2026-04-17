@@ -24,6 +24,10 @@ interface SaleInvoiceModalProps {
             sale_price?: string | number;
         }>;
         total?: string | number;
+        fiscal_document_number?: string;
+        fiscal_document_url?: string;
+        fiscal_issued_at?: string;
+        fiscal_notes?: string;
         numberSale: {
             id?: string | number;
         };
@@ -32,6 +36,7 @@ interface SaleInvoiceModalProps {
 
 export default function SaleInvoiceModal({ open, onClose, sale }: SaleInvoiceModalProps) {
     const saleId = sale?.numberSale?.id;
+    const hasRegisteredFiscal = Boolean(sale?.fiscal_document_number || sale?.fiscal_document_url);
     const { data, setData, post, processing, errors } = useForm({
         fiscal_document_number: '',
         fiscal_document_url: '',
@@ -90,7 +95,7 @@ export default function SaleInvoiceModal({ open, onClose, sale }: SaleInvoiceMod
                         </div>
 
                         <div>
-                            <span className="font-medium">Venda N°:</span> {sale.numberSale.id}
+                            <span className="font-medium">Venda N°:</span> {sale?.numberSale?.id ?? '-'}
                         </div>
                     </CardContent>
                 </Card>
@@ -105,37 +110,65 @@ export default function SaleInvoiceModal({ open, onClose, sale }: SaleInvoiceMod
 
                 <Card>
                     <CardContent className="space-y-3 pt-4 text-sm">
-                        <div className="font-medium">Registrar comprovante fiscal no banco para consulta e auditoria</div>
-                        <div className="space-y-1">
-                            <Label htmlFor="fiscal_document_number">Número do documento</Label>
-                            <Input
-                                id="fiscal_document_number"
-                                value={data.fiscal_document_number}
-                                onChange={(e) => setData('fiscal_document_number', e.target.value)}
-                            />
-                            <InputError message={errors.fiscal_document_number} />
-                        </div>
+                        {hasRegisteredFiscal ? (
+                            <>
+                                <div className="font-medium">Comprovante fiscal já registrado</div>
+                                <div>
+                                    <span className="font-medium">Número:</span> {sale.fiscal_document_number || '-'}
+                                </div>
+                                <div>
+                                    <span className="font-medium">Emitido em:</span> {sale.fiscal_issued_at || '-'}
+                                </div>
+                                {sale.fiscal_notes ? (
+                                    <div>
+                                        <span className="font-medium">Observações:</span> {sale.fiscal_notes}
+                                    </div>
+                                ) : null}
+                                {sale.fiscal_document_url ? (
+                                    <div className="flex justify-end">
+                                        <Button asChild>
+                                            <a href={sale.fiscal_document_url} target="_blank" rel="noopener noreferrer">
+                                                Abrir link da nota
+                                            </a>
+                                        </Button>
+                                    </div>
+                                ) : null}
+                            </>
+                        ) : (
+                            <>
+                                <div className="font-medium">Registrar comprovante fiscal no banco para consulta e auditoria</div>
+                                <div className="space-y-1">
+                                    <Label htmlFor="fiscal_document_number">Número do documento</Label>
+                                    <Input
+                                        id="fiscal_document_number"
+                                        value={data.fiscal_document_number}
+                                        onChange={(e) => setData('fiscal_document_number', e.target.value)}
+                                    />
+                                    <InputError message={errors.fiscal_document_number} />
+                                </div>
 
-                        <div className="space-y-1">
-                            <Label htmlFor="fiscal_document_url">URL</Label>
-                            <Input
-                                id="fiscal_document_url"
-                                value={data.fiscal_document_url}
-                                onChange={(e) => setData('fiscal_document_url', e.target.value)}
-                            />
-                            <InputError message={errors.fiscal_document_url} />
-                        </div>
+                                <div className="space-y-1">
+                                    <Label htmlFor="fiscal_document_url">URL</Label>
+                                    <Input
+                                        id="fiscal_document_url"
+                                        value={data.fiscal_document_url}
+                                        onChange={(e) => setData('fiscal_document_url', e.target.value)}
+                                    />
+                                    <InputError message={errors.fiscal_document_url} />
+                                </div>
 
-                        <div className="space-y-1">
-                            <Label htmlFor="fiscal_issued_at">Emitido em</Label>
-                            <Input
-                                id="fiscal_issued_at"
-                                type="datetime-local"
-                                value={data.fiscal_issued_at}
-                                onChange={(e) => setData('fiscal_issued_at', e.target.value)}
-                            />
-                            <InputError message={errors.fiscal_issued_at} />
-                        </div>
+                                <div className="space-y-1">
+                                    <Label htmlFor="fiscal_issued_at">Emitido em</Label>
+                                    <Input
+                                        id="fiscal_issued_at"
+                                        type="datetime-local"
+                                        value={data.fiscal_issued_at}
+                                        onChange={(e) => setData('fiscal_issued_at', e.target.value)}
+                                    />
+                                    <InputError message={errors.fiscal_issued_at} />
+                                </div>
+                            </>
+                        )}
                     </CardContent>
                 </Card>
 
@@ -143,9 +176,11 @@ export default function SaleInvoiceModal({ open, onClose, sale }: SaleInvoiceMod
                     <Button variant="ghost" onClick={onClose}>
                         Fechar
                     </Button>
-                    <Button onClick={handleRegisterFiscal} disabled={!saleId || processing}>
-                        Salvar comprovante
-                    </Button>
+                    {!hasRegisteredFiscal && (
+                        <Button onClick={handleRegisterFiscal} disabled={!saleId || processing}>
+                            Salvar comprovante
+                        </Button>
+                    )}
                 </DialogFooter>
             </DialogContent>
         </Dialog>

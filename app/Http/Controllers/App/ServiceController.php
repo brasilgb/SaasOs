@@ -8,19 +8,14 @@ use App\Models\App\Equipment;
 use App\Models\App\Service;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class ServiceController extends Controller
 {
-    private function authorizeServiceSettingsAccess(): void
-    {
-        abort_unless(Auth::user()?->hasPermission('settings'), 403);
-    }
-
     public function getServicos(Request $request)
     {
-        $this->authorizeServiceSettingsAccess();
+        Gate::authorize('services.access');
 
         $servicos = Service::where('equipamento', $request->equipamento)->get();
 
@@ -35,7 +30,7 @@ class ServiceController extends Controller
      */
     public function index(Request $request)
     {
-        $this->authorizeServiceSettingsAccess();
+        Gate::authorize('services.access');
 
         $search = $request->search;
         $query = Service::with('equipment')->orderBy('id', 'DESC');
@@ -61,7 +56,7 @@ class ServiceController extends Controller
      */
     public function store(ServiceRequest $request): RedirectResponse
     {
-        $this->authorizeServiceSettingsAccess();
+        Gate::authorize('services.access');
 
         $data = $request->all();
         $request->validated();
@@ -92,7 +87,7 @@ class ServiceController extends Controller
      */
     public function update(ServiceRequest $request, Service $service): RedirectResponse
     {
-        $this->authorizeServiceSettingsAccess();
+        Gate::authorize('services.access');
 
         $data = $request->all();
         $request->validated();
@@ -106,7 +101,7 @@ class ServiceController extends Controller
      */
     public function destroy(Service $service): RedirectResponse
     {
-        $this->authorizeServiceSettingsAccess();
+        Gate::authorize('services.access');
 
         $service->delete();
 

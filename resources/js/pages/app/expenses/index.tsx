@@ -6,6 +6,7 @@ import { Icon } from '@/components/icon';
 import InputError from '@/components/input-error';
 import InputSearch from '@/components/inputSearch';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -204,8 +205,7 @@ export default function Expenses({ expenses }: any) {
                             <TableRow>
                                 <TableHead>#</TableHead>
                                 <TableHead>Data</TableHead>
-                                <TableHead>Descrição</TableHead>
-                                <TableHead>Categoria</TableHead>
+                                <TableHead>Despesa</TableHead>
                                 <TableHead>Valor</TableHead>
                                 <TableHead>Lançado por</TableHead>
                                 <TableHead className="text-right"></TableHead>
@@ -217,8 +217,12 @@ export default function Expenses({ expenses }: any) {
                                     <TableRow key={expense.id}>
                                         <TableCell>{expense.expense_number ?? '-'}</TableCell>
                                         <TableCell>{moment(expense.expense_date).format('DD/MM/YYYY')}</TableCell>
-                                        <TableCell>{expense.description}</TableCell>
-                                        <TableCell>{expense.category || '-'}</TableCell>
+                                        <TableCell>
+                                            <div className="space-y-1">
+                                                <div className="font-medium">{expense.description}</div>
+                                                <div className="text-muted-foreground text-xs">{expense.category || 'Sem categoria'}</div>
+                                            </div>
+                                        </TableCell>
                                         <TableCell>{formatCurrency(expense.amount)}</TableCell>
                                         <TableCell>{expense.created_by?.name ?? expense.createdBy?.name ?? '-'}</TableCell>
                                         <TableCell className="text-right">
@@ -233,7 +237,7 @@ export default function Expenses({ expenses }: any) {
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={7} className="h-16 text-center">
+                                    <TableCell colSpan={6} className="h-16 text-center">
                                         Nenhuma despesa cadastrada.
                                     </TableCell>
                                 </TableRow>
@@ -241,7 +245,7 @@ export default function Expenses({ expenses }: any) {
                         </TableBody>
                         <TableFooter>
                             <TableRow>
-                                <TableCell colSpan={7}>
+                                <TableCell colSpan={6}>
                                     <AppPagination data={expenses} />
                                 </TableCell>
                             </TableRow>
@@ -261,6 +265,9 @@ export default function Expenses({ expenses }: any) {
                         <DialogTitle>{editingExpense ? 'Editar despesa' : 'Nova despesa'}</DialogTitle>
                     </DialogHeader>
                     <form onSubmit={handleSubmit} className="space-y-4">
+                        <Card>
+                            <CardTitle className="border-b px-6 pb-4">Dados da despesa</CardTitle>
+                            <CardContent className="space-y-4 pt-6">
                         <div className="grid gap-2">
                             <Label htmlFor="expense_date">Data</Label>
                             <Input
@@ -312,12 +319,19 @@ export default function Expenses({ expenses }: any) {
                             />
                             <InputError message={form.errors.amount} />
                         </div>
+                            </CardContent>
+                        </Card>
 
+                        <Card>
+                            <CardTitle className="border-b px-6 pb-4">Observações</CardTitle>
+                            <CardContent className="pt-6">
                         <div className="grid gap-2">
                             <Label htmlFor="notes">Observações</Label>
                             <Textarea id="notes" value={form.data.notes} onChange={(e) => form.setData('notes', e.target.value)} rows={3} />
                             <InputError message={form.errors.notes} />
                         </div>
+                            </CardContent>
+                        </Card>
 
                         <DialogFooter>
                             <Button type="button" variant="outline" onClick={closeModal}>

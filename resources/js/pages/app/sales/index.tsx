@@ -3,6 +3,7 @@ import AppPagination from '@/components/app-pagination';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
 import InputSearch from '@/components/inputSearch';
+import SaleInvoiceModal from '@/components/Modals/SaleInvoiceModal';
 import SaleReceiptPDF from '@/components/SaleReceiptPDF';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -36,6 +37,8 @@ export default function Sales({ sales, search, financial_status, financial_count
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedSale, setSelectedSale] = useState(null);
+    const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
+    const [saleForInvoice, setSaleForInvoice] = useState<any>(null);
     const [saleToPrint, setSaleToPrint] = useState<any>(null);
     const receiptRef = useRef<HTMLDivElement>(null);
     const [generatingPdfSaleId, setGeneratingPdfSaleId] = useState<number | null>(null);
@@ -58,6 +61,35 @@ export default function Sales({ sales, search, financial_status, financial_count
     const handleViewDetails = (sale: any) => {
         setSelectedSale(sale);
         setIsModalOpen(true);
+    };
+
+    const handleOpenInvoiceModal = (sale: any) => {
+        const mappedSale = {
+            customer: sale.customer
+                ? [
+                      {
+                          name: sale.customer?.name,
+                          cpfcnpj: sale.customer?.cpfcnpj,
+                      },
+                  ]
+                : [],
+            items: (sale.items ?? []).map((item: any) => ({
+                name: item.part?.name || item.name || 'Produto',
+                selected_quantity: item.quantity,
+                sale_price: item.unit_price,
+            })),
+            total: sale.total_amount,
+            fiscal_document_number: sale.fiscal_document_number,
+            fiscal_document_url: sale.fiscal_document_url,
+            fiscal_issued_at: sale.fiscal_issued_at,
+            fiscal_notes: sale.fiscal_notes,
+            numberSale: {
+                id: sale.id,
+            },
+        };
+
+        setSaleForInvoice(mappedSale);
+        setInvoiceModalOpen(true);
     };
 
     const handlePrintReceipt = (sale: any) => {
@@ -116,6 +148,7 @@ export default function Sales({ sales, search, financial_status, financial_count
     return (
         <AppLayout>
             <SaleDetailsModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} sale={selectedSale} />
+            <SaleInvoiceModal open={invoiceModalOpen} onClose={() => setInvoiceModalOpen(false)} sale={saleForInvoice ?? {}} />
             <div style={{ display: 'none' }}>
                 <Receipt
                     ref={receiptRef}
@@ -177,7 +210,7 @@ export default function Sales({ sales, search, financial_status, financial_count
                             <TableRow>
                                 <TableHead>#</TableHead>
                                 <TableHead>Cliente</TableHead>
-                                <TableHead>Total</TableHead>
+                                <TableHead>Valores</TableHead>
                                 <TableHead>Pagamento</TableHead>
                                 <TableHead>Financeiro</TableHead>
                                 <TableHead>Data venda</TableHead>
@@ -193,9 +226,23 @@ export default function Sales({ sales, search, financial_status, financial_count
                                     return (
                                         <TableRow key={sale.id}>
                                             <TableCell>{sale.sales_number}</TableCell>
-                                            <TableCell>{sale.customer?.name || 'Cliente não informado'}</TableCell>
                                             <TableCell>
-                                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(sale.total_amount)}
+                                                <div className="space-y-1">
+                                                    <div className="font-medium">{sale.customer?.name || 'Cliente não informado'}</div>
+                                                    <div className="text-muted-foreground text-xs">{sale.items?.length ?? 0} item(ns)</div>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="space-y-1">
+                                                    <div>
+                                                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(sale.total_amount)}
+                                                    </div>
+                                                    {sale.remaining_amount !== undefined && (
+                                                        <div className="text-muted-foreground text-xs">
+                                                            Saldo: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(sale.remaining_amount || 0))}
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </TableCell>
                                             <TableCell className="capitalize">{sale.payment_method || 'não informado'}</TableCell>
                                             <TableCell>
@@ -218,6 +265,16 @@ export default function Sales({ sales, search, financial_status, financial_count
                                                 >
                                                     {isGeneratingCurrentPdf ? <Loader2 className="size-4 animate-spin" /> : <FileText className="size-4" />}
                                                     Recibo PDF
+                                                </Button>
+
+                                                <Button
+                                                    type="button"
+                                                    onClick={() => handleOpenInvoiceModal(sale)}
+                                                    className="rounded-lg py-2 text-sm font-medium"
+                                                    disabled={isGeneratingCurrentPdf || isPrintingCurrentThermal}
+                                                >
+                                                    <FileText className="size-4" />
+                                                    Nota fiscal
                                                 </Button>
 
                                                 <Button

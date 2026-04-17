@@ -1,6 +1,7 @@
 import { toastSuccess } from '@/components/app-toast-messages';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -80,7 +81,10 @@ export default function ScheduleForm({ customers, initialData, technicals }: Sch
 
     return (
         <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
-            <div className="mt-4 grid gap-4 md:grid-cols-2">
+            <Card>
+                <CardTitle className="border-b px-6 pb-4">Agendamento</CardTitle>
+                <CardContent className="pt-6">
+            <div className="grid gap-4 md:grid-cols-2">
                 <div className="grid gap-2">
                     <Label htmlFor="customer_id">Cliente</Label>
                     <Select
@@ -121,8 +125,13 @@ export default function ScheduleForm({ customers, initialData, technicals }: Sch
                     <Input type="datetime-local" id="schedules" value={data.schedules} onChange={(e) => setData('schedules', e.target.value)} />
                 </div>
             </div>
+                </CardContent>
+            </Card>
 
-            <div className="mt-4 grid gap-4 md:grid-cols-2">
+            <Card>
+                <CardTitle className="border-b px-6 pb-4">Serviço</CardTitle>
+                <CardContent className="pt-6">
+            <div className="grid gap-4 md:grid-cols-2">
                 <div className="grid gap-2">
                     <Label htmlFor="service">Serviços Requisitados</Label>
                     <Textarea id="service" value={data.service} onChange={(e) => setData('service', e.target.value)} />
@@ -135,8 +144,13 @@ export default function ScheduleForm({ customers, initialData, technicals }: Sch
                     {errors.details && <div className="text-sm text-red-500">{errors.details}</div>}
                 </div>
             </div>
+                </CardContent>
+            </Card>
 
-            <div className="mt-4 grid gap-4 md:grid-cols-2">
+            <Card>
+                <CardTitle className="border-b px-6 pb-4">Acompanhamento</CardTitle>
+                <CardContent className="space-y-4 pt-6">
+            <div className="grid gap-4 md:grid-cols-2">
                 <div className="grid gap-2">
                     <Label htmlFor="service_status">Técnico responsável</Label>
                     <Select
@@ -210,6 +224,8 @@ export default function ScheduleForm({ customers, initialData, technicals }: Sch
                 <Label htmlFor="observations">Observações</Label>
                 <Textarea id="observations" value={data.observations} onChange={(e) => setData('observations', e.target.value)} />
             </div>
+                </CardContent>
+            </Card>
 
             <div className="flex justify-end">
                 <Button type="submit" disabled={processing}>

@@ -2,6 +2,7 @@ import { toastSuccess } from '@/components/app-toast-messages';
 import FormFieldHelp from '@/components/form-field-help';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -165,6 +166,9 @@ export default function PartForm({ categories, manufacturers, initialData }: Par
 
     return (
         <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
+            <Card>
+                <CardTitle className="border-b px-6 pb-4">Identificação</CardTitle>
+                <CardContent className="space-y-4 pt-6">
             <div className="mt-4 grid gap-4 md:grid-cols-4">
                 <div className="grid gap-2">
                     <Label htmlFor="name">Número da Peça/Produto</Label>
@@ -248,7 +252,12 @@ export default function PartForm({ categories, manufacturers, initialData }: Par
                     <InputError message={errors.manufacturer} />
                 </div>
             </div>
+                </CardContent>
+            </Card>
 
+            <Card>
+                <CardTitle className="border-b px-6 pb-4">Descrição e compatibilidade</CardTitle>
+                <CardContent className="space-y-4 pt-6">
             <div className="mt-4 grid gap-4 md:grid-cols-3">
                 <div className="grid gap-2">
                     <Label htmlFor="name">Nome da Peça/Produto</Label>
@@ -292,7 +301,12 @@ export default function PartForm({ categories, manufacturers, initialData }: Par
                     />
                 </div>
             </div>
+                </CardContent>
+            </Card>
 
+            <Card>
+                <CardTitle className="border-b px-6 pb-4">Valores e estoque</CardTitle>
+                <CardContent className="space-y-4 pt-6">
             <div className="mt-4 grid gap-4 md:grid-cols-4">
                 <div className="grid gap-2">
                     <Label htmlFor="cost_price">Preço de Custo</Label>
@@ -349,6 +363,8 @@ export default function PartForm({ categories, manufacturers, initialData }: Par
                     <span className="text-muted-foreground text-sm">{data.status ? 'Ativa' : 'Inativa'}</span>
                 </div>
             </div>
+                </CardContent>
+            </Card>
 
             <div className="flex justify-end">
                 <Button type="submit" disabled={processing}>

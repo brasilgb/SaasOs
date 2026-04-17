@@ -10,22 +10,17 @@ use App\Models\App\Receipt;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class ReceiptController extends Controller
 {
-    private function authorizeReceiptsAccess(): void
-    {
-        abort_unless(Auth::user()?->hasPermission('receipts'), 403);
-    }
-
     /**
      * Display a listing of the resource.
      */
     public function index(Receipt $receipt)
     {
-        $this->authorizeReceiptsAccess();
+        Gate::authorize('receipts.access');
 
         if (Receipt::get()->isEmpty()) {
             Receipt::create();
@@ -38,7 +33,7 @@ class ReceiptController extends Controller
 
     public function update(Request $request, Receipt $receipt): RedirectResponse
     {
-        $this->authorizeReceiptsAccess();
+        Gate::authorize('receipts.access');
 
         $data = $request->all();
         $receipt->update($data);
@@ -48,7 +43,7 @@ class ReceiptController extends Controller
 
     public function printing($or, $tp)
     {
-        $this->authorizeReceiptsAccess();
+        Gate::authorize('receipts.access');
 
         $order = Order::where('id', $or)->with(['customer', 'equipment', 'orderParts'])->firstOrFail();
         $this->authorize('view', $order);

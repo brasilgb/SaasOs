@@ -62,11 +62,9 @@ export default function CheckList({ budgets, company, search }: any) {
                             <TableRow>
                                 <TableHead className="w-[100px]">#</TableHead>
                                 <TableHead>Equipamento</TableHead>
-                                <TableHead>Modelo</TableHead>
                                 <TableHead>Serviço</TableHead>
-                                <TableHead>Tempo Estimado</TableHead>
-                                <TableHead>Validade(dias)</TableHead>
-                                <TableHead>Valor Total</TableHead>
+                                <TableHead>Condições</TableHead>
+                                <TableHead>Valor</TableHead>
                                 <TableHead>Cadastro</TableHead>
                                 <TableHead></TableHead>
                             </TableRow>
@@ -76,11 +74,24 @@ export default function CheckList({ budgets, company, search }: any) {
                                 budgets?.data?.map((budget: any) => (
                                     <TableRow key={budget.id}>
                                         <TableCell>{budget.budget_number}</TableCell>
-                                        <TableCell>{budget.equipment.equipment}</TableCell>
-                                        <TableCell>{budget.model}</TableCell>
-                                        <TableCell>{budget.service}</TableCell>
-                                        <TableCell>{budget.estimated_time}</TableCell>
-                                        <TableCell>{budget.validity}</TableCell>
+                                        <TableCell>
+                                            <div className="space-y-1">
+                                                <div className="font-medium">{budget.equipment.equipment}</div>
+                                                <div className="text-muted-foreground text-xs">{budget.model || 'Modelo não informado'}</div>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="space-y-1">
+                                                <div className="font-medium">{budget.service}</div>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="text-sm">
+                                                <span className="text-muted-foreground">Tempo:</span> {budget.estimated_time || '-'} ·{' '}
+                                                <span className="text-muted-foreground">Garantia:</span> {budget.warranty || '-'} ·{' '}
+                                                <span className="text-muted-foreground">Validade:</span> {budget.validity ? `${budget.validity} dias` : '-'}
+                                            </div>
+                                        </TableCell>
                                         <TableCell>R$ {maskMoney(budget.total_value)}</TableCell>
                                         <TableCell>{moment(budget.created_at).format('DD/MM/YYYY')}</TableCell>
                                         <TableCell className="flex justify-end gap-2">
@@ -100,7 +111,7 @@ export default function CheckList({ budgets, company, search }: any) {
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={9} className="flex h-16 w-full items-center justify-center">
+                                    <TableCell colSpan={7} className="flex h-16 w-full items-center justify-center">
                                         Não há dados a serem mostrados no momento.
                                     </TableCell>
                                 </TableRow>
@@ -108,7 +119,7 @@ export default function CheckList({ budgets, company, search }: any) {
                         </TableBody>
                         <TableFooter>
                             <TableRow>
-                                <TableCell colSpan={9}>
+                                <TableCell colSpan={7}>
                                     <AppPagination data={budgets} />
                                 </TableCell>
                             </TableRow>

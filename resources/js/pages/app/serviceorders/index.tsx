@@ -101,6 +101,23 @@ function getRemainingTime(deliveryDate?: string) {
     return `${days} dias restantes`;
 }
 
+function feedbackLabel(rating: number) {
+    switch (rating) {
+        case 1:
+            return 'Muito ruim';
+        case 2:
+            return 'Ruim';
+        case 3:
+            return 'Regular';
+        case 4:
+            return 'Bom';
+        case 5:
+            return 'Excelente';
+        default:
+            return 'Avalie seu atendimento';
+    }
+}
+
 function nextStepText(order: Order, remainingAmount: number) {
     switch (order.service_status) {
         case ORDER_STATUS.OPEN:
@@ -203,6 +220,16 @@ function ServiceOrders({ order }: { order: Order }) {
         src: `/storage/orders/${order.id}/${image.filename}`,
         alt: `Imagem da ordem ${order.order_number}`,
     }));
+    const hasBudgetReceipt = Boolean(order.budget_description || Number(order.budget_value ?? 0) > 0);
+    const hasDeliveryReceipt = [ORDER_STATUS.SERVICE_COMPLETED, ORDER_STATUS.CUSTOMER_NOTIFIED, ORDER_STATUS.DELIVERED].includes(order.service_status);
+    const hasPaymentProof = (order.order_payments ?? []).length > 0;
+    const hasFiscalProof = Boolean(order.fiscal_document_number || order.fiscal_document_url);
+    const canSubmitFeedback = order.service_status === ORDER_STATUS.DELIVERED && !order.customer_feedback_submitted_at;
+    const warrantyStatusLabel = order.warranty_expires_at
+        ? new Date(order.warranty_expires_at).getTime() >= new Date().setHours(0, 0, 0, 0)
+            ? `Garantia ativa até ${formatDate(order.warranty_expires_at)}`
+            : `Garantia encerrada em ${formatDate(order.warranty_expires_at)}`
+        : 'Garantia não informada';
 
     function budgetAlter(status: 4 | 5) {
         router.post(
@@ -380,6 +407,56 @@ function ServiceOrders({ order }: { order: Order }) {
                                                 ))}
                                             </div>
                                         </div>
+                                    </div>
+                                </div>
+
+                                <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                                    <p className="text-sm font-medium text-slate-900">Ações rápidas</p>
+                                    <div className="mt-3 flex flex-wrap gap-2">
+                                        {hasBudgetReceipt && (
+                                            <a
+                                                href={route('os.receipt', { token: order.tracking_token, type: 'ororcamento' })}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+                                            >
+                                                <FileText className="h-4 w-4" />
+                                                Ver orçamento
+                                            </a>
+                                        )}
+                                        {hasPaymentProof && (
+                                            <a
+                                                href={route('os.payment-proof', { token: order.tracking_token })}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+                                            >
+                                                <CreditCard className="h-4 w-4" />
+                                                Ver pagamentos
+                                            </a>
+                                        )}
+                                        {hasDeliveryReceipt && (
+                                            <a
+                                                href={route('os.receipt', { token: order.tracking_token, type: 'orentrega' })}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+                                            >
+                                                <ReceiptText className="h-4 w-4" />
+                                                Recibo de entrega
+                                            </a>
+                                        )}
+                                        {hasFiscalProof && (
+                                            <a
+                                                href={route('os.fiscal-proof', { token: order.tracking_token })}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+                                            >
+                                                <ExternalLink className="h-4 w-4" />
+                                                Nota ou fiscal
+                                            </a>
+                                        )}
                                     </div>
                                 </div>
 
@@ -619,9 +696,7 @@ function ServiceOrders({ order }: { order: Order }) {
                                         <p className="mt-2 font-medium text-slate-900">
                                             {order.warranty_days ? `${order.warranty_days} dia(s)` : 'Não informada'}
                                         </p>
-                                        {order.warranty_expires_at && (
-                                            <p className="mt-1 text-sm text-slate-600">Válida até {formatDate(order.warranty_expires_at)}</p>
-                                        )}
+                                        <p className="mt-1 text-sm text-slate-600">{warrantyStatusLabel}</p>
                                     </div>
 
                                     {order.is_warranty_return && (
@@ -636,55 +711,63 @@ function ServiceOrders({ order }: { order: Order }) {
 
                                     <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                                         <p className="font-medium text-slate-900">Comprovantes disponíveis</p>
-                                        <div className="mt-3 flex flex-wrap gap-2">
-                                            {(order.budget_description || Number(order.budget_value ?? 0) > 0) && (
+                                        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                                            {hasBudgetReceipt && (
                                                 <a
                                                     href={route('os.receipt', { token: order.tracking_token, type: 'ororcamento' })}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-100"
+                                                    className="inline-flex items-center justify-between gap-3 rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-100"
                                                 >
-                                                    <FileText className="h-4 w-4" />
-                                                    Recibo do orçamento
+                                                    <span className="inline-flex items-center gap-2">
+                                                        <FileText className="h-4 w-4" />
+                                                        Recibo do orçamento
+                                                    </span>
                                                     <ExternalLink className="h-4 w-4" />
                                                 </a>
                                             )}
 
-                                            {[ORDER_STATUS.SERVICE_COMPLETED, ORDER_STATUS.CUSTOMER_NOTIFIED, ORDER_STATUS.DELIVERED].includes(order.service_status) && (
+                                            {hasDeliveryReceipt && (
                                                 <a
                                                     href={route('os.receipt', { token: order.tracking_token, type: 'orentrega' })}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-100"
+                                                    className="inline-flex items-center justify-between gap-3 rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-100"
                                                 >
-                                                    <ReceiptText className="h-4 w-4" />
-                                                    Recibo de entrega
+                                                    <span className="inline-flex items-center gap-2">
+                                                        <ReceiptText className="h-4 w-4" />
+                                                        Recibo de entrega
+                                                    </span>
                                                     <ExternalLink className="h-4 w-4" />
                                                 </a>
                                             )}
 
-                                            {(order.order_payments ?? []).length > 0 && (
+                                            {hasPaymentProof && (
                                                 <a
                                                     href={route('os.payment-proof', { token: order.tracking_token })}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-100"
+                                                    className="inline-flex items-center justify-between gap-3 rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-100"
                                                 >
-                                                    <CreditCard className="h-4 w-4" />
-                                                    Comprovante financeiro
+                                                    <span className="inline-flex items-center gap-2">
+                                                        <CreditCard className="h-4 w-4" />
+                                                        Comprovante financeiro
+                                                    </span>
                                                     <ExternalLink className="h-4 w-4" />
                                                 </a>
                                             )}
 
-                                            {(order.fiscal_document_number || order.fiscal_document_url) && (
+                                            {hasFiscalProof && (
                                                 <a
                                                     href={route('os.fiscal-proof', { token: order.tracking_token })}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-100"
+                                                    className="inline-flex items-center justify-between gap-3 rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-100"
                                                 >
-                                                    <ReceiptText className="h-4 w-4" />
-                                                    Comprovante fiscal
+                                                    <span className="inline-flex items-center gap-2">
+                                                        <ReceiptText className="h-4 w-4" />
+                                                        Comprovante fiscal
+                                                    </span>
                                                     <ExternalLink className="h-4 w-4" />
                                                 </a>
                                             )}
@@ -727,14 +810,22 @@ function ServiceOrders({ order }: { order: Order }) {
                                                             <p className="font-medium text-emerald-700">
                                                                 Avaliação enviada em {formatDateTime(order.customer_feedback_submitted_at)}.
                                                             </p>
-                                                            <p className="mt-1">Nota dada: {order.customer_feedback_rating ?? '-'} de 5.</p>
+                                                            <p className="mt-1">
+                                                                Nota dada: {order.customer_feedback_rating ?? '-'} de 5 • {feedbackLabel(order.customer_feedback_rating ?? 0)}
+                                                            </p>
                                                             {order.customer_feedback_comment && (
                                                                 <p className="mt-2 text-slate-600">Comentário: {order.customer_feedback_comment}</p>
                                                             )}
                                                         </div>
                                                     ) : (
                                                         <>
-                                                            <div className="flex flex-wrap gap-2">
+                                                            <div className="rounded-2xl border border-violet-200 bg-white p-4">
+                                                                <p className="text-sm font-medium text-slate-900">Escolha sua nota</p>
+                                                                <p className="mt-1 text-sm text-slate-500">
+                                                                    {feedbackRating ? `Você selecionou: ${feedbackLabel(feedbackRating)}` : 'Selecione de 1 a 5 estrelas.'}
+                                                                </p>
+
+                                                                <div className="mt-3 flex flex-wrap gap-2">
                                                                 {[1, 2, 3, 4, 5].map((rating) => {
                                                                     const selected = feedbackRating === rating;
 
@@ -750,10 +841,11 @@ function ServiceOrders({ order }: { order: Order }) {
                                                                             }`}
                                                                         >
                                                                             <Star className="h-4 w-4" />
-                                                                            {rating}
+                                                                            {rating} - {feedbackLabel(rating)}
                                                                         </button>
                                                                     );
                                                                 })}
+                                                            </div>
                                                             </div>
 
                                                             <textarea
@@ -764,6 +856,10 @@ function ServiceOrders({ order }: { order: Order }) {
                                                                 placeholder="Se quiser, deixe um comentário rápido sobre o atendimento."
                                                                 className="w-full rounded-2xl border border-violet-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-violet-400"
                                                             />
+                                                            <div className="flex items-center justify-between text-xs text-slate-500">
+                                                                <span>{canSubmitFeedback ? 'Conte rapidamente como foi o atendimento.' : 'Avaliação já registrada.'}</span>
+                                                                <span>{feedbackComment.length}/2000</span>
+                                                            </div>
 
                                                             <Button onClick={handleSubmitFeedback} disabled={loadingFeedback || !feedbackRating} className="bg-violet-600 text-white hover:bg-violet-700">
                                                                 {loadingFeedback ? 'Enviando avaliação...' : 'Enviar avaliação'}

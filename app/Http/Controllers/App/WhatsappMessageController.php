@@ -2,38 +2,28 @@
 
 namespace App\Http\Controllers\App;
 
+use App\Events\WhatsappMessageSettingsUpdated;
 use App\Http\Controllers\Controller;
 use App\Models\App\WhatsappMessage;
-use App\Services\OperationalAuditService;
 use App\Services\WhatsappMessageTemplateService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class WhatsappMessageController extends Controller
 {
     public function __construct(
-        private readonly OperationalAuditService $operationalAuditService,
         private readonly WhatsappMessageTemplateService $whatsappMessageTemplateService,
     ) {}
-
-    private function logOperationalAudit(string $action, WhatsappMessage $whatsappmessage, array $data = []): void
-    {
-        $this->operationalAuditService->record($action, 'whatsapp_message_settings', $whatsappmessage, Auth::id(), $data);
-    }
-
-    private function authorizeWhatsappMessagesAccess(): void
-    {
-        abort_unless(auth()->user()?->hasPermission('whatsapp_messages'), 403);
-    }
 
     /**
      * Display a listing of the resource.
      */
     public function index(WhatsappMessage $whatsappmessage)
     {
-        $this->authorizeWhatsappMessagesAccess();
+        Gate::authorize('whatsapp-messages.access');
 
         $whatsappmessage = $this->whatsappMessageTemplateService->current();
 
@@ -42,7 +32,7 @@ class WhatsappMessageController extends Controller
 
     public function update(Request $request, WhatsappMessage $whatsappmessage): RedirectResponse
     {
-        $this->authorizeWhatsappMessagesAccess();
+        Gate::authorize('whatsapp-messages.access');
 
         $data = $request->validate([
             'generatedbudget' => 'nullable|string|max:5000',
@@ -54,9 +44,9 @@ class WhatsappMessageController extends Controller
         ]);
 
         $whatsappmessage = $this->whatsappMessageTemplateService->update($whatsappmessage, $data);
-        $this->logOperationalAudit('whatsapp_message_settings_updated', $whatsappmessage, [
+        event(new WhatsappMessageSettingsUpdated($whatsappmessage->id, (int) Auth::id(), [
             'updated_fields' => array_keys(array_filter($data, fn ($value) => $value !== null)),
-        ]);
+        ]));
 
         return redirect()->route('app.whatsapp-message.index', ['whatsappmessage' => $whatsappmessage->id])->with('success', 'Mensagens do WhatsApp editadas com sucesso');
     }

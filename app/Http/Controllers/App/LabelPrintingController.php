@@ -6,15 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\App\Company;
 use App\Models\App\Order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class LabelPrintingController extends Controller
 {
-    private function authorizeLabelPrintingAccess(): void
-    {
-        abort_unless(auth()->user()?->hasPermission('label_printing'), 403);
-    }
-
     private function buildLabelsData(int $initial, int $pages): array
     {
         $company = Company::first();
@@ -35,7 +31,7 @@ class LabelPrintingController extends Controller
 
     public function index()
     {
-        $this->authorizeLabelPrintingAccess();
+        Gate::authorize('label-printing.access');
 
         $labels = Order::orderBy('id', 'DESC')->first();
         if ($labels) {
@@ -49,7 +45,7 @@ class LabelPrintingController extends Controller
 
     public function print(Request $request)
     {
-        $this->authorizeLabelPrintingAccess();
+        Gate::authorize('label-printing.access');
 
         $validated = $request->validate([
             'initialorder' => ['required', 'integer', 'min:1'],
@@ -68,7 +64,7 @@ class LabelPrintingController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorizeLabelPrintingAccess();
+        Gate::authorize('label-printing.access');
 
         return $this->print($request);
     }

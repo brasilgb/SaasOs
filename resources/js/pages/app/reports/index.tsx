@@ -13,6 +13,7 @@ import OrdersStatistics from './order-statistics';
 import OrdersDaily from './orders-daily';
 import OrdersReport from './orders-report';
 import PartsReport from './parts-report';
+import QualityReport from './quality-report';
 import SalesReport from './sales-report';
 import SchedulesReport from './schedules-report';
 import TechnicianProductivity from './technician-productivity';
@@ -42,6 +43,7 @@ export default function Parts() {
     const canViewExpenses = Boolean(permissions.includes('sales') && othersetting?.enablesales);
     const canViewCashier = Boolean(permissions.includes('sales') && othersetting?.enablesales);
     const canViewParts = permissions.includes('parts');
+    const canViewQuality = permissions.includes('reports');
 
     return (
         <AppLayout>
@@ -124,6 +126,12 @@ export default function Parts() {
                         {canViewCashier && (
                             <div className="w-full">
                                 <CashierReport dateRange={dateRange} company={company} />
+                            </div>
+                        )}
+
+                        {canViewQuality && (
+                            <div className="w-full">
+                                <QualityReport dateRange={dateRange} company={company} />
                             </div>
                         )}
                     </CardContent>

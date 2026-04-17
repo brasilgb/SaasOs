@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\OrderCustomerFeedbackSubmitted;
+use App\Events\OrderCustomerNotificationAcknowledged;
+use App\Events\OrderCustomerPickupAcknowledged;
 use App\Models\App\Checklist;
 use App\Models\App\Company;
 use App\Models\App\Order;
-use App\Models\App\OrderLog;
 use App\Models\App\OrderPayment;
-use App\Models\App\OrderStatusHistory;
 use App\Models\App\Receipt;
 use App\Services\OrderStatusService;
 use App\Support\OrderStatus;
@@ -47,17 +48,6 @@ class OsController extends Controller
             ->sum('amount');
 
         return max(0, (float) ($order->service_cost ?? 0) - (float) $totalPaid);
-    }
-
-    private function logOrderAction(Order $order, string $action, array $data = []): void
-    {
-        OrderLog::create([
-            'order_id' => $order->id,
-            'user_id' => null,
-            'action' => $action,
-            'data' => $data === [] ? null : $data,
-            'created_at' => now(),
-        ]);
     }
 
     public function updateBudgetStatus(Request $request, string $token)
@@ -122,10 +112,10 @@ class OsController extends Controller
             );
         }
 
-        $this->logOrderAction($order, 'customer_notification_acknowledged', [
+        event(new OrderCustomerNotificationAcknowledged($order->id, [
             'acknowledged_at' => now()->toIso8601String(),
             'status_after' => (int) ($updates['service_status'] ?? $order->service_status),
-        ]);
+        ]));
 
         return back()->with('success', 'Confirmação de aviso registrada com sucesso.');
     }
@@ -172,10 +162,10 @@ class OsController extends Controller
             );
         }
 
-        $this->logOrderAction($order, 'customer_pickup_acknowledged', [
+        event(new OrderCustomerPickupAcknowledged($order->id, [
             'acknowledged_at' => $now->toIso8601String(),
             'status_after' => (int) ($updates['service_status'] ?? $order->service_status),
-        ]);
+        ]));
 
         return back()->with('success', 'Confirmação de retirada registrada com sucesso.');
     }
@@ -281,11 +271,11 @@ class OsController extends Controller
             'customer_feedback_recovery_updated_at' => (int) $validated['rating'] <= 3 ? $now : null,
         ]);
 
-        $this->logOrderAction($order, 'customer_feedback_submitted', [
+        event(new OrderCustomerFeedbackSubmitted($order->id, [
             'rating' => (int) $validated['rating'],
             'comment' => $validated['comment'] ?? null,
             'submitted_at' => $now->toIso8601String(),
-        ]);
+        ]));
 
         return back()->with('success', 'Obrigado! Seu feedback foi enviado com sucesso.');
     }

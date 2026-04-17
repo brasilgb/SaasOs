@@ -2,6 +2,12 @@
 
 namespace App\Http\Controllers\App;
 
+use App\Events\OrderCreated;
+use App\Events\OrderLifecycleCreated;
+use App\Events\OrderLifecycleStatusChanged;
+use App\Events\OrderPaymentRegistered;
+use App\Events\OrderPaymentRemoved;
+use App\Events\OrderStatusUpdated;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OrderRequest;
 use App\Models\App\Other;
@@ -469,25 +475,19 @@ class OrderController extends Controller
             'changed_by' => $this->currentUser()?->id,
             'note' => OrderStatus::label((int) $order->service_status),
         ]);
-        $this->logOrderAction($order, 'created', [
-            'status' => (int) $order->service_status,
-            'status_label' => OrderStatus::label($order->service_status),
-            'is_warranty_return' => (bool) $order->is_warranty_return,
-            'warranty_source_order_number' => $warrantySourceOrder?->order_number,
-        ]);
-        $this->logOperationalAudit('order_created', $order, [
+        event(new OrderLifecycleCreated($order->id, $this->currentUser()?->id, [
             'status' => (int) $order->service_status,
             'status_label' => OrderStatus::label($order->service_status),
             'customer_id' => $order->customer_id,
             'equipment_id' => $order->equipment_id,
             'is_warranty_return' => (bool) $order->is_warranty_return,
             'warranty_source_order_number' => $warrantySourceOrder?->order_number,
-        ]);
+        ]));
 
         $successMessage = 'Ordem cadastrada com sucesso';
 
         try {
-            $this->orderNotificationService->sendCreated($order);
+            event(new OrderCreated($order));
         } catch (\Throwable $e) {
             report($e);
             $successMessage = 'Ordem cadastrada com sucesso, mas houve falha ao enviar o e-mail ao cliente.';
@@ -683,23 +683,22 @@ class OrderController extends Controller
             } catch (\Illuminate\Validation\ValidationException $exception) {
                 return back()->withErrors($exception->errors());
             }
-            $this->logOrderAction($order, 'status_changed', [
+            $statusChangeData = [
                 'from' => (int) $oldStatus,
                 'from_label' => OrderStatus::label($oldStatus),
                 'to' => $currentStatus,
                 'to_label' => $statusLabel,
                 'changes' => $changes,
-            ]);
-            $this->logOperationalAudit('order_status_changed', $order, [
-                'from' => (int) $oldStatus,
-                'from_label' => OrderStatus::label($oldStatus),
-                'to' => $currentStatus,
-                'to_label' => $statusLabel,
-                'changes' => $changes,
-            ]);
+            ];
+            event(new OrderLifecycleStatusChanged(
+                $order->id,
+                $this->currentUser()?->id,
+                $statusChangeData,
+                $statusChangeData,
+            ));
 
             try {
-                $this->orderNotificationService->sendStatusUpdated($order->fresh(['customer', 'tenant']), $statusLabel, $data['observations'] ?? null);
+                event(new OrderStatusUpdated($order->fresh(['customer', 'tenant']), $statusLabel, $data['observations'] ?? null));
             } catch (\Throwable $e) {
                 report($e);
                 $successMessage = 'Ordem atualizada com sucesso, mas houve falha ao enviar o e-mail de status ao cliente.';
@@ -786,20 +785,14 @@ class OrderController extends Controller
             ...$validated,
             'amount' => $this->roundMoney((float) $validated['amount']),
         ]);
-        $this->logOrderAction($order, 'payment_registered', [
+        $paymentEventData = [
             'payment_id' => $payment->id,
             'cash_session_id' => $payment->cash_session_id,
             'amount' => (float) $payment->amount,
             'payment_method' => $validated['payment_method'],
             'paid_at' => $payment->paid_at?->toDateTimeString(),
-        ]);
-        $this->logOperationalAudit('order_payment_registered', $order, [
-            'payment_id' => $payment->id,
-            'cash_session_id' => $payment->cash_session_id,
-            'amount' => (float) $payment->amount,
-            'payment_method' => $validated['payment_method'],
-            'paid_at' => $payment->paid_at?->toDateTimeString(),
-        ]);
+        ];
+        event(new OrderPaymentRegistered($order->id, $this->currentUser()?->id, $paymentEventData));
 
         return back()->with('success', 'Pagamento registrado com sucesso.');
     }
@@ -815,8 +808,7 @@ class OrderController extends Controller
             return back()->with('error', $exception->getMessage());
         }
 
-        $this->logOrderAction($order, 'payment_removed', $paymentData);
-        $this->logOperationalAudit('order_payment_removed', $order, $paymentData);
+        event(new OrderPaymentRemoved($order->id, $this->currentUser()?->id, $paymentData));
 
         return back()->with('success', 'Pagamento removido com sucesso.');
     }

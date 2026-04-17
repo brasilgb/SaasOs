@@ -7,21 +7,16 @@ use App\Http\Requests\CustomerRequest;
 use App\Models\App\Customer;
 use App\Models\App\Order;
 use App\Models\App\OrderPayment;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 
 class CustomerController extends Controller
 {
-    private function authorizeCustomersAccess(): void
-    {
-        abort_unless(Auth::user()?->hasPermission('customers'), 403);
-    }
-
     // public function ImportCustomer(Request $request)
     // {
     //     try {
@@ -91,16 +86,70 @@ class CustomerController extends Controller
     //     }
     // }
 
+    private function normalizeCsvValue(array $row, int $index): ?string
+    {
+        if (! array_key_exists($index, $row)) {
+            return null;
+        }
+
+        $value = trim((string) $row[$index]);
+        $value = preg_replace('/^\xEF\xBB\xBF/', '', $value ?? '');
+
+        if ($value === '') {
+            return null;
+        }
+
+        return mb_convert_encoding($value, 'UTF-8', 'UTF-8, ISO-8859-1, Windows-1252');
+    }
+
+    private function normalizeCsvDate(?string $value): ?string
+    {
+        if ($value === null || trim($value) === '') {
+            return null;
+        }
+
+        $value = trim($value);
+
+        foreach (['d/m/Y', 'Y-m-d', 'd-m-Y'] as $format) {
+            try {
+                return Carbon::createFromFormat($format, $value)->format('Y-m-d');
+            } catch (\Throwable $e) {
+                // tenta o próximo formato
+            }
+        }
+
+        return null;
+    }
+
+    private function normalizeSpreadsheetNumber(?string $value): ?string
+    {
+        if ($value === null || trim($value) === '') {
+            return null;
+        }
+
+        $value = trim($value);
+
+        if (preg_match('/^-?\d+(?:[.,]\d+)?E[+-]?\d+$/i', $value) === 1) {
+            $normalized = str_replace(',', '.', $value);
+
+            if (is_numeric($normalized)) {
+                return number_format((float) $normalized, 0, '', '');
+            }
+        }
+
+        return $value;
+    }
+
     public function ImportCustomer(Request $request)
     {
-        $this->authorizeCustomersAccess();
+        Gate::authorize('customers.access');
 
         ini_set('max_execution_time', 300); // 5 minutos
         ini_set('memory_limit', '512M');
 
         try {
             $request->validate([
-                'arquivo' => 'required|mimes:csv,txt|max:2048',
+                'arquivo' => 'required|mimes:csv,txt|max:4096',
             ], [
                 'arquivo.required' => 'Por favor, selecione um arquivo.',
                 'arquivo.mimes' => 'O arquivo deve ser do tipo CSV ou TXT.',
@@ -109,6 +158,10 @@ class CustomerController extends Controller
             $tenantId = Auth::user()->tenant_id;
             $path = $request->file('arquivo')->getRealPath();
             $file = fopen($path, 'r');
+
+            if ($file === false) {
+                throw new \RuntimeException('Não foi possível abrir o arquivo enviado.');
+            }
 
             // Detectar delimitador automaticamente
             $firstLine = fgets($file);
@@ -127,62 +180,107 @@ class CustomerController extends Controller
             }
 
             // Pula cabeçalho
-            fgetcsv($file, 1000, $delimiter);
+            fgetcsv($file, 0, $delimiter);
 
-            $ultimoNumero = Customer::where('tenant_id', $tenantId)
-                ->max('customer_number') ?? 0;
+            $ultimoNumero = Customer::where('tenant_id', $tenantId)->max('customer_number') ?? 0;
+            $existingCpfCnpjs = Customer::where('tenant_id', $tenantId)
+                ->whereNotNull('cpfcnpj')
+                ->pluck('cpfcnpj')
+                ->map(fn ($value) => preg_replace('/\D+/', '', (string) $value))
+                ->filter()
+                ->flip()
+                ->all();
 
             $dadosParaInserir = [];
+            $inserted = 0;
+            $skippedEmpty = 0;
+            $normalizedCpfAsNull = 0;
+            $lineNumber = 1;
 
-            while (($linha = fgetcsv($file, 1000, $delimiter)) !== false) {
+            while (($linha = fgetcsv($file, 0, $delimiter)) !== false) {
+                $lineNumber++;
 
-                if (empty($linha[0])) {
+                $name = $this->normalizeCsvValue($linha, 0);
+                if ($name === null) {
+                    $skippedEmpty++;
                     continue;
                 }
 
-                $rawCpfCnpj = isset($linha[1]) ? trim((string) $linha[1]) : '';
+                $rawCpfCnpj = $this->normalizeCsvValue($linha, 1) ?? '';
                 $cpfCnpj = in_array($rawCpfCnpj, ['', '0', '---', '--', '*', 'n/a', 'NULL', 'null'], true)
                     ? null
-                    : $rawCpfCnpj;
+                    : preg_replace('/\D+/', '', $rawCpfCnpj);
+
+                if ($cpfCnpj && ! in_array(strlen($cpfCnpj), [11, 14], true)) {
+                    $cpfCnpj = null;
+                    $normalizedCpfAsNull++;
+                }
+
+                if ($cpfCnpj && isset($existingCpfCnpjs[$cpfCnpj])) {
+                    $cpfCnpj = null;
+                    $normalizedCpfAsNull++;
+                }
 
                 $ultimoNumero++;
+
+                $phone = $this->normalizeSpreadsheetNumber($this->normalizeCsvValue($linha, 11));
+                $whatsapp = $this->normalizeSpreadsheetNumber($this->normalizeCsvValue($linha, 13));
+                $contactPhone = $this->normalizeSpreadsheetNumber($this->normalizeCsvValue($linha, 14));
 
                 $dadosParaInserir[] = [
                     'tenant_id' => $tenantId,
                     'customer_number' => $ultimoNumero,
-                    'name' => mb_convert_encoding($linha[0], 'UTF-8', 'ISO-8859-1, UTF-8'),
+                    'name' => $name,
                     'cpfcnpj' => $cpfCnpj,
-                    'birth' => $linha[2] ?? null,
-                    'email' => $linha[3] ?? null,
-                    'zipcode' => $linha[4] ?? null,
-                    'state' => $linha[5] ?? null,
-                    'city' => $linha[6] ?? null,
-                    'district' => $linha[7] ?? null,
-                    'street' => $linha[8] ?? null,
-                    'complement' => $linha[9] ?? null,
-                    'number' => $linha[10] ?? null,
-                    'phone' => $linha[11] ?? null,
-                    'contactname' => $linha[12] ?? null,
-                    'whatsapp' => $linha[13] ?? null,
-                    'contactphone' => $linha[14] ?? null,
-                    'observations' => $linha[15] ?? null,
+                    'birth' => $this->normalizeCsvDate($this->normalizeCsvValue($linha, 2)),
+                    'email' => $this->normalizeCsvValue($linha, 3),
+                    'zipcode' => $this->normalizeCsvValue($linha, 4),
+                    'state' => $this->normalizeCsvValue($linha, 5),
+                    'city' => $this->normalizeCsvValue($linha, 6),
+                    'district' => $this->normalizeCsvValue($linha, 7),
+                    'street' => $this->normalizeCsvValue($linha, 8),
+                    'complement' => $this->normalizeCsvValue($linha, 9),
+                    'number' => is_numeric((string) $this->normalizeCsvValue($linha, 10)) ? (int) $this->normalizeCsvValue($linha, 10) : null,
+                    'phone' => $phone,
+                    'contactname' => $this->normalizeCsvValue($linha, 12),
+                    'whatsapp' => $whatsapp,
+                    'contactphone' => $contactPhone,
+                    'observations' => $this->normalizeCsvValue($linha, 15),
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
 
+                if ($cpfCnpj) {
+                    $existingCpfCnpjs[$cpfCnpj] = true;
+                }
+
                 if (count($dadosParaInserir) >= 500) {
-                    Customer::insertOrIgnore($dadosParaInserir);
+                    Customer::insert($dadosParaInserir);
+                    $inserted += count($dadosParaInserir);
                     $dadosParaInserir = [];
                 }
             }
 
             if (! empty($dadosParaInserir)) {
-                Customer::insertOrIgnore($dadosParaInserir);
+                Customer::insert($dadosParaInserir);
+                $inserted += count($dadosParaInserir);
             }
 
             fclose($file);
 
-            return redirect()->back()->with('message', 'Importação concluída com sucesso!');
+            $message = "Importação concluída: {$inserted} clientes salvos.";
+            if ($normalizedCpfAsNull > 0 || $skippedEmpty > 0) {
+                $message .= ' Ajustados:';
+                if ($normalizedCpfAsNull > 0) {
+                    $message .= " {$normalizedCpfAsNull} CPF/CNPJ inválidos ou repetidos salvos sem documento";
+                }
+                if ($skippedEmpty > 0) {
+                    $message .= ($normalizedCpfAsNull > 0 ? ' e' : '')." {$skippedEmpty} linhas sem nome ignoradas";
+                }
+                $message .= '.';
+            }
+
+            return redirect()->back()->with('success', $message);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Falha na importação: '.$e->getMessage());
         }
@@ -190,7 +288,7 @@ class CustomerController extends Controller
 
     public function getClientes()
     {
-        $this->authorizeCustomersAccess();
+        Gate::authorize('customers.access');
 
         $clientes = Customer::get();
 
@@ -205,7 +303,7 @@ class CustomerController extends Controller
      */
     public function index(Request $request)
     {
-        $this->authorizeCustomersAccess();
+        Gate::authorize('customers.access');
 
         $search = $request->search;
         $pending = $request->get('pending');
@@ -259,7 +357,7 @@ class CustomerController extends Controller
      */
     public function create()
     {
-        $this->authorizeCustomersAccess();
+        Gate::authorize('customers.access');
 
         return Inertia::render('app/customers/create-customer');
     }
@@ -269,7 +367,7 @@ class CustomerController extends Controller
      */
     public function store(CustomerRequest $request): RedirectResponse
     {
-        $this->authorizeCustomersAccess();
+        Gate::authorize('customers.access');
 
         $data = $request->all();
         $request->validated();
@@ -284,7 +382,7 @@ class CustomerController extends Controller
      */
     public function show(Customer $customer, Request $request)
     {
-        $this->authorizeCustomersAccess();
+        Gate::authorize('customers.access');
 
         return Inertia::render('app/customers/edit-customer', [
             'customer' => $customer,
@@ -298,7 +396,7 @@ class CustomerController extends Controller
      */
     public function edit(Customer $customer, Request $request)
     {
-        $this->authorizeCustomersAccess();
+        Gate::authorize('customers.access');
 
         return Redirect::route('app.customers.show', [
             'customer' => $customer->id,
@@ -312,7 +410,7 @@ class CustomerController extends Controller
      */
     public function update(CustomerRequest $request, Customer $customer): RedirectResponse
     {
-        $this->authorizeCustomersAccess();
+        Gate::authorize('customers.access');
 
         $data = $request->all();
         $request->validated();
@@ -326,7 +424,7 @@ class CustomerController extends Controller
      */
     public function destroy(Customer $customer)
     {
-        $this->authorizeCustomersAccess();
+        Gate::authorize('customers.access');
 
         if ($customer->orders()->exists() || $customer->sales()->exists() || $customer->schedules()->exists()) {
             return redirect()->route('app.customers.index')->with(

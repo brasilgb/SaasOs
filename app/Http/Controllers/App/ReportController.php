@@ -13,6 +13,7 @@ use App\Models\App\Sale;
 use App\Models\App\Schedule;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
@@ -40,6 +41,19 @@ class ReportController extends Controller
         $otherSetting = Other::query()->first();
 
         return (bool) ($user?->hasPermission('sales') && $otherSetting?->enablesales);
+    }
+
+    private function severityForRate(float $rate, float $threshold): string
+    {
+        if ($rate <= 5) {
+            return 'Saudável';
+        }
+
+        if ($rate <= $threshold) {
+            return 'Atenção';
+        }
+
+        return 'Crítico';
     }
 
     public function index(Request $request)
@@ -162,6 +176,93 @@ class ReportController extends Controller
                         }
                     }
                 }
+                break;
+
+            case 'quality':
+                $data = Order::query()
+                    ->with([
+                        'equipment:id,equipment',
+                        'user:id,name',
+                        'customer:id,name',
+                        'customerFeedbackRecoveryAssignee:id,name',
+                    ])
+                    ->whereBetween('created_at', [$from, $to])
+                    ->orderByDesc('created_at')
+                    ->get();
+
+                $threshold = Other::warrantyReturnAlertThreshold();
+                $warrantyOrders = $data->where('is_warranty_return', true)->values();
+                $deliveredOrders = $data->where('service_status', \App\Support\OrderStatus::DELIVERED)->values();
+                $feedbackResponses = $deliveredOrders->filter(fn ($order) => ! is_null($order->customer_feedback_submitted_at))->values();
+                $lowFeedbackOrders = $feedbackResponses
+                    ->filter(fn ($order) => (int) ($order->customer_feedback_rating ?? 0) <= 3)
+                    ->sortBy('customer_feedback_rating')
+                    ->values();
+
+                $totalOrders = $data->count();
+                $warrantyReturns = $warrantyOrders->count();
+                $warrantyRate = $totalOrders > 0 ? round(($warrantyReturns / $totalOrders) * 100, 1) : 0.0;
+                $feedbackAverageRating = round((float) ($feedbackResponses->avg('customer_feedback_rating') ?? 0), 1);
+                $feedbackResponseRate = $deliveredOrders->count() > 0
+                    ? round(($feedbackResponses->count() / $deliveredOrders->count()) * 100, 1)
+                    : 0.0;
+
+                $reportMeta = [
+                    'summary' => [
+                        'total_orders' => $totalOrders,
+                        'warranty_returns' => $warrantyReturns,
+                        'warranty_return_rate' => $warrantyRate,
+                        'warranty_return_threshold' => $threshold,
+                        'severity' => $this->severityForRate($warrantyRate, $threshold),
+                        'feedback_responses' => $feedbackResponses->count(),
+                        'feedback_average_rating' => $feedbackAverageRating,
+                        'feedback_response_rate' => $feedbackResponseRate,
+                        'low_feedbacks' => $lowFeedbackOrders->count(),
+                        'recovery_pending' => $lowFeedbackOrders->filter(
+                            fn ($order) => ($order->customer_feedback_recovery_status ?: 'pending') === 'pending'
+                        )->count(),
+                        'recovery_in_progress' => $lowFeedbackOrders->filter(
+                            fn ($order) => ($order->customer_feedback_recovery_status ?: 'pending') === 'in_progress'
+                        )->count(),
+                        'recovery_resolved' => $lowFeedbackOrders->filter(
+                            fn ($order) => ($order->customer_feedback_recovery_status ?: 'pending') === 'resolved'
+                        )->count(),
+                    ],
+                    'top_equipments' => $warrantyOrders
+                        ->groupBy(fn ($order) => $order->equipment?->equipment ?: 'Equipamento não informado')
+                        ->map(fn ($items, $label) => ['label' => $label, 'total' => $items->count()])
+                        ->sortByDesc('total')
+                        ->values()
+                        ->take(5)
+                        ->all(),
+                    'top_defects' => $warrantyOrders
+                        ->groupBy(fn ($order) => trim((string) ($order->defect ?: 'Defeito não informado')) ?: 'Defeito não informado')
+                        ->map(fn ($items, $label) => ['label' => $label, 'total' => $items->count()])
+                        ->sortByDesc('total')
+                        ->values()
+                        ->take(5)
+                        ->all(),
+                    'top_technicians' => $warrantyOrders
+                        ->groupBy(fn ($order) => $order->user?->name ?: 'Não definido')
+                        ->map(fn ($items, $label) => ['label' => $label, 'total' => $items->count()])
+                        ->sortByDesc('total')
+                        ->values()
+                        ->take(5)
+                        ->all(),
+                    'low_feedback_orders' => $lowFeedbackOrders
+                        ->take(8)
+                        ->map(fn ($order) => [
+                            'id' => $order->id,
+                            'order_number' => $order->order_number,
+                            'customer' => $order->customer?->name ?: 'Cliente não informado',
+                            'rating' => (int) ($order->customer_feedback_rating ?? 0),
+                            'comment' => $order->customer_feedback_comment,
+                            'submitted_at' => $order->customer_feedback_submitted_at?->toIso8601String(),
+                            'recovery_status' => $order->customer_feedback_recovery_status ?: 'pending',
+                            'recovery_assigned_to' => $order->customerFeedbackRecoveryAssignee?->name,
+                        ])
+                        ->all(),
+                ];
                 break;
 
             case 'expenses':

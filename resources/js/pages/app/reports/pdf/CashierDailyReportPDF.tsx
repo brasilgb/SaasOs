@@ -10,10 +10,16 @@ const styles = StyleSheet.create({
     title: { fontSize: 16, textAlign: 'center', marginBottom: 4 },
     subtitle: { fontSize: 11, textAlign: 'center', marginBottom: 12 },
     headerInfo: { fontSize: 10, marginBottom: 14, textAlign: 'center' },
+    sectionTitle: { fontSize: 11, marginBottom: 6, fontWeight: 'bold', color: '#1f2937' },
+    section: { marginBottom: 12 },
     table: { border: '1px solid #d6d6d6', borderRadius: 4, overflow: 'hidden' },
     row: { flexDirection: 'row', borderBottom: '0.5px solid #e4e4e4', paddingVertical: 5, paddingHorizontal: 8 },
     label: { width: '55%', color: '#333' },
     value: { width: '45%', textAlign: 'right', fontWeight: 'bold' },
+    helper: { fontSize: 8, color: '#6b7280', marginTop: 2, textAlign: 'right' },
+    noteBox: { border: '1px solid #d6d6d6', borderRadius: 4, padding: 8, marginBottom: 8 },
+    noteLabel: { fontSize: 9, color: '#6b7280', marginBottom: 4 },
+    noteText: { fontSize: 10, color: '#111827' },
     footer: { marginTop: 12, borderTop: '1px solid #d6d6d6', paddingTop: 6, textAlign: 'center' },
 });
 
@@ -47,7 +53,11 @@ export default function CashierDailyReportPDF({ session, company }: any) {
         acc[method] += Number(sale?.total_amount || 0);
         return acc;
     }, {});
-    const saleMethodsWithValue = paymentMethods.filter((method) => Number(salesTotalsByMethod[method] || 0) > 0);
+    const paymentMethodsWithMovement = paymentMethods.filter(
+        (method) => Number(salesTotalsByMethod[method] || 0) > 0 || Number(orderPaymentTotalsByMethod[method] || 0) > 0,
+    );
+    const openingNotes = String(session?.notes || '').trim();
+    const closingNotes = String(session?.closing_notes || '').trim();
 
     return (
         <Document>
@@ -63,68 +73,109 @@ export default function CashierDailyReportPDF({ session, company }: any) {
                     Emitido em: {moment().format('DD/MM/YYYY HH:mm')}
                 </Text>
 
-                <View style={styles.table}>
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Sessão de caixa</Text>
-                        <Text style={styles.value}>#{session?.id}</Text>
-                    </View>
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Abertura</Text>
-                        <Text style={styles.value}>{openDate}</Text>
-                    </View>
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Fechamento</Text>
-                        <Text style={styles.value}>{closeDate}</Text>
-                    </View>
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Saldo inicial</Text>
-                        <Text style={styles.value}>{currencyFormatter(session?.opening_balance || 0)}</Text>
-                    </View>
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Total de vendas concluídas</Text>
-                        <Text style={styles.value}>{currencyFormatter(session?.total_completed_sales || 0)}</Text>
-                    </View>
-                    {saleMethodsWithValue.map((method) => (
-                        <View key={`sale-${method}`} style={styles.row}>
-                            <Text style={styles.label}>Vendas via {paymentMethodLabels[method]}</Text>
-                            <Text style={styles.value}>{currencyFormatter(salesTotalsByMethod[method] || 0)}</Text>
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Resumo do fechamento</Text>
+                    <View style={styles.table}>
+                        <View style={styles.row}>
+                            <Text style={styles.label}>Sessão de caixa</Text>
+                            <Text style={styles.value}>#{session?.id}</Text>
                         </View>
-                    ))}
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Total de pagamentos de ordens</Text>
-                        <Text style={styles.value}>{currencyFormatter(session?.total_order_payments || 0)}</Text>
-                    </View>
-                    {paymentMethodsWithValue.map((method) => (
-                        <View key={method} style={styles.row}>
-                            <Text style={styles.label}>OS via {paymentMethodLabels[method]}</Text>
-                            <Text style={styles.value}>{currencyFormatter(orderPaymentTotalsByMethod[method] || 0)}</Text>
+                        <View style={styles.row}>
+                            <Text style={styles.label}>Abertura</Text>
+                            <Text style={styles.value}>{openDate}</Text>
                         </View>
-                    ))}
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Total de vendas canceladas</Text>
-                        <Text style={styles.value}>{currencyFormatter(session?.total_cancelled_sales || 0)}</Text>
-                    </View>
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Entradas manuais</Text>
-                        <Text style={styles.value}>{currencyFormatter(session?.manual_entries || 0)}</Text>
-                    </View>
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Saídas manuais</Text>
-                        <Text style={styles.value}>{currencyFormatter(session?.manual_exits || 0)}</Text>
-                    </View>
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Saldo esperado</Text>
-                        <Text style={styles.value}>{currencyFormatter(session?.expected_balance || 0)}</Text>
-                    </View>
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Saldo contado</Text>
-                        <Text style={styles.value}>{currencyFormatter(session?.closing_balance || 0)}</Text>
-                    </View>
-                    <View style={[styles.row, { borderBottom: '0px solid transparent' }]}>
-                        <Text style={styles.label}>Diferença</Text>
-                        <Text style={styles.value}>{currencyFormatter(session?.difference || 0)}</Text>
+                        <View style={styles.row}>
+                            <Text style={styles.label}>Fechamento</Text>
+                            <Text style={styles.value}>{closeDate}</Text>
+                        </View>
+                        <View style={styles.row}>
+                            <Text style={styles.label}>Saldo inicial</Text>
+                            <Text style={styles.value}>{currencyFormatter(session?.opening_balance || 0)}</Text>
+                        </View>
+                        <View style={styles.row}>
+                            <Text style={styles.label}>Entradas manuais</Text>
+                            <Text style={styles.value}>{currencyFormatter(session?.manual_entries || 0)}</Text>
+                        </View>
+                        <View style={styles.row}>
+                            <Text style={styles.label}>Saídas manuais</Text>
+                            <Text style={styles.value}>{currencyFormatter(session?.manual_exits || 0)}</Text>
+                        </View>
+                        <View style={styles.row}>
+                            <Text style={styles.label}>Saldo esperado</Text>
+                            <Text style={styles.value}>{currencyFormatter(session?.expected_balance || 0)}</Text>
+                        </View>
+                        <View style={styles.row}>
+                            <Text style={styles.label}>Saldo contado</Text>
+                            <Text style={styles.value}>{currencyFormatter(session?.closing_balance || 0)}</Text>
+                        </View>
+                        <View style={[styles.row, { borderBottom: '0px solid transparent' }]}>
+                            <Text style={styles.label}>Diferença</Text>
+                            <Text style={styles.value}>{currencyFormatter(session?.difference || 0)}</Text>
+                        </View>
                     </View>
                 </View>
+
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Composição do caixa</Text>
+                    <View style={styles.table}>
+                        <View style={styles.row}>
+                            <Text style={styles.label}>Vendas concluídas</Text>
+                            <Text style={styles.value}>{currencyFormatter(session?.total_completed_sales || 0)}</Text>
+                        </View>
+                        <View style={styles.row}>
+                            <Text style={styles.label}>Pagamentos de ordens de serviço</Text>
+                            <Text style={styles.value}>{currencyFormatter(session?.total_order_payments || 0)}</Text>
+                        </View>
+                        <View style={[styles.row, { borderBottom: '0px solid transparent' }]}>
+                            <Text style={styles.label}>Vendas canceladas</Text>
+                            <Text style={styles.value}>{currencyFormatter(session?.total_cancelled_sales || 0)}</Text>
+                        </View>
+                    </View>
+                </View>
+
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Recebimentos por forma de pagamento</Text>
+                    <View style={styles.table}>
+                        {paymentMethodsWithMovement.length ? (
+                            paymentMethodsWithMovement.map((method, index) => (
+                                <View key={method} style={[styles.row, index === paymentMethodsWithMovement.length - 1 ? { borderBottom: '0px solid transparent' } : null]}>
+                                    <View style={styles.label}>
+                                        <Text>{paymentMethodLabels[method]}</Text>
+                                        <Text style={styles.helper}>
+                                            Vendas {currencyFormatter(salesTotalsByMethod[method] || 0)} | OS {currencyFormatter(orderPaymentTotalsByMethod[method] || 0)}
+                                        </Text>
+                                    </View>
+                                    <Text style={styles.value}>
+                                        {currencyFormatter((salesTotalsByMethod[method] || 0) + (orderPaymentTotalsByMethod[method] || 0))}
+                                    </Text>
+                                </View>
+                            ))
+                        ) : (
+                            <View style={[styles.row, { borderBottom: '0px solid transparent' }]}>
+                                <Text style={styles.label}>Sem movimentações por forma de pagamento</Text>
+                                <Text style={styles.value}>{currencyFormatter(0)}</Text>
+                            </View>
+                        )}
+                    </View>
+                </View>
+
+                {(openingNotes || closingNotes) && (
+                    <View style={styles.section}>
+                        <Text style={styles.sectionTitle}>Observações</Text>
+                        {openingNotes ? (
+                            <View style={styles.noteBox}>
+                                <Text style={styles.noteLabel}>Abertura</Text>
+                                <Text style={styles.noteText}>{openingNotes}</Text>
+                            </View>
+                        ) : null}
+                        {closingNotes ? (
+                            <View style={styles.noteBox}>
+                                <Text style={styles.noteLabel}>Fechamento</Text>
+                                <Text style={styles.noteText}>{closingNotes}</Text>
+                            </View>
+                        ) : null}
+                    </View>
+                )}
 
                 <View style={styles.footer}>
                     <Text>Responsável abertura: {session?.opened_by?.name || '-'}</Text>

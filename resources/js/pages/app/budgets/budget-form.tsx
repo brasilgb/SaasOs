@@ -2,6 +2,7 @@ import { toastSuccess } from '@/components/app-toast-messages';
 import FormFieldHelp from '@/components/form-field-help';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Budget, OptionType } from '@/types';
@@ -127,7 +128,9 @@ export default function BudgetForm({ initialData, budgets, equipments }: BudgetF
 
     return (
         <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Linha 1 */}
+            <Card>
+                <CardTitle className="border-b px-6 pb-4">Dados do orçamento</CardTitle>
+                <CardContent className="space-y-4 pt-6">
             <div className="grid gap-4 md:grid-cols-3">
                 <div className="grid gap-2">
                     <Label htmlFor="equipment">Equipamento</Label>
@@ -192,8 +195,12 @@ export default function BudgetForm({ initialData, budgets, equipments }: BudgetF
                 <textarea className={textareaClass} value={data.description} onChange={(e) => setData('description', e.target.value)} />
                 <InputError message={errors.description} />
             </div>
+                </CardContent>
+            </Card>
 
-            {/* Linha 2 */}
+            <Card>
+                <CardTitle className="border-b px-6 pb-4">Valores e condições</CardTitle>
+                <CardContent className="space-y-4 pt-6">
             <div className="grid gap-4 md:grid-cols-3">
                 <div className="grid gap-2">
                     <Label>Valor Peças</Label>
@@ -221,7 +228,6 @@ export default function BudgetForm({ initialData, budgets, equipments }: BudgetF
                 </div>
             </div>
 
-            {/* Linha 3 */}
             <div className="grid gap-4 md:grid-cols-3">
                 <div className="grid gap-2">
                     <Label>Mão de Obra</Label>
@@ -241,14 +247,20 @@ export default function BudgetForm({ initialData, budgets, equipments }: BudgetF
                     <InputError message={errors.validity} />
                 </div>
             </div>
+                </CardContent>
+            </Card>
 
-            {/* Textareas */}
+            <Card>
+                <CardTitle className="border-b px-6 pb-4">Observações</CardTitle>
+                <CardContent className="pt-6">
             <div className="grid gap-4">
                 <div className="grid gap-2">
                     <Label>Observações</Label>
                     <textarea className={textareaClass} value={data.obs} onChange={(e) => setData('obs', e.target.value)} />
                 </div>
             </div>
+                </CardContent>
+            </Card>
 
             <div className="flex justify-end">
                 <Button type="submit" disabled={processing}>

@@ -100,6 +100,13 @@ class OsControllerTest extends TestCase
             'order_id' => $order->id,
             'action' => 'customer_notification_acknowledged',
         ]);
+
+        $this->assertDatabaseHas('operational_audits', [
+            'tenant_id' => $tenant->id,
+            'entity_type' => 'order',
+            'entity_id' => $order->id,
+            'action' => 'order_customer_notification_acknowledged',
+        ]);
     }
 
     public function test_customer_can_acknowledge_pickup_when_order_is_ready_and_paid(): void
@@ -139,6 +146,13 @@ class OsControllerTest extends TestCase
         $this->assertDatabaseHas('order_logs', [
             'order_id' => $order->id,
             'action' => 'customer_pickup_acknowledged',
+        ]);
+
+        $this->assertDatabaseHas('operational_audits', [
+            'tenant_id' => $tenant->id,
+            'entity_type' => 'order',
+            'entity_id' => $order->id,
+            'action' => 'order_customer_pickup_acknowledged',
         ]);
     }
 
@@ -249,6 +263,13 @@ class OsControllerTest extends TestCase
         $this->assertDatabaseHas('order_logs', [
             'order_id' => $order->id,
             'action' => 'customer_feedback_submitted',
+        ]);
+
+        $this->assertDatabaseHas('operational_audits', [
+            'tenant_id' => $tenant->id,
+            'entity_type' => 'order',
+            'entity_id' => $order->id,
+            'action' => 'order_customer_feedback_submitted',
         ]);
     }
 

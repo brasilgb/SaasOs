@@ -7,22 +7,17 @@ use App\Http\Requests\EquipmentRequest;
 use App\Models\App\Equipment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class EquipmentController extends Controller
 {
-    private function authorizeEquipmentAccess(): void
-    {
-        abort_unless(Auth::user()?->hasPermission('register_equipments'), 403);
-    }
-
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        $this->authorizeEquipmentAccess();
+        Gate::authorize('equipments.access');
 
         $search = $request->search;
         $query = Equipment::orderBy('id', 'DESC');
@@ -47,7 +42,7 @@ class EquipmentController extends Controller
      */
     public function store(EquipmentRequest $request): RedirectResponse
     {
-        $this->authorizeEquipmentAccess();
+        Gate::authorize('equipments.access');
 
         $data = $request->all();
         $request->validated();
@@ -78,7 +73,7 @@ class EquipmentController extends Controller
      */
     public function update(EquipmentRequest $request, Equipment $equipment)
     {
-        $this->authorizeEquipmentAccess();
+        Gate::authorize('equipments.access');
 
         $data = $request->all();
         $request->validated();
@@ -92,7 +87,7 @@ class EquipmentController extends Controller
      */
     public function destroy(Equipment $equipment)
     {
-        $this->authorizeEquipmentAccess();
+        Gate::authorize('equipments.access');
 
         $equipment->delete();
 

@@ -43,14 +43,13 @@ export default function Customers({ customers, search, pending }: any) {
 
     useEffect(() => {
         // Se houver mensagem de sucesso
-        if (flash.message) {
-            toastSuccess(flash.message);
+        if (flash.success) {
+            toastSuccess('Importação concluída', String(flash.success));
         }
 
         // Se houver erros de validação (ex: arquivo inválido)
         if (flash.error) {
-            console.log(flash.error);
-            toastWarning('Erro ao salvar csv');
+            toastWarning(flash.error);
         }
     }, [flash]);
 
@@ -103,10 +102,8 @@ export default function Customers({ customers, search, pending }: any) {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>#</TableHead>
-                                <TableHead>Nome</TableHead>
-                                <TableHead>Email</TableHead>
-                                <TableHead>CPF/CNPJ</TableHead>
-                                <TableHead>Telefone</TableHead>
+                                <TableHead>Cliente</TableHead>
+                                <TableHead>Contato</TableHead>
                                 <TableHead>Saldo pendente</TableHead>
                                 <TableHead>Cadastro</TableHead>
                                 <TableHead></TableHead>
@@ -117,10 +114,20 @@ export default function Customers({ customers, search, pending }: any) {
                                 customers?.data?.map((customer: any) => (
                                     <TableRow key={customer.id}>
                                         <TableCell>{customer.customer_number}</TableCell>
-                                        <TableCell>{customer.name}</TableCell>
-                                        <TableCell>{customer.email}</TableCell>
-                                        <TableCell>{maskCpfCnpj(unMask(customer.cpfcnpj) ?? '')}</TableCell>
-                                        <TableCell>{maskPhone(unMask(customer.phone) ?? '')}</TableCell>
+                                        <TableCell>
+                                            <div className="space-y-1">
+                                                <div className="font-medium">{customer.name}</div>
+                                                <div className="text-muted-foreground text-xs">
+                                                    {maskCpfCnpj(unMask(customer.cpfcnpj) ?? '') || 'CPF/CNPJ não informado'}
+                                                </div>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="space-y-1">
+                                                <div className="text-sm">{maskPhone(unMask(customer.phone) ?? '') || 'Telefone não informado'}</div>
+                                                <div className="text-muted-foreground text-xs">{customer.email || 'E-mail não informado'}</div>
+                                            </div>
+                                        </TableCell>
                                         <TableCell>
                                             {Number(customer.pending_amount || 0) > 0 ? (
                                                 <Badge variant="destructive">
@@ -183,7 +190,7 @@ export default function Customers({ customers, search, pending }: any) {
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={8} className="flex h-16 w-full items-center justify-center">
+                                    <TableCell colSpan={6} className="flex h-16 w-full items-center justify-center">
                                         Não há dados a serem mostrados no momento.
                                     </TableCell>
                                 </TableRow>
@@ -191,7 +198,7 @@ export default function Customers({ customers, search, pending }: any) {
                         </TableBody>
                         <TableFooter>
                             <TableRow>
-                                <TableCell colSpan={8}>
+                                <TableCell colSpan={6}>
                                     <AppPagination data={customers} />
                                 </TableCell>
                             </TableRow>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\App;
 
+use App\Events\OrderFeedbackRecoveryUpdated;
 use App\Http\Controllers\Controller;
 use App\Models\App\Order;
 use App\Models\App\Other;
@@ -13,7 +14,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use App\Models\User;
-use App\Models\App\OrderLog;
 
 class QualityIndicatorController extends Controller
 {
@@ -23,17 +23,6 @@ class QualityIndicatorController extends Controller
         'in_progress',
         'resolved',
     ];
-
-    private function logOrderAction(Order $order, string $action, array $data = []): void
-    {
-        OrderLog::create([
-            'order_id' => $order->id,
-            'user_id' => Auth::id(),
-            'action' => $action,
-            'data' => $data === [] ? null : $data,
-            'created_at' => now(),
-        ]);
-    }
 
     private function getRange($timerange): array
     {
@@ -389,12 +378,12 @@ class QualityIndicatorController extends Controller
             $assignee = User::query()->find($validated['assigned_to']);
         }
 
-        $this->logOrderAction($order, 'customer_feedback_recovery_updated', [
+        event(new OrderFeedbackRecoveryUpdated($order->id, Auth::id(), [
             'status' => $validated['status'],
             'assigned_to' => $assignee?->name,
             'assigned_to_id' => $assignee?->id,
             'notes' => $validated['notes'] ?? null,
-        ]);
+        ]));
 
         return back()->with('success', 'Tratativa da avaliação atualizada com sucesso.');
     }

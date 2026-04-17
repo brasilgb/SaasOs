@@ -1,7 +1,6 @@
 import { Document, Image, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 import moment from 'moment';
 
-// --- Utilitários ---
 const formatCurrency = (value) => {
     const num = parseFloat(value);
     if (isNaN(num)) return 'R$ 0,00';
@@ -11,155 +10,173 @@ const formatCurrency = (value) => {
         .replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
 };
 
-// --- Estilos ---
+const formatWarranty = (value) => {
+    if (value === undefined || value === null || value === '') return 'Não informada';
+
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric) || numeric <= 0) return String(value);
+
+    return `${numeric} ${numeric === 1 ? 'mês' : 'meses'}`;
+};
+
+const formatValidity = (value) => {
+    if (value === undefined || value === null || value === '') return 'Não informada';
+
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric) || numeric <= 0) return String(value);
+
+    return `${numeric} ${numeric === 1 ? 'dia' : 'dias'}`;
+};
+
 const styles = StyleSheet.create({
     page: {
         padding: 30,
         fontFamily: 'Helvetica',
         fontSize: 10,
         lineHeight: 1.5,
+        color: '#111827',
     },
-
-    // === Cabeçalho da Empresa ===
     headerSection: {
-        marginBottom: 20,
-        paddingBottom: 10,
+        marginBottom: 18,
+        paddingBottom: 12,
         borderBottomWidth: 1,
-        borderBottomColor: '#333',
+        borderBottomColor: '#d1d5db',
         borderBottomStyle: 'solid',
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center',
+        alignItems: 'flex-start',
     },
     companyInfo: { width: '75%' },
-    companyName: { fontSize: 18, fontWeight: 'bold', paddingBottom: 10, color: '#003366' },
-    companyDetails: { fontSize: 9, color: '#555' },
-    logoPlaceholder: { width: 60, height: 60, justifyContent: 'center', alignItems: 'center' },
-
-    // === Título ===
+    companyName: { fontSize: 18, fontWeight: 'bold', paddingBottom: 8, color: '#111827' },
+    companyDetails: { fontSize: 9, color: '#4b5563', marginBottom: 2 },
+    logo: { width: 58, height: 58, objectFit: 'contain' },
     budgetTitle: {
-        fontSize: 14,
+        fontSize: 15,
         fontWeight: 'bold',
-        marginBottom: 15,
+        marginBottom: 14,
         textAlign: 'center',
-        textDecoration: 'underline',
-        color: '#333',
+        color: '#111827',
     },
-
-    // === Seção de Detalhes (Geral) ===
     sectionContainer: {
         marginBottom: 15,
-        padding: 5,
-        backgroundColor: '#f9f9f9',
-        border: '1px solid #ddd',
-        borderRadius: 2,
+        padding: 10,
+        backgroundColor: '#f9fafb',
+        borderWidth: 1,
+        borderColor: '#e5e7eb',
+        borderStyle: 'solid',
+        borderRadius: 4,
     },
     sectionTitle: {
         fontSize: 12,
         fontWeight: 'bold',
         marginBottom: 8,
-        color: '#333',
-        paddingBottom: 2,
-        borderBottom: '1px solid #eee',
+        color: '#111827',
+        paddingBottom: 4,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e5e7eb',
+        borderBottomStyle: 'solid',
     },
-
-    // Layout de Colunas (Usado para Valores)
     row: {
         flexDirection: 'row',
         marginBottom: 5,
         justifyContent: 'space-between',
+        gap: 12,
     },
     column: {
-        width: '48%', // Duas colunas
+        width: '48%',
     },
     detailItem: {
         flexDirection: 'row',
         justifyContent: 'space-start',
         paddingVertical: 2,
+        flexWrap: 'wrap',
     },
     label: {
         fontWeight: 'bold',
-        color: '#555',
+        color: '#4b5563',
     },
     value: {
         marginLeft: 5,
-        color: '#000',
+        color: '#111827',
     },
-
-    // === Observações ===
     obsBox: {
-        marginTop: 10,
-        border: '1px solid #ccc',
+        borderWidth: 1,
+        borderColor: '#d1d5db',
+        borderStyle: 'solid',
         padding: 8,
         minHeight: 60,
+        backgroundColor: '#fff',
     },
     totalGeral: {
         fontSize: 14,
         fontWeight: 'bold',
-        color: '#A50000',
+        color: '#991b1b',
         marginTop: 10,
-        paddingTop: 5,
-        borderTop: '1px solid #333',
+        paddingTop: 8,
+        borderTopWidth: 1,
+        borderTopColor: '#d1d5db',
+        borderTopStyle: 'solid',
         textAlign: 'right',
+    },
+    footerNote: {
+        paddingTop: 8,
+        fontSize: 8,
+        color: '#4b5563',
     },
 });
 
-/**
- * Componente do Orçamento em PDF.
- */
 export const BudgetPDF = ({ company, budget }) => {
-    // 1. Desestruturando Dados da EMPRESA
-    const { companyname, cnpj, city, number, street, district, telephone, logo } = company;
-
-    // 2. Desestruturando Dados do ORÇAMENTO (Serviço e Observação)
-    const { service, description, estimated_time, part_value, labor_value, total_value, warranty, validity, created_at, obs } = budget;
+    const { companyname, cnpj, city, number, street, district, telephone, logo } = company ?? {};
+    const { service, description, estimated_time, part_value, labor_value, total_value, warranty, validity, created_at, obs, equipment, model } = budget ?? {};
 
     const obsText = obs || 'Nenhuma observação informada.';
 
     return (
         <Document>
             <Page size="A4" style={styles.page}>
-
-                {/* === Cabeçalho da Empresa === */}
                 <View style={styles.headerSection} fixed>
-
                     <View style={styles.companyInfo}>
                         <Text style={styles.companyName}>{companyname}</Text>
-                        <Text style={styles.companyDetails}>CNPJ: {cnpj}</Text>
-                        <Text style={styles.companyDetails}>Tel: {telephone}</Text>
-                        <Text style={styles.companyDetails}>
-                            {street}, {number} - {district}, {city}
-                        </Text>
+                        {cnpj ? <Text style={styles.companyDetails}>CNPJ: {cnpj}</Text> : null}
+                        {telephone ? <Text style={styles.companyDetails}>Tel: {telephone}</Text> : null}
+                        {(street || number || district || city) ? (
+                            <Text style={styles.companyDetails}>
+                                {[street, number, district, city].filter(Boolean).join(', ')}
+                            </Text>
+                        ) : null}
                     </View>
 
-                    <View style={styles.logoPlaceholder}>
-                        <Image source={`${logo ? `/storage/logos/${logo}` : '/images/default.png'}`} />
-                    </View>
-
+                    {logo ? <Image style={styles.logo} source={`/storage/logos/${logo}`} /> : null}
                 </View>
 
-                {/* --- Título do Orçamento --- */}
                 <Text style={styles.budgetTitle}>DETALHES DO ORÇAMENTO DE SERVIÇO</Text>
 
-                {/* === 1. Detalhes do Serviço === */}
                 <View style={styles.sectionContainer}>
-                    <Text style={styles.sectionTitle}>Serviço Orçado</Text>
+                    <Text style={styles.sectionTitle}>Equipamento e serviço</Text>
 
                     <View style={styles.detailItem}>
-                        <Text style={styles.label}>Nome do Serviço:</Text>
+                        <Text style={styles.label}>Equipamento:</Text>
+                        <Text style={styles.value}>{equipment?.equipment || 'Não informado'}</Text>
+                    </View>
+                    <View style={styles.detailItem}>
+                        <Text style={styles.label}>Modelo:</Text>
+                        <Text style={styles.value}>{model || 'Não informado'}</Text>
+                    </View>
+
+                    <View style={styles.detailItem}>
+                        <Text style={styles.label}>Serviço:</Text>
                         <Text style={styles.value}>{service}</Text>
                     </View>
                     <View style={styles.detailItem}>
                         <Text style={styles.label}>Descrição:</Text>
-                        <Text style={styles.value}>{description}</Text>
+                        <Text style={styles.value}>{description || 'Não informada'}</Text>
                     </View>
                     <View style={styles.detailItem}>
-                        <Text style={styles.label}>Tempo Estimado(Hs):</Text>
-                        <Text style={styles.value}>{estimated_time} Hs</Text>
+                        <Text style={styles.label}>Tempo estimado:</Text>
+                        <Text style={styles.value}>{estimated_time || 'Não informado'}</Text>
                     </View>
                 </View>
 
-                {/* === 2. Valores e Garantia === */}
                 <View style={styles.sectionContainer}>
                     <Text style={styles.sectionTitle}>Valores e Condições</Text>
 
@@ -178,12 +195,13 @@ export const BudgetPDF = ({ company, budget }) => {
                         <View style={styles.column}>
                             <View style={styles.detailItem}>
                                 <Text style={styles.label}>Garantia:</Text>
-                                <Text style={styles.value}>
-                                    {warranty} {warranty === 1 ? 'mês' : 'meses'}
-                                </Text>
+                                <Text style={styles.value}>{formatWarranty(warranty)}</Text>
+                            </View>
+                            <View style={styles.detailItem}>
+                                <Text style={styles.label}>Validade:</Text>
+                                <Text style={styles.value}>{formatValidity(validity)}</Text>
                             </View>
 
-                            {/* Linha Total */}
                             <View style={[styles.detailItem, styles.totalGeral]}>
                                 <Text>TOTAL GERAL:</Text>
                                 <Text>{formatCurrency(total_value)}</Text>
@@ -192,14 +210,16 @@ export const BudgetPDF = ({ company, budget }) => {
                     </View>
                 </View>
 
-                {/* === 3. Observações === */}
-                <View style={styles.obsBox}>
-                    <Text style={{ fontWeight: 'bold', marginBottom: 5 }}>Observações:</Text>
+                <View style={styles.sectionContainer}>
+                    <Text style={styles.sectionTitle}>Observações</Text>
+                    <View style={styles.obsBox}>
                     <Text>{obsText}</Text>
+                    </View>
                 </View>
-                <View style={{ paddingVertical: 5 }}>
-                    <Text style={{ fontSize: 8 }}>
-                        Orçamento gerado em {moment(created_at).format('DD/MM/YYYY')}, este orçamento é válido por {validity} dias.
+
+                <View style={styles.footerNote}>
+                    <Text>
+                        Orçamento gerado em {moment(created_at).format('DD/MM/YYYY')}. Este orçamento é válido por {formatValidity(validity)}.
                     </Text>
                 </View>
             </Page>

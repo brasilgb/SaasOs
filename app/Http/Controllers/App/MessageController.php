@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\App;
 
+use App\Events\MessageCreated;
+use App\Events\MessageDeleted;
+use App\Events\MessageReadStatusUpdated;
+use App\Events\MessageUpdated;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\MessageRequest;
 use App\Models\App\Message;
-use App\Services\OperationalAuditService;
 use App\Services\MessageService;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -16,14 +19,8 @@ use Inertia\Inertia;
 class MessageController extends Controller
 {
     public function __construct(
-        private readonly OperationalAuditService $operationalAuditService,
         private readonly MessageService $messageService,
     ) {}
-
-    private function logOperationalAudit(string $action, Message $message, array $data = []): void
-    {
-        $this->operationalAuditService->record($action, 'message', $message, Auth::id(), $data);
-    }
 
     /**
      * Display a listing of the resource.
@@ -97,11 +94,11 @@ class MessageController extends Controller
 
         $data = $request->validated();
         $message = $this->messageService->create($data, (int) Auth::id());
-        $this->logOperationalAudit('message_created', $message, [
+        event(new MessageCreated($message->id, (int) Auth::id(), [
             'recipient_id' => $message->recipient_id,
             'title' => $message->title,
             'status' => (bool) $message->status,
-        ]);
+        ]));
 
         return redirect()->route('app.messages.index')->with('success', 'Mensagem cadastrada com sucesso');
     }
@@ -146,11 +143,11 @@ class MessageController extends Controller
         $this->authorize('update', $message);
 
         $message = $this->messageService->update($message, $request->validated());
-        $this->logOperationalAudit('message_updated', $message, [
+        event(new MessageUpdated($message->id, (int) Auth::id(), [
             'recipient_id' => $message->recipient_id,
             'title' => $message->title,
             'status' => (bool) $message->status,
-        ]);
+        ]));
 
         return redirect()->route('app.messages.show', ['message' => $message->id])->with('success', 'Mensagem editada com sucesso');
     }
@@ -163,9 +160,9 @@ class MessageController extends Controller
         $this->authorize('markRead', $message);
 
         $message = $this->messageService->updateReadStatus($message, (bool) $request->get('status'));
-        $this->logOperationalAudit('message_read_status_updated', $message, [
+        event(new MessageReadStatusUpdated($message->id, (int) Auth::id(), [
             'status' => (bool) $message->status,
-        ]);
+        ]));
 
         return redirect()->route('app.messages.index')->with('success', 'Mensagem marcada como lida');
     }
@@ -177,11 +174,11 @@ class MessageController extends Controller
     {
         $this->authorize('delete', $message);
 
-        $this->logOperationalAudit('message_deleted', $message, [
+        event(new MessageDeleted($message->id, (int) Auth::id(), [
             'recipient_id' => $message->recipient_id,
             'title' => $message->title,
             'status' => (bool) $message->status,
-        ]);
+        ]));
         $this->messageService->delete($message);
 
         return redirect()->route('app.messages.index')->with('success', 'Mensagem excluída com sucesso!');

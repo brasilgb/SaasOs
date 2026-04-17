@@ -1,6 +1,7 @@
 import { toastSuccess } from '@/components/app-toast-messages';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -61,6 +62,9 @@ export default function MessageForm({ users, initialData }: MessageFormProps) {
         .map((option) => ({ value: option.value, label: option.label }));
     return (
         <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
+            <Card>
+                <CardTitle className="border-b px-6 pb-4">Destinatário e título</CardTitle>
+                <CardContent className="space-y-4 pt-6">
             <div className="mt-4 grid gap-4 md:grid-cols-2">
                 <div className="grid gap-2">
                     <Label htmlFor="send_id">Remetente</Label>
@@ -109,7 +113,12 @@ export default function MessageForm({ users, initialData }: MessageFormProps) {
                 <Input readOnly={!canEdit} id="title" type="text" value={data.title} onChange={(e) => setData('title', e.target.value)} />
                 {errors.title && <div className="text-sm text-red-500">{errors.title}</div>}
             </div>
+                </CardContent>
+            </Card>
 
+            <Card>
+                <CardTitle className="border-b px-6 pb-4">Mensagem</CardTitle>
+                <CardContent className="space-y-4 pt-6">
             <div className="grid gap-2">
                 <Label htmlFor="message">Mensagem</Label>
                 <Textarea readOnly={!canEdit} id="message" value={data.message} onChange={(e) => setData('message', e.target.value)} />
@@ -117,7 +126,7 @@ export default function MessageForm({ users, initialData }: MessageFormProps) {
             </div>
 
             <div className="grid gap-2">
-                <Label htmlFor="status">Status da Peça</Label>
+                <Label htmlFor="status">Status da mensagem</Label>
 
                 <div className="flex items-center gap-3">
                     <Switch id="status" checked={data.status} onCheckedChange={(checked) => setData('status', checked)} />
@@ -125,6 +134,8 @@ export default function MessageForm({ users, initialData }: MessageFormProps) {
                     <span className="text-muted-foreground text-sm">{data.status ? 'Lida' : 'Não lida'}</span>
                 </div>
             </div>
+                </CardContent>
+            </Card>
 
             <div className="flex justify-end">
                 <Button type="submit" disabled={processing}>

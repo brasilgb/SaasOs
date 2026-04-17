@@ -75,8 +75,7 @@ export default function Messages({ messages, search }: any) {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>#</TableHead>
-                                <TableHead>Remetente</TableHead>
-                                <TableHead>Destinatário</TableHead>
+                                <TableHead>Pessoas</TableHead>
                                 <TableHead>Operação</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead>Data</TableHead>
@@ -88,8 +87,16 @@ export default function Messages({ messages, search }: any) {
                                 messages?.data?.map((message: any) => (
                                     <TableRow key={message.id}>
                                         <TableCell>{message.message_number}</TableCell>
-                                        <TableCell>{message.sender.name}</TableCell>
-                                        <TableCell>{message.recipient.name}</TableCell>
+                                        <TableCell>
+                                            <div className="space-y-1">
+                                                <div className="text-sm">
+                                                    <span className="text-muted-foreground">De:</span> {message.sender.name}
+                                                </div>
+                                                <div className="text-sm">
+                                                    <span className="text-muted-foreground">Para:</span> {message.recipient.name}
+                                                </div>
+                                            </div>
+                                        </TableCell>
                                         <TableCell>
                                             {auth.user.id === message.sender_id ? (
                                                 <Badge variant={'secondary'} className="bg-green-500 text-white">
@@ -123,7 +130,7 @@ export default function Messages({ messages, search }: any) {
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={7} className="flex h-16 w-full items-center justify-center">
+                                    <TableCell colSpan={6} className="flex h-16 w-full items-center justify-center">
                                         Não há dados a serem mostrados no momento.
                                     </TableCell>
                                 </TableRow>
@@ -131,7 +138,7 @@ export default function Messages({ messages, search }: any) {
                         </TableBody>
                         <TableFooter>
                             <TableRow>
-                                <TableCell colSpan={7}>
+                                <TableCell colSpan={6}>
                                     <AppPagination data={messages} />
                                 </TableCell>
                             </TableRow>

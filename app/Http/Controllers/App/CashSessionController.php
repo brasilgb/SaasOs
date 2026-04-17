@@ -2,39 +2,41 @@
 
 namespace App\Http\Controllers\App;
 
+use App\Events\CashSessionClosed;
+use App\Events\CashSessionOpened;
 use App\Http\Controllers\Controller;
 use App\Models\App\CashSession;
-use App\Models\App\CashSessionLog;
-use App\Models\App\Other;
 use App\Models\App\OrderPayment;
 use App\Models\App\Sale;
 use App\Services\CashSessionService;
-use App\Services\OperationalAuditService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
+use Symfony\Component\HttpFoundation\Response;
 
 class CashSessionController extends Controller
 {
-    public function __construct(
-        private readonly OperationalAuditService $operationalAuditService,
-        private readonly CashSessionService $cashSessionService,
-    ) {}
+    public function __construct(private readonly CashSessionService $cashSessionService) {}
 
-    private function logCashSessionAction(CashSession $cashSession, string $action, array $data = []): void
+    private function authorizeCashSessionAccess(?CashSession $cashSession = null, string $ability = 'viewAny'): ?Response
     {
-        CashSessionLog::create([
-            'cash_session_id' => $cashSession->id,
-            'user_id' => Auth::id(),
-            'action' => $action,
-            'data' => $data === [] ? null : $data,
-        ]);
-    }
+        $allowed = $cashSession
+            ? Gate::allows($ability, $cashSession)
+            : Gate::allows($ability, CashSession::class);
 
-    private function logOperationalAudit(string $action, CashSession $cashSession, array $data = []): void
-    {
-        $this->operationalAuditService->record($action, 'cash_session', $cashSession, Auth::id(), $data);
+        if ($allowed) {
+            return null;
+        }
+
+        if (request()->expectsJson()) {
+            return response()->json([
+                'message' => 'Módulo de caixa diário desabilitado ou acesso não permitido.',
+            ], 403);
+        }
+
+        return redirect()->route('app.dashboard')->with('error', 'Módulo de caixa diário desabilitado ou acesso não permitido.');
     }
 
     private function normalizeMoneyInput(mixed $value): ?float
@@ -58,7 +60,9 @@ class CashSessionController extends Controller
 
     public function index()
     {
-        $this->authorize('viewAny', CashSession::class);
+        if ($response = $this->authorizeCashSessionAccess()) {
+            return $response;
+        }
 
         $currentSession = CashSession::query()
             ->with(
@@ -116,7 +120,9 @@ class CashSessionController extends Controller
 
     public function open(Request $request): RedirectResponse
     {
-        $this->authorize('create', CashSession::class);
+        if ($response = $this->authorizeCashSessionAccess(null, 'create')) {
+            return $response;
+        }
 
         $request->merge([
             'opening_balance' => $this->normalizeMoneyInput($request->input('opening_balance')),
@@ -133,21 +139,19 @@ class CashSessionController extends Controller
             return back()->with('error', $exception->getMessage());
         }
 
-        $this->logCashSessionAction($cashSession, 'opened', [
+        event(new CashSessionOpened($cashSession->id, Auth::id(), [
             'opening_balance' => (float) $cashSession->opening_balance,
             'notes' => $validated['notes'] ?? null,
-        ]);
-        $this->logOperationalAudit('cash_session_opened', $cashSession, [
-            'opening_balance' => (float) $cashSession->opening_balance,
-            'notes' => $validated['notes'] ?? null,
-        ]);
+        ]));
 
         return back()->with('success', 'Caixa aberto com sucesso.');
     }
 
     public function close(Request $request, CashSession $cashSession): RedirectResponse
     {
-        $this->authorize('update', $cashSession);
+        if ($response = $this->authorizeCashSessionAccess($cashSession, 'update')) {
+            return $response;
+        }
 
         $request->merge([
             'closing_balance' => $this->normalizeMoneyInput($request->input('closing_balance')),
@@ -176,7 +180,7 @@ class CashSessionController extends Controller
         $manualEntries = (float) $cashSession->manual_entries;
         $manualExits = (float) $cashSession->manual_exits;
 
-        $this->logCashSessionAction($cashSession, 'closed', [
+        $eventData = [
             'closing_balance' => $closingBalance,
             'expected_balance' => $expectedBalance,
             'difference' => $difference,
@@ -186,18 +190,8 @@ class CashSessionController extends Controller
             'manual_entries' => $manualEntries,
             'manual_exits' => $manualExits,
             'closing_notes' => $validated['closing_notes'] ?? null,
-        ]);
-        $this->logOperationalAudit('cash_session_closed', $cashSession, [
-            'closing_balance' => $closingBalance,
-            'expected_balance' => $expectedBalance,
-            'difference' => $difference,
-            'total_completed_sales' => (float) $totalCompletedSales,
-            'total_order_payments' => (float) $totalOrderPayments,
-            'total_cancelled_sales' => (float) $totalCancelledSales,
-            'manual_entries' => $manualEntries,
-            'manual_exits' => $manualExits,
-            'closing_notes' => $validated['closing_notes'] ?? null,
-        ]);
+        ];
+        event(new CashSessionClosed($cashSession->id, Auth::id(), $eventData));
 
         return back()->with('success', 'Fechamento diário realizado com sucesso.');
     }

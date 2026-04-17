@@ -34,6 +34,11 @@ const money = (value: number | string | null | undefined) =>
 
 export default function CashierIndex({ currentSession, sessions, openTotals }: any) {
     const { company } = usePage().props as any;
+    const openingBalance = Number(currentSession?.opening_balance || 0);
+    const completedSales = Number(openTotals?.completed_sales || 0);
+    const cancelledSales = Number(openTotals?.cancelled_sales || 0);
+    const orderPayments = Number(openTotals?.order_payments || 0);
+    const totalReceived = Number(openTotals?.total_received || 0);
     const openForm = useForm({
         opening_balance: '',
         notes: '',
@@ -46,6 +51,11 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
         closing_notes: '',
     });
     const [loadingPdfId, setLoadingPdfId] = useState<number | null>(null);
+    const manualEntries = Number(closeForm.data.manual_entries || 0);
+    const manualExits = Number(closeForm.data.manual_exits || 0);
+    const countedBalance = Number(closeForm.data.closing_balance || 0);
+    const expectedClosingBalance = openingBalance + totalReceived + manualEntries - manualExits;
+    const closingDifference = countedBalance - expectedClosingBalance;
 
     const handleOpen = (e: any) => {
         e.preventDefault();
@@ -101,12 +111,35 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
                     </CardHeader>
                     <CardContent className="text-sm">
                         {currentSession ? (
-                            <div className="space-y-1">
-                                <div>Abertura: {moment(currentSession.opened_at).format('DD/MM/YYYY HH:mm')}</div>
-                                <div>Saldo inicial: {money(currentSession.opening_balance)}</div>
-                                <div>Vendas (aberto): {money(openTotals?.completed_sales)}</div>
-                                <div>Pagamentos de OS: {money(openTotals?.order_payments)}</div>
-                                <div>Total recebido: {money(openTotals?.total_received)}</div>
+                            <div className="grid gap-2 sm:grid-cols-2">
+                                <div>
+                                    <div className="text-muted-foreground">Abertura</div>
+                                    <div>{moment(currentSession.opened_at).format('DD/MM/YYYY HH:mm')}</div>
+                                </div>
+                                <div>
+                                    <div className="text-muted-foreground">Saldo inicial</div>
+                                    <div>{money(openingBalance)}</div>
+                                </div>
+                                <div>
+                                    <div className="text-muted-foreground">Vendas concluídas</div>
+                                    <div>{money(completedSales)}</div>
+                                </div>
+                                <div>
+                                    <div className="text-muted-foreground">Pagamentos de OS</div>
+                                    <div>{money(orderPayments)}</div>
+                                </div>
+                                <div>
+                                    <div className="text-muted-foreground">Vendas canceladas</div>
+                                    <div>{money(cancelledSales)}</div>
+                                </div>
+                                <div>
+                                    <div className="text-muted-foreground">Saldo esperado atual</div>
+                                    <div className="font-medium">{money(openingBalance + totalReceived)}</div>
+                                </div>
+                                <div className="sm:col-span-2">
+                                    <div className="text-muted-foreground">Total recebido</div>
+                                    <div className="font-medium">{money(totalReceived)}</div>
+                                </div>
                             </div>
                         ) : (
                             <div>Nenhum caixa aberto no momento.</div>
@@ -146,6 +179,25 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
                             </form>
                         ) : (
                             <form onSubmit={handleClose} className="grid gap-4 md:grid-cols-2">
+                                <div className="rounded-lg border bg-card p-4 text-sm md:col-span-2">
+                                    <div className="grid gap-3 md:grid-cols-3">
+                                        <div>
+                                            <div className="text-muted-foreground">Saldo inicial</div>
+                                            <div className="font-medium">{money(openingBalance)}</div>
+                                        </div>
+                                        <div>
+                                            <div className="text-muted-foreground">Total recebido</div>
+                                            <div className="font-medium">{money(totalReceived)}</div>
+                                        </div>
+                                        <div>
+                                            <div className="text-muted-foreground">Saldo esperado</div>
+                                            <div className="font-medium">{money(expectedClosingBalance)}</div>
+                                        </div>
+                                    </div>
+                                    <p className="mt-3 text-xs text-muted-foreground">
+                                        O saldo esperado considera saldo inicial, vendas, pagamentos de OS, entradas manuais e saídas manuais.
+                                    </p>
+                                </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="closing_balance">Saldo contado no fechamento</Label>
                                     <Input
@@ -184,6 +236,26 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
                                         onChange={(e) => closeForm.setData('manual_exits', maskMoneyDot(e.target.value))}
                                     />
                                     <InputError message={closeForm.errors.manual_exits} />
+                                </div>
+                                <div className="rounded-lg border bg-card p-4 text-sm md:col-span-2">
+                                    <div className="grid gap-3 md:grid-cols-4">
+                                        <div>
+                                            <div className="text-muted-foreground">Entradas manuais</div>
+                                            <div>{money(manualEntries)}</div>
+                                        </div>
+                                        <div>
+                                            <div className="text-muted-foreground">Saídas manuais</div>
+                                            <div>{money(manualExits)}</div>
+                                        </div>
+                                        <div>
+                                            <div className="text-muted-foreground">Saldo contado</div>
+                                            <div>{money(countedBalance)}</div>
+                                        </div>
+                                        <div>
+                                            <div className="text-muted-foreground">Diferença</div>
+                                            <div className="font-medium">{money(closingDifference)}</div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div className="space-y-2 md:col-span-2">
                                     <Label htmlFor="closing_notes">Observações do fechamento</Label>

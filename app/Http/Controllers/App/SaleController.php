@@ -2,43 +2,48 @@
 
 namespace App\Http\Controllers\App;
 
+use App\Events\SaleCancelled;
+use App\Events\SaleCreated;
+use App\Events\SaleDeleted;
 use App\Http\Controllers\Controller;
 use App\Models\App\CashSession;
-use App\Models\App\Other;
 use App\Models\App\Sale;
-use App\Models\App\SaleLog;
-use App\Services\OperationalAuditService;
 use App\Services\SaleService;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
+use Symfony\Component\HttpFoundation\Response;
 
 class SaleController extends Controller
 {
-    public function __construct(
-        private readonly OperationalAuditService $operationalAuditService,
-        private readonly SaleService $saleService,
-    ) {}
+    public function __construct(private readonly SaleService $saleService) {}
 
-    private function logSaleAction(Sale $sale, string $action, array $data = []): void
+    private function authorizeSalesAccess(?Sale $sale = null, string $ability = 'viewAny'): ?Response
     {
-        SaleLog::create([
-            'sale_id' => $sale->id,
-            'user_id' => Auth::id(),
-            'action' => $action,
-            'data' => $data,
-        ]);
-    }
+        $allowed = $sale
+            ? Gate::allows($ability, $sale)
+            : Gate::allows($ability, Sale::class);
 
-    private function logOperationalAudit(string $action, Sale $sale, array $data = []): void
-    {
-        $this->operationalAuditService->record($action, 'sale', $sale, Auth::id(), $data);
+        if ($allowed) {
+            return null;
+        }
+
+        if (request()->expectsJson()) {
+            return response()->json([
+                'message' => 'Módulo de vendas desabilitado ou acesso não permitido.',
+            ], 403);
+        }
+
+        return redirect()->route('app.dashboard')->with('error', 'Módulo de vendas desabilitado ou acesso não permitido.');
     }
 
     public function index(Request $request)
     {
-        $this->authorize('viewAny', Sale::class);
+        if ($response = $this->authorizeSalesAccess()) {
+            return $response;
+        }
 
         $search = $request->search;
         $financialStatus = $request->get('financial_status');
@@ -83,7 +88,9 @@ class SaleController extends Controller
 
     public function store(Request $request)
     {
-        $this->authorize('create', Sale::class);
+        if ($response = $this->authorizeSalesAccess(null, 'create')) {
+            return $response;
+        }
 
         $request->validate([
             'customer_id' => 'nullable|exists:customers,id',
@@ -104,12 +111,12 @@ class SaleController extends Controller
                 'parts',
             ]));
 
-            $this->logSaleAction($sale, 'created', [
+            event(new SaleCreated($sale->id, Auth::id(), [
                 'payment_method' => $sale->payment_method,
                 'total_amount' => (float) $sale->total_amount,
                 'paid_amount' => (float) $sale->paid_amount,
                 'financial_status' => $sale->financial_status,
-            ]);
+            ]));
 
             return response()->json([
                 'success' => true,
@@ -133,7 +140,9 @@ class SaleController extends Controller
 
     public function cancel(Sale $sale)
     {
-        $this->authorize('update', $sale);
+        if ($response = $this->authorizeSalesAccess($sale, 'update')) {
+            return $response;
+        }
         $user = Auth::user();
 
         $validated = request()->validate([
@@ -146,29 +155,31 @@ class SaleController extends Controller
             return back()->with('error', $exception->getMessage());
         }
 
-        $this->logSaleAction($sale, 'cancelled', [
+        $logData = [
             'reason' => $validated['cancel_reason'],
-        ]);
-
-        $this->logOperationalAudit('sale_cancelled', $sale, [
+        ];
+        $auditData = [
             'reason' => $validated['cancel_reason'],
             'status' => $sale->status,
             'financial_status' => $sale->financial_status,
             'cash_session_id' => $sale->cash_session_id,
             'total_amount' => (float) $sale->total_amount,
             'paid_amount' => (float) $sale->paid_amount,
-        ]);
+        ];
+        event(new SaleCancelled($sale->id, Auth::id(), $logData, $auditData));
 
         return back()->with('success', 'Venda cancelada com sucesso.');
     }
 
     public function destroy(Sale $sale)
     {
-        $this->authorize('delete', $sale);
+        if ($response = $this->authorizeSalesAccess($sale, 'delete')) {
+            return $response;
+        }
         $user = Auth::user();
 
         try {
-            $this->logOperationalAudit('sale_deleted', $sale, [
+            $auditData = [
                 'status' => $sale->status,
                 'financial_status' => $sale->financial_status,
                 'cash_session_id' => $sale->cash_session_id,
@@ -176,7 +187,8 @@ class SaleController extends Controller
                 'cancel_reason' => $sale->cancel_reason,
                 'total_amount' => (float) $sale->total_amount,
                 'paid_amount' => (float) $sale->paid_amount,
-            ]);
+            ];
+            event(new SaleDeleted($sale->id, Auth::id(), $auditData));
 
             $this->saleService->delete($sale, $user instanceof User ? $user : null);
 
@@ -188,7 +200,9 @@ class SaleController extends Controller
 
     public function registerFiscal(Request $request, Sale $sale)
     {
-        $this->authorize('update', $sale);
+        if ($response = $this->authorizeSalesAccess($sale, 'update')) {
+            return $response;
+        }
 
         $validated = $request->validate([
             'fiscal_document_number' => 'required|string|max:120',
@@ -202,11 +216,6 @@ class SaleController extends Controller
         } catch (\RuntimeException $exception) {
             return back()->with('error', $exception->getMessage());
         }
-
-        $this->logSaleAction($sale, 'fiscal_registered', [
-            'fiscal_document_number' => $sale->fiscal_document_number,
-            'fiscal_document_key' => $sale->fiscal_document_key,
-        ]);
 
         return back()->with('success', 'Comprovante fiscal registrado com sucesso.');
     }

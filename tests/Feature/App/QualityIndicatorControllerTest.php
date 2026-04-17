@@ -148,6 +148,14 @@ class QualityIndicatorControllerTest extends TestCase
             'order_id' => $order->id,
             'action' => 'customer_feedback_recovery_updated',
         ]);
+
+        $this->assertDatabaseHas('operational_audits', [
+            'tenant_id' => $this->tenant->id,
+            'user_id' => $this->user->id,
+            'entity_type' => 'order',
+            'entity_id' => $order->id,
+            'action' => 'order_feedback_recovery_updated',
+        ]);
     }
 
     public function test_quality_metrics_can_filter_low_feedback_queue(): void

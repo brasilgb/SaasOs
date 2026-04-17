@@ -1,5 +1,6 @@
 import { toastSuccess } from '@/components/app-toast-messages';
 import { Breadcrumbs } from '@/components/breadcrumbs';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { DatePicker } from '@/components/date-picker';
 import FormFieldHelp from '@/components/form-field-help';
 import { Icon } from '@/components/icon';
@@ -11,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem, OptionType } from '@/types';
@@ -26,7 +28,33 @@ import Select from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 import AddPartsModal from './add-parts';
 import OrderPaymentsModal from './order-payments-modal';
-moment.locale('pt-br');
+
+function formatRelativeTimePtBr(value?: string | Date | null) {
+    if (!value) return '-';
+
+    const date = value instanceof Date ? value : new Date(value);
+    const diffMs = date.getTime() - Date.now();
+    const diffSeconds = Math.round(diffMs / 1000);
+    const absSeconds = Math.abs(diffSeconds);
+    const rtf = new Intl.RelativeTimeFormat('pt-BR', { numeric: 'auto' });
+
+    if (absSeconds < 60) return rtf.format(diffSeconds, 'second');
+
+    const diffMinutes = Math.round(diffSeconds / 60);
+    if (Math.abs(diffMinutes) < 60) return rtf.format(diffMinutes, 'minute');
+
+    const diffHours = Math.round(diffMinutes / 60);
+    if (Math.abs(diffHours) < 24) return rtf.format(diffHours, 'hour');
+
+    const diffDays = Math.round(diffHours / 24);
+    if (Math.abs(diffDays) < 30) return rtf.format(diffDays, 'day');
+
+    const diffMonths = Math.round(diffDays / 30);
+    if (Math.abs(diffMonths) < 12) return rtf.format(diffMonths, 'month');
+
+    const diffYears = Math.round(diffDays / 365);
+    return rtf.format(diffYears, 'year');
+}
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -267,6 +295,8 @@ export default function EditOrder({
         setData('model', value);
     };
 
+    const currentStatusLabel = statusServico.find((item: any) => Number(item.value) === Number(data.service_status))?.label ?? 'Status';
+
     return (
         <AppLayout>
             <Head title="Ordens" />
@@ -328,23 +358,20 @@ export default function EditOrder({
                 <div className="rounded-lg border p-2">
                     <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
                         <div className="bg-background flex flex-col gap-2 rounded-lg p-4 shadow-sm">
-                            {/* Número da ordem */}
                             <div className="flex items-center gap-2">
                                 <span className="text-foreground text-2xl font-bold tracking-tight">Ordem N° {order.order_number}</span>
+                                <Badge variant="outline">{currentStatusLabel}</Badge>
                             </div>
 
-                            {/* Datas de criação e atualização */}
                             <div className="text-muted-foreground flex flex-col gap-2 text-sm sm:flex-row sm:items-center sm:gap-6">
-                                {/* Data de criação */}
                                 <div className="flex items-center gap-1">
                                     <Icon iconNode={Save} className="text-muted-foreground h-4 w-4" />
                                     <span>Criada em: {moment(order.created_at).format('DD/MM/YYYY [às] HH:mm')}</span>
                                 </div>
 
-                                {/* Última atualização (aparece somente se houver) */}
                                 {order.updated_at && (
                                     <div className="border-muted-foreground/30 flex items-center gap-1 border-l pl-4">
-                                        <span>Última atualização: {moment(new Date(order.updated_at)).fromNow()}</span>
+                                        <span>Última atualização: {formatRelativeTimePtBr(order.updated_at)}</span>
                                     </div>
                                 )}
                             </div>
@@ -360,7 +387,18 @@ export default function EditOrder({
                                 </div>
                             )}
                         </div>
-                        <div className="mt-4 grid gap-4 md:grid-cols-8">
+
+                        <Tabs defaultValue="details" className="space-y-4">
+                            <TabsList>
+                                <TabsTrigger value="details">Detalhes</TabsTrigger>
+                                <TabsTrigger value="history">Histórico</TabsTrigger>
+                            </TabsList>
+
+                            <TabsContent value="details" className="space-y-6">
+                        <Card>
+                            <CardTitle className="border-b px-6 pb-4">Cliente e equipamento</CardTitle>
+                            <CardContent className="space-y-4 pt-6">
+                        <div className="grid gap-4 md:grid-cols-8">
                             <div className="grid gap-2 md:col-span-2">
                                 <Label htmlFor="customer_id">Cliente</Label>
                                 <Select<OptionType, false>
@@ -498,8 +536,13 @@ export default function EditOrder({
                                 <Textarea id="accessories" value={data.accessories} onChange={(e) => setData('accessories', e.target.value)} />
                             </div>
                         </div>
+                            </CardContent>
+                        </Card>
 
-                        <div className="mt-4 grid gap-4 md:grid-cols-3">
+                        <Card>
+                            <CardTitle className="border-b px-6 pb-4">Orçamento</CardTitle>
+                            <CardContent className="space-y-4 pt-6">
+                        <div className="grid gap-4 md:grid-cols-3">
                             <div className="grid gap-2 md:col-span-2">
                                 <Label htmlFor="budget_description">Descrição do orcamento</Label>
                                 <Textarea
@@ -521,63 +564,74 @@ export default function EditOrder({
                                 {errors.budget_value && <div className="text-sm text-red-500">{errors.budget_value}</div>}
                             </div>
                         </div>
+                            </CardContent>
+                        </Card>
 
                         {combinedParts.length > 0 && (
                             <Card className="mb-4">
-                                <CardTitle className="border-b px-4 pb-2">Peças adicionadas</CardTitle>
-
                                 <CardContent className="p-0">
-                                    <div className="divide-y">
-                                        {combinedParts.map((part: any, index: number) => {
-                                            const unitPrice = toMoneyNumber(part.sale_price);
-                                            const total = unitPrice * Number(part.quantity || 0);
-
-                                            return (
-                                                <div
-                                                    key={`${part.source}-${part.id}-${index}`}
-                                                    className="hover:bg-muted/50 flex flex-col gap-3 p-3 transition sm:flex-row sm:items-center sm:justify-between"
-                                                >
-                                                    {/* ESQUERDA */}
-                                                    <div className="flex flex-col">
-                                                        <span className="text-sm font-medium">{part.name}</span>
-
-                                                        <span className="text-muted-foreground text-xs">
-                                                            {maskMoney(String(unitPrice))} × {part.quantity}
-                                                        </span>
-                                                    </div>
-
-                                                    {/* DIREITA */}
-                                                    <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-                                                        <span className="text-sm font-semibold">{maskMoney(String(total))}</span>
-
-                                                        {/* Origem */}
-                                                        <Badge variant={part.source === 'database' ? 'outline' : 'default'}>
-                                                            {part.source === 'database' ? 'Salvo' : 'Novo'}
-                                                        </Badge>
-
-                                                        {/* Remover */}
-                                                        <Button
-                                                            type="button"
-                                                            size="icon"
-                                                            variant="ghost"
-                                                            onClick={(e) =>
-                                                                part.source === 'database'
-                                                                    ? handleRemovePartsOrder(e, part.id)
-                                                                    : handleRemovePart(part.id)
-                                                            }
-                                                        >
-                                                            <X className="h-4 w-4" />
-                                                        </Button>
-                                                    </div>
+                                    <Accordion type="single" collapsible className="w-full">
+                                        <AccordionItem value="parts" className="border-b-0">
+                                            <AccordionTrigger className="px-4 py-4 hover:no-underline">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-semibold">Peças adicionadas</span>
+                                                    <Badge variant="outline">{combinedParts.length}</Badge>
                                                 </div>
-                                            );
-                                        })}
-                                    </div>
+                                            </AccordionTrigger>
+                                            <AccordionContent className="px-0 pb-0">
+                                                <div className="divide-y border-t">
+                                                    {combinedParts.map((part: any, index: number) => {
+                                                        const unitPrice = toMoneyNumber(part.sale_price);
+                                                        const total = unitPrice * Number(part.quantity || 0);
+
+                                                        return (
+                                                            <div
+                                                                key={`${part.source}-${part.id}-${index}`}
+                                                                className="hover:bg-muted/50 flex flex-col gap-3 p-3 transition sm:flex-row sm:items-center sm:justify-between"
+                                                            >
+                                                                <div className="flex flex-col">
+                                                                    <span className="text-sm font-medium">{part.name}</span>
+
+                                                                    <span className="text-muted-foreground text-xs">
+                                                                        {maskMoney(String(unitPrice))} × {part.quantity}
+                                                                    </span>
+                                                                </div>
+
+                                                                <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                                                                    <span className="text-sm font-semibold">{maskMoney(String(total))}</span>
+
+                                                                    <Badge variant={part.source === 'database' ? 'outline' : 'default'}>
+                                                                        {part.source === 'database' ? 'Salvo' : 'Novo'}
+                                                                    </Badge>
+
+                                                                    <Button
+                                                                        type="button"
+                                                                        size="icon"
+                                                                        variant="ghost"
+                                                                        onClick={(e) =>
+                                                                            part.source === 'database'
+                                                                                ? handleRemovePartsOrder(e, part.id)
+                                                                                : handleRemovePart(part.id)
+                                                                        }
+                                                                    >
+                                                                        <X className="h-4 w-4" />
+                                                                    </Button>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </AccordionContent>
+                                        </AccordionItem>
+                                    </Accordion>
                                 </CardContent>
                             </Card>
                         )}
 
-                        <div className="mt-4 grid gap-4 md:grid-cols-3">
+                        <Card>
+                            <CardTitle className="border-b px-6 pb-4">Financeiro e execução</CardTitle>
+                            <CardContent className="space-y-4 pt-6">
+                        <div className="grid gap-4 md:grid-cols-3">
                             <div className="grid gap-2">
                                 <Label htmlFor="parts_value">Valor das peças</Label>
                                 <Input
@@ -611,7 +665,7 @@ export default function EditOrder({
                             </div>
                         </div>
 
-                        <div className="mt-4 grid gap-4 md:grid-cols-2">
+                        <div className="mt-4 grid gap-4 md:grid-cols-3">
                             <div className="grid gap-2">
                                 <Label htmlFor="service_status">Técnico responsável</Label>
                                 <Select
@@ -680,6 +734,21 @@ export default function EditOrder({
                                     }}
                                 />
                             </div>
+                            <div className="grid gap-2">
+                                <FormFieldHelp
+                                    label="Garantia em dias"
+                                    content="Se houver data de entrega, o sistema calcula automaticamente o vencimento da garantia."
+                                />
+                                <Input
+                                    id="warranty_days"
+                                    type="number"
+                                    min="0"
+                                    value={data.warranty_days}
+                                    onChange={(e) => setData('warranty_days', e.target.value)}
+                                    placeholder="Ex.: 90"
+                                />
+                                {errors.warranty_days && <div className="text-sm text-red-500">{errors.warranty_days}</div>}
+                            </div>
                         </div>
 
                         <div className="mt-4 grid gap-4 md:grid-cols-2">
@@ -699,86 +768,8 @@ export default function EditOrder({
                                 {errors.observations && <div className="text-sm text-red-500">{errors.observations}</div>}
                             </div>
                         </div>
-
-                        <div className="mt-4 grid gap-4 md:grid-cols-2">
-                            <div className="grid gap-2">
-                                <Label htmlFor="warranty_days">Garantia em dias</Label>
-                                <Input
-                                    id="warranty_days"
-                                    type="number"
-                                    min="0"
-                                    value={data.warranty_days}
-                                    onChange={(e) => setData('warranty_days', e.target.value)}
-                                    placeholder="Ex.: 90"
-                                />
-                                <p className="text-muted-foreground text-xs">
-                                    Se houver data de entrega, o sistema calcula automaticamente o vencimento da garantia.
-                                </p>
-                                {errors.warranty_days && <div className="text-sm text-red-500">{errors.warranty_days}</div>}
-                            </div>
-
-                            <Card>
-                                <CardTitle className="border-b px-4 pb-2">Histórico do equipamento</CardTitle>
-                                <CardContent className="space-y-3 pt-4">
-                                    <div className="flex flex-wrap gap-2">
-                                        <Badge variant={equipmentHistory?.has_recurrence ? 'default' : 'outline'}>
-                                            {equipmentHistory?.has_recurrence ? 'Com reincidência' : 'Sem reincidência'}
-                                        </Badge>
-                                        {equipmentHistory?.is_warranty_return && equipmentHistory?.warranty_source_order && (
-                                            <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">
-                                                Retorno em garantia da OS #{equipmentHistory.warranty_source_order.order_number}
-                                            </Badge>
-                                        )}
-                                        {equipmentHistory?.active_warranty && (
-                                            <Badge variant="outline">
-                                                Garantia ativa até {moment(equipmentHistory.active_warranty.warranty_expires_at).format('DD/MM/YYYY')}
-                                            </Badge>
-                                        )}
-                                    </div>
-
-                                    <div className="grid gap-2 text-sm md:grid-cols-3">
-                                        <div>
-                                            <span className="text-muted-foreground">Atendimentos anteriores</span>
-                                            <p className="font-medium">{equipmentHistory?.total_previous_orders ?? 0}</p>
-                                        </div>
-                                        <div>
-                                            <span className="text-muted-foreground">Mesmo defeito</span>
-                                            <p className="font-medium">{equipmentHistory?.same_defect_count ?? 0}</p>
-                                        </div>
-                                        <div>
-                                            <span className="text-muted-foreground">Garantia</span>
-                                            <p className="font-medium">{equipmentHistory?.active_warranty ? 'Em vigor' : 'Sem cobertura ativa'}</p>
-                                        </div>
-                                    </div>
-
-                                    {equipmentHistory?.history?.length ? (
-                                        <div className="space-y-2">
-                                            {equipmentHistory.history.map((item: any) => (
-                                                <div key={item.id} className="rounded-lg border p-3 text-sm">
-                                                    <div className="flex flex-wrap items-center justify-between gap-2">
-                                                        <span className="font-medium">OS #{item.order_number}</span>
-                                                        <Badge variant="outline">{moment(item.delivery_date).format('DD/MM/YYYY')}</Badge>
-                                                    </div>
-                                                    <p className="text-muted-foreground mt-2 line-clamp-2">{item.defect}</p>
-                                                    <div className="mt-2 flex flex-wrap items-center gap-2">
-                                                        <Badge variant="secondary">{maskMoney(String(item.service_cost ?? 0))}</Badge>
-                                                        {item.warranty_expires_at && (
-                                                            <Badge variant="outline">
-                                                                Garantia até {moment(item.warranty_expires_at).format('DD/MM/YYYY')}
-                                                            </Badge>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <p className="text-muted-foreground text-sm">Nenhum atendimento anterior encontrado para este equipamento/modelo.</p>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        </div>
-
-                        <OrderTimeline statusHistory={order.status_history} logs={order.logs} />
+                            </CardContent>
+                        </Card>
 
                         <div className="flex justify-end">
                             <Button type="submit" disabled={processing}>
@@ -786,6 +777,79 @@ export default function EditOrder({
                                 Salvar
                             </Button>
                         </div>
+                            </TabsContent>
+
+                            <TabsContent value="history">
+                                <div className="space-y-4">
+                                <Card>
+                                    <CardTitle className="border-b px-4 py-3">Histórico do equipamento</CardTitle>
+                                    <CardContent className="space-y-3 pt-4">
+                                        <div className="flex flex-wrap gap-2">
+                                            <Badge variant={equipmentHistory?.has_recurrence ? 'default' : 'outline'}>
+                                                {equipmentHistory?.has_recurrence ? 'Com reincidência' : 'Sem reincidência'}
+                                            </Badge>
+                                            {equipmentHistory?.is_warranty_return && equipmentHistory?.warranty_source_order && (
+                                                <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">
+                                                    Retorno em garantia da OS #{equipmentHistory.warranty_source_order.order_number}
+                                                </Badge>
+                                            )}
+                                            {equipmentHistory?.active_warranty && (
+                                                <Badge variant="outline">
+                                                    Garantia ativa até {moment(equipmentHistory.active_warranty.warranty_expires_at).format('DD/MM/YYYY')}
+                                                </Badge>
+                                            )}
+                                        </div>
+
+                                        <div className="grid gap-2 text-sm md:grid-cols-3">
+                                            <div>
+                                                <span className="text-muted-foreground">Atendimentos anteriores</span>
+                                                <p className="font-medium">{equipmentHistory?.total_previous_orders ?? 0}</p>
+                                            </div>
+                                            <div>
+                                                <span className="text-muted-foreground">Mesmo defeito</span>
+                                                <p className="font-medium">{equipmentHistory?.same_defect_count ?? 0}</p>
+                                            </div>
+                                            <div>
+                                                <span className="text-muted-foreground">Garantia</span>
+                                                <p className="font-medium">{equipmentHistory?.active_warranty ? 'Em vigor' : 'Sem cobertura ativa'}</p>
+                                            </div>
+                                        </div>
+
+                                        {equipmentHistory?.history?.length ? (
+                                            <div className="space-y-2">
+                                                {equipmentHistory.history.map((item: any) => (
+                                                    <div key={item.id} className="rounded-lg border p-3 text-sm">
+                                                        <div className="flex flex-wrap items-center justify-between gap-2">
+                                                            <span className="font-medium">OS #{item.order_number}</span>
+                                                            <Badge variant="outline">{moment(item.delivery_date).format('DD/MM/YYYY')}</Badge>
+                                                        </div>
+                                                        <p className="text-muted-foreground mt-2 line-clamp-2">{item.defect}</p>
+                                                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                                                            <Badge variant="secondary">{maskMoney(String(item.service_cost ?? 0))}</Badge>
+                                                            {item.warranty_expires_at && (
+                                                                <Badge variant="outline">
+                                                                    Garantia até {moment(item.warranty_expires_at).format('DD/MM/YYYY')}
+                                                                </Badge>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <p className="text-muted-foreground text-sm">Nenhum atendimento anterior encontrado para este equipamento/modelo.</p>
+                                        )}
+                                    </CardContent>
+                                </Card>
+
+                                <Card>
+                                    <CardTitle className="border-b px-4 py-3">Linha do tempo da ordem</CardTitle>
+                                    <CardContent className="pt-6">
+                                        <OrderTimeline statusHistory={order.status_history} logs={order.logs} />
+                                    </CardContent>
+                                </Card>
+                                </div>
+                            </TabsContent>
+                        </Tabs>
                     </form>
                 </div>
             </div>

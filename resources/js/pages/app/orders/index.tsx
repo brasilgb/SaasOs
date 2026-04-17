@@ -63,6 +63,21 @@ export default function Orders({ orders, whats, feedback, search, status, filter
         return 'cobrança';
     };
 
+    const priorityRowClass = (params: {
+        hasPendingPaymentFollowUp: boolean;
+        hasBudgetFollowUp: boolean;
+        isWarrantyReturn: boolean;
+        isFeedbackWindowOpen: boolean;
+        hasCustomerFeedback: boolean;
+    }) => {
+        if (params.hasPendingPaymentFollowUp) return 'bg-rose-100/70 dark:bg-rose-950/25';
+        if (params.hasBudgetFollowUp) return 'bg-amber-100/70 dark:bg-amber-950/20';
+        if (params.isWarrantyReturn) return 'bg-orange-100/60 dark:bg-orange-950/20';
+        if (params.isFeedbackWindowOpen && !params.hasCustomerFeedback) return 'bg-sky-100/70 dark:bg-sky-950/20';
+
+        return '';
+    };
+
     return (
         <AppLayout>
             <Head title="Ordens" />
@@ -133,14 +148,10 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                         <TableHeader>
                             <TableRow>
                                 <TableHead className="w-[100px]">#</TableHead>
-                                <TableHead>Nome</TableHead>
-                                <TableHead>Telefone</TableHead>
-                                <TableHead>Recebimento</TableHead>
+                                <TableHead>Cliente</TableHead>
                                 <TableHead>Equipamento</TableHead>
-                                <TableHead>Modelo</TableHead>
-                                <TableHead>Garantia</TableHead>
+                                <TableHead>Datas</TableHead>
                                 <TableHead>Status</TableHead>
-                                <TableHead>Entrega</TableHead>
                                 {canManageOrders && <TableHead>Feedback</TableHead>}
                                 <TableHead></TableHead>
                             </TableRow>
@@ -148,6 +159,9 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                         <TableBody>
                             {orders?.data.length > 0 ? (
                                 orders?.data?.map((order: any) => {
+                                    const customer = order.customer;
+                                    const customerName = customer?.name || 'Cliente não vinculado';
+                                    const customerPhone = customer?.phone ? maskPhone(customer.phone) : '-';
                                     const hasCustomerFeedback = Boolean(order.customer_feedback_submitted_at);
                                     const isFeedbackWindowOpen = feedbackWindowIds.has(order.id);
                                     const totalOrder = Number(order.service_cost ?? 0);
@@ -171,50 +185,87 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                         : hasBudgetFollowUp
                                           ? 'budget_follow_up'
                                           : 'default';
+                                    const rowClassName = priorityRowClass({
+                                        hasPendingPaymentFollowUp,
+                                        hasBudgetFollowUp,
+                                        isWarrantyReturn: Boolean(order.is_warranty_return),
+                                        isFeedbackWindowOpen,
+                                        hasCustomerFeedback,
+                                    });
 
                                     return (
-                                        <TableRow key={order.id}>
+                                        <TableRow key={order.id} className={rowClassName}>
                                             <TableCell>{order.order_number}</TableCell>
                                             <TableCell className="font-medium">
-                                                    <Link
-                                                        className="flex items-center gap-2"
-                                                        href={route('app.orders.index', { search: order.customer.name })}
-                                                        title={`Ordens do cliente ${order.customer.name}`}
-                                                    >
-                                                        <Wrench className="h-4 w-4" />
-                                                        <span>{order.customer.name}</span>
-                                                    </Link>
-                                                    {order.last_communication?.created_at && (
-                                                        <span className="text-muted-foreground text-xs">
-                                                            Último contato: {communicationLabel(order.last_communication)}{' '}
-                                                            {order.last_communication?.trigger === 'automatic' ? 'automático' : 'manual'} por e-mail{' '}
-                                                            {moment(order.last_communication.created_at).fromNow()}
-                                                        </span>
+                                                <div className="space-y-1">
+                                                    {customer ? (
+                                                        <Link
+                                                            className="flex items-center gap-2"
+                                                            href={route('app.orders.index', { search: customerName })}
+                                                            title={`Ordens do cliente ${customerName}`}
+                                                        >
+                                                            <Wrench className="h-4 w-4" />
+                                                            <span>{customerName}</span>
+                                                        </Link>
+                                                    ) : (
+                                                        <div className="flex items-center gap-2">
+                                                            <Wrench className="h-4 w-4" />
+                                                            <span>{customerName}</span>
+                                                        </div>
                                                     )}
-                                                </TableCell>
-                                            <TableCell className="font-medium">{maskPhone(order.customer.phone)}</TableCell>
-                                            <TableCell>{moment(order.created_at).format('DD/MM/YYYY')}</TableCell>
-                                            <TableCell>{order.equipment.equipment}</TableCell>
-                                            <TableCell>{order.model}</TableCell>
-                                            <TableCell>
-                                                {Boolean(order.is_warranty_return) && (
-                                                    <Badge
-                                                        variant="secondary"
-                                                        className="w-fit bg-amber-100 text-amber-900 hover:bg-amber-100"
-                                                    >
-                                                        Retorno
-                                                    </Badge>
-                                                )}
+                                                    <div className="text-muted-foreground text-xs">
+                                                        {customerPhone}
+                                                    </div>
+                                                    {order.last_communication?.created_at && (
+                                                        <div className="text-muted-foreground text-xs">
+                                                            Último contato: {communicationLabel(order.last_communication)}{' '}
+                                                            {order.last_communication?.trigger === 'automatic' ? 'automático' : 'manual'}{' '}
+                                                            {moment(order.last_communication.created_at).fromNow()}
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </TableCell>
                                             <TableCell>
-                                                <div className="flex items-center gap-2">
+                                                <div className="space-y-1">
+                                                    <div className="font-medium">{order.equipment.equipment}</div>
+                                                    <div className="text-muted-foreground text-xs">{order.model || 'Modelo não informado'}</div>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="space-y-1 text-sm">
+                                                    <div>
+                                                        <span className="text-muted-foreground">Entrada:</span>{' '}
+                                                        {moment(order.created_at).format('DD/MM/YYYY')}
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-muted-foreground">Entrega:</span>{' '}
+                                                        {order.delivery_date ? moment(order.delivery_date).format('DD/MM/YYYY') : '-'}
+                                                    </div>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex flex-wrap items-center gap-2">
                                                     <StatusBadge category="ordem" value={order.service_status} />
+                                                    {hasPendingPaymentFollowUp && (
+                                                        <Badge className="bg-rose-100 text-rose-800 hover:bg-rose-100">
+                                                            Cobrança pendente
+                                                        </Badge>
+                                                    )}
+                                                    {Boolean(order.is_warranty_return) && (
+                                                        <Badge
+                                                            variant="secondary"
+                                                            className="w-fit bg-amber-100 text-amber-900 hover:bg-amber-100"
+                                                        >
+                                                            Retorno garantia
+                                                        </Badge>
+                                                    )}
                                                     {hasBudgetFollowUp && (
                                                         <Tooltip>
                                                             <TooltipTrigger asChild>
-                                                                <span className="inline-flex cursor-help text-amber-600">
-                                                                    <AlertTriangle className="h-4 w-4" />
-                                                                </span>
+                                                                <Badge className="cursor-help bg-yellow-100 text-yellow-900 hover:bg-yellow-100">
+                                                                    <AlertTriangle className="mr-1 h-3.5 w-3.5" />
+                                                                    Orçamento parado
+                                                                </Badge>
                                                             </TooltipTrigger>
                                                             <TooltipContent>
                                                                 Orçamento aguardando retorno há {communicationDaysPending} dias.
@@ -223,7 +274,6 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                     )}
                                                 </div>
                                             </TableCell>
-                                            <TableCell>{order.delivery_date ? moment(order.delivery_date).format('DD/MM/YYYY') : ''}</TableCell>
                                             {canManageOrders && (
                                                 <TableCell>
                                                     {hasCustomerFeedback && (
@@ -236,7 +286,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                     )}
 
                                                     {!hasCustomerFeedback && isFeedbackWindowOpen && (
-                                                        <Badge variant="secondary">
+                                                        <Badge className="bg-sky-100 text-sky-800 hover:bg-sky-100">
                                                             {feedbackDaysPending > 0 ? `Aguardando ${feedbackDaysPending} dias` : 'Aguardando'}
                                                         </Badge>
                                                     )}
@@ -300,8 +350,8 @@ export default function Orders({ orders, whats, feedback, search, status, filter
 
                                                 {canManageOrders && (
                                                     <WhatsAppButton
-                                                        phone={order.customer.whatsapp}
-                                                        customerName={order.customer.name}
+                                                        phone={customer?.whatsapp ?? ''}
+                                                        customerName={customerName}
                                                         orderNumber={order.order_number}
                                                         status={order.service_status}
                                                         feedback={isFeedbackWindowOpen && !hasCustomerFeedback}
@@ -335,7 +385,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                         <Edit className="h-4 w-4" />
                                                     </Link>
                                                 </Button>
- 
+
                                                 {canManageOrders && <ActionDelete title={'esta ordem'} url={'app.orders.destroy'} param={order.id} />}
                                             </TableCell>
                                         </TableRow>
@@ -343,7 +393,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                 })
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={canManageOrders ? 11 : 10} className="flex h-16 w-full items-center justify-center">
+                                    <TableCell colSpan={canManageOrders ? 7 : 6} className="flex h-16 w-full items-center justify-center">
                                         Não há dados a serem mostrados no momento.
                                     </TableCell>
                                 </TableRow>
@@ -351,7 +401,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                         </TableBody>
                         <TableFooter>
                             <TableRow>
-                                <TableCell colSpan={canManageOrders ? 11 : 10}>
+                                <TableCell colSpan={canManageOrders ? 7 : 6}>
                                     <AppPagination data={orders} />
                                 </TableCell>
                             </TableRow>

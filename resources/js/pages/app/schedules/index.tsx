@@ -116,11 +116,10 @@ export default function Schedules({ schedules, search, status }: any) {
                             <TableRow>
                                 <TableHead>#</TableHead>
                                 <TableHead>Cliente</TableHead>
-                                <TableHead>Horário da visita</TableHead>
+                                <TableHead>Visita</TableHead>
                                 <TableHead>Serviço</TableHead>
-                                <TableHead>Status</TableHead>
                                 <TableHead>Técnico</TableHead>
-                                <TableHead>Solicitação</TableHead>
+                                <TableHead>Status</TableHead>
                                 <TableHead></TableHead>
                             </TableRow>
                         </TableHeader>
@@ -129,14 +128,30 @@ export default function Schedules({ schedules, search, status }: any) {
                                 schedules?.data?.map((schedule: any) => (
                                     <TableRow key={schedule.id}>
                                         <TableCell>{schedule.schedules_number}</TableCell>
-                                        <TableCell>{schedule.customer.name}</TableCell>
-                                        <TableCell>{moment(schedule.schedules).format('DD/MM/YYYY HH:mm')}</TableCell>
+                                        <TableCell>
+                                            <div className="space-y-1">
+                                                <div className="font-medium">{schedule.customer.name}</div>
+                                                <div className="text-muted-foreground text-xs">
+                                                    Solicitado em {moment(schedule.created_at).format('DD/MM/YYYY')}
+                                                </div>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="space-y-1">
+                                                <div className="font-medium">{moment(schedule.schedules).format('DD/MM/YYYY')}</div>
+                                                <div className="text-muted-foreground text-xs">{moment(schedule.schedules).format('HH:mm')}</div>
+                                            </div>
+                                        </TableCell>
                                         <TableCell>{schedule.service}</TableCell>
+                                        <TableCell>
+                                            <div className="space-y-1">
+                                                <div className="font-medium">{schedule.user.name}</div>
+                                                <div className="text-muted-foreground text-xs">Técnico responsável</div>
+                                            </div>
+                                        </TableCell>
                                         <TableCell>
                                             <StatusBadge category="agenda" value={schedule.status} />
                                         </TableCell>
-                                        <TableCell>{schedule.user.name}</TableCell>
-                                        <TableCell>{moment(schedule.created_at).format('DD/MM/YYYY')}</TableCell>
                                         <TableCell className="flex justify-end gap-2">
                                             {canManageSchedules && (
                                                 <Button asChild size="icon" className="bg-green-500 text-white hover:bg-green-500">
@@ -176,7 +191,7 @@ export default function Schedules({ schedules, search, status }: any) {
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={8} className="flex h-16 w-full items-center justify-center">
+                                    <TableCell colSpan={6} className="flex h-16 w-full items-center justify-center">
                                         Não há dados a serem mostrados no momento.
                                     </TableCell>
                                 </TableRow>
@@ -184,7 +199,7 @@ export default function Schedules({ schedules, search, status }: any) {
                         </TableBody>
                         <TableFooter>
                             <TableRow>
-                                <TableCell colSpan={8}>
+                                <TableCell colSpan={6}>
                                     <AppPagination data={schedules} />
                                 </TableCell>
                             </TableRow>
