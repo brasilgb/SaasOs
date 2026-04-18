@@ -213,6 +213,20 @@ html {
   box-sizing: border-box;
 }
 
+.order-model-select__menu,
+.order-model-select__menu-list,
+.order-model-select__group,
+.order-model-select__group-heading,
+.order-model-select__no-options-message,
+.order-model-select__loading-message {
+    background-color: var(--popover) !important;
+    color: var(--popover-foreground) !important;
+}
+
+.order-model-select__menu-portal {
+    z-index: 50 !important;
+}
+
 /* Tipografia otimizada */
 .empresa {
   font-size: 9px;

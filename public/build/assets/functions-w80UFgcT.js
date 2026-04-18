@@ -1,1 +1,0 @@
-const a=s=>{switch(s){case 0:return"Não lida";case 1:return"lida"}},t=s=>{switch(s){case 0:return"Inativo";case 1:return"Ativo"}},e=s=>{switch(s){case 1:return"Peças";case 2:return"Produtos";case 3:return"Peças/Produtos"}};export{a,t as s,e as t};

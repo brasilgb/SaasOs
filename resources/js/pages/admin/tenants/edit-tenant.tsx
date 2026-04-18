@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import AdminLayout from '@/layouts/admin/admin-layout';
 import { BreadcrumbItem } from '@/types';
+import selectStyles from '@/Utils/selectStyles';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Building, Save } from 'lucide-react';
 import Select from 'react-select';
@@ -227,23 +228,7 @@ export default function EditTenant({ plans, tenant }: any) {
                                     onChange={changePlan}
                                     placeholder="Selecione o plano"
                                     className="h-9 rounded-md border border-gray-300 p-0 text-gray-700 shadow-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                    styles={{
-                                        control: (baseStyles, state) => ({
-                                            ...baseStyles,
-                                            fontSize: '14px',
-                                            boxShadow: 'none',
-                                            border: 'none',
-                                            background: 'transparent',
-                                            paddingBottom: '2px',
-                                        }),
-                                        dropdownIndicator: (base) => ({
-                                            ...base,
-                                        }),
-                                        menuList: (base) => ({
-                                            ...base,
-                                            fontSize: '14px',
-                                        }),
-                                    }}
+                                    styles={selectStyles}
                                 />
                                 <InputError className="mt-2" message={errors.plan_id} />
                             </div>
@@ -256,23 +241,7 @@ export default function EditTenant({ plans, tenant }: any) {
                                     onChange={changeStatus}
                                     placeholder="Selecione o status"
                                     className="h-9 rounded-md border border-gray-300 p-0 text-gray-700 shadow-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                    styles={{
-                                        control: (baseStyles, state) => ({
-                                            ...baseStyles,
-                                            fontSize: '14px',
-                                            boxShadow: 'none',
-                                            border: 'none',
-                                            background: 'transparent',
-                                            paddingBottom: '2px',
-                                        }),
-                                        dropdownIndicator: (base) => ({
-                                            ...base,
-                                        }),
-                                        menuList: (base) => ({
-                                            ...base,
-                                            fontSize: '14px',
-                                        }),
-                                    }}
+                                    styles={selectStyles}
                                 />
                                 <InputError className="mt-2" message={errors.status} />
                             </div>

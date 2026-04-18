@@ -16,7 +16,7 @@ import selectStyles from '@/Utils/selectStyles';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { ArrowLeft, Printer, Save, Wrench } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import Select from 'react-select';
+import Select, { type StylesConfig } from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -120,6 +120,92 @@ export default function CreateOrder({
         setData('model', value);
     };
 
+    const modelSelectStyles: StylesConfig<OptionType, false> = {
+        control: (base, state) => ({
+            ...base,
+            minHeight: '36px',
+            borderRadius: '0.375rem',
+            borderColor: state.isFocused ? 'var(--ring)' : 'var(--input)',
+            backgroundColor: 'var(--background)',
+            color: 'var(--foreground)',
+            boxShadow: state.isFocused ? '0 0 0 3px color-mix(in oklab, var(--ring) 50%, transparent)' : 'none',
+            ':hover': {
+                borderColor: state.isFocused ? 'var(--ring)' : 'var(--input)',
+            },
+        }),
+        valueContainer: (base) => ({
+            ...base,
+            padding: '0 8px',
+        }),
+        input: (base) => ({
+            ...base,
+            color: 'var(--foreground)',
+        }),
+        singleValue: (base) => ({
+            ...base,
+            color: 'var(--foreground)',
+            fontSize: '14px',
+        }),
+        placeholder: (base) => ({
+            ...base,
+            color: 'var(--muted-foreground)',
+            fontSize: '14px',
+        }),
+        clearIndicator: (base) => ({
+            ...base,
+            color: 'var(--muted-foreground)',
+        }),
+        dropdownIndicator: (base) => ({
+            ...base,
+            color: 'var(--muted-foreground)',
+        }),
+        indicatorSeparator: (base) => ({
+            ...base,
+            backgroundColor: 'var(--border)',
+        }),
+        menu: (base) => ({
+            ...base,
+            backgroundColor: 'var(--popover)',
+            color: 'var(--popover-foreground)',
+            border: '1px solid var(--border)',
+            borderRadius: '0.375rem',
+            overflow: 'hidden',
+            zIndex: 50,
+        }),
+        menuPortal: (base) => ({
+            ...base,
+            zIndex: 50,
+        }),
+        menuList: (base) => ({
+            ...base,
+            fontSize: '14px',
+            backgroundColor: 'var(--popover)',
+        }),
+        group: (base) => ({
+            ...base,
+            backgroundColor: 'var(--popover)',
+        }),
+        noOptionsMessage: (base) => ({
+            ...base,
+            backgroundColor: 'var(--popover)',
+            color: 'var(--muted-foreground)',
+        }),
+        loadingMessage: (base) => ({
+            ...base,
+            backgroundColor: 'var(--popover)',
+            color: 'var(--muted-foreground)',
+        }),
+        option: (base, state) => ({
+            ...base,
+            backgroundColor: state.isSelected
+                ? 'var(--accent)'
+                : state.isFocused
+                  ? 'color-mix(in oklab, var(--accent) 70%, var(--popover))'
+                  : 'var(--popover)',
+            color: 'var(--foreground)',
+        }),
+    };
+
     return (
         <AppLayout>
             <Head title="Ordens" />
@@ -171,29 +257,8 @@ export default function CreateOrder({
                                     options={optionsCustomer}
                                     onChange={changeCustomer}
                                     placeholder="Selecione o cliente"
-                                    className="h-9 rounded-md border border-gray-300 p-0 text-gray-500 shadow-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                    styles={{
-                                        control: (baseStyles, state) => ({
-                                            ...baseStyles,
-                                            fontSize: '14px',
-                                            boxShadow: 'none',
-                                            border: 'none',
-                                            background: 'transparent',
-                                            paddingBottom: '2px',
-                                        }),
-                                        singleValue: (base) => ({
-                                            ...base,
-                                            color: 'hsl(var(--foreground))',
-                                            fontSize: '14px',
-                                        }),
-                                        dropdownIndicator: (base) => ({
-                                            ...base,
-                                        }),
-                                        menuList: (base) => ({
-                                            ...base,
-                                            fontSize: '14px',
-                                        }),
-                                    }}
+                                    className="text-gray-500"
+                                    styles={selectStyles}
                                 />
                                 <InputError className="mt-2" message={errors.customer_id} />
                             </div>
@@ -205,29 +270,8 @@ export default function CreateOrder({
                                     options={optionsEquipment}
                                     onChange={changeEquipment}
                                     placeholder="Selecione o equipamento"
-                                    className="h-9 rounded-md border border-gray-300 p-0 text-gray-700 shadow-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                    styles={{
-                                        control: (baseStyles, state) => ({
-                                            ...baseStyles,
-                                            fontSize: '14px',
-                                            boxShadow: 'none',
-                                            border: 'none',
-                                            background: 'transparent',
-                                            paddingBottom: '2px',
-                                        }),
-                                        singleValue: (base) => ({
-                                            ...base,
-                                            color: 'hsl(var(--foreground))',
-                                            fontSize: '14px',
-                                        }),
-                                        dropdownIndicator: (base) => ({
-                                            ...base,
-                                        }),
-                                        menuList: (base) => ({
-                                            ...base,
-                                            fontSize: '14px',
-                                        }),
-                                    }}
+                                    className="text-gray-700"
+                                    styles={selectStyles}
                                 />
                                 {errors.equipment_id && <div className="text-sm text-red-500">{errors.equipment_id}</div>}
                             </div>
@@ -240,87 +284,10 @@ export default function CreateOrder({
                                     onChange={changeModel}
                                     onCreateOption={createModel}
                                     isClearable
+                                    classNamePrefix="order-model-select"
                                     menuPosition="fixed"
-                                    styles={{
-                                        container: (base) => ({
-                                            ...base,
-                                            backgroundColor: 'hsl(var(--background))',
-                                        }),
-                                        control: (base, state) => ({
-                                            ...base,
-                                            minHeight: '36px',
-                                            borderRadius: '0.375rem',
-                                            borderColor: state.isFocused ? 'hsl(var(--ring))' : 'hsl(var(--input))',
-                                            backgroundColor: 'hsl(var(--background))',
-                                            color: 'hsl(var(--foreground))',
-                                            boxShadow: 'none',
-                                            ':hover': {
-                                                borderColor: state.isFocused ? 'hsl(var(--ring))' : 'hsl(var(--input))',
-                                            },
-                                        }),
-                                        valueContainer: (base) => ({
-                                            ...base,
-                                            backgroundColor: 'hsl(var(--background))',
-                                            padding: '0 8px',
-                                        }),
-                                        input: (base) => ({
-                                            ...base,
-                                            color: 'hsl(var(--foreground))',
-                                        }),
-                                        singleValue: (base) => ({
-                                            ...base,
-                                            color: 'hsl(var(--foreground))',
-                                            fontSize: '14px',
-                                        }),
-                                        placeholder: (base) => ({
-                                            ...base,
-                                            color: 'hsl(var(--muted-foreground))',
-                                            fontSize: '14px',
-                                        }),
-                                        clearIndicator: (base) => ({
-                                            ...base,
-                                            color: 'hsl(var(--muted-foreground))',
-                                        }),
-                                        dropdownIndicator: (base) => ({
-                                            ...base,
-                                            color: 'hsl(var(--muted-foreground))',
-                                            backgroundColor: 'hsl(var(--background))',
-                                        }),
-                                        indicatorSeparator: () => ({
-                                            display: 'none',
-                                        }),
-                                        menu: (base) => ({
-                                            ...base,
-                                            backgroundColor: 'hsl(var(--popover))',
-                                            color: 'hsl(var(--popover-foreground))',
-                                            border: '1px solid hsl(var(--border))',
-                                            zIndex: 50,
-                                        }),
-                                        menuList: (base) => ({
-                                            ...base,
-                                            fontSize: '14px',
-                                            backgroundColor: 'hsl(var(--popover))',
-                                        }),
-                                        noOptionsMessage: (base) => ({
-                                            ...base,
-                                            backgroundColor: 'hsl(var(--popover))',
-                                            color: 'hsl(var(--muted-foreground))',
-                                        }),
-                                        loadingMessage: (base) => ({
-                                            ...base,
-                                            backgroundColor: 'hsl(var(--popover))',
-                                            color: 'hsl(var(--muted-foreground))',
-                                        }),
-                                        option: (base, state) => ({
-                                            ...base,
-                                            backgroundColor: state.isSelected
-                                                ? 'hsl(var(--accent))'
-                                                : state.isFocused
-                                                  ? 'hsl(var(--accent) / 0.7)'
-                                                  : 'hsl(var(--popover))',
-                                            color: 'hsl(var(--foreground))',
-                                        }),
-                                    }}
+                                    menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
+                                    styles={modelSelectStyles}
                                     placeholder="Selecione ou digite a nova marca/modelo"
                                     formatCreateLabel={(inputValue) => `Criar "${inputValue}"`}
                                 />
@@ -422,29 +389,8 @@ export default function CreateOrder({
                                     onChange={changeServiceStatus}
                                     placeholder="Selecione o status"
                                     defaultValue={[{ value: statusOrcamento[0].value, label: statusOrcamento[0].label }]}
-                                    className="h-9 rounded-md border border-gray-300 p-0 text-gray-700 shadow-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                    styles={{
-                                        control: (baseStyles, state) => ({
-                                            ...baseStyles,
-                                            fontSize: '14px',
-                                            boxShadow: 'none',
-                                            border: 'none',
-                                            background: 'transparent',
-                                            paddingBottom: '2px',
-                                        }),
-                                        singleValue: (base) => ({
-                                            ...base,
-                                            color: 'hsl(var(--foreground))',
-                                            fontSize: '14px',
-                                        }),
-                                        dropdownIndicator: (base) => ({
-                                            ...base,
-                                        }),
-                                        menuList: (base) => ({
-                                            ...base,
-                                            fontSize: '14px',
-                                        }),
-                                    }}
+                                    className="text-gray-700"
+                                    styles={selectStyles}
                                 />
                             </div>
                         </div>

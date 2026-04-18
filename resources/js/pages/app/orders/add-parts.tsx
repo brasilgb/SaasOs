@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { maskMoney } from '@/Utils/mask';
+import selectStyles from '@/Utils/selectStyles';
 import { useForm } from '@inertiajs/react';
 import { MemoryStickIcon, Trash2, WrenchIcon } from 'lucide-react';
 import { useState } from 'react';
@@ -108,23 +109,7 @@ export default function AddPartsModal({ onSubmit, parts }: any) {
                                     onChange={handlePartChange}
                                     placeholder="Selecione a peça"
                                     className="h-9 rounded-md border border-gray-300 p-0 text-gray-700 shadow-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                    styles={{
-                                        control: (baseStyles, state) => ({
-                                            ...baseStyles,
-                                            fontSize: '14px',
-                                            boxShadow: 'none',
-                                            border: 'none',
-                                            background: 'transparent',
-                                            paddingBottom: '2px',
-                                        }),
-                                        dropdownIndicator: (base) => ({
-                                            ...base,
-                                        }),
-                                        menuList: (base) => ({
-                                            ...base,
-                                            fontSize: '14px',
-                                        }),
-                                    }}
+                                    styles={selectStyles}
                                 />
                             </div>
                         </div>

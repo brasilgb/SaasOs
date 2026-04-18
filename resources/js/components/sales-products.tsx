@@ -1,5 +1,6 @@
 import { apios } from '@/Utils/connectApi';
 import { maskMoney } from '@/Utils/mask';
+import selectStyles from '@/Utils/selectStyles';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -334,23 +335,7 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
                                 onChange={changeCustomers}
                                 placeholder="Selecione o cliente"
                                 className="h-9 w-full rounded-md border border-gray-300 p-0 text-gray-700 shadow-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                styles={{
-                                    control: (baseStyles) => ({
-                                        ...baseStyles,
-                                        fontSize: '14px',
-                                        boxShadow: 'none',
-                                        border: 'none',
-                                        background: 'transparent',
-                                        paddingBottom: '2px',
-                                    }),
-                                    dropdownIndicator: (base) => ({
-                                        ...base,
-                                    }),
-                                    menuList: (base) => ({
-                                        ...base,
-                                        fontSize: '14px',
-                                    }),
-                                }}
+                                styles={selectStyles}
                             />
                             {errors.customer_id && <p className="col-span-4 text-right text-xs text-red-500">{errors.customer_id}</p>}
                         </div>
@@ -384,23 +369,7 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
                                     onChange={changeParts}
                                     placeholder="Selecione a peça/produto"
                                     className="h-9 w-full rounded-md border border-gray-300 p-0 text-gray-700 shadow-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                    styles={{
-                                        control: (baseStyles) => ({
-                                            ...baseStyles,
-                                            fontSize: '14px',
-                                            boxShadow: 'none',
-                                            border: 'none',
-                                            background: 'transparent',
-                                            paddingBottom: '2px',
-                                        }),
-                                        dropdownIndicator: (base) => ({
-                                            ...base,
-                                        }),
-                                        menuList: (base) => ({
-                                            ...base,
-                                            fontSize: '14px',
-                                        }),
-                                    }}
+                                    styles={selectStyles}
                                 />
                                 {errors.part_id && <p className="col-span-4 text-right text-xs text-red-500">{errors.part_id}</p>}
                             </div>

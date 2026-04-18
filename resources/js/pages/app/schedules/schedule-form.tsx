@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Customer, Scheduler, User } from '@/types';
 import { statusAgenda } from '@/Utils/dataSelect';
+import selectStyles from '@/Utils/selectStyles';
 import { useForm } from '@inertiajs/react';
 import { Save } from 'lucide-react';
 import Select from 'react-select';
@@ -94,28 +95,7 @@ export default function ScheduleForm({ customers, initialData, technicals }: Sch
                         onChange={changeCustomer}
                         placeholder="Selecione o cliente"
                         className="h-9 rounded-md border border-gray-300 p-0 text-gray-700 shadow-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                        styles={{
-                            control: (baseStyles, state) => ({
-                                ...baseStyles,
-                                fontSize: '14px',
-                                boxShadow: 'none',
-                                border: 'none',
-                                background: 'transparent',
-                                paddingBottom: '2px',
-                            }),
-                            singleValue: (base) => ({
-                                ...base,
-                                color: 'hsl(var(--foreground))',
-                                fontSize: '14px',
-                            }),
-                            dropdownIndicator: (base) => ({
-                                ...base,
-                            }),
-                            menuList: (base) => ({
-                                ...base,
-                                fontSize: '14px',
-                            }),
-                        }}
+                        styles={selectStyles}
                     />
                     <InputError className="mt-2" message={errors.customer_id} />
                 </div>
@@ -160,28 +140,7 @@ export default function ScheduleForm({ customers, initialData, technicals }: Sch
                         onChange={changeResponsibleTechnician}
                         placeholder="Selecione o técnico"
                         className="h-9 rounded-md border border-gray-300 p-0 text-gray-700 shadow-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                        styles={{
-                            control: (baseStyles, state) => ({
-                                ...baseStyles,
-                                fontSize: '14px',
-                                boxShadow: 'none',
-                                border: 'none',
-                                background: 'transparent',
-                                paddingBottom: '2px',
-                            }),
-                            singleValue: (base) => ({
-                                ...base,
-                                color: 'hsl(var(--foreground))',
-                                fontSize: '14px',
-                            }),
-                            dropdownIndicator: (base) => ({
-                                ...base,
-                            }),
-                            menuList: (base) => ({
-                                ...base,
-                                fontSize: '14px',
-                            }),
-                        }}
+                        styles={selectStyles}
                     />
                 </div>
 
@@ -194,28 +153,7 @@ export default function ScheduleForm({ customers, initialData, technicals }: Sch
                         onChange={changeServiceStatus}
                         placeholder="Selecione o status"
                         className="h-9 rounded-md border border-gray-300 p-0 text-gray-700 shadow-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                        styles={{
-                            control: (baseStyles, state) => ({
-                                ...baseStyles,
-                                fontSize: '14px',
-                                boxShadow: 'none',
-                                border: 'none',
-                                background: 'transparent',
-                                paddingBottom: '2px',
-                            }),
-                            singleValue: (base) => ({
-                                ...base,
-                                color: 'hsl(var(--foreground))',
-                                fontSize: '14px',
-                            }),
-                            dropdownIndicator: (base) => ({
-                                ...base,
-                            }),
-                            menuList: (base) => ({
-                                ...base,
-                                fontSize: '14px',
-                            }),
-                        }}
+                        styles={selectStyles}
                     />
                 </div>
             </div>
