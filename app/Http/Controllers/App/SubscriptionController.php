@@ -15,12 +15,15 @@ class SubscriptionController extends Controller
 
         // Segurança: Se o usuário NÃO estiver bloqueado nem expirado há > 3 dias, manda pro dashboard
         // Isso previne que alguém acesse a url /subscription/blocked manualmente estando ativo
-        if ($tenant->subscription_status === 'active' || $tenant->plan_id == 2) {
+        if ($tenant->subscription_status === 'active') {
             return redirect()->route('app.dashboard');
         }
 
-        // Busca apenas planos pagos (Exclui Trial e Cortesia)
-        $plans = Plan::whereNotIn('id', [1, 2])->get();
+        // Busca apenas planos cobraveis, excluindo Trial e planos sem valor.
+        $plans = Plan::query()
+            ->get()
+            ->filter(fn (Plan $plan) => ! $plan->isTrial() && (float) $plan->value > 0)
+            ->values();
 
         return Inertia::render('Subscription/Blocked', [
             'plans' => $plans,

@@ -18,8 +18,13 @@ class CheckSubscriptionStatus
             return $next($request);
         }
 
-        // Plano Cortesia bypass
-        if ($tenant->plan_id == 2) {
+        if (! $tenant->expires_at) {
+            if ($tenant->subscription_status !== 'active') {
+                $tenant->update([
+                    'subscription_status' => 'active',
+                ]);
+            }
+
             return $next($request);
         }
 

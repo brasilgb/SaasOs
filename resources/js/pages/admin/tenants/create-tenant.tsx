@@ -31,10 +31,12 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function CreateTenant({ plans }: any) {
-    const allPlans = plans.map((plan: any) => ({
-        value: plan.id,
-        label: plan.name,
-    }));
+    const allPlans = plans
+        .filter((plan: any) => !String(plan?.name ?? '').toLowerCase().includes('cortesia'))
+        .map((plan: any) => ({
+            value: plan.id,
+            label: plan.name,
+        }));
 
     const { data, setData, post, progress, processing, reset, errors } = useForm({
         cnpj: '',
@@ -50,7 +52,7 @@ export default function CreateTenant({ plans }: any) {
         street: '',
         complement: '',
         number: '',
-        plan: '',
+        plan_id: '',
         status: '',
         observations: '',
     });
@@ -80,7 +82,7 @@ export default function CreateTenant({ plans }: any) {
     };
 
     const changePlan = (selected: any) => {
-        setData('plan', selected?.value);
+        setData('plan_id', selected?.value ?? '');
     };
 
     const changeStatus = (selected: any) => {
@@ -227,7 +229,7 @@ export default function CreateTenant({ plans }: any) {
                                     className="h-9 rounded-md border border-gray-300 p-0 text-gray-700 shadow-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                     styles={selectStyles}
                                 />
-                                <InputError className="mt-2" message={errors.plan} />
+                                <InputError className="mt-2" message={errors.plan_id} />
                             </div>
 
                             <div className="grid gap-2 md:col-span-2">

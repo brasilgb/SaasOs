@@ -24,7 +24,7 @@ class PaymentController extends Controller
     {
         try {
             $validated = $request->validate([
-                'plan_id' => ['required', 'integer', 'exists:plans,id', 'not_in:1,2'],
+                'plan_id' => ['required', 'integer', 'exists:plans,id'],
             ]);
 
             $tenant = auth()->user()->tenant;
@@ -33,7 +33,7 @@ class PaymentController extends Controller
             }
 
             $plan = Plan::findOrFail($validated['plan_id']);
-            if ((float) $plan->value <= 0) {
+            if ($plan->isTrial() || (float) $plan->value <= 0) {
                 return response()->json(['error' => 'Plano inválido para cobrança PIX.'], 422);
             }
 

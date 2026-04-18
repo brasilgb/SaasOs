@@ -13,6 +13,43 @@ use Inertia\Inertia;
 
 class TenantController extends Controller
 {
+    private function normalizePlanId(mixed $selectedPlan): ?int
+    {
+        if ($selectedPlan === 'trial' || $selectedPlan === null || $selectedPlan === '') {
+            return null;
+        }
+
+        return (int) $selectedPlan;
+    }
+
+    private function resolveExpirationDate(mixed $selectedPlan): ?Carbon
+    {
+        if ($selectedPlan === 'trial') {
+            return Carbon::now()->addDays(14);
+        }
+
+        $planId = $this->normalizePlanId($selectedPlan);
+        if (! $planId) {
+            return null;
+        }
+
+        $plan = Plan::query()->with('periods')->find($planId);
+        if (! $plan) {
+            return null;
+        }
+
+        if ($plan->isTrial()) {
+            return Carbon::now()->addDays(14);
+        }
+
+        $billingMonths = $plan->billingMonths();
+        if ($billingMonths > 0) {
+            return Carbon::now()->addMonths($billingMonths);
+        }
+
+        return Carbon::now()->addDays(30);
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -21,6 +58,12 @@ class TenantController extends Controller
         $tenants = Tenant::with('user', 'plan')
             ->paginate(11)
             ->through(function ($tenant) {
+                if (! $tenant->expires_at) {
+                    $tenant->days_remaining = null;
+                    $tenant->status_label = 'Sem vencimento definido';
+
+                    return $tenant;
+                }
 
                 $expires = Carbon::parse($tenant->expires_at)->startOfDay();
                 $daysRemaining = floor(now()->diffInDays($expires, false));
@@ -63,6 +106,10 @@ class TenantController extends Controller
         $data = $request->all();
         $request->validated();
 
+        $selectedPlan = $data['plan_id'] ?? $data['plan'] ?? null;
+        $data['plan_id'] = $this->normalizePlanId($selectedPlan);
+        $data['expires_at'] = $this->resolveExpirationDate($selectedPlan);
+
         Tenant::create($data);
 
         return redirect()->route('admin.tenants.index')->with('success', 'Empresa cadastrado com sucesso!');
@@ -94,23 +141,10 @@ class TenantController extends Controller
         $data = $request->all();
         $request->validated();
 
-        if (isset($data['plan'])) {
-            $planId = (int) $data['plan'];
+        $selectedPlan = $data['plan_id'] ?? $data['plan'] ?? null;
+        $data['plan_id'] = $this->normalizePlanId($selectedPlan);
+        $data['expires_at'] = $this->resolveExpirationDate($selectedPlan);
 
-            // Plano Cortesia (ID 2) - Indefinido (até cancelamento manual)
-            if ($planId === 2) {
-                $data['expires_at'] = null; // Ou uma data muito distante
-            } else {
-                $days = match ($planId) {
-                    1 => 7,   // Trial 07 dias
-                    3 => 30,  // Mensal (Básico)
-                    4 => 90,  // Trimestral
-                    5 => 180, // Semestral
-                    default => 30,
-                };
-                $data['expires_at'] = Carbon::now()->addDays($days);
-            }
-        }
         $tenant->update($data);
 
         return redirect()->route('admin.tenants.show', ['tenant' => $tenant->id])->with('success', 'Empresa atualizada com sucess!');

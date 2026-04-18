@@ -66,7 +66,7 @@ class WebhookController extends Controller
             return response()->json(['error' => 'Invalid metadata'], 422);
         }
 
-        $plan = Plan::find($metadata['plan_id']);
+        $plan = Plan::query()->with('periods')->find($metadata['plan_id']);
         if (! $plan) {
             return response()->json(['error' => 'Plan not found'], 404);
         }

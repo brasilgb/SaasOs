@@ -31,10 +31,12 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function EditTenant({ plans, tenant }: any) {
-    const allPlans = plans.map((plan: any) => ({
-        value: plan.id,
-        label: plan.name,
-    }));
+    const allPlans = plans
+        .filter((plan: any) => !String(plan?.name ?? '').toLowerCase().includes('cortesia'))
+        .map((plan: any) => ({
+            value: plan.id,
+            label: plan.name,
+        }));
 
     const { data, setData, patch, processing, reset, errors } = useForm({
         company: tenant.company,

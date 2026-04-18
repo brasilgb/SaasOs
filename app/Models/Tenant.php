@@ -39,7 +39,7 @@ class Tenant extends Model
     public function getGraceDaysRemainingAttribute()
     {
         if (! $this->expires_at) {
-            return 14; // Ou o padrão de dias do trial
+            return 0;
         }
 
         $expiry = Carbon::parse($this->expires_at);

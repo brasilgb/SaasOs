@@ -27,7 +27,7 @@ class TenantRequest extends FormRequest
             'cnpj' => ($this->getMethod() == 'POST') ? 'required|cpf_ou_cnpj|unique:tenants' : 'required|cpf_ou_cnpj|unique:tenants,cnpj,'.$this->tenant->id,
             'email' => 'required',
             'phone' => 'required',
-            'plan_id' => 'required',
+            'plan_id' => 'required|exists:plans,id',
             'status' => 'required',
         ];
     }
