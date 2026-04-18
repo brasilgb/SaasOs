@@ -60,6 +60,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     const page = usePage<AppHeaderPageProps>();
     const { auth, othersetting } = page.props;
     const disableParts = !othersetting?.enableparts ? 'parts' : '';
+    const disableSales = !othersetting?.enablesales ? 'sales' : '';
     const permissions = auth?.permissions ?? [];
     const getInitials = useInitials();
 
@@ -86,9 +87,10 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                             {mainNavItems.map(
                                                 (item) =>
                                                     (item.visibilitySetting
-                                                        ? othersetting?.[item.visibilitySetting as keyof NonNullable<typeof othersetting>] ?? true
+                                                        ? othersetting?.[item.visibilitySetting as keyof NonNullable<typeof othersetting>] ?? false
                                                         : true) &&
                                                     item.enabled !== disableParts &&
+                                                    item.enabled !== disableSales &&
                                                     (!item.permission || permissions.includes(item.permission)) && (
                                                         <Link key={item.title} href={item.href} className="flex items-center space-x-2 font-medium">
                                                             {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
@@ -140,9 +142,10 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                 {mainNavItems.map(
                                     (item, index) =>
                                         (item.visibilitySetting
-                                            ? othersetting?.[item.visibilitySetting as keyof NonNullable<typeof othersetting>] ?? true
+                                            ? othersetting?.[item.visibilitySetting as keyof NonNullable<typeof othersetting>] ?? false
                                             : true) &&
                                         item.enabled !== disableParts &&
+                                        item.enabled !== disableSales &&
                                         (!item.permission || permissions.includes(item.permission)) && (
                                             <NavigationMenuItem key={index} className="relative flex h-full items-center">
                                                 <Link
