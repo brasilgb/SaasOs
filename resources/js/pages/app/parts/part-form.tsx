@@ -6,13 +6,14 @@ import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { OptionType } from '@/types';
 import { apios } from '@/Utils/connectApi';
 import { partsType } from '@/Utils/dataSelect';
 import { maskMoney, maskMoneyDot } from '@/Utils/mask';
 import selectStyles from '@/Utils/selectStyles';
 import { useForm } from '@inertiajs/react';
-import { Save } from 'lucide-react';
+import { Barcode, Info, Save } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import CreatableSelect from 'react-select/creatable';
 
@@ -25,6 +26,10 @@ interface PartFormProps {
 export default function PartForm({ categories, manufacturers, initialData }: PartFormProps) {
     const isEdit = !!initialData;
     const [disableInput, setDisableInput] = useState(false);
+
+    const generateReferenceNumber = () => `${Date.now()}${Math.floor(Math.random() * 1000)
+        .toString()
+        .padStart(3, '0')}`;
 
     const initialCategoryOptions: OptionType[] = categories?.map((category: any) => ({
         value: category,
@@ -140,6 +145,12 @@ export default function PartForm({ categories, manufacturers, initialData }: Par
         setData((data: any) => ({ ...data, sale_price: maskMoneyDot(data.sale_price) }));
     }, [data.cost_price, data.sale_price]);
 
+    useEffect(() => {
+        if (!isEdit && !data.reference_number) {
+            setData('reference_number', generateReferenceNumber());
+        }
+    }, [isEdit]);
+
     const changeCategory = (option: OptionType | null) => {
         setSelectedCategory(option);
         setData('category', option ? option.value : '');
@@ -171,15 +182,41 @@ export default function PartForm({ categories, manufacturers, initialData }: Par
                 <CardContent className="space-y-4 pt-6">
             <div className="mt-4 grid gap-4 md:grid-cols-4">
                 <div className="grid gap-2">
-                    <Label htmlFor="name">Número da Peça/Produto</Label>
-                    <Input
-                        type="text"
-                        id="reference_number"
-                        value={data.reference_number}
-                        onChange={(e) => setData('reference_number', e.target.value)}
-                        onBlur={(e) => partNumberDataSelected(e)}
-                        maxLength={18}
-                    />
+                    <div className="flex items-center gap-2">
+                        <Label htmlFor="name">Número da Peça/Produto</Label>
+                        {!isEdit && (
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <button type="button" className="text-muted-foreground hover:text-foreground" aria-label="Informação sobre código gerado">
+                                        <Info className="h-4 w-4" />
+                                    </button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Código gerado automaticamente para uso como código de barras.</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        )}
+                    </div>
+                    <div className="flex gap-2">
+                        <Input
+                            type="text"
+                            id="reference_number"
+                            value={data.reference_number}
+                            onChange={(e) => setData('reference_number', e.target.value)}
+                            onBlur={(e) => partNumberDataSelected(e)}
+                            maxLength={18}
+                        />
+                        {!isEdit && (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setData('reference_number', generateReferenceNumber())}
+                                title="Gerar código de barras"
+                            >
+                                <Barcode className="h-4 w-4" />
+                            </Button>
+                        )}
+                    </div>
                     {errors.reference_number && <div className="text-sm text-red-500">{errors.reference_number}</div>}
                 </div>
 

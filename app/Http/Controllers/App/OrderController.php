@@ -108,7 +108,7 @@ class OrderController extends Controller
 
     private function communicationThresholdDays(): int
     {
-        return Other::communicationFollowUpCooldownDays();
+        return Other::communicationFollowUpCooldownDays($this->currentUser()?->tenant_id);
     }
 
     private function customerFeedbackRequestThreshold(): Carbon
@@ -456,9 +456,11 @@ class OrderController extends Controller
     {
         $this->authorize('create', Order::class);
 
-        $data = $request->all();
-        $request->validated();
-        $data['order_number'] = Order::exists() ? Order::latest()->first()->order_number + 1 : 1;
+        $data = $request->validated();
+        $tenantId = (int) ($this->currentUser()?->tenant_id ?? 0);
+        $data['order_number'] = ((int) Order::query()
+            ->where('tenant_id', $tenantId)
+            ->max('order_number')) + 1;
         $data['tracking_token'] = Str::uuid();
         $data['warranty_days'] = isset($data['warranty_days']) && $data['warranty_days'] !== '' ? max(0, (int) $data['warranty_days']) : null;
         $warrantySourceOrder = $this->detectWarrantyReturn(
@@ -491,6 +493,27 @@ class OrderController extends Controller
         } catch (\Throwable $e) {
             report($e);
             $successMessage = 'Ordem cadastrada com sucesso, mas houve falha ao enviar o e-mail ao cliente.';
+        }
+
+        $shouldShowLabelButton = $tenantId > 0
+            ? (bool) Other::query()
+                ->where('tenant_id', $tenantId)
+                ->value('print_label_button_after_order_create')
+            : false;
+
+        if ($shouldShowLabelButton) {
+            return redirect()
+                ->route('app.orders.create')
+                ->with('success', $successMessage)
+                ->with('label_print', [
+                    'order_id' => $order->id,
+                    'order_number' => $order->order_number,
+                    'print_url' => route('app.label-printing.print', [
+                        'initialorder' => $order->order_number,
+                        'quantity' => 1,
+                        'format' => 'thermal',
+                    ]),
+                ]);
         }
 
         return redirect()->route('app.orders.index')->with('success', $successMessage);

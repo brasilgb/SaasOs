@@ -21,7 +21,7 @@ import { maskMoney, maskMoneyDot } from '@/Utils/mask';
 import { ORDER_STATUS, ORDER_STATUSES_READY_FOR_INVOICE } from '@/Utils/order-status';
 import selectStyles from '@/Utils/selectStyles';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, FileTextIcon, Mail, Save, Wrench, X } from 'lucide-react';
+import { ArrowLeft, FileTextIcon, Mail, Printer, Save, Wrench, X } from 'lucide-react';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
 import Select from 'react-select';
@@ -321,6 +321,22 @@ export default function EditOrder({
                     </Button>
                 </div>
                 <div className="flex flex-wrap items-center justify-start gap-2 md:justify-end">
+                    {Boolean(othersetting?.print_label_button_after_order_create) && (
+                        <Button type="button" variant="outline" asChild>
+                            <a
+                                href={route('app.label-printing.print', {
+                                    initialorder: order.order_number,
+                                    quantity: 1,
+                                    format: 'thermal',
+                                })}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                <Printer className="h-4 w-4" />
+                                Imprimir etiqueta
+                            </a>
+                        </Button>
+                    )}
                     {canManageOrders && ORDER_STATUSES_READY_FOR_INVOICE.includes(Number(order.service_status)) && (
                         <Button onClick={() => setOpenInvoiceModal(true)} className="rounded-lg py-2 text-sm font-medium">
                             <FileTextIcon className="h-4 w-4" />

@@ -42,9 +42,7 @@ class PlanController extends Controller
      */
     public function store(PlanRequest $request): RedirectResponse
     {
-        $data = $request->all();
-        $request->validated();
-        Plan::create($data);
+        Plan::create($request->validated());
 
         return redirect()->route('admin.plans.index')->with('success', 'Plano cadastrado com sucesso!');
     }
@@ -70,9 +68,7 @@ class PlanController extends Controller
      */
     public function update(PlanRequest $request, Plan $plan): RedirectResponse
     {
-        $data = $request->all();
-        $request->validated();
-        $plan->update($data);
+        $plan->update($request->validated());
 
         return redirect()->route('admin.plans.index')->with('success', 'Plano editado com sucesso!');
     }

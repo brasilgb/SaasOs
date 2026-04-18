@@ -36,6 +36,7 @@ class OtherController extends Controller
             'show_tasks_menu' => false,
             'show_commercial_performance_menu' => false,
             'show_quality_menu' => false,
+            'print_label_button_after_order_create' => false,
             'automatic_follow_ups_enabled' => false,
         ]);
         $company = Company::query()
@@ -103,6 +104,7 @@ class OtherController extends Controller
             'show_tasks_menu' => 'sometimes|boolean',
             'show_commercial_performance_menu' => 'sometimes|boolean',
             'show_quality_menu' => 'sometimes|boolean',
+            'print_label_button_after_order_create' => 'sometimes|boolean',
             'mail_mailer' => 'nullable|string|max:30',
             'mail_host' => 'nullable|string|max:255',
             'mail_port' => 'nullable|integer|min:1|max:65535',
@@ -157,19 +159,23 @@ class OtherController extends Controller
     {
         Gate::authorize('other-settings.access');
 
-        $company = Company::query()->first();
+        abort_if((int) $other->tenant_id !== (int) $this->currentTenantId(), 403);
+
+        $company = Company::query()
+            ->where('tenant_id', $this->currentTenantId())
+            ->first();
         $targetEmail = trim((string) ($company?->email ?? ''));
 
         if ($targetEmail === '' || ! filter_var($targetEmail, FILTER_VALIDATE_EMAIL)) {
             return back()->with('error', 'Cadastre um e-mail válido nos dados da empresa para enviar o teste SMTP.');
         }
 
-        if (! TenantMailConfig::hasConfiguredForTenantId(Auth::user()?->tenant_id)) {
+        if (! TenantMailConfig::hasConfiguredForTenantId($this->currentTenantId())) {
             return back()->with('error', 'Configure host, porta, usuário e senha SMTP antes de enviar o teste.');
         }
 
         try {
-            TenantMailConfig::applyForTenantId(Auth::user()?->tenant_id);
+            TenantMailConfig::applyForTenantId($this->currentTenantId());
 
             Mail::raw(
                 "Este é um e-mail de teste da configuração SMTP do sistema.\n\nEmpresa: ".($company?->companyname ?? config('app.name'))."\nData/Hora: ".now()->format('d/m/Y H:i:s'),

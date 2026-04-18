@@ -157,6 +157,53 @@ Migrations recentes relacionadas a novas features:
 - `2026_04_17_154103_add_menu_visibility_flags_to_others_table`
 - `2026_04_17_160523_add_automatic_follow_ups_enabled_to_others_table`
 
+## Estratégia de baseline das migrations
+
+O projeto já acumulou muitas migrations incrementais. Para enxugar esse histórico sem quebrar clientes em produção, a estratégia recomendada é criar uma nova baseline por blocos funcionais, mantendo compatibilidade com ambientes já migrados.
+
+Blocos atuais do schema:
+
+- `core`: planos, tenants, usuários, cache, jobs, personal access tokens
+- `cadastros`: clientes, equipamentos, serviços, checklists, mensagens, agendamentos
+- `ordens`: orders, order_parts, order_status_history, order_payments, order_logs, images, receipts, companies, whatsapp_messages
+- `financeiro`: sales, sale_items, sale_logs, expenses, expense_logs, cash_sessions, cash_session_logs, payments
+- `configuracoes`: others, settings, branches
+- `qualidade-operacao`: garantia, avaliações, follow-ups, operational_audits
+
+Sequência segura para enxugar:
+
+1. Congelar novas mudanças estruturais enquanto a baseline é montada.
+2. Gerar a estrutura final do banco em ambiente limpo.
+3. Criar novas migrations consolidadas por bloco, com o schema final já pronto.
+4. Validar `migrate:fresh --seed` com os seeders atuais.
+5. Só depois aposentar o histórico antigo.
+
+Regras práticas:
+
+- não apagar migrations antigas antes de validar a nova baseline em banco limpo
+- não misturar refactor de código com refactor estrutural de banco na mesma entrega
+- manter nomes e tipos finais das colunas exatamente como estão em produção
+- revisar defaults importantes, especialmente em `others`, `orders`, `sales` e `cash_sessions`
+
+Prioridade de consolidação:
+
+1. `others` e blocos de configuração
+2. `orders` e extensões de follow-up/garantia/feedback
+3. `sales`, `expenses` e `cash_sessions`
+4. tabelas administrativas (`periods`, `features`, `branches`, `settings`)
+
+Checklist mínimo antes de apagar o histórico antigo:
+
+- `php artisan migrate:fresh --seed` sobe sem erro
+- login funciona
+- tenant demo é criado corretamente
+- OS, pagamentos, vendas e caixa funcionam
+- portal público por `tracking_token` funciona
+- SMTP/teste de e-mail funciona
+- menus operacionais respeitam os defaults novos
+
+Observação: hoje os seeders já foram ajustados para o estado atual do produto, então o caminho correto é primeiro validar `migrate:fresh --seed` localmente e só depois iniciar o squash real das migrations.
+
 ## Estrutura resumida
 
 - `app/Http/Controllers/App`: controllers autenticados do painel

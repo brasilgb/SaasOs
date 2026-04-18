@@ -3,6 +3,7 @@
 namespace Database\Factories\App;
 
 use App\Models\App\Order;
+use App\Support\OrderStatus;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -23,6 +24,9 @@ class OrderFactory extends Factory
         $createdAt = $this->faker->dateTimeBetween('-60 days', 'now');
         $deliveryDate = $this->faker->optional(40)->dateTimeBetween($createdAt, 'now');
         $updatedAt = $this->faker->dateTimeBetween($createdAt, 'now');
+        $partsValue = $this->faker->randomFloat(2, 0, 600);
+        $serviceValue = $this->faker->randomFloat(2, 40, 900);
+        $serviceCost = round($partsValue + $serviceValue, 2);
 
         return [
             'order_number' => $this->faker->unique()->numberBetween(1, 999999),
@@ -33,13 +37,13 @@ class OrderFactory extends Factory
             'state_conservation' => $this->faker->randomElement(['bom estado', 'com avarias', 'nao liga']),
             'accessories' => $this->faker->randomElement(['carregador', 'mouse', 'teclado', 'nenhum']),
             'budget_description' => $this->faker->optional()->paragraph(),
-            'budget_value' => $this->faker->optional()->randomFloat(2, 50, 1200),
-            'service_status' => $this->faker->numberBetween(1, 4),
+            'budget_value' => $serviceCost,
+            'service_status' => $this->faker->randomElement(OrderStatus::values()),
             'observations' => $this->faker->optional()->sentence(),
             'services_performed' => $this->faker->optional()->paragraph(),
-            'parts_value' => $this->faker->optional()->randomFloat(2, 10, 600),
-            'service_value' => $this->faker->optional()->randomFloat(2, 10, 900),
-            'service_cost' => $this->faker->optional()->randomFloat(2, 10, 500),
+            'parts_value' => $partsValue,
+            'service_value' => $serviceValue,
+            'service_cost' => $serviceCost,
             'delivery_forecast' => $this->faker->optional()->dateTimeBetween($createdAt, 'now')?->format('Y-m-d'),
             'delivery_date' => $deliveryDate,
             'warranty_days' => $this->faker->optional()->numberBetween(30, 180),

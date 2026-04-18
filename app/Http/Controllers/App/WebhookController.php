@@ -71,7 +71,7 @@ class WebhookController extends Controller
             return response()->json(['error' => 'Plan not found'], 404);
         }
 
-        $months = $this->resolvePlanMonths($plan);
+        $months = $plan->billingMonths();
         if ($months <= 0) {
             Log::error('Plano sem período de renovação válido.', [
                 'payment_id' => $payment->id,
@@ -106,14 +106,7 @@ class WebhookController extends Controller
 
             Payment::updateOrCreate(
                 ['payment_id' => (string) $payment->id],
-                [
-                    'tenant_id' => $tenant->id,
-                    'gateway' => 'mercadopago',
-                    'amount' => (float) ($payment->transaction_amount ?? 0),
-                    'status' => (string) ($payment->status ?? 'approved'),
-                    'expires_at' => $payment->date_of_expiration ?? null,
-                    'raw_response' => json_decode(json_encode($payment), true),
-                ]
+                $this->buildPaymentPayload($payment, $tenant->id)
             );
 
             Log::info("Tenant {$tenant->name} renovado via PIX. Plano: {$plan->name}");
@@ -145,15 +138,29 @@ class WebhookController extends Controller
 
         Payment::updateOrCreate(
             ['payment_id' => $paymentId],
-            [
-                'tenant_id' => $tenantId,
-                'gateway' => 'mercadopago',
-                'amount' => (float) ($payment->transaction_amount ?? 0),
-                'status' => (string) ($payment->status ?? 'unknown'),
-                'expires_at' => $payment->date_of_expiration ?? null,
-                'raw_response' => json_decode(json_encode($payment), true),
-            ]
+            $this->buildPaymentPayload($payment, (int) $tenantId)
         );
+    }
+
+    private function buildPaymentPayload($payment, int $tenantId): array
+    {
+        $paymentId = (string) $payment->id;
+        $existing = Payment::query()->where('payment_id', $paymentId)->first();
+        $idempotencyKey = $existing?->idempotency_key;
+
+        if (! $idempotencyKey || trim($idempotencyKey) === '') {
+            $idempotencyKey = 'webhook-'.$paymentId;
+        }
+
+        return [
+            'tenant_id' => $tenantId,
+            'gateway' => 'mercadopago',
+            'amount' => (float) ($payment->transaction_amount ?? 0),
+            'status' => (string) ($payment->status ?? 'unknown'),
+            'idempotency_key' => $idempotencyKey,
+            'expires_at' => $payment->date_of_expiration ?? null,
+            'raw_response' => json_decode(json_encode($payment), true),
+        ];
     }
 
     private function parseExternalReference(mixed $externalReference): ?array
@@ -168,32 +175,5 @@ class WebhookController extends Controller
         }
 
         return $metadata;
-    }
-
-    private function resolvePlanMonths(Plan $plan): int
-    {
-        $text = mb_strtolower(trim(($plan->slug ?? '').' '.($plan->name ?? '')));
-        if ($text === '') {
-            return 0;
-        }
-
-        if (str_contains($text, 'anual') || str_contains($text, 'year')) {
-            return 12;
-        }
-        if (str_contains($text, 'semestral') || str_contains($text, 'semiannual')) {
-            return 6;
-        }
-        if (str_contains($text, 'trimestral') || str_contains($text, 'quarter')) {
-            return 3;
-        }
-        if (str_contains($text, 'mensal') || str_contains($text, 'month')) {
-            return 1;
-        }
-
-        if (preg_match('/(^|[^0-9])(12|6|3|1)($|[^0-9])/', $text, $matches) === 1) {
-            return (int) $matches[2];
-        }
-
-        return 0;
     }
 }

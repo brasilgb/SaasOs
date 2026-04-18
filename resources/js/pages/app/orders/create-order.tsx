@@ -13,8 +13,8 @@ import { BreadcrumbItem, OptionType } from '@/types';
 import { statusOrcamento } from '@/Utils/dataSelect';
 import { maskMoney, maskMoneyDot } from '@/Utils/mask';
 import selectStyles from '@/Utils/selectStyles';
-import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, Save, Wrench } from 'lucide-react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { ArrowLeft, Printer, Save, Wrench } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Select from 'react-select';
 import CreatableSelect from 'react-select/creatable';
@@ -43,6 +43,7 @@ export default function CreateOrder({
     equipments: { id: number; equipment: string }[];
     models: string[];
 }) {
+    const { flash } = usePage().props as any;
     const initialModelOptions: OptionType[] = models.map((model) => ({
         value: model,
         label: model,
@@ -79,17 +80,21 @@ export default function CreateOrder({
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        post(route('app.orders.store'), {
-            onSuccess: () => {
-                toastSuccess('Sucesso', 'Ordem de serviço gerada com sucesso');
-                reset();
-            },
-        });
+        post(route('app.orders.store'));
     };
 
     useEffect(() => {
         setData('budget_value', maskMoneyDot(String(data.budget_value)));
     }, [data.budget_value]);
+
+    useEffect(() => {
+        if (flash?.success) {
+            toastSuccess('Sucesso', flash.success);
+            reset();
+            setSelectedModel(null);
+            setModelOptions(initialModelOptions);
+        }
+    }, [flash?.success]);
 
     const changeCustomer = (selected: OptionType | null) => {
         setData('customer_id', String(selected?.value ?? ''));
@@ -142,6 +147,23 @@ export default function CreateOrder({
             <div className="p-4">
                 <div className="rounded-lg border p-2">
                     <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
+                        {flash?.label_print && (
+                            <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+                                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                                    <div>
+                                        <p className="font-medium text-emerald-900">Ordem #{flash.label_print.order_number} cadastrada</p>
+                                        <p className="text-sm text-emerald-700">Etiqueta pronta para impressão.</p>
+                                    </div>
+                                    <Button type="button" asChild className="bg-emerald-600 text-white hover:bg-emerald-700">
+                                        <a href={flash.label_print.print_url} target="_blank" rel="noopener noreferrer">
+                                            <Printer className="h-4 w-4" />
+                                            Imprimir etiqueta
+                                        </a>
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+
                         <div className="mt-4 grid gap-4 md:grid-cols-8">
                             <div className="grid gap-2 md:col-span-2">
                                 <Label htmlFor="customer_id">Cliente</Label>
@@ -218,9 +240,88 @@ export default function CreateOrder({
                                     onChange={changeModel}
                                     onCreateOption={createModel}
                                     isClearable
-                                    styles={selectStyles}
+                                    menuPosition="fixed"
+                                    styles={{
+                                        container: (base) => ({
+                                            ...base,
+                                            backgroundColor: 'hsl(var(--background))',
+                                        }),
+                                        control: (base, state) => ({
+                                            ...base,
+                                            minHeight: '36px',
+                                            borderRadius: '0.375rem',
+                                            borderColor: state.isFocused ? 'hsl(var(--ring))' : 'hsl(var(--input))',
+                                            backgroundColor: 'hsl(var(--background))',
+                                            color: 'hsl(var(--foreground))',
+                                            boxShadow: 'none',
+                                            ':hover': {
+                                                borderColor: state.isFocused ? 'hsl(var(--ring))' : 'hsl(var(--input))',
+                                            },
+                                        }),
+                                        valueContainer: (base) => ({
+                                            ...base,
+                                            backgroundColor: 'hsl(var(--background))',
+                                            padding: '0 8px',
+                                        }),
+                                        input: (base) => ({
+                                            ...base,
+                                            color: 'hsl(var(--foreground))',
+                                        }),
+                                        singleValue: (base) => ({
+                                            ...base,
+                                            color: 'hsl(var(--foreground))',
+                                            fontSize: '14px',
+                                        }),
+                                        placeholder: (base) => ({
+                                            ...base,
+                                            color: 'hsl(var(--muted-foreground))',
+                                            fontSize: '14px',
+                                        }),
+                                        clearIndicator: (base) => ({
+                                            ...base,
+                                            color: 'hsl(var(--muted-foreground))',
+                                        }),
+                                        dropdownIndicator: (base) => ({
+                                            ...base,
+                                            color: 'hsl(var(--muted-foreground))',
+                                            backgroundColor: 'hsl(var(--background))',
+                                        }),
+                                        indicatorSeparator: () => ({
+                                            display: 'none',
+                                        }),
+                                        menu: (base) => ({
+                                            ...base,
+                                            backgroundColor: 'hsl(var(--popover))',
+                                            color: 'hsl(var(--popover-foreground))',
+                                            border: '1px solid hsl(var(--border))',
+                                            zIndex: 50,
+                                        }),
+                                        menuList: (base) => ({
+                                            ...base,
+                                            fontSize: '14px',
+                                            backgroundColor: 'hsl(var(--popover))',
+                                        }),
+                                        noOptionsMessage: (base) => ({
+                                            ...base,
+                                            backgroundColor: 'hsl(var(--popover))',
+                                            color: 'hsl(var(--muted-foreground))',
+                                        }),
+                                        loadingMessage: (base) => ({
+                                            ...base,
+                                            backgroundColor: 'hsl(var(--popover))',
+                                            color: 'hsl(var(--muted-foreground))',
+                                        }),
+                                        option: (base, state) => ({
+                                            ...base,
+                                            backgroundColor: state.isSelected
+                                                ? 'hsl(var(--accent))'
+                                                : state.isFocused
+                                                  ? 'hsl(var(--accent) / 0.7)'
+                                                  : 'hsl(var(--popover))',
+                                            color: 'hsl(var(--foreground))',
+                                        }),
+                                    }}
                                     placeholder="Selecione ou digite a nova marca/modelo"
-                                    className="h-9 rounded-md border border-gray-300 p-0 text-gray-700 shadow-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                     formatCreateLabel={(inputValue) => `Criar "${inputValue}"`}
                                 />
                                 <InputError message={errors.model} />

@@ -7,7 +7,7 @@ const selectStyles: StylesConfig<OptionType, false> = {
         fontSize: '14px',
         boxShadow: 'none',
         border: 'none',
-        background: 'transparent',
+        background: 'hsl(var(--background))',
         paddingBottom: '2px',
     }),
     singleValue: (base) => ({

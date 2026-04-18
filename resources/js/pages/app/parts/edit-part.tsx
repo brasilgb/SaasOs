@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, MemoryStick } from 'lucide-react';
+import { ArrowLeft, MemoryStick, Printer } from 'lucide-react';
 import PartForm from './part-form';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -45,7 +45,14 @@ export default function EditPart({ categories, manufacturers, parts, page, searc
                         </Link>
                     </Button>
                 </div>
-                <div></div>
+                <div>
+                    <Button variant="outline" asChild>
+                        <a href={route('app.parts.print-label', parts.id)} target="_blank" rel="noopener noreferrer">
+                            <Printer className="h-4 w-4" />
+                            Imprimir etiqueta
+                        </a>
+                    </Button>
+                </div>
             </div>
 
             <div className="p-4">

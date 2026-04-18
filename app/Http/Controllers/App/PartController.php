@@ -140,6 +140,15 @@ class PartController extends Controller
         ]);
     }
 
+    public function printLabel(Part $part)
+    {
+        Gate::authorize('parts.access');
+
+        return Inertia::render('app/parts/print-label', [
+            'part' => $part,
+        ]);
+    }
+
     /**
      * Show the form for editing the specified resource.
      */

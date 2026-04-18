@@ -10,7 +10,7 @@ import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { maskMoney } from '@/Utils/mask';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { Check, Edit, MemoryStick, Plus, X } from 'lucide-react';
+import { Check, Edit, MemoryStick, Plus, Printer, X } from 'lucide-react';
 import moment from 'moment';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -105,6 +105,18 @@ export default function Parts({ parts, search }: any) {
                                         <TableCell>{moment(part.created_at).format('DD/MM/YYYY')}</TableCell>
 
                                         <TableCell className="flex justify-end gap-2">
+                                            {canManageParts && (
+                                                <Button asChild size="icon" variant="outline">
+                                                    <a
+                                                        href={route('app.parts.print-label', part.id)}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        title="Imprimir etiqueta do produto"
+                                                    >
+                                                        <Printer className="h-4 w-4" />
+                                                    </a>
+                                                </Button>
+                                            )}
                                             {canManageParts && (
                                                 <Button asChild size="icon" className="bg-orange-500 text-white hover:bg-orange-600">
                                                     <Link href={route('app.parts.edit', part.id)} data={{ page: parts.current_page, search: search }}>

@@ -28,6 +28,7 @@ class PlanFactory extends Factory
             'name' => $name,
             'slug' => Str::slug($name),
             'value' => $this->faker->randomFloat(2, 29, 999),
+            'billing_months' => $this->faker->randomElement([1, 3, 6, 12]),
             'description' => $this->faker->sentence,
         ];
     }

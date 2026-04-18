@@ -18,6 +18,7 @@ class Other extends Model
         'show_tasks_menu' => 'boolean',
         'show_commercial_performance_menu' => 'boolean',
         'show_quality_menu' => 'boolean',
+        'print_label_button_after_order_create' => 'boolean',
         'warranty_return_alert_threshold' => 'float',
         'communication_follow_up_cooldown_days' => 'integer',
         'automatic_follow_ups_enabled' => 'boolean',

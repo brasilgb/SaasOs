@@ -291,6 +291,7 @@ class HandleInertiaRequests extends Middleware
                 'show_tasks_menu' => false,
                 'show_commercial_performance_menu' => false,
                 'show_quality_menu' => false,
+                'print_label_button_after_order_create' => false,
                 'automatic_follow_ups_enabled' => false,
             ]);
             $openCashSession = CashSession::query()
@@ -311,6 +312,7 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('success'),
                 'message' => fn () => $request->session()->get('message'),
                 'error' => fn () => $request->session()->get('error'),
+                'label_print' => fn () => $request->session()->get('label_print'),
             ],
             'subscription' => $subscription,
 
@@ -328,6 +330,7 @@ class HandleInertiaRequests extends Middleware
                 'show_tasks_menu' => $otherSetting->show_tasks_menu ?? false,
                 'show_commercial_performance_menu' => $otherSetting->show_commercial_performance_menu ?? false,
                 'show_quality_menu' => $otherSetting->show_quality_menu ?? false,
+                'print_label_button_after_order_create' => $otherSetting->print_label_button_after_order_create ?? false,
             ] : null,
             'cashier' => $user ? [
                 'isOpen' => (bool) $openCashSession,

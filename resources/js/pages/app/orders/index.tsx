@@ -8,6 +8,7 @@ import SelectFilter from '@/components/SelectFilter';
 import { StatusBadge } from '@/components/StatusBadge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { WhatsAppButton } from '@/components/WhatsAppButtonProps';
@@ -16,12 +17,20 @@ import { BreadcrumbItem } from '@/types';
 import { statusServico } from '@/Utils/dataSelect';
 import { maskPhone } from '@/Utils/mask';
 import { ORDER_STATUSES_READY_FOR_INVOICE } from '@/Utils/order-status';
-import { Head, Link, router, usePage } from '@inertiajs/react';
-import { AlertTriangle, Edit, FileTextIcon, ImageUp, LinkIcon, Mail, Plus, Wrench, X } from 'lucide-react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import { AlertTriangle, Barcode, Camera, Edit, FileTextIcon, ImageUp, LinkIcon, Mail, Plus, Wrench, X } from 'lucide-react';
 import moment from 'moment';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ModalReceipt from '../receipts/modal-receipt';
 import OrderPaymentsModal from './order-payments-modal';
+
+declare global {
+    interface Window {
+        BarcodeDetector?: new (options?: { formats?: string[] }) => {
+            detect: (source: CanvasImageSource) => Promise<Array<{ rawValue?: string }>>;
+        };
+    }
+}
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -35,10 +44,20 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Orders({ orders, whats, feedback, search, status, filter }: any) {
-    const { auth } = usePage<{ auth?: { role?: string; permissions?: string[] } }>().props;
+    const { auth, othersetting } = usePage<{ auth?: { role?: string; permissions?: string[] }; othersetting?: { print_label_button_after_order_create?: boolean } }>().props;
     const [openInvoiceModal, setOpenInvoiceModal] = useState(false);
     const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState<any | null>(null);
+    const barcodeForm = useForm({
+        barcode: '',
+    });
     const hasActiveFilters = Boolean(search || status || filter);
+    const showBarcodeReader = Boolean(othersetting?.print_label_button_after_order_create);
+    const [cameraOpen, setCameraOpen] = useState(false);
+    const [cameraError, setCameraError] = useState<string | null>(null);
+    const [cameraSupported, setCameraSupported] = useState(false);
+    const [isMobileDevice, setIsMobileDevice] = useState(false);
+    const videoRef = useRef<HTMLVideoElement | null>(null);
+    const streamRef = useRef<MediaStream | null>(null);
     const canManageOrders = auth?.role !== 'technician' && auth?.permissions?.includes('orders');
     const feedbackWindowIds = new Set((feedback || []).map((feed: any) => feed.id));
 
@@ -78,6 +97,120 @@ export default function Orders({ orders, whats, feedback, search, status, filter
         return '';
     };
 
+    const handleBarcodeSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+
+        const barcode = String(barcodeForm.data.barcode || '').trim();
+        if (!barcode) return;
+
+        router.get(
+            route('app.orders.index'),
+            {
+                search: barcode,
+                status: status || undefined,
+                filter: filter || undefined,
+            },
+            {
+                preserveState: true,
+                replace: true,
+            },
+        );
+    };
+
+    const stopCamera = () => {
+        streamRef.current?.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+    };
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        const hasCameraApi = 'BarcodeDetector' in window && !!navigator.mediaDevices?.getUserMedia;
+        const mobileByViewport = window.matchMedia('(max-width: 768px)').matches;
+        const mobileByPointer = window.matchMedia('(pointer: coarse)').matches;
+        const mobileByUserAgent = /Android|iPhone|iPad|iPod|Mobile/i.test(window.navigator.userAgent);
+
+        setCameraSupported(hasCameraApi);
+        setIsMobileDevice(mobileByViewport || mobileByPointer || mobileByUserAgent);
+    }, []);
+
+    useEffect(() => {
+        if (!cameraOpen || !cameraSupported) return;
+
+        let animationFrameId = 0;
+        let cancelled = false;
+        const detector = window.BarcodeDetector
+            ? new window.BarcodeDetector({
+                  formats: ['code_128', 'code_39', 'ean_13', 'ean_8', 'upc_a', 'upc_e'],
+              })
+            : null;
+
+        const scan = async () => {
+            if (cancelled || !detector || !videoRef.current) return;
+
+            try {
+                const barcodes = await detector.detect(videoRef.current);
+                const value = barcodes.find((item) => item.rawValue)?.rawValue?.trim();
+
+                if (value) {
+                    barcodeForm.setData('barcode', value);
+                    setCameraOpen(false);
+                    stopCamera();
+                    router.get(
+                        route('app.orders.index'),
+                        {
+                            search: value,
+                            status: status || undefined,
+                            filter: filter || undefined,
+                        },
+                        {
+                            preserveState: true,
+                            replace: true,
+                        },
+                    );
+                    return;
+                }
+            } catch {
+                // Ignore intermittent detect errors from the browser scanner loop.
+            }
+
+            animationFrameId = window.requestAnimationFrame(scan);
+        };
+
+        navigator.mediaDevices
+            .getUserMedia({
+                video: {
+                    facingMode: { ideal: 'environment' },
+                },
+            })
+            .then((stream) => {
+                if (cancelled) {
+                    stream.getTracks().forEach((track) => track.stop());
+                    return;
+                }
+
+                streamRef.current = stream;
+
+                if (videoRef.current) {
+                    videoRef.current.srcObject = stream;
+                    videoRef.current.play().catch(() => null);
+                }
+
+                animationFrameId = window.requestAnimationFrame(scan);
+            })
+            .catch(() => {
+                setCameraError('Não foi possível acessar a câmera deste dispositivo.');
+            });
+
+        return () => {
+            cancelled = true;
+            if (animationFrameId) {
+                window.cancelAnimationFrame(animationFrameId);
+            }
+            stopCamera();
+        };
+    }, [cameraOpen, cameraSupported, filter, status]);
+
     return (
         <AppLayout>
             <Head title="Ordens" />
@@ -94,8 +227,54 @@ export default function Orders({ orders, whats, feedback, search, status, filter
 
             <div className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
                 {/* Busca */}
-                <div className="w-full md:max-w-sm">
-                    <InputSearch placeholder="Buscar por núm. ordem, cliente ou cpf/cnpj" url="app.orders.index" />
+                <div className="flex w-full flex-col gap-2 md:max-w-3xl md:flex-row">
+                    <div className="w-full md:max-w-sm">
+                        <InputSearch placeholder="Buscar por núm. ordem, cliente ou cpf/cnpj" url="app.orders.index" />
+                    </div>
+                    {showBarcodeReader && (
+                        <form onSubmit={handleBarcodeSubmit} className="w-full md:max-w-xl">
+                            <div className="flex gap-2">
+                                {isMobileDevice ? (
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() => {
+                                            setCameraError(null);
+                                            setCameraOpen(true);
+                                        }}
+                                        disabled={!cameraSupported}
+                                        title={
+                                            cameraSupported
+                                                ? 'Ler código de barras com a câmera do celular'
+                                                : 'Leitura por câmera indisponível neste navegador'
+                                        }
+                                        className="w-full md:w-auto"
+                                    >
+                                        <Camera className="mr-1 h-4 w-4" />
+                                        Ler com celular
+                                    </Button>
+                                ) : (
+                                    <div className="relative flex-1">
+                                        <Input
+                                            value={barcodeForm.data.barcode}
+                                            onChange={(e) => barcodeForm.setData('barcode', e.target.value)}
+                                            placeholder="Ler com leitor de código de barras"
+                                            autoComplete="off"
+                                            className="pr-12"
+                                        />
+                                        <Button
+                                            type="submit"
+                                            size="icon"
+                                            className="absolute top-0 right-0 h-full rounded-l-none"
+                                            title="Buscar pela leitura do leitor de código de barras"
+                                        >
+                                            <Barcode className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                )}
+                            </div>
+                        </form>
+                    )}
                 </div>
 
                 {/* Filtro */}
@@ -418,6 +597,48 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                     }}
                     order={selectedInvoiceOrder}
                 />
+            )}
+            {cameraOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4">
+                    <div className="w-full max-w-md rounded-xl bg-background p-4 shadow-xl">
+                        <div className="mb-3 flex items-center justify-between">
+                            <div>
+                                <h3 className="font-semibold">Ler código de barras</h3>
+                                <p className="text-muted-foreground text-sm">Aponte a câmera para a etiqueta da ordem.</p>
+                            </div>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {
+                                    setCameraOpen(false);
+                                    stopCamera();
+                                }}
+                            >
+                                <X className="h-4 w-4" />
+                            </Button>
+                        </div>
+
+                        <div className="overflow-hidden rounded-lg border bg-black">
+                            <video ref={videoRef} autoPlay playsInline muted className="aspect-[3/4] w-full object-cover" />
+                        </div>
+
+                        {cameraError ? <p className="mt-3 text-sm text-rose-600">{cameraError}</p> : null}
+
+                        <div className="mt-3 flex justify-end">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => {
+                                    setCameraOpen(false);
+                                    stopCamera();
+                                }}
+                            >
+                                Fechar
+                            </Button>
+                        </div>
+                    </div>
+                </div>
             )}
         </AppLayout>
     );

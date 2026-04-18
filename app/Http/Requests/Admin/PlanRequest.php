@@ -26,6 +26,8 @@ class PlanRequest extends FormRequest
             'name' => 'required',
             'slug' => 'required',
             'description' => 'required',
+            'value' => 'required|numeric|min:0',
+            'billing_months' => 'required|integer|in:1,3,6,12',
         ];
     }
 
@@ -34,6 +36,8 @@ class PlanRequest extends FormRequest
         return [
             'name' => 'nome',
             'description' => 'descrição',
+            'value' => 'valor',
+            'billing_months' => 'ciclo de cobrança',
         ];
     }
 }

@@ -85,7 +85,9 @@ Route::get('receipts/{or}/{tp}', [ReceiptController::class, 'printing'])->name('
 
 Route::resource('label-printing', LabelPrintingController::class);
 Route::get('label-printing-print', [LabelPrintingController::class, 'print'])->name('label-printing.print');
+Route::put('label-printing-settings', [LabelPrintingController::class, 'updateSettings'])->name('label-printing.settings');
 Route::resource('/parts', PartController::class);
+Route::get('/parts/{part}/print-label', [PartController::class, 'printLabel'])->name('parts.print-label');
 Route::post('/orders/remove-part', [OrderController::class, 'removePart'])->name('orders.removePart');
 Route::resource('/sales', SaleController::class);
 Route::post('/sales/{sale}/cancel', [SaleController::class, 'cancel'])->name('sales.cancel');

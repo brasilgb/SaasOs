@@ -209,7 +209,7 @@ class CustomerController extends Controller
 
         try {
             $request->validate([
-                'arquivo' => 'required|mimes:csv,txt|max:4096',
+                'arquivo' => 'required|mimes:csv,txt|max:20480',
             ], [
                 'arquivo.required' => 'Por favor, selecione um arquivo.',
                 'arquivo.mimes' => 'O arquivo deve ser do tipo CSV ou TXT.',

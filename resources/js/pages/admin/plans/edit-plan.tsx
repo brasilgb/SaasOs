@@ -15,6 +15,7 @@ interface Plan {
     slug: string;
     description: string;
     value: string;
+    billing_months: number;
 }
 
 interface EditPlanProps {
@@ -29,6 +30,7 @@ export default function EditPlan({ plan }: EditPlanProps) {
         slug: plan.slug,
         description: plan.description,
         value: plan.value,
+        billing_months: String(plan.billing_months ?? 1),
     });
 
     const handleSlug = (slug: string) => {
@@ -85,6 +87,22 @@ export default function EditPlan({ plan }: EditPlanProps) {
                         <Label htmlFor="value">Valor</Label>
                         <Input type="text" id="value" value={maskMoney(data.value)} onChange={(e) => setData('value', e.target.value)} />
                         {errors.value && <div className="text-sm text-red-500">{errors.value}</div>}
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label htmlFor="billing_months">Ciclo de cobrança</Label>
+                        <select
+                            id="billing_months"
+                            value={data.billing_months}
+                            onChange={(e) => setData('billing_months', e.target.value)}
+                            className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                        >
+                            <option value="1">Mensal</option>
+                            <option value="3">Trimestral</option>
+                            <option value="6">Semestral</option>
+                            <option value="12">Anual</option>
+                        </select>
+                        {errors.billing_months && <div className="text-sm text-red-500">{errors.billing_months}</div>}
                     </div>
 
                     <DialogFooter className="gap-2">
