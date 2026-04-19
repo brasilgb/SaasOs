@@ -66,7 +66,7 @@ class DashboardController extends Controller
 
                 return $tenant->expires_at->lessThanOrEqualTo($nextWeek);
             })
-            ->sortBy(function (Tenant $tenant) {
+            ->sortBy(function (Tenant $tenant) use ($today) {
                 return sprintf(
                     '%02d-%020d',
                     $tenant->attentionPriority($today),
