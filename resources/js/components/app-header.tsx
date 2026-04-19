@@ -45,6 +45,7 @@ type AppHeaderPageProps = SharedData & {
     othersetting?: {
         budget?: boolean;
         enableparts?: boolean;
+        enablesales?: boolean;
         show_follow_ups_menu?: boolean;
         show_tasks_menu?: boolean;
         show_commercial_performance_menu?: boolean;

@@ -21,7 +21,9 @@ interface Plan {
 interface Period {
     id: number;
     name: string;
+    plan_id: number | string;
     interval: string;
+    interval_count: string | number;
     price: string | number;
     created_at: string;
     plan: Plan;
@@ -29,9 +31,13 @@ interface Period {
 
 interface PaginatedData<T> {
     data: T[];
-    current_page?: number;
-    last_page?: number;
-    links?: Array<Record<string, unknown>>;
+    current_page: number;
+    last_page: number;
+    links: Array<{ url: string | null; label: string; active?: boolean }>;
+    first_page_url: string | null;
+    prev_page_url: string | null;
+    next_page_url: string | null;
+    last_page_url: string | null;
 }
 
 interface PeriodsIndexProps {

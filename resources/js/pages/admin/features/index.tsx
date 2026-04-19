@@ -21,6 +21,7 @@ interface Period {
 interface Feature {
     id: number;
     name: string;
+    period_id: number | string;
     order: number | string;
     created_at: string;
     period: Period;
@@ -28,9 +29,13 @@ interface Feature {
 
 interface PaginatedData<T> {
     data: T[];
-    current_page?: number;
-    last_page?: number;
-    links?: Array<Record<string, unknown>>;
+    current_page: number;
+    last_page: number;
+    links: Array<{ url: string | null; label: string; active?: boolean }>;
+    first_page_url: string | null;
+    prev_page_url: string | null;
+    next_page_url: string | null;
+    last_page_url: string | null;
 }
 
 interface FeaturesIndexProps {

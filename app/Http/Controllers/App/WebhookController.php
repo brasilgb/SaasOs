@@ -6,14 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\Admin\Plan;
 use App\Models\App\Payment;
 use App\Models\Tenant;
+use App\Services\MercadoPagoService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use MercadoPago\Client\Payment\PaymentClient;
-use MercadoPago\MercadoPagoConfig;
 
 class WebhookController extends Controller
 {
+    public function __construct(private readonly MercadoPagoService $mercadoPagoService) {}
+
     public function handle(Request $request, $token)
     {
         // 1ª CAMADA: Validação do Token da URL
@@ -38,10 +39,7 @@ class WebhookController extends Controller
         }
 
         try {
-            MercadoPagoConfig::setAccessToken(config('services.mercadopago.token'));
-            $client = new PaymentClient;
-
-            $payment = $client->get($paymentId);
+            $payment = $this->mercadoPagoService->getPayment($paymentId);
             $this->syncPaymentRecord($payment);
 
             if ($payment->status === 'approved') {

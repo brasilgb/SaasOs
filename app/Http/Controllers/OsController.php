@@ -8,7 +8,6 @@ use App\Events\OrderCustomerPickupAcknowledged;
 use App\Models\App\Checklist;
 use App\Models\App\Company;
 use App\Models\App\Order;
-use App\Models\App\OrderPayment;
 use App\Models\App\Receipt;
 use App\Services\OrderStatusService;
 use App\Support\OrderStatus;
@@ -54,10 +53,7 @@ class OsController extends Controller
 
     private function remainingAmount(Order $order): float
     {
-        $totalPaid = OrderPayment::withoutGlobalScopes()
-            ->where('order_id', $order->id)
-            ->where('tenant_id', $order->tenant_id)
-            ->sum('amount');
+        $totalPaid = $order->orderPayments()->sum('amount');
 
         return max(0, (float) ($order->service_cost ?? 0) - (float) $totalPaid);
     }

@@ -52,6 +52,8 @@ export default function SaleDetailsModal({ isOpen, onClose, sale }: SaleDetailsM
         cancelled: 'Cancelada',
         fiscal_registered: 'Comprovante fiscal registrado',
     };
+    const financialStatusKey = sale.financial_status ?? '';
+    const saleStatusKey = sale.status ?? '';
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -70,7 +72,7 @@ export default function SaleDetailsModal({ isOpen, onClose, sale }: SaleDetailsM
                         </p>
                         <p>
                             <strong>Status financeiro:</strong>{' '}
-                            {financialStatusLabel[sale.financial_status] || sale.financial_status || 'Não informado'}
+                            {financialStatusLabel[financialStatusKey] || sale.financial_status || 'Não informado'}
                         </p>
                         <p>
                             <strong>Valor pago:</strong> {maskMoney(String(sale.paid_amount || 0))}
@@ -128,8 +130,10 @@ export default function SaleDetailsModal({ isOpen, onClose, sale }: SaleDetailsM
                                         <TableRow key={item.id}>
                                             <TableCell>{item.part?.name}</TableCell>
                                             <TableCell className="text-center">{item.quantity}</TableCell>
-                                            <TableCell className="text-right">{maskMoney(item.unit_price)}</TableCell>
-                                            <TableCell className="text-right">{maskMoney(String(item.quantity * item.unit_price))}</TableCell>
+                                            <TableCell className="text-right">{maskMoney(String(item.unit_price ?? 0))}</TableCell>
+                                            <TableCell className="text-right">
+                                                {maskMoney(String(Number(item.quantity ?? 0) * Number(item.unit_price ?? 0)))}
+                                            </TableCell>
                                         </TableRow>
                                     ))}
                                     <TableRow className="bg-muted/50 font-bold">
@@ -150,7 +154,7 @@ export default function SaleDetailsModal({ isOpen, onClose, sale }: SaleDetailsM
                                 sale.logs.map((log) => (
                                     <div key={log.id} className="rounded border p-2 text-xs">
                                         <div>
-                                            <strong>Ação:</strong> {actionLabel[log.action] || log.action}
+                                            <strong>Ação:</strong> {actionLabel[log.action ?? ''] || log.action || saleStatusKey}
                                         </div>
                                         <div>
                                             <strong>Usuário:</strong> {log.user?.name || 'Sistema'}
