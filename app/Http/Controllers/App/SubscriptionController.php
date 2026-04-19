@@ -13,9 +13,7 @@ class SubscriptionController extends Controller
     {
         $tenant = auth()->user()->tenant;
 
-        // Segurança: Se o usuário NÃO estiver bloqueado nem expirado há > 3 dias, manda pro dashboard
-        // Isso previne que alguém acesse a url /subscription/blocked manualmente estando ativo
-        if ($tenant->subscription_status === 'active') {
+        if ($tenant->subscriptionBucket() === \App\Models\Tenant::SUBSCRIPTION_ACTIVE) {
             return redirect()->route('app.dashboard');
         }
 
@@ -34,11 +32,8 @@ class SubscriptionController extends Controller
     // Endpoint leve para o Frontend verificar se o pagamento caiu
     public function checkStatus()
     {
-        // Buscamos apenas o campo necessário para performance
-        $status = auth()->user()->tenant->subscription_status;
+        $status = auth()->user()->tenant->persistedSubscriptionStatus();
 
-        // O status é atualizado via Webhook (configurado anteriormente),
-        // então aqui só lemos o banco.
         return response()->json([
             'status' => $status,
         ]);

@@ -2,6 +2,7 @@
 
 namespace App\Models\Admin;
 
+use App\Models\Admin\Period;
 use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Database\Factories\PlanFactory;
@@ -76,37 +77,26 @@ class Plan extends Model
         return $this->hasMany(Period::class);
     }
 
-    public function preferredPeriodBillingMonths(): int
+    public function preferredPeriod(): ?Period
     {
         $periods = $this->relationLoaded('periods')
             ? $this->periods
             : $this->periods()->get();
 
         if ($periods->isEmpty()) {
-            return 0;
+            return null;
         }
 
-        $preferred = $periods->first(function (Period $period) {
-            return $this->periodMonths($period) === (int) ($this->billing_months ?? 0);
+        return $periods->first(function (Period $period) {
+            return $period->billingMonths() === (int) ($this->billing_months ?? 0);
         }) ?? $periods->sortBy('id')->first();
-
-        return $preferred ? $this->periodMonths($preferred) : 0;
     }
 
-    private function periodMonths(Period $period): int
+    public function preferredPeriodBillingMonths(): int
     {
-        $interval = mb_strtolower((string) $period->interval);
-        $count = (int) $period->interval_count;
+        $preferred = $this->preferredPeriod();
 
-        if ($count <= 0) {
-            return 0;
-        }
-
-        return match ($interval) {
-            'month', 'months', 'mensal', 'mes' => $count,
-            'year', 'years', 'anual', 'ano' => $count * 12,
-            default => 0,
-        };
+        return $preferred ? $preferred->billingMonths() : 0;
     }
 
     protected static function newFactory(): Factory

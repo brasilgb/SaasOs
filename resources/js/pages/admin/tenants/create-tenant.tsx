@@ -87,6 +87,8 @@ export default function CreateTenant({ plans }: any) {
         setData('status', selected?.value);
     };
 
+    const selectedPlan = allPlans.find((option: any) => String(option.value) === String(data.plan_id)) ?? null;
+
     return (
         <AdminLayout>
             <Head title="Empresas" />
@@ -221,6 +223,7 @@ export default function CreateTenant({ plans }: any) {
                             <div className="grid gap-2 md:col-span-2">
                                 <Label htmlFor="plan">Plano</Label>
                                 <Select
+                                    value={selectedPlan}
                                     options={allPlans}
                                     onChange={changePlan}
                                     placeholder="Selecione o plano"

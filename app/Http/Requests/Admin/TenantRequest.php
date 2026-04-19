@@ -4,6 +4,7 @@ namespace App\Http\Requests\Admin;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class TenantRequest extends FormRequest
 {
@@ -22,12 +23,24 @@ class TenantRequest extends FormRequest
      */
     public function rules(): array
     {
+        $tenantId = $this->route('tenant')?->id ?? $this->tenant?->id;
+
         return [
             'company' => 'required',
-            'cnpj' => ($this->getMethod() == 'POST') ? 'required|cpf_ou_cnpj|unique:tenants' : 'required|cpf_ou_cnpj|unique:tenants,cnpj,'.$this->tenant->id,
+            'cnpj' => ($this->getMethod() == 'POST') ? 'required|cpf_ou_cnpj|unique:tenants' : 'required|cpf_ou_cnpj|unique:tenants,cnpj,'.$tenantId,
             'email' => 'required',
             'phone' => 'required',
             'plan_id' => 'required|exists:plans,id',
+            'period_id' => [
+                'nullable',
+                Rule::exists('periods', 'id')->where(function ($query) {
+                    $planId = $this->input('plan_id');
+
+                    if ($planId !== null && $planId !== '') {
+                        $query->where('plan_id', $planId);
+                    }
+                }),
+            ],
             'status' => 'required',
         ];
     }
@@ -41,6 +54,7 @@ class TenantRequest extends FormRequest
             'phone' => 'telefone',
             'status' => 'status',
             'plan_id' => 'plano',
+            'period_id' => 'período',
         ];
     }
 }

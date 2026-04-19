@@ -96,8 +96,11 @@ class WebhookController extends Controller
                 ? $tenant->expires_at->copy()
                 : now();
 
+            $preferredPeriod = $plan->preferredPeriod();
+
             $tenant->update([
                 'plan_id' => $plan->id,
+                'period_id' => $preferredPeriod?->id,
                 'subscription_status' => 'active',
                 'expires_at' => $startBase->addMonths($months),
                 'last_payment_id' => (string) $payment->id,
