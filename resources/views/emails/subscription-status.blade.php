@@ -8,6 +8,11 @@
 </head>
 
 <body style="margin:0;padding:0;background:#f3f4f6;font-family:Arial,Helvetica,sans-serif;">
+    @php
+        $registeredLogoPath = public_path('logos/sigmaos-horizontal-dark.png');
+        $registeredLogoUrl = file_exists($registeredLogoPath) ? asset('logos/sigmaos-horizontal-dark.png') : null;
+    @endphp
+
     <div style="display:none;max-height:0;overflow:hidden;opacity:0;">
         {{ $notice['preview'] ?? 'Atualização importante sobre a sua assinatura.' }}
     </div>
@@ -20,9 +25,14 @@
 
                     <tr>
                         <td align="center" style="background:#0f172a;padding:30px 20px;">
-                            <h1 style="margin:0;color:#ffffff;font-size:24px;letter-spacing:0.5px;">
-                                SigmaOS
-                            </h1>
+                            @if (!empty($registeredLogoUrl))
+                                <img src="{{ $registeredLogoUrl }}" alt="SigmaOS"
+                                    style="display:block;margin:0 auto 14px auto;max-width:220px;height:auto;">
+                            @else
+                                <h1 style="margin:0;color:#ffffff;font-size:24px;letter-spacing:0.5px;">
+                                    SigmaOS
+                                </h1>
+                            @endif
                             <p style="margin:6px 0 0 0;color:#cbd5f5;font-size:13px;">
                                 Comunicação de assinatura
                             </p>
