@@ -78,7 +78,7 @@ export default function Terms() {
                         <li>Controle de peças e estoque</li>
                         <li>Armazenamento de informações de atendimento</li>
                         <li>Controle financeiro, caixa, despesas e vendas</li>
-                        <li>Acompanhamento público do cliente, follow-ups e indicadores operacionais</li>
+                        <li>Acompanhamento público do cliente, acompanhamentos e indicadores operacionais</li>
                     </ul>
 
                     {/* CADASTRO */}

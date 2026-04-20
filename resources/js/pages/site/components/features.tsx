@@ -1,7 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     BarChart3,
-    BookOpen,
     Calendar,
     ChartLine,
     CheckCircle,
@@ -80,7 +79,7 @@ const features = [
     {
         icon: ChartLine,
         title: 'Performance Comercial',
-        description: 'Acompanhe conversão de orçamento, recuperação de cobrança e resultado dos follow-ups.',
+        description: 'Acompanhe conversão de orçamento, recuperação de cobrança e resultado dos acompanhamentos.',
     },
     {
         icon: CheckSquare,
@@ -131,11 +130,6 @@ const features = [
         icon: Tag,
         title: 'Etiquetas Inteligentes',
         description: 'Identifique equipamentos rapidamente com etiquetas personalizadas.',
-    },
-    {
-        icon: BookOpen,
-        title: 'Tutoriais em Vídeo',
-        description: 'Acesse tutoriais e vídeos para dominar todas as funções do sistema.',
     },
     {
         icon: Settings,
