@@ -101,7 +101,7 @@ export function Footer() {
 
                 {/* Bottom */}
                 <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-6 sm:flex-row">
-                    <p className="text-sm text-white/42">© {new Date().getFullYear()} SigmaOs. Todos os direitos reservados.</p>
+                    <p className="text-sm text-white/42">© {new Date().getFullYear()} SigmaOS. Todos os direitos reservados.</p>
 
                     <div className="flex gap-6 text-sm">
                         <a href="/privacidade" className="text-white/42 transition-colors hover:text-white">

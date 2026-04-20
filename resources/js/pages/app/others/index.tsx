@@ -87,162 +87,163 @@ export default function Others({ othersettings, company, time_remaining, mailSet
     return (
         <AppLayout>
             <Head title="Outras configurações" />
-            <div className="flex h-16 items-center justify-between px-4">
+            <div className="flex min-h-16 w-full flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={Wrench} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Outras configurações</h2>
                 </div>
-                <div>
+                <div className="sm:ml-auto sm:text-right">
                     <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
 
-            <div className="p-4">
-                <div className="mb-6 space-y-6">
-                    <HeadingSmall
-                        title="Licença de uso do sistema"
-                        description={`Este software é licenciado para a empresa ${company?.companyname}, CNPJ: ${maskCpfCnpj(company?.cnpj)}. Localizada na ${company?.street}, ${company?.number}, ${company?.district}, ${company?.city} - ${company?.state}.`}
-                        license={auth.user.tenant.plan.name}
-                        time_remaining={time_remaining}
-                    />
-                </div>
+            <div className="w-full p-4">
+                <div className="w-full rounded-2xl border bg-card p-5 shadow-sm sm:p-6">
+                    <div className="mb-8 space-y-6">
+                        <HeadingSmall
+                            title="Licença de uso do sistema"
+                            description={`Este software é licenciado para a empresa ${company?.companyname}, CNPJ: ${maskCpfCnpj(company?.cnpj)}. Localizada na ${company?.street}, ${company?.number}, ${company?.district}, ${company?.city} - ${company?.state}.`}
+                            license={auth.user.tenant.plan.name}
+                            time_remaining={time_remaining}
+                        />
+                    </div>
 
-                <div className="space-y-6">
-                    <HeadingSmall title="Configurações de aparência" description="Altere a aparencia do sistema entre temas claro ou escuro." />
-                    <AppearanceTabs />
-                </div>
+                    <div className="space-y-6">
+                        <HeadingSmall title="Configurações de aparência" description="Altere a aparencia do sistema entre temas claro ou escuro." />
+                        <AppearanceTabs />
+                    </div>
                 {/* <div className="space-y-6 mt-6">
                     <HeadingSmall title="Dados para área do cliente do site" description="Insere os dados do cliente e de seus atendimentos na área do cliente no site da empresa." />
 
                     {uploading && <AlertSuccess message={uploading} className='!p-0' />}
                 </div> */}
-                <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
-                    <Tabs defaultValue="system" className="mt-6 space-y-6">
-                        <TabsList className="grid w-full max-w-xl grid-cols-2">
-                            <TabsTrigger value="system">Sistema e SMTP</TabsTrigger>
-                            <TabsTrigger value="operational">Operacionais</TabsTrigger>
-                        </TabsList>
+                    <form onSubmit={handleSubmit} autoComplete="off" className="mt-8 w-full space-y-8">
+                        <Tabs defaultValue="system" className="w-full space-y-6">
+                            <TabsList className="grid w-full grid-cols-2 lg:w-fit lg:min-w-[420px]">
+                                <TabsTrigger value="system">Sistema e SMTP</TabsTrigger>
+                                <TabsTrigger value="operational">Operacionais</TabsTrigger>
+                            </TabsList>
 
-                        <TabsContent value="system" className="space-y-8">
-                            <div className="space-y-6">
-                                <HeadingSmall
-                                    title="Habilitar vendas, despesas e operações de caixa"
-                                    description="Ao habilitar, libera os módulos de Vendas, Despesas e Caixa Diário para administradores e operadores. Ao desabilitar, esses módulos ficam ocultos e bloqueados."
-                                />
-                                <div className="flex items-center gap-3">
-                                    <Switch
-                                        id="status"
-                                        checked={data.enablesales}
-                                        disabled={!canManageOtherSettings}
-                                        onCheckedChange={(checked) => setData('enablesales', checked)}
+                            <TabsContent value="system" className="w-full space-y-8">
+                                <div className="space-y-6 rounded-2xl border p-5">
+                                    <HeadingSmall
+                                        title="Habilitar vendas, despesas e operações de caixa"
+                                        description="Ao habilitar, libera os módulos de Vendas, Despesas e Caixa Diário para administradores e operadores. Ao desabilitar, esses módulos ficam ocultos e bloqueados."
+                                    />
+                                    <div className="flex items-center gap-3">
+                                        <Switch
+                                            id="status"
+                                            checked={data.enablesales}
+                                            disabled={!canManageOtherSettings}
+                                            onCheckedChange={(checked) => setData('enablesales', checked)}
+                                        />
+
+                                        <span className="text-muted-foreground text-sm">{data.enablesales ? 'Habilitado' : 'Desabilitado'}</span>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-6 rounded-2xl border p-5">
+                                    <HeadingSmall
+                                        title="Configuração de e-mail (SMTP)"
+                                        description={`Cadastre os dados da conta de e-mail para envio de notificações de status e outros e-mails automáticos. O teste será enviado para ${company?.email || 'o e-mail cadastrado da empresa'}.`}
                                     />
 
-                                    <span className="text-muted-foreground text-sm">{data.enablesales ? 'Habilitado' : 'Desabilitado'}</span>
-                                </div>
-                            </div>
-
-                            <div className="space-y-6">
-                                <HeadingSmall
-                                    title="Configuração de e-mail (SMTP)"
-                                    description={`Cadastre os dados da conta de e-mail para envio de notificações de status e outros e-mails automáticos. O teste será enviado para ${company?.email || 'o e-mail cadastrado da empresa'}.`}
-                                />
-
-                                <div className="grid gap-4 md:grid-cols-2">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="mail_mailer">Mailer</Label>
-                                        <Input
-                                            id="mail_mailer"
-                                            value={data.mail_mailer}
-                                            disabled={!canManageOtherSettings}
-                                            onChange={(e) => setData('mail_mailer', e.target.value)}
-                                            placeholder="smtp"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="mail_host">Host</Label>
-                                        <Input
-                                            id="mail_host"
-                                            value={data.mail_host}
-                                            disabled={!canManageOtherSettings}
-                                            onChange={(e) => setData('mail_host', e.target.value)}
-                                            placeholder="smtp.server.email"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="mail_port">Porta</Label>
-                                        <Input
-                                            id="mail_port"
-                                            type="number"
-                                            value={data.mail_port}
-                                            disabled={!canManageOtherSettings}
-                                            onChange={(e) => setData('mail_port', Number(e.target.value))}
-                                            placeholder="465"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="mail_encryption">Criptografia</Label>
-                                        <Input
-                                            id="mail_encryption"
-                                            value={data.mail_encryption}
-                                            disabled={!canManageOtherSettings}
-                                            onChange={(e) => setData('mail_encryption', e.target.value)}
-                                            placeholder="ssl ou tls"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="mail_username">Usuário SMTP</Label>
-                                        <Input
-                                            id="mail_username"
-                                            value={data.mail_username}
-                                            disabled={!canManageOtherSettings}
-                                            onChange={(e) => setData('mail_username', e.target.value)}
-                                            placeholder="sending-mail@email.com.br"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="mail_password">Senha SMTP</Label>
-                                        <Input
-                                            id="mail_password"
-                                            type="password"
-                                            value={data.mail_password}
-                                            disabled={!canManageOtherSettings}
-                                            onChange={(e) => setData('mail_password', e.target.value)}
-                                            placeholder={mailSettings?.mail_password_set ? '•••••••• (deixe em branco para manter)' : 'Digite a senha SMTP'}
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="mail_from_address">E-mail remetente</Label>
-                                        <Input
-                                            id="mail_from_address"
-                                            type="email"
-                                            value={data.mail_from_address}
-                                            disabled={!canManageOtherSettings}
-                                            onChange={(e) => setData('mail_from_address', e.target.value)}
-                                            placeholder="sending-mail@email.com.br"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="mail_from_name">Nome remetente</Label>
-                                        <Input
-                                            id="mail_from_name"
-                                            value={data.mail_from_name}
-                                            disabled={!canManageOtherSettings}
-                                            onChange={(e) => setData('mail_from_name', e.target.value)}
-                                            placeholder="Nome da empresa"
-                                        />
+                                    <div className="grid w-full gap-4 xl:grid-cols-2 2xl:grid-cols-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="mail_mailer">Mailer</Label>
+                                            <Input
+                                                id="mail_mailer"
+                                                value={data.mail_mailer}
+                                                disabled={!canManageOtherSettings}
+                                                onChange={(e) => setData('mail_mailer', e.target.value)}
+                                                placeholder="smtp"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="mail_host">Host</Label>
+                                            <Input
+                                                id="mail_host"
+                                                value={data.mail_host}
+                                                disabled={!canManageOtherSettings}
+                                                onChange={(e) => setData('mail_host', e.target.value)}
+                                                placeholder="smtp.server.email"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="mail_port">Porta</Label>
+                                            <Input
+                                                id="mail_port"
+                                                type="number"
+                                                value={data.mail_port}
+                                                disabled={!canManageOtherSettings}
+                                                onChange={(e) => setData('mail_port', Number(e.target.value))}
+                                                placeholder="465"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="mail_encryption">Criptografia</Label>
+                                            <Input
+                                                id="mail_encryption"
+                                                value={data.mail_encryption}
+                                                disabled={!canManageOtherSettings}
+                                                onChange={(e) => setData('mail_encryption', e.target.value)}
+                                                placeholder="ssl ou tls"
+                                            />
+                                        </div>
+                                        <div className="space-y-2 xl:col-span-2">
+                                            <Label htmlFor="mail_username">Usuário SMTP</Label>
+                                            <Input
+                                                id="mail_username"
+                                                value={data.mail_username}
+                                                disabled={!canManageOtherSettings}
+                                                onChange={(e) => setData('mail_username', e.target.value)}
+                                                placeholder="sending-mail@email.com.br"
+                                            />
+                                        </div>
+                                        <div className="space-y-2 xl:col-span-2">
+                                            <Label htmlFor="mail_password">Senha SMTP</Label>
+                                            <Input
+                                                id="mail_password"
+                                                type="password"
+                                                value={data.mail_password}
+                                                disabled={!canManageOtherSettings}
+                                                onChange={(e) => setData('mail_password', e.target.value)}
+                                                placeholder={mailSettings?.mail_password_set ? '•••••••• (deixe em branco para manter)' : 'Digite a senha SMTP'}
+                                            />
+                                        </div>
+                                        <div className="space-y-2 xl:col-span-2">
+                                            <Label htmlFor="mail_from_address">E-mail remetente</Label>
+                                            <Input
+                                                id="mail_from_address"
+                                                type="email"
+                                                value={data.mail_from_address}
+                                                disabled={!canManageOtherSettings}
+                                                onChange={(e) => setData('mail_from_address', e.target.value)}
+                                                placeholder="sending-mail@email.com.br"
+                                            />
+                                        </div>
+                                        <div className="space-y-2 xl:col-span-2">
+                                            <Label htmlFor="mail_from_name">Nome remetente</Label>
+                                            <Input
+                                                id="mail_from_name"
+                                                value={data.mail_from_name}
+                                                disabled={!canManageOtherSettings}
+                                                onChange={(e) => setData('mail_from_name', e.target.value)}
+                                                placeholder="Nome da empresa"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </TabsContent>
+                            </TabsContent>
 
-                        <TabsContent value="operational" className="space-y-8">
-                            <div className="space-y-6">
+                            <TabsContent value="operational" className="w-full space-y-8">
+                                <div className="space-y-6 rounded-2xl border p-5">
                                 <HeadingSmall
                                     title="Visibilidade dos menus operacionais"
                                     description="Escolha quais atalhos operacionais aparecem no menu lateral e no cabeçalho para os usuários com permissão."
                                 />
 
-                                <div className="grid gap-4 md:grid-cols-2 md:max-w-4xl">
+                                <div className="grid w-full gap-4 xl:grid-cols-2">
                                     <div className="bg-card text-card-foreground flex items-center justify-between rounded-2xl border p-4 shadow-sm">
                                         <div>
                                             <p className="font-medium">Acompanhamentos</p>
@@ -295,15 +296,15 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                         />
                                     </div>
                                 </div>
-                            </div>
+                                </div>
 
-                            <div className="space-y-6">
+                                <div className="space-y-6 rounded-2xl border p-5">
                                 <HeadingSmall
                                     title="Indicador de retorno em garantia"
                                     description="Defina o percentual máximo aceitável de retorno em garantia no período. Acima desse valor, o dashboard e os relatórios passam a exibir alerta visual."
                                 />
 
-                                <div className="grid gap-4 md:max-w-sm">
+                                <div className="grid w-full gap-4 xl:grid-cols-2">
                                     <div className="space-y-2">
                                         <Label htmlFor="warranty_return_alert_threshold">Limite de alerta (%)</Label>
                                         <Input
@@ -328,15 +329,15 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                         </p>
                                     </div>
                                 </div>
-                            </div>
+                                </div>
 
-                            <div className="space-y-6">
+                                <div className="space-y-6 rounded-2xl border p-5">
                                 <HeadingSmall
                                     title="Intervalo de follow-up com cliente"
                                     description="Define quantos dias o sistema espera para considerar orçamento parado ou cobrança pendente elegíveis para novo contato automático."
                                 />
 
-                                <div className="grid gap-4 md:max-w-2xl">
+                                <div className="grid w-full gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(280px,0.8fr)]">
                                     <div className="bg-card text-card-foreground flex items-center justify-between rounded-2xl border p-4 shadow-sm">
                                         <div>
                                             <p className="font-medium">Envio automático de follow-up</p>
@@ -376,15 +377,15 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                         </p>
                                     </div>
                                 </div>
-                            </div>
+                                </div>
 
-                            <div className="space-y-6">
+                                <div className="space-y-6 rounded-2xl border p-5">
                                 <HeadingSmall
                                     title="Prazo para solicitar avaliação do cliente"
                                     description="Define quantos dias após a entrega o sistema passa a sinalizar que a ordem deve receber avaliação do cliente na área pública."
                                 />
 
-                                <div className="grid gap-4 md:max-w-sm">
+                                <div className="grid w-full gap-4 xl:grid-cols-2">
                                     <div className="space-y-2">
                                         <Label htmlFor="customer_feedback_request_delay_days">Dias após a entrega</Label>
                                         <Input
@@ -408,15 +409,15 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                         </p>
                                     </div>
                                 </div>
-                            </div>
+                                </div>
 
-                            <div className="space-y-6">
+                                <div className="space-y-6 rounded-2xl border p-5">
                                 <HeadingSmall
                                     title="Metas de performance comercial"
                                     description="Defina as metas mínimas esperadas para conversão de orçamento e recuperação de cobrança. A página de performance comercial passa a sinalizar quando a taxa atual ficar abaixo da meta."
                                 />
 
-                                <div className="grid gap-4 md:grid-cols-2 md:max-w-3xl">
+                                <div className="grid w-full gap-4 xl:grid-cols-2">
                                     <div className="space-y-2">
                                         <Label htmlFor="budget_conversion_target">Meta de conversão de orçamento (%)</Label>
                                         <Input
@@ -463,19 +464,20 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                         </p>
                                     </div>
                                 </div>
-                            </div>
-                        </TabsContent>
-                    </Tabs>
-                    <div className="flex justify-end gap-2">
-                        <Button type="button" variant="outline" onClick={handleSendTestMail} disabled={!canManageOtherSettings}>
-                            Testar envio SMTP
-                        </Button>
-                        <Button type="submit" disabled={processing || !canManageOtherSettings}>
-                            <Save />
-                            Salvar
-                        </Button>
-                    </div>
-                </form>
+                                </div>
+                            </TabsContent>
+                        </Tabs>
+                        <div className="flex flex-col justify-end gap-2 pt-2 sm:flex-row">
+                            <Button type="button" variant="outline" onClick={handleSendTestMail} disabled={!canManageOtherSettings}>
+                                Testar envio SMTP
+                            </Button>
+                            <Button type="submit" disabled={processing || !canManageOtherSettings}>
+                                <Save />
+                                Salvar
+                            </Button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </AppLayout>
     );

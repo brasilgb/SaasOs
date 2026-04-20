@@ -19,3 +19,7 @@ Schedule::command('sigmaos:send-budget-followups')
 Schedule::command('sigmaos:send-subscription-status-notifications')
     ->dailyAt('08:00')
     ->withoutOverlapping();
+
+Schedule::command('sigmaos:send-tenant-feedback-requests')
+    ->dailyAt('11:00')
+    ->withoutOverlapping();

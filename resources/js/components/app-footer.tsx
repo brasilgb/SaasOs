@@ -17,9 +17,12 @@ export default function AppFooter() {
                 <span className="text-xs font-medium text-gray-600">
                     &copy;{moment().format('YYYY')} - {company?.companyname} - CNPJ: {maskCpfCnpj(company?.cnpj ?? '')}
                 </span>
-                <a href="https://sigmaos.com.br" target="_blank" className="text-xs font-semibold text-gray-600">
-                    SIGMAOS
-                </a>
+                <div className="flex items-center gap-3 text-xs font-semibold text-gray-600">
+                    <a href="https://sigmaos.com.br" target="_blank" rel="noreferrer">
+                        SIGMAOS
+                    </a>
+                    <span className="text-gray-500">{import.meta.env.VITE_APP_VERSION}</span>
+                </div>
             </div>
         </footer>
     );

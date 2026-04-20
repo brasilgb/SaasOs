@@ -1,14 +1,10 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     BarChart3,
-    Calendar,
     ChartLine,
     CheckCircle,
-    CheckSquare,
     ClipboardList,
     Eye,
-    FileSpreadsheet,
-    FileText,
     HandCoins,
     MessageSquare,
     Package,
@@ -16,30 +12,19 @@ import {
     Settings,
     ShoppingCart,
     Smartphone,
-    Tag,
     Users,
 } from 'lucide-react';
 
 const features = [
     {
-        icon: Users,
-        title: 'Gestão de Clientes',
-        description: 'Centralize clientes, contatos, equipamentos e histórico de atendimento em um só lugar.',
-    },
-    {
-        icon: MessageSquare,
-        title: 'E-mails Automáticos',
-        description: 'Envie e-mails automáticos com atualizações do atendimento, link de acompanhamento e lembretes operacionais.',
-    },
-    {
-        icon: Calendar,
-        title: 'Agendamento de Visitas',
-        description: 'Organize visitas técnicas e evite conflitos de agenda da equipe.',
-    },
-    {
         icon: ClipboardList,
         title: 'Ordens de Serviço',
-        description: 'Controle ordens com status, fotos, histórico e andamento completo.',
+        description: 'Controle entrada, diagnóstico, execução, status, fotos e histórico completo de cada atendimento.',
+    },
+    {
+        icon: Users,
+        title: 'Clientes e Equipamentos',
+        description: 'Centralize clientes, contatos, equipamentos e histórico técnico em um só lugar.',
     },
     {
         icon: Eye,
@@ -48,53 +33,33 @@ const features = [
     },
     {
         icon: CheckCircle,
-        title: 'Aprovação de Orçamentos',
-        description: 'Permita a aprovação ou reprovação de orçamentos com alerta automático no sistema.',
-    },
-    {
-        icon: FileSpreadsheet,
-        title: 'Pré-Orçamentos',
-        description: 'Crie orçamentos em segundos com modelos prontos por equipamento.',
+        title: 'Orçamentos e Aprovação',
+        description: 'Monte pré-orçamentos, envie para análise e receba aprovação ou reprovação com registro no sistema.',
     },
     {
         icon: Package,
-        title: 'Controle de Estoque',
-        description: 'Gerencie peças e produtos com alertas de estoque mínimo.',
+        title: 'Estoque e Peças',
+        description: 'Gerencie peças, produtos e movimentações com mais controle sobre disponibilidade e reposição.',
     },
     {
         icon: ShoppingCart,
-        title: 'Vendas de Produtos',
-        description: 'Venda produtos e peças direto no sistema com emissão automática de recibos.',
+        title: 'Vendas e Recibos',
+        description: 'Registre vendas de produtos e peças no mesmo ambiente, com recibos e documentos prontos para impressão.',
     },
     {
         icon: HandCoins,
-        title: 'Controle de Despesas',
-        description: 'Cadastre despesas e registre cada lançamento no caixa diário.',
+        title: 'Financeiro e Caixa',
+        description: 'Acompanhe recebimentos, despesas, abertura e fechamento de caixa com conferência da rotina diária.',
     },
     {
         icon: MessageSquare,
-        title: 'Lembretes de Pagamento',
-        description: 'Envie lembretes manuais de pagamentos pendentes e mantenha a recuperação de cobrança sob controle.',
+        title: 'Comunicação Automática',
+        description: 'Envie e-mails, WhatsApp e lembretes de pagamento para manter o cliente atualizado em cada etapa.',
     },
     {
         icon: ChartLine,
-        title: 'Performance Comercial',
-        description: 'Acompanhe conversão de orçamento, recuperação de cobrança e resultado dos acompanhamentos.',
-    },
-    {
-        icon: CheckSquare,
-        title: 'Garantia e Avaliações',
-        description: 'Monitore retorno em garantia, feedbacks críticos e ações de recuperação com a equipe.',
-    },
-    {
-        icon: HandCoins,
-        title: 'Caixa Diário',
-        description: 'Faça abertura e fechamento de caixa com conferência de saldo e relatório em PDF.',
-    },
-    {
-        icon: MessageSquare,
-        title: 'Mensagens Internas',
-        description: 'Envie mensagens internas por usuário com histórico para toda a equipe.',
+        title: 'Indicadores Comerciais',
+        description: 'Acompanhe conversão de orçamentos, recuperação de cobrança e desempenho da operação.',
     },
     {
         icon: Smartphone,
@@ -102,34 +67,14 @@ const features = [
         description: 'Registre fotos e atualizações de serviço direto pelo celular.',
     },
     {
-        icon: FileText,
-        title: 'Integração com WhatsApp',
-        description: 'Automatize mensagens para clientes sobre o andamento do serviço.',
-    },
-    {
         icon: Printer,
-        title: 'Impressão de Recibos',
-        description: 'Imprima recibos, etiquetas e documentos sem sair do sistema.',
-    },
-    {
-        icon: CheckSquare,
-        title: 'Checklist de Equipamentos',
-        description: 'Compare o estado do equipamento na entrada e na entrega.',
+        title: 'Impressões Operacionais',
+        description: 'Imprima recibos, etiquetas e documentos da operação sem depender de processos externos.',
     },
     {
         icon: BarChart3,
-        title: 'Relatórios Detalhados',
-        description: 'Acompanhe desempenho, vendas e serviços com relatórios completos.',
-    },
-    {
-        icon: ChartLine,
-        title: 'Dashboard e KPIs',
-        description: 'Visualize faturamento, ordens, clientes e desempenho em tempo real.',
-    },
-    {
-        icon: Tag,
-        title: 'Etiquetas Inteligentes',
-        description: 'Identifique equipamentos rapidamente com etiquetas personalizadas.',
+        title: 'Relatórios e Dashboard',
+        description: 'Visualize faturamento, ordens, vendas e desempenho com relatórios e indicadores em tempo real.',
     },
     {
         icon: Settings,
@@ -152,10 +97,12 @@ export function Features() {
                         Recursos essenciais
                     </span>
 
-                    <h2 className="mt-5 text-3xl font-bold tracking-tight sm:text-4xl">Uma plataforma completa para sua operação</h2>
+                    <h2 className="mt-5 text-3xl font-bold tracking-tight sm:text-4xl">
+                        Plataforma de gestão operacional para atendimento técnico, financeiro, relacionamento com clientes e mais controle da rotina
+                    </h2>
 
                     <p className="mt-4 text-lg leading-relaxed text-white/72">
-                        Ferramentas completas para organizar atendimento, equipe, financeiro, clientes e crescimento da operação em um único sistema.
+                        Da entrada do equipamento ao fechamento do caixa, o SigmaOS reúne os módulos mais importantes da rotina em uma única plataforma.
                     </p>
                     <p className="mt-3 text-xs text-white/45">A emissão de notas fiscais é realizada por sistemas externos.</p>
                 </div>

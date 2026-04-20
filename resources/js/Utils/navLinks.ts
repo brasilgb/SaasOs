@@ -11,10 +11,11 @@ import {
     Mail,
     HandCoins,
     LayoutGrid,
-    Link as linkmegb,
+    Lightbulb,
     MemoryStick,
     MessageCircleCode,
     MessageSquareMore,
+    MessageSquareQuote,
     Monitor,
     PackagePlus,
     Printer,
@@ -237,6 +238,18 @@ const mainAdminItems = [
         active: 'admin.tenants.*',
     },
     {
+        title: 'Feedback SaaS',
+        href: route('admin.tenant-feedbacks.index'),
+        icon: MessageSquareMore,
+        active: 'admin.tenant-feedbacks.*',
+    },
+    {
+        title: 'Melhorias SaaS',
+        href: route('admin.tenant-improvement-requests.index'),
+        icon: MessageSquareQuote,
+        active: 'admin.tenant-improvement-requests.*',
+    },
+    {
         title: 'Usuários',
         href: route('admin.users.index'),
         icon: UserCog,
@@ -280,9 +293,11 @@ const mainPlansItems = [
 
 const footerNavItems: NavItem[] = [
     {
-        title: 'SIGMAOS',
-        href: 'https://sigmaos.com.br',
-        icon: linkmegb,
+        title: 'Solicitar ajustes',
+        href: route('app.improvement-requests.index'),
+        icon: Lightbulb,
+        active: 'app.improvement-requests.*',
+        permission: 'dashboard',
     },
 ];
 

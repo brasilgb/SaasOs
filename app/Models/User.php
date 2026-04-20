@@ -91,6 +91,11 @@ class User extends Authenticatable
         return $this->belongsTo(Tenant::class);
     }
 
+    public function improvementRequests(): HasMany
+    {
+        return $this->hasMany(TenantImprovementRequest::class);
+    }
+
     public function isRoot(): bool
     {
         return in_array($this->roles, [self::ROLE_ROOT_SYSTEM, self::ROLE_ROOT_APP], true);

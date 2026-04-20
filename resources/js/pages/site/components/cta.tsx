@@ -20,7 +20,7 @@ export function CTA() {
 
                     <p className="mt-6 text-lg leading-relaxed text-white/76">
                         Centralize atendimento, ordens, estoque, financeiro, vendas e relacionamento com clientes em uma única plataforma. Teste o
-                        SigmaOs gratuitamente por 14 dias.
+                        SigmaOS gratuitamente por 14 dias.
                     </p>
 
                     <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -37,8 +37,8 @@ export function CTA() {
                             className="gap-2 rounded-xl border-white/18 bg-white/8 px-8 text-base font-semibold text-white hover:bg-white/14 hover:text-white"
                             asChild
                         >
-                            <a
-                                href="https://wa.me/5551998931325?text=Quero%20mais%20informações%20sobre%20SigmaOs"
+                                <a
+                                href="https://wa.me/5551998931325?text=Quero%20mais%20informações%20sobre%20SigmaOS"
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >

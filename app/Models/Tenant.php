@@ -42,6 +42,16 @@ class Tenant extends Model
         return $this->hasMany(Branch::class);
     }
 
+    public function feedbacks(): HasMany
+    {
+        return $this->hasMany(TenantFeedback::class);
+    }
+
+    public function improvementRequests(): HasMany
+    {
+        return $this->hasMany(TenantImprovementRequest::class);
+    }
+
     public function user(): HasOne
     {
         return $this->hasOne(User::class)->whereNull('roles');

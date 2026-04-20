@@ -5,12 +5,12 @@ import { Icon } from '@/components/icon';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { usePersistedPeriodFilter } from '@/hooks/use-persisted-period-filter';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { AlertTriangle, LayoutGridIcon } from 'lucide-react';
+import { AlertTriangle, LayoutGridIcon, MessageSquareHeart } from 'lucide-react';
 import moment from 'moment';
-import { useState } from 'react';
 import FinanceiroOrders from './fin-order/ordens';
 import FinanceiroSales from './fin-order/sales';
 import OrderDashboard from './ope-order';
@@ -41,9 +41,9 @@ export default function Dashboard({
     flash,
     auth,
     customerFeedbackAlert,
+    tenantFeedbackRequest,
 }: any) {
-    const [timeRange, setTimeRange] = useState('7');
-    const [dateRange, setDateRange] = useState<any>({});
+    const { timeRange, dateRange, setTimeRange, setDateRange, clearDateRange } = usePersistedPeriodFilter('dashboard-period-filter');
     const isTechnician = auth?.role === 'technician';
     const canUseSales = Boolean(auth?.permissions?.includes('sales') && others?.enablesales && !isTechnician);
 
@@ -64,7 +64,7 @@ export default function Dashboard({
 
         setTimeRange(value);
         if (value !== 'custom') {
-            setDateRange({});
+            clearDateRange();
         }
     };
 
@@ -157,6 +157,26 @@ export default function Dashboard({
                             <Link href={route('app.quality.index')} className="text-sm font-medium text-rose-900 underline underline-offset-4">
                                 Ver tratativas
                             </Link>
+                        </div>
+                    )}
+
+                    {tenantFeedbackRequest?.hasPending && (
+                        <div className="mb-4 flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+                            <div className="flex items-center gap-3">
+                                <MessageSquareHeart className="h-5 w-5 text-amber-900" />
+                                <div className="text-sm text-amber-900">
+                                    Queremos ouvir sua experiência com o SigmaOS.
+                                    <Badge variant="secondary" className="ml-2 bg-white text-amber-900">
+                                        Leva menos de 1 minuto
+                                    </Badge>
+                                </div>
+                            </div>
+                            <a
+                                href={tenantFeedbackRequest.url}
+                                className="text-sm font-medium text-amber-900 underline underline-offset-4"
+                            >
+                                Enviar feedback
+                            </a>
                         </div>
                     )}
 

@@ -21,6 +21,7 @@ use App\Http\Controllers\App\ReportController;
 use App\Http\Controllers\App\SaleController;
 use App\Http\Controllers\App\ScheduleController;
 use App\Http\Controllers\App\ServiceController;
+use App\Http\Controllers\App\TenantImprovementRequestController;
 use App\Http\Controllers\App\UserController;
 use App\Http\Controllers\App\WhatsappMessageController;
 use Illuminate\Support\Facades\Route;
@@ -41,6 +42,8 @@ Route::post('/quality-indicators/{order}/feedback-recovery', [QualityIndicatorCo
 Route::get('/follow-ups', [FollowUpController::class, 'index'])->name('follow-ups.index');
 Route::get('/follow-ups/tasks', [FollowUpController::class, 'tasks'])->name('follow-ups.tasks');
 Route::get('/follow-ups/performance', [FollowUpController::class, 'performance'])->name('follow-ups.performance');
+Route::get('/improvement-requests', [TenantImprovementRequestController::class, 'index'])->name('improvement-requests.index');
+Route::post('/improvement-requests', [TenantImprovementRequestController::class, 'store'])->name('improvement-requests.store');
 Route::post('/follow-ups/{order}/pause', [FollowUpController::class, 'pause'])->name('follow-ups.pause');
 Route::post('/follow-ups/{order}/resume', [FollowUpController::class, 'resume'])->name('follow-ups.resume');
 Route::post('/follow-ups/{order}/respond', [FollowUpController::class, 'respond'])->name('follow-ups.respond');
