@@ -13,8 +13,8 @@ export default function AppFooter() {
     const { company } = usePage<AppFooterPageProps>().props;
     return (
         <footer className="border-sidebar-border/80 flex w-full items-center justify-between border-t px-3 shadow-md">
-            <div className="mx-auto flex w-full items-center justify-between p-2 px-4">
-                <span className="text-xs font-medium text-gray-600">
+            <div className="mx-auto flex w-full flex-col items-center justify-between gap-1 p-2 px-4 sm:flex-row sm:gap-0">
+                <span className="text-xs font-medium text-gray-600 text-center sm:text-left">
                     &copy;{moment().format('YYYY')} - {company?.companyname} - CNPJ: {maskCpfCnpj(company?.cnpj ?? '')}
                 </span>
                 <div className="flex items-center gap-3 text-xs font-semibold text-gray-600">

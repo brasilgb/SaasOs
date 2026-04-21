@@ -32,7 +32,7 @@ export function KpiFinancial({ title, total = 0, services = 0, parts = 0, orders
 
             <CardContent className="space-y-4">
                 {/* VALOR PRINCIPAL */}
-                <CardTitle className="truncate text-2xl font-bold tabular-nums 2xl:text-3xl">{format(total)}</CardTitle>
+                <CardTitle className="text-xl font-bold leading-tight break-words tabular-nums sm:text-2xl 2xl:text-3xl">{format(total)}</CardTitle>
 
                 {/* ORIGEM DO FATURAMENTO */}
                 <div className="bg-muted flex h-2 w-full overflow-hidden rounded-full">

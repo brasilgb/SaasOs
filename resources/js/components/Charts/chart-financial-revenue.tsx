@@ -52,11 +52,16 @@ export function FinancialRevenueChart({ data }: { data: FinancialRevenuePoint[] 
     ].filter((item) => item.value > 0);
 
     return (
-        <ChartContainer config={chartConfig} className="h-[300px] w-full">
+        <ChartContainer config={chartConfig} className="h-[260px] w-full sm:h-[300px]">
             <PieChart>
                 <ChartTooltip cursor={false} content={<ChartTooltipContent nameKey="key" hideLabel />} />
-                <Pie data={pieData} dataKey="value" nameKey="label" innerRadius={55} outerRadius={95} strokeWidth={2} />
-                <ChartLegend align="left" verticalAlign="middle" layout="vertical" content={<ChartLegendContent nameKey="key" className="flex-col items-start justify-start pl-2 pt-0" />} />
+                <Pie data={pieData} dataKey="value" nameKey="label" innerRadius={42} outerRadius={78} strokeWidth={2} />
+                <ChartLegend
+                    align="left"
+                    verticalAlign="bottom"
+                    layout="horizontal"
+                    content={<ChartLegendContent nameKey="key" className="justify-start gap-3 pt-4 sm:justify-center" />}
+                />
             </PieChart>
         </ChartContainer>
     );
@@ -76,14 +81,14 @@ export function FinancialRevenueTrendChart({ data }: { data: FinancialRevenuePoi
     }));
 
     return (
-        <ChartContainer config={trendChartConfig} className="h-[300px] w-full">
-            <BarChart data={chartData} margin={{ top: 8, right: 10, left: 10, bottom: 0 }}>
+        <ChartContainer config={trendChartConfig} className="h-[240px] w-full sm:h-[280px] lg:h-[300px]">
+            <BarChart data={chartData} margin={{ top: 8, right: 6, left: 0, bottom: 0 }}>
                 <CartesianGrid vertical={false} />
-                <XAxis dataKey="dateLabel" tickLine={false} axisLine={false} minTickGap={18} />
+                <XAxis dataKey="dateLabel" tickLine={false} axisLine={false} minTickGap={24} />
                 <YAxis
                     tickLine={false}
                     axisLine={false}
-                    width={72}
+                    width={56}
                     tickFormatter={(value) =>
                         Number(value || 0).toLocaleString('pt-BR', {
                             style: 'currency',
@@ -111,9 +116,9 @@ export function FinancialRevenueTrendChart({ data }: { data: FinancialRevenuePoi
                         />
                     }
                 />
-                <Bar dataKey="services" name="services" fill="var(--color-services)" radius={[4, 4, 0, 0]} maxBarSize={18} />
-                <Bar dataKey="parts" name="parts" fill="var(--color-parts)" radius={[4, 4, 0, 0]} maxBarSize={18} />
-                <ChartLegend content={<ChartLegendContent nameKey="name" />} />
+                <Bar dataKey="services" name="services" fill="var(--color-services)" radius={[4, 4, 0, 0]} maxBarSize={16} />
+                <Bar dataKey="parts" name="parts" fill="var(--color-parts)" radius={[4, 4, 0, 0]} maxBarSize={16} />
+                <ChartLegend content={<ChartLegendContent nameKey="name" className="justify-start gap-3 pt-4 sm:justify-center" />} />
             </BarChart>
         </ChartContainer>
     );

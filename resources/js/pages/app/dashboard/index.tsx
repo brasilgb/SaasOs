@@ -83,12 +83,12 @@ export default function Dashboard({
             {flash?.message && <AlertSuccess message={flash?.message} />}
             <Head title="Dashboard" />
             <div key={reloadKey}>
-                <div className="flex h-16 items-center justify-between px-4">
+                <div className="flex min-h-16 flex-col justify-center gap-3 px-4 py-3 sm:h-16 sm:flex-row sm:items-center sm:justify-between sm:py-0">
                     <div className="flex items-center gap-2">
                         <Icon iconNode={LayoutGridIcon} className="h-8 w-8" />
                         <h2 className="text-xl font-semibold tracking-tight">Dashboard</h2>
                     </div>
-                    <div>
+                    <div className="min-w-0 self-start sm:self-auto">
                         <Breadcrumbs breadcrumbs={breadcrumbs} />
                     </div>
                 </div>
@@ -182,7 +182,7 @@ export default function Dashboard({
 
                     <Tabs defaultValue="account" className="w-full">
                         {!isTechnician && (
-                            <TabsList>
+                            <TabsList className="h-auto w-full flex-wrap justify-start gap-2 sm:w-auto">
                                 <TabsTrigger value="account">Operacional</TabsTrigger>
                                 <TabsTrigger value="password">Financeiro</TabsTrigger>
                                 {canUseSales && <TabsTrigger value="sales">Vendas</TabsTrigger>}

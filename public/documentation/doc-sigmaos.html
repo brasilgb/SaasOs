@@ -47,6 +47,35 @@
             min-height: 100vh;
         }
 
+        .sidebar-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: var(--nav-bg);
+            color: var(--nav-ink);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 12px 16px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-toggle:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-toggle:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.05);
+        }
+
         .sidebar {
             position: sticky;
             top: 0;
@@ -343,18 +372,46 @@
             font-size: 0.95rem;
         }
 
-        @media (max-width: 1100px) {
+        @media (max-width: 768px) {
             .layout {
                 grid-template-columns: 1fr;
             }
 
             .sidebar {
-                position: relative;
-                height: auto;
+                position: fixed;
+                top: 0;
+                left: -320px;
+                width: 320px;
+                height: 100vh;
+                z-index: 999;
+                transition: left 0.3s ease;
+            }
+
+            .sidebar.open {
+                left: 0;
+            }
+
+            .sidebar-toggle {
+                display: block;
             }
 
             .content {
                 padding-top: 18px;
+            }
+
+            .overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 998;
+            }
+
+            .overlay.show {
+                display: block;
             }
         }
 
@@ -364,6 +421,7 @@
             }
 
             .paper {
+                max-width: 100%;
                 padding: 22px 18px;
                 border-radius: 20px;
             }
@@ -420,6 +478,8 @@
 </head>
 
 <body>
+    <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">☰</button>
+    <div class="overlay" id="overlay"></div>
     <div class="layout">
         <aside class="sidebar">
             <h1>SigmaOS</h1>
@@ -1639,6 +1699,32 @@
                 }
             });
         }());
+
+        // Sidebar toggle functionality
+        (function() {
+            const toggleButton = document.getElementById('sidebar-toggle');
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.getElementById('overlay');
+            const tocLinks = sidebar.querySelectorAll('.toc a');
+
+            function toggleSidebar() {
+                sidebar.classList.toggle('open');
+                overlay.classList.toggle('show');
+            }
+
+            function closeSidebar() {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('show');
+            }
+
+            toggleButton.addEventListener('click', toggleSidebar);
+            overlay.addEventListener('click', closeSidebar);
+
+            // Close sidebar when clicking on a TOC link
+            tocLinks.forEach(link => {
+                link.addEventListener('click', closeSidebar);
+            });
+        })();
     </script>
 </body>
 
