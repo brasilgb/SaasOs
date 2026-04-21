@@ -182,7 +182,7 @@ export default function Dashboard({
 
                     <Tabs defaultValue="account" className="w-full">
                         {!isTechnician && (
-                            <TabsList className="h-auto w-full flex-wrap justify-start gap-2 sm:w-auto">
+                            <TabsList className="h-auto w-full flex-wrap justify-start gap-2 md:max-w-96">
                                 <TabsTrigger value="account">Operacional</TabsTrigger>
                                 <TabsTrigger value="password">Financeiro</TabsTrigger>
                                 {canUseSales && <TabsTrigger value="sales">Vendas</TabsTrigger>}
