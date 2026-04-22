@@ -161,7 +161,7 @@ const ImageUpload = ({ savedimages, orderid, errors }: any) => {
             </div>
             <div className="p-4">
                 <div className="rounded-lg border p-4">
-                    <HeadingSmall title="Imagens da Ordem de Serviço" description="Envie até 4 imagens." />
+                    <HeadingSmall title="Imagens da Ordem de Serviço" description={`Envie até ${MAX_IMAGES} imagens.`} />
 
                     <form onSubmit={handleSubmit} className="mt-4">
                         <input

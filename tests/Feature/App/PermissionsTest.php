@@ -10,6 +10,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Tests\TestCase;
 
 class PermissionsTest extends TestCase
@@ -77,6 +78,98 @@ class PermissionsTest extends TestCase
 
         $this->get(route('app.images.index', ['or' => $foreignOrder->id]))
             ->assertForbidden();
+    }
+
+    public function test_api_images_returns_order_images_from_route_parameter(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'user_id' => $this->technician->id,
+        ]);
+
+        $image = Image::factory()->forTenant($this->tenant->id)->create([
+            'order_id' => $order->id,
+            'filename' => 'order-image.jpg',
+        ]);
+
+        $this->actingAs($this->technician, 'sanctum')
+            ->getJson(route('images', $order))
+            ->assertOk()
+            ->assertJson([
+                'success' => true,
+                'result' => [
+                    [
+                        'id' => $image->id,
+                        'order_id' => $order->id,
+                        'filename' => 'order-image.jpg',
+                    ],
+                ],
+            ]);
+    }
+
+    public function test_api_upload_stores_base64_image_for_order(): void
+    {
+        $this->app->usePublicPath(storage_path('framework/testing/public'));
+        File::deleteDirectory(public_path());
+
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'user_id' => null,
+        ]);
+
+        $this->actingAs($this->operator, 'sanctum')
+            ->postJson(route('upload'), [
+                'order_id' => $order->id,
+                'filename' => base64_encode('image-content'),
+            ])
+            ->assertOk()
+            ->assertJson([
+                'success' => true,
+                'message' => 'Imagem salva com sucesso',
+            ]);
+
+        $image = Image::query()->where('order_id', $order->id)->firstOrFail();
+
+        $this->assertSame($this->tenant->id, $image->tenant_id);
+        $this->assertFileExists(public_path('storage/orders/'.$order->id.'/'.$image->filename));
+    }
+
+    public function test_api_delete_image_removes_database_record_and_file(): void
+    {
+        $this->app->usePublicPath(storage_path('framework/testing/public'));
+        File::deleteDirectory(public_path());
+
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'user_id' => null,
+        ]);
+        $image = Image::factory()->forTenant($this->tenant->id)->create([
+            'order_id' => $order->id,
+            'filename' => 'delete-me.png',
+        ]);
+        $path = public_path('storage/orders/'.$order->id.'/'.$image->filename);
+        File::ensureDirectoryExists(dirname($path));
+        File::put($path, 'image-content');
+
+        $this->actingAs($this->operator, 'sanctum')
+            ->deleteJson(route('deleteimage', $image))
+            ->assertOk()
+            ->assertJson([
+                'success' => true,
+                'message' => 'Imagem deletada com sucesso!',
+            ]);
+
+        $this->assertDatabaseMissing('images', ['id' => $image->id]);
+        $this->assertFileDoesNotExist($path);
     }
 
     public function test_technician_cannot_access_receipts_whatsapp_labels_sales_cashier_or_expenses(): void

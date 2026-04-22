@@ -16,6 +16,8 @@ use Inertia\Inertia;
 
 class ImageController extends Controller
 {
+    private const MAX_IMAGES_PER_ORDER = 4;
+
     private function currentTenantId(): ?int
     {
         return $this->currentUser()?->tenant_id ? (int) $this->currentUser()->tenant_id : null;
@@ -77,9 +79,9 @@ class ImageController extends Controller
         $existingCount = Image::where('order_id', $validated['order_id'])->count();
         $incomingCount = count($validated['images']);
 
-        if (($existingCount + $incomingCount) > 4) {
+        if (($existingCount + $incomingCount) > self::MAX_IMAGES_PER_ORDER) {
             throw ValidationException::withMessages([
-                'images' => 'Esta ordem pode ter no máximo 4 imagens no total.',
+                'images' => 'Esta ordem pode ter no máximo '.self::MAX_IMAGES_PER_ORDER.' imagens no total.',
             ]);
         }
 
@@ -126,9 +128,9 @@ class ImageController extends Controller
     }
 
     // Delete image for id
-    public function deleteImageOrder(Image $image, $aimage)
+    public function deleteImageOrder(int $aimage)
     {
-        abort_unless((int) $image->id === (int) $aimage, 404);
+        $image = Image::query()->findOrFail($aimage);
         $order = Order::query()->findOrFail($image->order_id);
         $this->authorize('update', $order);
 
@@ -158,13 +160,25 @@ class ImageController extends Controller
         $order = Order::query()->findOrFail($validated['order_id']);
         $this->authorize('update', $order);
 
-        $image = base64_decode($validated['filename']);
+        if (Image::where('order_id', $order->id)->count() >= self::MAX_IMAGES_PER_ORDER) {
+            throw ValidationException::withMessages([
+                'filename' => 'Esta ordem pode ter no máximo '.self::MAX_IMAGES_PER_ORDER.' imagens no total.',
+            ]);
+        }
+
+        $image = base64_decode($validated['filename'], true);
+        if ($image === false) {
+            throw ValidationException::withMessages([
+                'filename' => 'Imagem inválida.',
+            ]);
+        }
+
         $storePath = public_path('storage/orders/'.$validated['order_id']);
         if (! file_exists($storePath)) {
             mkdir($storePath, 0777, true);
         }
         $filename = time().rand(1, 50).'.'.'png';
-        File::put('storage/orders/'.$validated['order_id'].'/'.$filename, $image);
+        File::put($storePath.DIRECTORY_SEPARATOR.$filename, $image);
         Image::create([
             'order_id' => $validated['order_id'],
             'filename' => $filename,
@@ -182,16 +196,11 @@ class ImageController extends Controller
         ];
     }
 
-    public function getImages(Request $request)
+    public function getImages(Order $order)
     {
-        $validated = $request->validate([
-            'order' => ['required', 'integer'],
-        ]);
-
-        $order = Order::query()->findOrFail($validated['order']);
         $this->authorize('view', $order);
 
-        $images = Image::where('order_id', $validated['order'])->get();
+        $images = Image::where('order_id', $order->id)->get();
 
         return [
             'success' => true,
