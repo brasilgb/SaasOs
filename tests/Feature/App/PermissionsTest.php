@@ -125,7 +125,7 @@ class PermissionsTest extends TestCase
 
         $this->actingAs($this->operator, 'sanctum')
             ->postJson(route('upload'), [
-                'order_id' => $order->order_number,
+                'order_number' => $order->order_number,
                 'filename' => base64_encode('image-content'),
             ])
             ->assertOk()

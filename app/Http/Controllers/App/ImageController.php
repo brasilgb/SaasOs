@@ -185,11 +185,13 @@ class ImageController extends Controller
     public function upload(Request $request)
     {
         $validated = $request->validate([
-            'order_id' => ['required', 'integer'],
+            'order_number' => ['required_without:order_id', 'integer'],
+            'order_id' => ['required_without:order_number', 'integer'],
             'filename' => ['required', 'string'],
         ]);
 
-        $order = $this->findOrderByNumber((int) $validated['order_id']);
+        $orderNumber = (int) ($validated['order_number'] ?? $validated['order_id']);
+        $order = $this->findOrderByNumber($orderNumber);
         $this->authorize('update', $order);
 
         if (Image::where('order_id', $order->id)->count() >= self::MAX_IMAGES_PER_ORDER) {
