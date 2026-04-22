@@ -96,7 +96,7 @@ class PermissionsTest extends TestCase
         ]);
 
         $this->actingAs($this->technician, 'sanctum')
-            ->getJson(route('images', $order))
+            ->getJson(route('images', $order->order_number))
             ->assertOk()
             ->assertJson([
                 'success' => true,
@@ -125,7 +125,7 @@ class PermissionsTest extends TestCase
 
         $this->actingAs($this->operator, 'sanctum')
             ->postJson(route('upload'), [
-                'order_id' => $order->id,
+                'order_id' => $order->order_number,
                 'filename' => base64_encode('image-content'),
             ])
             ->assertOk()
@@ -137,7 +137,7 @@ class PermissionsTest extends TestCase
         $image = Image::query()->where('order_id', $order->id)->firstOrFail();
 
         $this->assertSame($this->tenant->id, $image->tenant_id);
-        $this->assertFileExists(public_path('storage/orders/'.$order->id.'/'.$image->filename));
+        $this->assertFileExists(public_path('storage/orders/'.$order->order_number.'/'.$image->filename));
     }
 
     public function test_api_delete_image_removes_database_record_and_file(): void
@@ -156,7 +156,7 @@ class PermissionsTest extends TestCase
             'order_id' => $order->id,
             'filename' => 'delete-me.png',
         ]);
-        $path = public_path('storage/orders/'.$order->id.'/'.$image->filename);
+        $path = public_path('storage/orders/'.$order->order_number.'/'.$image->filename);
         File::ensureDirectoryExists(dirname($path));
         File::put($path, 'image-content');
 

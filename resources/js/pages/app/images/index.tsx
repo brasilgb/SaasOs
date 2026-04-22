@@ -31,7 +31,7 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '#',
     },
 ];
-const ImageUpload = ({ savedimages, orderid, errors }: any) => {
+const ImageUpload = ({ savedimages, orderid, ordernumber, errors }: any) => {
     const [fileKey, setFileKey] = useState(0);
 
     const {
@@ -199,7 +199,7 @@ const ImageUpload = ({ savedimages, orderid, errors }: any) => {
                             <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">
                                 {savedimages.map((img: any) => (
                                     <div key={img.id} className="relative">
-                                        <img src={`/storage/orders/${orderid}/${img.filename}`} className="h-32 w-full rounded object-cover" />
+                                        <img src={`/storage/orders/${ordernumber ?? orderid}/${img.filename}`} className="h-32 w-full rounded object-cover" />
                                         <button
                                             type="button"
                                             onClick={() => handleDeleteImageBanco(img.id)}

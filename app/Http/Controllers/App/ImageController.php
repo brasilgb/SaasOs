@@ -41,6 +41,40 @@ class ImageController extends Controller
         return $user instanceof User ? $user : null;
     }
 
+    private function findOrderByNumber(int $orderNumber): Order
+    {
+        $query = Order::query()->where('order_number', $orderNumber);
+        $user = $this->currentUser();
+
+        if ($user?->isTechnician()) {
+            $query->where(function ($q) use ($user) {
+                $q->whereNull('user_id')
+                    ->orWhere('user_id', $user->id);
+            });
+        }
+
+        return $query->firstOrFail();
+    }
+
+    private function orderImagesPath(Order $order): string
+    {
+        return public_path('storage/orders/'.$order->order_number);
+    }
+
+    private function deleteImageFile(Order $order, Image $image): void
+    {
+        $paths = [
+            $this->orderImagesPath($order).DIRECTORY_SEPARATOR.$image->filename,
+            public_path('storage/orders/'.$image->order_id).DIRECTORY_SEPARATOR.$image->filename,
+        ];
+
+        foreach (array_unique($paths) as $path) {
+            if (file_exists($path)) {
+                unlink($path);
+            }
+        }
+    }
+
     public function index(Request $request)
     {
         $query = $request->get('or');
@@ -49,7 +83,11 @@ class ImageController extends Controller
 
         $images = Image::where('order_id', $query)->get();
 
-        return Inertia::render('app/images/index', ['savedimages' => $images, 'orderid' => $order->id]);
+        return Inertia::render('app/images/index', [
+            'savedimages' => $images,
+            'orderid' => $order->id,
+            'ordernumber' => $order->order_number,
+        ]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -85,7 +123,7 @@ class ImageController extends Controller
             ]);
         }
 
-        $storePath = public_path('storage/orders/'.$validated['order_id']);
+        $storePath = $this->orderImagesPath($order);
 
         if (! file_exists($storePath)) {
             mkdir($storePath, 0777, true);
@@ -114,10 +152,7 @@ class ImageController extends Controller
         $order = Order::query()->findOrFail($image->order_id);
         $this->authorize('update', $order);
 
-        $storePath = public_path('storage/orders/'.$image->order_id);
-        if (file_exists($storePath.DIRECTORY_SEPARATOR.$image->filename)) {
-            unlink($storePath.DIRECTORY_SEPARATOR.$image->filename);
-        }
+        $this->deleteImageFile($order, $image);
         $filename = $image->filename;
         $image->delete();
         $this->logOrderAction($order, 'image_deleted', [
@@ -134,10 +169,7 @@ class ImageController extends Controller
         $order = Order::query()->findOrFail($image->order_id);
         $this->authorize('update', $order);
 
-        $storePath = public_path('storage'.DIRECTORY_SEPARATOR.'orders'.DIRECTORY_SEPARATOR.$image->order_id);
-        if (file_exists($storePath.DIRECTORY_SEPARATOR.$image->filename)) {
-            unlink($storePath.DIRECTORY_SEPARATOR.$image->filename);
-        }
+        $this->deleteImageFile($order, $image);
         $filename = $image->filename;
         $image->delete();
         $this->logOrderAction($order, 'image_deleted', [
@@ -157,7 +189,7 @@ class ImageController extends Controller
             'filename' => ['required', 'string'],
         ]);
 
-        $order = Order::query()->findOrFail($validated['order_id']);
+        $order = $this->findOrderByNumber((int) $validated['order_id']);
         $this->authorize('update', $order);
 
         if (Image::where('order_id', $order->id)->count() >= self::MAX_IMAGES_PER_ORDER) {
@@ -173,14 +205,14 @@ class ImageController extends Controller
             ]);
         }
 
-        $storePath = public_path('storage/orders/'.$validated['order_id']);
+        $storePath = $this->orderImagesPath($order);
         if (! file_exists($storePath)) {
             mkdir($storePath, 0777, true);
         }
         $filename = time().rand(1, 50).'.'.'png';
         File::put($storePath.DIRECTORY_SEPARATOR.$filename, $image);
         Image::create([
-            'order_id' => $validated['order_id'],
+            'order_id' => $order->id,
             'filename' => $filename,
             'tenant_id' => $this->currentTenantId(),
         ]);
@@ -196,8 +228,9 @@ class ImageController extends Controller
         ];
     }
 
-    public function getImages(Order $order)
+    public function getImages(int $order)
     {
+        $order = $this->findOrderByNumber($order);
         $this->authorize('view', $order);
 
         $images = Image::where('order_id', $order->id)->get();
