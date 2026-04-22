@@ -118,7 +118,7 @@ export default function FinanceiroOrders({
 
     return (
         <div className="min-w-0">
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-4">
                 <KpiFinancial
                     title="Faturamento - Projeção mensal"
                     total={kpiOrders?.month_projection?.total}
@@ -157,27 +157,27 @@ export default function FinanceiroOrders({
                 />
             </div>
 
-            <div className="mt-3 grid gap-3 xl:grid-cols-3">
-                <Card className="xl:col-span-1">
+            <div className="mt-3 grid gap-4 xl:grid-cols-3">
+                <Card className="min-w-0 xl:col-span-1">
                     <CardHeader>
                         <CardTitle>Faturamento</CardTitle>
                         <CardDescription>Participação por categoria no período de {rangeLabel}</CardDescription>
                     </CardHeader>
 
-                    <CardContent>
-                        <div className="mx-auto w-full max-w-[340px]">
+                    <CardContent className="px-4 pb-4 sm:px-6">
+                        <div className="mx-auto w-full max-w-full sm:max-w-[340px]">
                             <FinancialRevenueChart data={chartFinancial} />
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card className="xl:col-span-2">
+                <Card className="min-w-0 xl:col-span-2">
                     <CardHeader>
                         <CardTitle>Comparativo de ganhos</CardTitle>
                         <CardDescription>Mês corrente (do dia 01 ao último dia do mês): total de serviços x total de peças</CardDescription>
                     </CardHeader>
 
-                    <CardContent>
+                    <CardContent className="px-4 pb-4 sm:px-6">
                         <FinancialRevenueTrendChart data={chartFinancialTrend} />
                     </CardContent>
                 </Card>

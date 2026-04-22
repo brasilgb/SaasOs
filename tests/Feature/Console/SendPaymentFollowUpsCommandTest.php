@@ -42,6 +42,7 @@ class SendPaymentFollowUpsCommandTest extends TestCase
             'mail_encryption' => 'tls',
             'mail_from_address' => 'noreply@example.com',
             'mail_from_name' => 'Sigma OS',
+            'automatic_follow_ups_enabled' => true,
         ]);
 
         $order = Order::factory()->forTenant($tenant->id)->create([
@@ -96,6 +97,7 @@ class SendPaymentFollowUpsCommandTest extends TestCase
             'mail_encryption' => 'tls',
             'mail_from_address' => 'noreply@example.com',
             'mail_from_name' => 'Sigma OS',
+            'automatic_follow_ups_enabled' => true,
         ]);
 
         $order = Order::factory()->forTenant($tenant->id)->create([
@@ -141,6 +143,7 @@ class SendPaymentFollowUpsCommandTest extends TestCase
             'mail_encryption' => 'tls',
             'mail_from_address' => 'noreply@example.com',
             'mail_from_name' => 'Sigma OS',
+            'automatic_follow_ups_enabled' => true,
         ]);
 
         $order = Order::factory()->forTenant($tenant->id)->create([
@@ -193,6 +196,7 @@ class SendPaymentFollowUpsCommandTest extends TestCase
             'mail_encryption' => 'tls',
             'mail_from_address' => 'noreply@example.com',
             'mail_from_name' => 'Sigma OS',
+            'automatic_follow_ups_enabled' => true,
         ]);
 
         $order = Order::factory()->forTenant($tenant->id)->create([

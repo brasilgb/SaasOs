@@ -4,23 +4,200 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\TenantRequest;
+use App\Mail\SubscriptionStatusMail;
 use App\Models\Admin\Plan;
+use App\Models\Admin\Period;
 use App\Models\Tenant;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 
 class TenantController extends Controller
 {
+    private function formatPlanDurationLabel(int $months): string
+    {
+        if ($months <= 0) {
+            return 'Sem periodo definido';
+        }
+
+        if ($months === 1) {
+            return '1 mes';
+        }
+
+        if ($months === 12) {
+            return '12 meses';
+        }
+
+        return "{$months} meses";
+    }
+
+    private function resolveCurrentPlanPeriodLabel(?Plan $plan): string
+    {
+        if (! $plan) {
+            return 'Sem periodo definido';
+        }
+
+        $preferredPeriod = $plan->preferredPeriod();
+        if ($preferredPeriod?->name) {
+            return $preferredPeriod->name;
+        }
+
+        $billingMonths = $plan->billingMonths();
+        if ($billingMonths > 0) {
+            return $this->formatPlanDurationLabel($billingMonths);
+        }
+
+        return 'Sem periodo definido';
+    }
+
+    private function resolvePlan(?int $planId): ?Plan
+    {
+        if (! $planId) {
+            return null;
+        }
+
+        return Plan::query()->with('periods')->find($planId);
+    }
+
+    private function normalizeId(mixed $selectedValue): ?int
+    {
+        if ($selectedValue === null || $selectedValue === '') {
+            return null;
+        }
+
+        return (int) $selectedValue;
+    }
+
+    private function resolvePeriod(?int $planId, ?int $periodId): ?Period
+    {
+        $plan = $this->resolvePlan($planId);
+        if (! $plan) {
+            return null;
+        }
+
+        if ($periodId) {
+            return Period::query()->where('plan_id', $plan->id)
+                ->find($periodId);
+        }
+
+        return $plan->preferredPeriod();
+    }
+
+    private function resolveExpirationDate(?int $planId, ?int $periodId, ?Tenant $tenant = null): ?Carbon
+    {
+        $plan = $this->resolvePlan($planId);
+        if (! $plan) {
+            return null;
+        }
+
+        $normalizedPeriodId = $this->resolvePeriod($plan->id, $periodId)?->id;
+        if (
+            $tenant &&
+            (int) $tenant->plan_id === $plan->id &&
+            (int) ($tenant->period_id ?? 0) === (int) ($normalizedPeriodId ?? 0) &&
+            $tenant->expires_at
+        ) {
+            return $tenant->expires_at->copy();
+        }
+
+        $period = $this->resolvePeriod($planId, $periodId);
+        if ($period) {
+            $months = $period->billingMonths();
+            if ($months > 0) {
+                return Carbon::now()->addMonths($months);
+            }
+        }
+
+        if ($plan->isTrial()) {
+            return Carbon::now()->addDays(14);
+        }
+
+        $billingMonths = $plan->billingMonths();
+        if ($billingMonths > 0) {
+            return Carbon::now()->addMonths($billingMonths);
+        }
+
+        return Carbon::now()->addDays(30);
+    }
+
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $tenants = Tenant::with('user', 'plan')
-            ->paginate(11)
-            ->through(function ($tenant) {
+        $search = trim((string) $request->string('search')->value());
+        $subscriptionFilter = trim((string) $request->string('subscription_filter')->value());
+        $today = Carbon::today();
+        $nextWeek = Carbon::today()->addDays(7)->endOfDay();
+
+        $tenantsCollection = Tenant::with('user', 'plan', 'period')
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($subQuery) use ($search) {
+                    $subQuery
+                        ->where('company', 'like', "%{$search}%")
+                        ->orWhere('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('cnpj', 'like', "%{$search}%");
+                });
+            })
+            ->get()
+            ->filter(function (Tenant $tenant) use ($subscriptionFilter, $today, $nextWeek) {
+                if ($subscriptionFilter === '') {
+                    return true;
+                }
+
+                $bucket = $tenant->subscriptionBucket($today);
+
+                return match ($subscriptionFilter) {
+                    'active' => $bucket === Tenant::SUBSCRIPTION_ACTIVE,
+                    'grace' => $bucket === Tenant::SUBSCRIPTION_GRACE,
+                    'blocked' => $bucket === Tenant::SUBSCRIPTION_BLOCKED,
+                    'expires_today' => $tenant->expires_at?->isSameDay($today) ?? false,
+                    'expires_next_7_days' => $tenant->expires_at?->betweenIncluded($today, $nextWeek) ?? false,
+                    'without_plan' => ! $tenant->plan_id,
+                    'without_expiration' => ! $tenant->expires_at,
+                    default => true,
+                };
+            })
+            ->sortBy(function (Tenant $tenant) use ($today) {
+                return sprintf(
+                    '%02d-%020d-%s',
+                    $tenant->attentionPriority($today),
+                    $tenant->expires_at?->timestamp ?? PHP_INT_MAX,
+                    mb_strtolower((string) $tenant->company)
+                );
+            })
+            ->values();
+
+        $page = max((int) $request->integer('page', 1), 1);
+        $perPage = 11;
+        $tenants = new LengthAwarePaginator(
+            $tenantsCollection->forPage($page, $perPage)->values(),
+            $tenantsCollection->count(),
+            $perPage,
+            $page,
+            [
+                'path' => $request->url(),
+                'query' => $request->query(),
+            ]
+        );
+
+        $tenants->setCollection(
+            $tenants->getCollection()
+            ->map(function ($tenant) {
+                $tenant->current_plan_period_label = $this->resolveCurrentPlanPeriodLabel($tenant->plan);
+                $tenant->computed_subscription_label = $tenant->subscriptionLabel();
+                $tenant->computed_subscription_bucket = $tenant->subscriptionBucket();
+
+                if (! $tenant->expires_at) {
+                    $tenant->days_remaining = null;
+                    $tenant->status_label = 'Sem vencimento definido';
+
+                    return $tenant;
+                }
 
                 $expires = Carbon::parse($tenant->expires_at)->startOfDay();
                 $daysRemaining = floor(now()->diffInDays($expires, false));
@@ -37,10 +214,16 @@ class TenantController extends Controller
                 $tenant->status_label = $status;
 
                 return $tenant;
-            });
+            })
+        );
 
         return Inertia::render('admin/tenants/index', [
             'tenants' => $tenants,
+            'filters' => [
+                'search' => $search,
+                'subscription_filter' => $subscriptionFilter,
+                'result_count' => $tenantsCollection->count(),
+            ],
         ]);
     }
 
@@ -49,7 +232,7 @@ class TenantController extends Controller
      */
     public function create()
     {
-        $plans = Plan::get();
+        $plans = Plan::query()->with('periods')->get();
 
         // Mail::to($request->email)->send(new UserRegisteredMail($user));
         return Inertia::render('admin/tenants/create-tenant', ['plans' => $plans]);
@@ -63,6 +246,10 @@ class TenantController extends Controller
         $data = $request->all();
         $request->validated();
 
+        $data['plan_id'] = $this->normalizeId($data['plan_id'] ?? null);
+        $data['period_id'] = $this->resolvePeriod($data['plan_id'], $this->normalizeId($data['period_id'] ?? null))?->id;
+        $data['expires_at'] = $this->resolveExpirationDate($data['plan_id'], $data['period_id']);
+
         Tenant::create($data);
 
         return redirect()->route('admin.tenants.index')->with('success', 'Empresa cadastrado com sucesso!');
@@ -73,9 +260,55 @@ class TenantController extends Controller
      */
     public function show(Tenant $tenant)
     {
-        $plans = Plan::get();
+        $plans = Plan::query()->with('periods')->get();
+        $loadedTenant = $tenant->load('plan.periods', 'period');
+        $loadedTenant->current_plan_period_label = $this->resolveCurrentPlanPeriodLabel($loadedTenant->plan);
 
-        return Inertia::render('admin/tenants/edit-tenant', ['tenant' => $tenant, 'plans' => $plans]);
+        return Inertia::render('admin/tenants/edit-tenant', [
+            'tenant' => $loadedTenant,
+            'plans' => $plans,
+        ]);
+    }
+
+    public function previewSubscriptionEmail(Tenant $tenant, string $scenario)
+    {
+        $allowedScenarios = ['expires_in_3_days', 'expires_tomorrow', 'expires_today', 'grace', 'blocked'];
+        abort_unless(in_array($scenario, $allowedScenarios, true), 404);
+
+        $tenant->load('plan');
+        $notice = $tenant->buildSubscriptionNotice($scenario);
+
+        abort_unless($notice, 422, 'Nao foi possivel gerar a previa para este tenant.');
+
+        return new SubscriptionStatusMail($tenant, $notice);
+    }
+
+    public function sendSubscriptionEmail(Tenant $tenant, string $scenario): RedirectResponse
+    {
+        $allowedScenarios = ['expires_in_3_days', 'expires_tomorrow', 'expires_today', 'grace', 'blocked'];
+        abort_unless(in_array($scenario, $allowedScenarios, true), 404);
+
+        $tenant->load('plan');
+        $notice = $tenant->buildSubscriptionNotice($scenario);
+
+        if (! $notice) {
+            return redirect()
+                ->route('admin.tenants.show', ['tenant' => $tenant->id])
+                ->with('error', 'Nao foi possivel gerar o e-mail para este tenant.');
+        }
+
+        $recipient = trim((string) $tenant->email);
+        if (! filter_var($recipient, FILTER_VALIDATE_EMAIL)) {
+            return redirect()
+                ->route('admin.tenants.show', ['tenant' => $tenant->id])
+                ->with('error', 'O tenant nao possui um e-mail valido para envio.');
+        }
+
+        Mail::to($recipient)->send(new SubscriptionStatusMail($tenant, $notice));
+
+        return redirect()
+            ->route('admin.tenants.show', ['tenant' => $tenant->id])
+            ->with('success', "E-mail de assinatura enviado com sucesso para {$recipient}.");
     }
 
     /**
@@ -94,23 +327,10 @@ class TenantController extends Controller
         $data = $request->all();
         $request->validated();
 
-        if (isset($data['plan'])) {
-            $planId = (int) $data['plan'];
+        $data['plan_id'] = $this->normalizeId($data['plan_id'] ?? null);
+        $data['period_id'] = $this->resolvePeriod($data['plan_id'], $this->normalizeId($data['period_id'] ?? null))?->id;
+        $data['expires_at'] = $this->resolveExpirationDate($data['plan_id'], $data['period_id'], $tenant);
 
-            // Plano Cortesia (ID 2) - Indefinido (até cancelamento manual)
-            if ($planId === 2) {
-                $data['expires_at'] = null; // Ou uma data muito distante
-            } else {
-                $days = match ($planId) {
-                    1 => 7,   // Trial 07 dias
-                    3 => 30,  // Mensal (Básico)
-                    4 => 90,  // Trimestral
-                    5 => 180, // Semestral
-                    default => 30,
-                };
-                $data['expires_at'] = Carbon::now()->addDays($days);
-            }
-        }
         $tenant->update($data);
 
         return redirect()->route('admin.tenants.show', ['tenant' => $tenant->id])->with('success', 'Empresa atualizada com sucess!');

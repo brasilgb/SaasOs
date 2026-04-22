@@ -5,6 +5,11 @@ import moment from 'moment';
 
 moment.locale('pt-br');
 
+type WarrantyRankingItem = {
+    label: string;
+    total: number;
+};
+
 const styles = StyleSheet.create({
     page: {
         padding: 12,
@@ -141,24 +146,24 @@ export default function OrderStatisticsPDF({ data, reportMeta, dateRange, compan
               ? { backgroundColor: '#EFF6FF', borderColor: '#60A5FA', color: '#1D4ED8' }
               : { backgroundColor: '#ECFDF5', borderColor: '#34D399', color: '#065F46' };
     const warrantyOrders = data.filter((o: any) => Boolean(o.is_warranty_return));
-    const topWarrantyEquipments = Object.entries(
+    const topWarrantyEquipments: WarrantyRankingItem[] = Object.entries(
         warrantyOrders.reduce((acc: Record<string, number>, order: any) => {
             const key = order.equipment?.equipment || 'Equipamento não informado';
             acc[key] = (acc[key] ?? 0) + 1;
             return acc;
         }, {}),
     )
-        .map(([label, total]) => ({ label, total }))
+        .map(([label, total]) => ({ label, total: Number(total) }))
         .sort((a, b) => b.total - a.total)
         .slice(0, 5);
-    const topWarrantyDefects = Object.entries(
+    const topWarrantyDefects: WarrantyRankingItem[] = Object.entries(
         warrantyOrders.reduce((acc: Record<string, number>, order: any) => {
             const key = String(order.defect || 'Defeito não informado').trim() || 'Defeito não informado';
             acc[key] = (acc[key] ?? 0) + 1;
             return acc;
         }, {}),
     )
-        .map(([label, total]) => ({ label, total }))
+        .map(([label, total]) => ({ label, total: Number(total) }))
         .sort((a, b) => b.total - a.total)
         .slice(0, 5);
 

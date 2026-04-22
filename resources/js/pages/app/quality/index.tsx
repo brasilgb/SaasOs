@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { usePersistedPeriodFilter } from '@/hooks/use-persisted-period-filter';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { connectBackend } from '@/Utils/connectApi';
@@ -254,8 +255,7 @@ export default function QualityIndicators({
     recoveryAssignees?: Array<{ id: number; name: string }>;
     auth?: { id?: number };
 }) {
-    const [timeRange, setTimeRange] = useState('7');
-    const [dateRange, setDateRange] = useState<any>({});
+    const { timeRange, dateRange, setTimeRange, setDateRange, clearDateRange } = usePersistedPeriodFilter('quality-period-filter');
     const [metrics, setMetrics] = useState<any>(null);
     const [recoveryStatusFilter, setRecoveryStatusFilter] = useState('all');
     const [assignedToFilter, setAssignedToFilter] = useState('all');
@@ -301,7 +301,7 @@ export default function QualityIndicators({
 
         setTimeRange(value);
         if (value !== 'custom') {
-            setDateRange({});
+            clearDateRange();
         }
     };
 

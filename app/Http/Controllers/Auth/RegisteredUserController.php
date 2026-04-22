@@ -40,6 +40,11 @@ class RegisteredUserController extends Controller
         ]);
 
         $user = DB::transaction(function () use ($request) {
+            $trialPlan = Plan::query()
+                ->with('periods')
+                ->get()
+                ->first(fn (Plan $plan) => $plan->isTrial());
+            $trialPeriod = $trialPlan?->preferredPeriod();
 
             $tenant = Tenant::create([
                 'name' => $request->name,
@@ -49,7 +54,8 @@ class RegisteredUserController extends Controller
                 'phone' => $request->phone,
                 'whatsapp' => $request->whatsapp,
                 'status' => 1,
-                'plan_id' => Plan::query()->value('id'),
+                'plan_id' => $trialPlan?->id,
+                'period_id' => $trialPeriod?->id,
                 'subscription_status' => 'active',
                 'expires_at' => now()->addDays(14),
             ]);

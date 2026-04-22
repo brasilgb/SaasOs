@@ -94,14 +94,14 @@ function SalesRevenueChart({ data }: { data: SalesRevenuePoint[] }) {
     );
 
     return (
-        <ChartContainer config={chartConfig} className="h-[300px] w-full">
-            <ComposedChart data={chartData} margin={{ top: 8, right: 10, left: 10, bottom: 0 }}>
+        <ChartContainer config={chartConfig} className="h-[240px] w-full sm:h-[280px] lg:h-[300px]">
+            <ComposedChart data={chartData} margin={{ top: 8, right: 6, left: 0, bottom: 0 }}>
                 <CartesianGrid vertical={false} />
-                <XAxis dataKey="dateLabel" tickLine={false} axisLine={false} minTickGap={18} />
+                <XAxis dataKey="dateLabel" tickLine={false} axisLine={false} minTickGap={24} />
                 <YAxis
                     tickLine={false}
                     axisLine={false}
-                    width={72}
+                    width={56}
                     tickFormatter={(value) =>
                         Number(value || 0).toLocaleString('pt-BR', {
                             style: 'currency',
@@ -131,7 +131,7 @@ function SalesRevenueChart({ data }: { data: SalesRevenuePoint[] }) {
                         />
                     }
                 />
-                <Bar dataKey="total" name="total" fill="var(--color-total)" radius={[6, 6, 0, 0]} maxBarSize={28} />
+                <Bar dataKey="total" name="total" fill="var(--color-total)" radius={[6, 6, 0, 0]} maxBarSize={24} />
                 <Line
                     type="monotone"
                     dataKey="profit"
@@ -141,7 +141,7 @@ function SalesRevenueChart({ data }: { data: SalesRevenuePoint[] }) {
                     dot={{ r: 2 }}
                     activeDot={{ r: 4 }}
                 />
-                <ChartLegend content={<ChartLegendContent nameKey="name" />} />
+                <ChartLegend content={<ChartLegendContent nameKey="name" className="justify-start gap-3 pt-4 sm:justify-center" />} />
             </ComposedChart>
         </ChartContainer>
     );
@@ -176,7 +176,7 @@ function SalesPaymentMethodsPie({
     );
 
     return (
-        <ChartContainer config={paymentChartConfig} className="h-[300px] w-full">
+        <ChartContainer config={paymentChartConfig} className="h-[260px] w-full sm:h-[300px]">
             <PieChart>
                 <ChartTooltip
                     cursor={false}
@@ -192,12 +192,12 @@ function SalesPaymentMethodsPie({
                         />
                     }
                 />
-                <Pie data={pieData} dataKey="value" nameKey="label" innerRadius={50} outerRadius={90} strokeWidth={2} />
+                <Pie data={pieData} dataKey="value" nameKey="label" innerRadius={42} outerRadius={78} strokeWidth={2} />
                 <ChartLegend
                     align="left"
-                    verticalAlign="middle"
-                    layout="vertical"
-                    content={<ChartLegendContent nameKey="key" className="flex-col items-start justify-start pl-2 pt-0" />}
+                    verticalAlign="bottom"
+                    layout="horizontal"
+                    content={<ChartLegendContent nameKey="key" className="flex flex-wrap justify-start gap-3 pt-4 sm:justify-center" />}
                 />
             </PieChart>
         </ChartContainer>
@@ -227,7 +227,7 @@ function KpiCard({
             </CardHeader>
 
             <CardContent className="space-y-3">
-                <CardTitle className="truncate text-2xl font-bold tabular-nums 2xl:text-3xl">{formatCurrency(value)}</CardTitle>
+                <CardTitle className="text-xl font-bold leading-tight break-words tabular-nums sm:text-2xl 2xl:text-3xl">{formatCurrency(value)}</CardTitle>
                 <div className="text-muted-foreground text-xs">{description}</div>
                 <div className="text-muted-foreground border-t pt-2 text-xs">
                     {countLabel ?? `${Number(count || 0)} ${Number(count || 0) === 1 ? 'venda analisada' : 'vendas analisadas'}`}
@@ -291,8 +291,7 @@ export default function FinanceiroSales({
 
     return (
         <div className="min-w-0">
-
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+            <div className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-5">
                 <KpiCard
                     title="Vendas - Projeção mensal"
                     value={kpisSales?.month_projection_revenue}
@@ -335,24 +334,24 @@ export default function FinanceiroSales({
                 />
             </div>
 
-            <div className="mt-3 grid gap-4 lg:grid-cols-12">
-                <Card className="lg:col-span-4">
+            <div className="mt-3 grid gap-4 xl:grid-cols-12">
+                <Card className="min-w-0 xl:col-span-4">
                     <CardHeader>
                         <CardTitle>Meios de pagamento</CardTitle>
                         <CardDescription>Distribuição das vendas por forma de pagamento no período selecionado</CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="px-4 pb-4 sm:px-6">
                         <SalesPaymentMethodsPie paymentMethods={kpisSales?.payment_methods} />
                     </CardContent>
                 </Card>
 
-                <Card className="lg:col-span-8">
+                <Card className="min-w-0 xl:col-span-8">
                     <CardHeader>
                         <CardTitle>Faturamento de vendas</CardTitle>
                         <CardDescription>Mês corrente (do dia 01 ao último dia do mês): barras de vendas e linha de lucro</CardDescription>
                     </CardHeader>
 
-                    <CardContent>
+                    <CardContent className="px-4 pb-4 sm:px-6">
                         <SalesRevenueChart data={chartSalesFinancial} />
                     </CardContent>
                 </Card>

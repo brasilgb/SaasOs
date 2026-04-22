@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Tenant;
 use Carbon\Carbon;
 use Closure;
 use Illuminate\Http\Request;
@@ -18,30 +19,21 @@ class CheckSubscriptionStatus
             return $next($request);
         }
 
-        // Plano Cortesia bypass
-        if ($tenant->plan_id == 2) {
+        $persistedStatus = $tenant->persistedSubscriptionStatus();
+        if ($tenant->subscription_status !== $persistedStatus) {
+            $tenant->update([
+                'subscription_status' => $persistedStatus,
+            ]);
+        }
+
+        $bucket = $tenant->subscriptionBucket();
+        if ($bucket === Tenant::SUBSCRIPTION_ACTIVE) {
             return $next($request);
         }
 
-        $expiresAt = Carbon::parse($tenant->expires_at);
-        $graceLimit = $expiresAt->copy()->addDays(3);
         $now = now();
-
-        // 1️⃣ Assinatura ativa
-        if ($expiresAt->isFuture()) {
-
-            if ($tenant->subscription_status !== 'active') {
-                $tenant->update([
-                    'subscription_status' => 'active',
-                ]);
-            }
-
-            return $next($request);
-        }
-
-        // 2️⃣ Grace period (até 3 dias)
-        if ($now->lessThanOrEqualTo($graceLimit)) {
-
+        if ($bucket === Tenant::SUBSCRIPTION_GRACE) {
+            $expiresAt = Carbon::parse($tenant->expires_at);
             $daysOverdue = $expiresAt->diffInDays($now);
 
             Inertia::share('subscription_alert', [
@@ -50,16 +42,9 @@ class CheckSubscriptionStatus
                 'message' => 'Sua assinatura venceu. Regularize para evitar bloqueio.',
             ]);
 
-            if ($tenant->subscription_status !== 'expired') {
-                $tenant->update([
-                    'subscription_status' => 'expired',
-                ]);
-            }
-
             return $next($request);
         }
 
-        // 3️⃣ Bloqueio total
         if (
             $request->routeIs('subscription.blocked') ||
             $request->routeIs('subscription.pay') ||
@@ -67,12 +52,6 @@ class CheckSubscriptionStatus
             $request->routeIs('logout')
         ) {
             return $next($request);
-        }
-
-        if ($tenant->subscription_status !== 'blocked') {
-            $tenant->update([
-                'subscription_status' => 'blocked',
-            ]);
         }
 
         return redirect()->route('subscription.blocked');

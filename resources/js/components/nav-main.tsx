@@ -35,7 +35,7 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
         <SidebarMenu>
             {items.map(
                 (item) =>
-                    (item.visibilitySetting ? othersetting?.[item.visibilitySetting as keyof typeof othersetting] ?? true : true) &&
+                    (item.visibilitySetting ? othersetting?.[item.visibilitySetting as keyof typeof othersetting] ?? false : true) &&
                     (item.title !== 'Vendas' && item.title !== 'Despesas' && item.title !== 'Caixa diário'
                         ? true
                         : canAccessSalesModules && !!othersetting?.enablesales) &&

@@ -7,6 +7,7 @@ use App\Models\App\Other;
 use App\Models\App\OrderLog;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\OrderStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -55,12 +56,13 @@ class QualityIndicatorControllerTest extends TestCase
             'equipment_id' => $sourceOrder->equipment_id,
             'user_id' => $sourceOrder->user_id,
             'created_at' => now()->subDay(),
+            'service_status' => OrderStatus::CUSTOMER_NOTIFIED,
         ]);
 
         Order::factory()->forTenant($this->tenant->id)->create([
             'is_warranty_return' => false,
             'created_at' => now()->subDay(),
-            'service_status' => \App\Support\OrderStatus::DELIVERED,
+            'service_status' => OrderStatus::DELIVERED,
             'customer_feedback_submitted_at' => now()->subHours(2),
             'customer_feedback_rating' => 4,
         ]);
@@ -68,16 +70,19 @@ class QualityIndicatorControllerTest extends TestCase
         Order::factory()->forTenant($this->tenant->id)->create([
             'is_warranty_return' => true,
             'created_at' => now()->subDays(8),
+            'service_status' => OrderStatus::CUSTOMER_NOTIFIED,
         ]);
 
         Order::factory()->forTenant($this->tenant->id)->create([
             'is_warranty_return' => false,
             'created_at' => now()->subDays(8),
+            'service_status' => OrderStatus::CUSTOMER_NOTIFIED,
         ]);
 
         Order::factory()->forTenant($this->tenant->id)->create([
             'is_warranty_return' => false,
             'created_at' => now()->subDays(9),
+            'service_status' => OrderStatus::CUSTOMER_NOTIFIED,
         ]);
 
         $response = $this->get(route('app.quality.metrics', ['timerange' => 7]));

@@ -5,6 +5,11 @@ import moment from 'moment';
 
 moment.locale('pt-br');
 
+type WarrantyRankingItem = {
+    label: string;
+    total: number;
+};
+
 const styles = StyleSheet.create({
     page: {
         padding: 10,
@@ -119,7 +124,7 @@ export default function OrderReportPDF({ data, reportMeta, dateRange, company }:
             : warrantySeverity === 'Atenção'
               ? { backgroundColor: '#EFF6FF', borderColor: '#60A5FA', color: '#1D4ED8' }
               : { backgroundColor: '#ECFDF5', borderColor: '#34D399', color: '#065F46' };
-    const topWarrantyTechnicians = Object.entries(
+    const topWarrantyTechnicians: WarrantyRankingItem[] = Object.entries(
         data.reduce((acc: Record<string, number>, order: any) => {
             if (!order.is_warranty_return) {
                 return acc;
@@ -130,7 +135,7 @@ export default function OrderReportPDF({ data, reportMeta, dateRange, company }:
             return acc;
         }, {}),
     )
-        .map(([label, total]) => ({ label, total }))
+        .map(([label, total]) => ({ label, total: Number(total) }))
         .sort((a, b) => b.total - a.total)
         .slice(0, 5);
     const period =

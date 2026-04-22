@@ -4,15 +4,18 @@ import { toastSuccess } from '@/components/app-toast-messages';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
 import InputError from '@/components/input-error';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import AdminLayout from '@/layouts/admin/admin-layout';
 import { BreadcrumbItem } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/react';
+import selectStyles from '@/Utils/selectStyles';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import { ArrowLeft, Building, Save } from 'lucide-react';
 import Select from 'react-select';
+import moment from 'moment';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -85,8 +88,32 @@ export default function EditTenant({ plans, tenant }: any) {
         setData('status', selected?.value);
     };
 
-    const defaultPlan = allPlans?.filter((o: any) => o.value == tenant?.plan_id).map((opt: any) => ({ value: opt.value, label: opt.label }));
+    const sendSubscriptionEmail = (scenario: string) => {
+        router.post(
+            route('admin.tenants.subscription-email-send', [tenant.id, scenario]),
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    toastSuccess('Sucesso', 'E-mail enviado com sucesso');
+                },
+            },
+        );
+    };
+
+    const selectedPlan = allPlans.find((option: any) => String(option.value) === String(data.plan_id)) ?? null;
     const defaultStatusSaas = statusSaas?.filter((o: any) => o.value == tenant?.status).map((opt: any) => ({ value: opt.value, label: opt.label }));
+    const subscriptionStatusLabel = tenant.subscription_status === 'active' ? 'Ativa' : tenant.subscription_status === 'blocked' ? 'Bloqueada' : tenant.subscription_status ?? 'Nao definido';
+    const expirationLabel = tenant.expires_at ? moment(tenant.expires_at).format('DD/MM/YYYY') : 'Sem vencimento definido';
+    const daysRemainingLabel = tenant.status_label ?? 'Sem informacao';
+    const renewalReferenceLabel = tenant.period?.name ?? tenant.plan?.name ?? 'Sem plano definido';
+    const currentPlanPeriodLabel = tenant.current_plan_period_label ?? 'Sem periodo definido';
+    const subscriptionBadgeClassName =
+        tenant.subscription_status === 'active'
+            ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+            : tenant.subscription_status === 'blocked'
+              ? 'border-rose-200 bg-rose-50 text-rose-700'
+              : 'border-amber-200 bg-amber-50 text-amber-700';
 
     return (
         <AdminLayout>
@@ -114,6 +141,82 @@ export default function EditTenant({ plans, tenant }: any) {
             </div>
 
             <div className="p-4">
+                <div className="mb-4 grid gap-4 md:grid-cols-4">
+                    <div className="rounded-lg border bg-card p-4">
+                        <p className="text-sm text-muted-foreground">Plano atual</p>
+                        <p className="mt-2 text-lg font-semibold">{tenant.plan?.name ?? 'Sem plano definido'}</p>
+                    </div>
+                    <div className="rounded-lg border bg-card p-4">
+                        <p className="text-sm text-muted-foreground">Periodo atual</p>
+                        <p className="mt-2 text-lg font-semibold">{currentPlanPeriodLabel}</p>
+                    </div>
+                    <div className="rounded-lg border bg-card p-4">
+                        <p className="text-sm text-muted-foreground">Vence em</p>
+                        <p className="mt-2 text-lg font-semibold">{expirationLabel}</p>
+                        <p className="mt-1 text-sm text-muted-foreground">{daysRemainingLabel}</p>
+                    </div>
+                    <div className="rounded-lg border bg-card p-4">
+                        <p className="text-sm text-muted-foreground">Assinatura</p>
+                        <div className="mt-2 flex items-center gap-2">
+                            <Badge variant="outline" className={subscriptionBadgeClassName}>
+                                {subscriptionStatusLabel}
+                            </Badge>
+                            <Badge variant="secondary">{renewalReferenceLabel}</Badge>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="mb-4 rounded-lg border bg-card p-4">
+                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <p className="text-sm text-muted-foreground">Prévias de comunicação</p>
+                            <p className="mt-1 text-sm text-muted-foreground">Abra os modelos automáticos de assinatura sem enviar e-mail real.</p>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            <Button variant="outline" asChild>
+                                <a href={route('admin.tenants.subscription-email-preview', [tenant.id, 'expires_in_3_days'])} target="_blank" rel="noreferrer">
+                                    Vence em 3 dias
+                                </a>
+                            </Button>
+                            <Button type="button" variant="secondary" onClick={() => sendSubscriptionEmail('expires_in_3_days')}>
+                                Enviar 3 dias
+                            </Button>
+                            <Button variant="outline" asChild>
+                                <a href={route('admin.tenants.subscription-email-preview', [tenant.id, 'expires_tomorrow'])} target="_blank" rel="noreferrer">
+                                    Vence amanhã
+                                </a>
+                            </Button>
+                            <Button type="button" variant="secondary" onClick={() => sendSubscriptionEmail('expires_tomorrow')}>
+                                Enviar amanhã
+                            </Button>
+                            <Button variant="outline" asChild>
+                                <a href={route('admin.tenants.subscription-email-preview', [tenant.id, 'expires_today'])} target="_blank" rel="noreferrer">
+                                    Vence hoje
+                                </a>
+                            </Button>
+                            <Button type="button" variant="secondary" onClick={() => sendSubscriptionEmail('expires_today')}>
+                                Enviar hoje
+                            </Button>
+                            <Button variant="outline" asChild>
+                                <a href={route('admin.tenants.subscription-email-preview', [tenant.id, 'grace'])} target="_blank" rel="noreferrer">
+                                    Carência
+                                </a>
+                            </Button>
+                            <Button type="button" variant="secondary" onClick={() => sendSubscriptionEmail('grace')}>
+                                Enviar carência
+                            </Button>
+                            <Button variant="outline" asChild>
+                                <a href={route('admin.tenants.subscription-email-preview', [tenant.id, 'blocked'])} target="_blank" rel="noreferrer">
+                                    Bloqueada
+                                </a>
+                            </Button>
+                            <Button type="button" variant="secondary" onClick={() => sendSubscriptionEmail('blocked')}>
+                                Enviar bloqueio
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+
                 <div className="rounded-lg border p-2">
                     <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
                         <div className="mt-4 grid gap-4 md:grid-cols-9">
@@ -222,28 +325,12 @@ export default function EditTenant({ plans, tenant }: any) {
                             <div className="grid gap-2 md:col-span-2">
                                 <Label htmlFor="plan">Plano</Label>
                                 <Select
-                                    defaultValue={defaultPlan}
+                                    value={selectedPlan}
                                     options={allPlans}
                                     onChange={changePlan}
                                     placeholder="Selecione o plano"
                                     className="h-9 rounded-md border border-gray-300 p-0 text-gray-700 shadow-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                    styles={{
-                                        control: (baseStyles, state) => ({
-                                            ...baseStyles,
-                                            fontSize: '14px',
-                                            boxShadow: 'none',
-                                            border: 'none',
-                                            background: 'transparent',
-                                            paddingBottom: '2px',
-                                        }),
-                                        dropdownIndicator: (base) => ({
-                                            ...base,
-                                        }),
-                                        menuList: (base) => ({
-                                            ...base,
-                                            fontSize: '14px',
-                                        }),
-                                    }}
+                                    styles={selectStyles}
                                 />
                                 <InputError className="mt-2" message={errors.plan_id} />
                             </div>
@@ -256,23 +343,7 @@ export default function EditTenant({ plans, tenant }: any) {
                                     onChange={changeStatus}
                                     placeholder="Selecione o status"
                                     className="h-9 rounded-md border border-gray-300 p-0 text-gray-700 shadow-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                    styles={{
-                                        control: (baseStyles, state) => ({
-                                            ...baseStyles,
-                                            fontSize: '14px',
-                                            boxShadow: 'none',
-                                            border: 'none',
-                                            background: 'transparent',
-                                            paddingBottom: '2px',
-                                        }),
-                                        dropdownIndicator: (base) => ({
-                                            ...base,
-                                        }),
-                                        menuList: (base) => ({
-                                            ...base,
-                                            fontSize: '14px',
-                                        }),
-                                    }}
+                                    styles={selectStyles}
                                 />
                                 <InputError className="mt-2" message={errors.status} />
                             </div>

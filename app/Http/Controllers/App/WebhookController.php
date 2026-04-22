@@ -6,14 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\Admin\Plan;
 use App\Models\App\Payment;
 use App\Models\Tenant;
+use App\Services\MercadoPagoService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use MercadoPago\Client\Payment\PaymentClient;
-use MercadoPago\MercadoPagoConfig;
 
 class WebhookController extends Controller
 {
+    public function __construct(private readonly MercadoPagoService $mercadoPagoService) {}
+
     public function handle(Request $request, $token)
     {
         // 1ª CAMADA: Validação do Token da URL
@@ -38,10 +39,7 @@ class WebhookController extends Controller
         }
 
         try {
-            MercadoPagoConfig::setAccessToken(config('services.mercadopago.token'));
-            $client = new PaymentClient;
-
-            $payment = $client->get($paymentId);
+            $payment = $this->mercadoPagoService->getPayment($paymentId);
             $this->syncPaymentRecord($payment);
 
             if ($payment->status === 'approved') {
@@ -66,7 +64,7 @@ class WebhookController extends Controller
             return response()->json(['error' => 'Invalid metadata'], 422);
         }
 
-        $plan = Plan::find($metadata['plan_id']);
+        $plan = Plan::query()->with('periods')->find($metadata['plan_id']);
         if (! $plan) {
             return response()->json(['error' => 'Plan not found'], 404);
         }
@@ -96,8 +94,11 @@ class WebhookController extends Controller
                 ? $tenant->expires_at->copy()
                 : now();
 
+            $preferredPeriod = $plan->preferredPeriod();
+
             $tenant->update([
                 'plan_id' => $plan->id,
+                'period_id' => $preferredPeriod?->id,
                 'subscription_status' => 'active',
                 'expires_at' => $startBase->addMonths($months),
                 'last_payment_id' => (string) $payment->id,

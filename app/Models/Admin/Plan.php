@@ -2,12 +2,13 @@
 
 namespace App\Models\Admin;
 
+use App\Models\Admin\Period;
 use App\Models\Tenant;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Database\Factories\PlanFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Plan extends Model
 {
@@ -21,8 +22,27 @@ class Plan extends Model
         'billing_months',
     ];
 
+    public function isTrial(): bool
+    {
+        $text = mb_strtolower(trim(($this->slug ?? '').' '.($this->name ?? '')));
+
+        return str_contains($text, 'trial');
+    }
+
+    public function isCourtesy(): bool
+    {
+        $text = mb_strtolower(trim(($this->slug ?? '').' '.($this->name ?? '')));
+
+        return str_contains($text, 'cortesia') || str_contains($text, 'courtesy');
+    }
+
     public function billingMonths(): int
     {
+        $periodMonths = $this->preferredPeriodBillingMonths();
+        if ($periodMonths > 0) {
+            return $periodMonths;
+        }
+
         if ((int) ($this->billing_months ?? 0) > 0) {
             return (int) $this->billing_months;
         }
@@ -50,6 +70,33 @@ class Plan extends Model
         }
 
         return 0;
+    }
+
+    public function periods(): HasMany
+    {
+        return $this->hasMany(Period::class);
+    }
+
+    public function preferredPeriod(): ?Period
+    {
+        $periods = $this->relationLoaded('periods')
+            ? $this->periods
+            : $this->periods()->get();
+
+        if ($periods->isEmpty()) {
+            return null;
+        }
+
+        return $periods->first(function (Period $period) {
+            return $period->billingMonths() === (int) ($this->billing_months ?? 0);
+        }) ?? $periods->sortBy('id')->first();
+    }
+
+    public function preferredPeriodBillingMonths(): int
+    {
+        $preferred = $this->preferredPeriod();
+
+        return $preferred ? $preferred->billingMonths() : 0;
     }
 
     protected static function newFactory(): Factory

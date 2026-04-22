@@ -2,6 +2,7 @@ import ActionDelete from '@/components/action-delete';
 import AppPagination from '@/components/app-pagination';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
+import { Badge } from '@/components/ui/badge';
 import InputSearch from '@/components/inputSearch';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -24,8 +25,41 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function TenantsIndex({ tenants }: any) {
-    console.log(tenants);
+export default function TenantsIndex({ tenants, filters }: any) {
+    const getRowClassName = (subscriptionStatus: string) => {
+        if (subscriptionStatus === 'blocked') {
+            return 'bg-rose-50/60 hover:bg-rose-50';
+        }
+
+        if (subscriptionStatus === 'grace') {
+            return 'bg-amber-50/60 hover:bg-amber-50';
+        }
+
+        return '';
+    };
+
+    const getSubscriptionBadgeClassName = (subscriptionStatus: string) => {
+        if (subscriptionStatus === 'active') {
+            return 'border-emerald-200 bg-emerald-50 text-emerald-700';
+        }
+
+        if (subscriptionStatus === 'blocked') {
+            return 'border-rose-200 bg-rose-50 text-rose-700';
+        }
+
+        return 'border-amber-200 bg-amber-50 text-amber-700';
+    };
+
+    const filterLinks = [
+        { label: 'Todas', value: '' },
+        { label: 'Ativas', value: 'active' },
+        { label: 'Carência', value: 'grace' },
+        { label: 'Bloqueadas', value: 'blocked' },
+        { label: 'Vence Hoje', value: 'expires_today' },
+        { label: '7 Dias', value: 'expires_next_7_days' },
+        { label: 'Sem Plano', value: 'without_plan' },
+        { label: 'Sem Vencimento', value: 'without_expiration' },
+    ];
 
     return (
         <AdminLayout>
@@ -40,8 +74,37 @@ export default function TenantsIndex({ tenants }: any) {
                 </div>
             </div>
             <div className="flex items-center justify-between p-4">
-                <div>
+                <div className="space-y-3">
                     <InputSearch placeholder="Buscar empresa" url="admin.tenants.index" />
+                    <div className="text-sm text-muted-foreground">
+                        {filters?.result_count ?? tenants?.total ?? 0} empresa(s) encontrada(s)
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                        {filterLinks.map((filter) => {
+                            const isActive = (filters?.subscription_filter ?? '') === filter.value;
+
+                            return (
+                                <Link
+                                    key={filter.label}
+                                    href={route('admin.tenants.index', {
+                                        ...(filters?.search ? { search: filters.search } : {}),
+                                        ...(filter.value ? { subscription_filter: filter.value } : {}),
+                                    })}
+                                >
+                                    <Badge
+                                        variant="outline"
+                                        className={
+                                            isActive
+                                                ? 'border-primary bg-primary/10 text-primary'
+                                                : 'border-border bg-background text-muted-foreground'
+                                        }
+                                    >
+                                        {filter.label}
+                                    </Badge>
+                                </Link>
+                            );
+                        })}
+                    </div>
                 </div>
                 <div>
                     <Button variant="default" asChild>
@@ -65,8 +128,10 @@ export default function TenantsIndex({ tenants }: any) {
                                 <TableHead>E-mail</TableHead>
                                 <TableHead>Telefone</TableHead>
                                 <TableHead>Status</TableHead>
+                                <TableHead>Assinatura</TableHead>
                                 <TableHead>Criação</TableHead>
                                 <TableHead>Plano</TableHead>
+                                <TableHead>Período</TableHead>
                                 <TableHead>Vencimento</TableHead>
                                 <TableHead>Restante</TableHead>
                                 <TableHead></TableHead>
@@ -75,7 +140,7 @@ export default function TenantsIndex({ tenants }: any) {
                         <TableBody>
                             {tenants?.data.length > 0 ? (
                                 tenants?.data?.map((tenant: any) => (
-                                    <TableRow key={tenant.id}>
+                                    <TableRow key={tenant.id} className={getRowClassName(tenant.computed_subscription_bucket)}>
                                         <TableCell>{tenant.id}</TableCell>
                                         <TableCell>{tenant.name}</TableCell>
                                         <TableCell>{tenant.company}</TableCell>
@@ -83,9 +148,15 @@ export default function TenantsIndex({ tenants }: any) {
                                         <TableCell>{tenant.email}</TableCell>
                                         <TableCell>{maskPhone(tenant.phone)}</TableCell>
                                         <TableCell>{statusSaasByValue(tenant.status)}</TableCell>
+                                        <TableCell>
+                                            <Badge variant="outline" className={getSubscriptionBadgeClassName(tenant.computed_subscription_bucket)}>
+                                                {tenant.computed_subscription_label}
+                                            </Badge>
+                                        </TableCell>
                                         <TableCell>{moment(tenant.created_at).format('DD/MM/YYYY')}</TableCell>
-                                        <TableCell>{tenant.plan.name}</TableCell>
-                                        <TableCell>{moment(tenant.expires_at).format('DD/MM/YYYY')}</TableCell>
+                                        <TableCell>{tenant.plan?.name ?? '-'}</TableCell>
+                                        <TableCell>{tenant.current_plan_period_label ?? tenant.period?.name ?? '-'}</TableCell>
+                                        <TableCell>{tenant.expires_at ? moment(tenant.expires_at).format('DD/MM/YYYY') : '-'}</TableCell>
                                         <TableCell>{tenant.status_label}</TableCell>
                                         <TableCell className="flex justify-end gap-2">
                                             <Button asChild size="icon" className="bg-green-500 text-white hover:bg-green-500">
@@ -115,7 +186,7 @@ export default function TenantsIndex({ tenants }: any) {
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={12} className="flex h-16 w-full items-center justify-center">
+                                    <TableCell colSpan={14} className="flex h-16 w-full items-center justify-center">
                                         <span>Não há dados a serem mostrados no momento.</span>
                                     </TableCell>
                                 </TableRow>
@@ -123,7 +194,7 @@ export default function TenantsIndex({ tenants }: any) {
                         </TableBody>
                         <TableFooter>
                             <TableRow>
-                                <TableCell colSpan={12}>
+                                <TableCell colSpan={14}>
                                     <AppPagination data={tenants} />
                                 </TableCell>
                             </TableRow>

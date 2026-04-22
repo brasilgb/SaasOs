@@ -56,6 +56,7 @@ export default function CashierDailyReportPDF({ session, company }: any) {
     const paymentMethodsWithMovement = paymentMethods.filter(
         (method) => Number(salesTotalsByMethod[method] || 0) > 0 || Number(orderPaymentTotalsByMethod[method] || 0) > 0,
     );
+    const transparentRowStyle = { borderBottom: '0px solid transparent' } as const;
     const openingNotes = String(session?.notes || '').trim();
     const closingNotes = String(session?.closing_notes || '').trim();
 
@@ -138,7 +139,7 @@ export default function CashierDailyReportPDF({ session, company }: any) {
                     <View style={styles.table}>
                         {paymentMethodsWithMovement.length ? (
                             paymentMethodsWithMovement.map((method, index) => (
-                                <View key={method} style={[styles.row, index === paymentMethodsWithMovement.length - 1 ? { borderBottom: '0px solid transparent' } : null]}>
+                                <View key={method} style={[styles.row, ...(index === paymentMethodsWithMovement.length - 1 ? [transparentRowStyle] : [])]}>
                                     <View style={styles.label}>
                                         <Text>{paymentMethodLabels[method]}</Text>
                                         <Text style={styles.helper}>

@@ -13,6 +13,7 @@ use App\Models\App\Order;
 use App\Models\App\OrderLog;
 use App\Models\App\Other;
 use App\Models\App\WhatsappMessage;
+use App\Models\TenantFeedback;
 use App\Models\User;
 use App\Support\OrderStatus;
 use Illuminate\Foundation\Inspiring;
@@ -230,6 +231,35 @@ class HandleInertiaRequests extends Middleware
         ];
     }
 
+    private function tenantFeedbackRequest(?User $user): ?array
+    {
+        if (! $user || ! $user->tenant_id || $user->isRoot()) {
+            return null;
+        }
+
+        $feedback = TenantFeedback::query()
+            ->where('tenant_id', $user->tenant_id)
+            ->whereIn('feedback_status', ['pending', 'opened'])
+            ->where(function ($query) {
+                $query->whereNull('feedback_expires_at')
+                    ->orWhere('feedback_expires_at', '>', now());
+            })
+            ->latest('id')
+            ->first();
+
+        if (! $feedback) {
+            return null;
+        }
+
+        return [
+            'hasPending' => true,
+            'feedbackId' => $feedback->id,
+            'source' => $feedback->feedback_source,
+            'expiresAt' => $feedback->feedback_expires_at?->toIso8601String(),
+            'url' => route('tenant.feedback.show', $feedback->feedback_token),
+        ];
+    }
+
     /**
      * The root template that's loaded on the first page visit.
      *
@@ -338,6 +368,7 @@ class HandleInertiaRequests extends Middleware
             ] : null,
             'performanceAlert' => $this->commercialPerformanceAlert($user),
             'customerFeedbackAlert' => $this->customerFeedbackAlert($user),
+            'tenantFeedbackRequest' => $this->tenantFeedbackRequest($user),
             'taskIndicator' => $this->personalTaskIndicator($user),
             'orderStatus' => $user ? Order::where('service_status', OrderStatus::BUDGET_APPROVED)->get() : null,
 

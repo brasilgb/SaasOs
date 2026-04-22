@@ -31,7 +31,7 @@ export function useZipcodeAutocomplete<T>({
     const [isZipcodeLoading, setLoading] = useState(false);
 
     useEffect(() => {
-        if (!zipcode || zipcode.length !== 9) return;
+        if (!zipcode || zipcode.length !== 8) return;
 
         const fetchAddress = async () => {
             try {

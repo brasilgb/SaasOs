@@ -9,11 +9,11 @@ import SettingsLayout from '@/layouts/settings/layout';
 export default function Appearance() {
     return (
         <AppLayout>
-            <Head title="Appearance settings" />
+            <Head title="Configurações de aparência" />
 
             <SettingsLayout>
-                <div className="space-y-6">
-                    <HeadingSmall title="Appearance settings" description="Update your account's appearance settings" />
+                <div className="w-full max-w-none space-y-8">
+                    <HeadingSmall title="Aparência" description="Defina como a interface da sua conta deve ser exibida" />
                     <AppearanceTabs />
                 </div>
             </SettingsLayout>

@@ -3,6 +3,23 @@ import moment from 'moment';
 
 moment.locale('pt-br');
 
+type RankingItem = {
+    label: string;
+    total: number;
+    prefix: string;
+};
+
+type LowFeedbackOrder = {
+    id: string | number;
+    order_number: string | number;
+    customer: string;
+    rating: number;
+    comment?: string;
+    recovery_status?: string;
+    recovery_assigned_to?: string;
+    submitted_at?: string;
+};
+
 const styles = StyleSheet.create({
     page: { padding: 18, fontSize: 9, fontFamily: 'Helvetica', backgroundColor: '#FAFAFA' },
     logoPlaceholder: { paddingVertical: 2, width: 38, height: 38, justifyContent: 'center', alignItems: 'center', minWidth: '100%' },
@@ -42,10 +59,16 @@ export default function QualityReportPDF({ reportMeta, dateRange, company }: any
             : 'Período não informado';
 
     const summary = reportMeta?.summary ?? {};
-    const topEquipments = Array.isArray(reportMeta?.top_equipments) ? reportMeta.top_equipments : [];
-    const topDefects = Array.isArray(reportMeta?.top_defects) ? reportMeta.top_defects : [];
-    const topTechnicians = Array.isArray(reportMeta?.top_technicians) ? reportMeta.top_technicians : [];
-    const lowFeedbackOrders = Array.isArray(reportMeta?.low_feedback_orders) ? reportMeta.low_feedback_orders : [];
+    const topEquipments = (Array.isArray(reportMeta?.top_equipments) ? reportMeta.top_equipments : []) as Array<{ label: string; total: number }>;
+    const topDefects = (Array.isArray(reportMeta?.top_defects) ? reportMeta.top_defects : []) as Array<{ label: string; total: number }>;
+    const topTechnicians = (Array.isArray(reportMeta?.top_technicians) ? reportMeta.top_technicians : []) as Array<{ label: string; total: number }>;
+    const lowFeedbackOrders = (Array.isArray(reportMeta?.low_feedback_orders) ? reportMeta.low_feedback_orders : []) as LowFeedbackOrder[];
+    const transparentRowStyle = { borderBottom: '0px solid transparent' } as const;
+    const rankingItems: RankingItem[] = [
+        ...topEquipments.map((item) => ({ ...item, prefix: 'Equipamento' })),
+        ...topDefects.map((item) => ({ ...item, prefix: 'Defeito' })),
+        ...topTechnicians.map((item) => ({ ...item, prefix: 'Técnico' })),
+    ].slice(0, 12);
 
     return (
         <Document>
@@ -114,8 +137,8 @@ export default function QualityReportPDF({ reportMeta, dateRange, company }: any
                             <Text style={styles.colLabel}>Ranking</Text>
                             <Text style={styles.colTotal}>Total</Text>
                         </View>
-                        {[...topEquipments.map((item: any) => ({ ...item, prefix: 'Equipamento' })), ...topDefects.map((item: any) => ({ ...item, prefix: 'Defeito' })), ...topTechnicians.map((item: any) => ({ ...item, prefix: 'Técnico' }))].slice(0, 12).map((item: any, index: number, items: any[]) => (
-                            <View key={`${item.prefix}-${item.label}`} style={[styles.tableRow, index === items.length - 1 ? { borderBottom: '0px solid transparent' } : null]}>
+                        {rankingItems.map((item, index) => (
+                            <View key={`${item.prefix}-${item.label}`} style={[styles.tableRow, ...(index === rankingItems.length - 1 ? [transparentRowStyle] : [])]}>
                                 <Text style={styles.colLabel}>
                                     {item.prefix}: {item.label}
                                 </Text>
@@ -136,8 +159,8 @@ export default function QualityReportPDF({ reportMeta, dateRange, company }: any
                             <Text style={styles.colDate}>Recebida em</Text>
                         </View>
                         {lowFeedbackOrders.length ? (
-                            lowFeedbackOrders.map((item: any, index: number) => (
-                                <View key={item.id} style={[styles.tableRow, index === lowFeedbackOrders.length - 1 ? { borderBottom: '0px solid transparent' } : null]}>
+                            lowFeedbackOrders.map((item, index) => (
+                                <View key={item.id} style={[styles.tableRow, ...(index === lowFeedbackOrders.length - 1 ? [transparentRowStyle] : [])]}>
                                     <Text style={styles.colOrder}>#{item.order_number}</Text>
                                     <View style={styles.colCustomer}>
                                         <Text>{item.customer}</Text>

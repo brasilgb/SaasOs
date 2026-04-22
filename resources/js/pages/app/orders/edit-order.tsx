@@ -424,28 +424,7 @@ export default function EditOrder({
                                     onChange={changeCustomer}
                                     placeholder="Selecione o cliente"
                                     className="h-9 rounded-md border border-gray-300 p-0 text-gray-700 shadow-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                    styles={{
-                                        control: (baseStyles, state) => ({
-                                            ...baseStyles,
-                                            fontSize: '14px',
-                                            boxShadow: 'none',
-                                            border: 'none',
-                                            background: 'transparent',
-                                            paddingBottom: '2px',
-                                        }),
-                                        singleValue: (base) => ({
-                                            ...base,
-                                            color: 'hsl(var(--foreground))',
-                                            fontSize: '14px',
-                                        }),
-                                        dropdownIndicator: (base) => ({
-                                            ...base,
-                                        }),
-                                        menuList: (base) => ({
-                                            ...base,
-                                            fontSize: '14px',
-                                        }),
-                                    }}
+                                    styles={selectStyles}
                                 />
                                 <InputError className="mt-2" message={errors.customer_id} />
                             </div>
@@ -459,28 +438,7 @@ export default function EditOrder({
                                     onChange={changeEquipment}
                                     placeholder="Selecione o status"
                                     className="h-9 rounded-md border border-gray-300 p-0 text-gray-700 shadow-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                    styles={{
-                                        control: (baseStyles, state) => ({
-                                            ...baseStyles,
-                                            fontSize: '14px',
-                                            boxShadow: 'none',
-                                            border: 'none',
-                                            background: 'transparent',
-                                            paddingBottom: '2px',
-                                        }),
-                                        singleValue: (base) => ({
-                                            ...base,
-                                            color: 'hsl(var(--foreground))',
-                                            fontSize: '14px',
-                                        }),
-                                        dropdownIndicator: (base) => ({
-                                            ...base,
-                                        }),
-                                        menuList: (base) => ({
-                                            ...base,
-                                            fontSize: '14px',
-                                        }),
-                                    }}
+                                    styles={selectStyles}
                                 />
                                 {errors.equipment_id && <div className="text-sm text-red-500">{errors.equipment_id}</div>}
                             </div>
@@ -691,28 +649,7 @@ export default function EditOrder({
                                     onChange={changeResponsibleTechnician}
                                     placeholder="Selecione o técnico"
                                     className="h-9 rounded-md border border-gray-300 p-0 text-gray-700 shadow-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                    styles={{
-                                        control: (baseStyles, state) => ({
-                                            ...baseStyles,
-                                            fontSize: '14px',
-                                            boxShadow: 'none',
-                                            border: 'none',
-                                            background: 'transparent',
-                                            paddingBottom: '2px',
-                                        }),
-                                        singleValue: (base) => ({
-                                            ...base,
-                                            color: 'hsl(var(--foreground))',
-                                            fontSize: '14px',
-                                        }),
-                                        dropdownIndicator: (base) => ({
-                                            ...base,
-                                        }),
-                                        menuList: (base) => ({
-                                            ...base,
-                                            fontSize: '14px',
-                                        }),
-                                    }}
+                                    styles={selectStyles}
                                 />
                                 {errors.user_id && <div className="text-sm text-red-500">{errors.user_id}</div>}
                             </div>
@@ -726,28 +663,7 @@ export default function EditOrder({
                                     onChange={changeServiceStatus}
                                     placeholder="Selecione o status"
                                     className="h-9 rounded-md border border-gray-300 p-0 text-gray-700 shadow-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                    styles={{
-                                        control: (baseStyles, state) => ({
-                                            ...baseStyles,
-                                            fontSize: '14px',
-                                            boxShadow: 'none',
-                                            border: 'none',
-                                            background: 'transparent',
-                                            paddingBottom: '2px',
-                                        }),
-                                        singleValue: (base) => ({
-                                            ...base,
-                                            color: 'hsl(var(--foreground))',
-                                            fontSize: '14px',
-                                        }),
-                                        dropdownIndicator: (base) => ({
-                                            ...base,
-                                        }),
-                                        menuList: (base) => ({
-                                            ...base,
-                                            fontSize: '14px',
-                                        }),
-                                    }}
+                                    styles={selectStyles}
                                 />
                             </div>
                             <div className="grid gap-2">

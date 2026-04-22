@@ -5,12 +5,12 @@ import { Icon } from '@/components/icon';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { usePersistedPeriodFilter } from '@/hooks/use-persisted-period-filter';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { AlertTriangle, LayoutGridIcon } from 'lucide-react';
+import { AlertTriangle, LayoutGridIcon, MessageSquareHeart } from 'lucide-react';
 import moment from 'moment';
-import { useState } from 'react';
 import FinanceiroOrders from './fin-order/ordens';
 import FinanceiroSales from './fin-order/sales';
 import OrderDashboard from './ope-order';
@@ -41,9 +41,9 @@ export default function Dashboard({
     flash,
     auth,
     customerFeedbackAlert,
+    tenantFeedbackRequest,
 }: any) {
-    const [timeRange, setTimeRange] = useState('7');
-    const [dateRange, setDateRange] = useState<any>({});
+    const { timeRange, dateRange, setTimeRange, setDateRange, clearDateRange } = usePersistedPeriodFilter('dashboard-period-filter');
     const isTechnician = auth?.role === 'technician';
     const canUseSales = Boolean(auth?.permissions?.includes('sales') && others?.enablesales && !isTechnician);
 
@@ -64,7 +64,7 @@ export default function Dashboard({
 
         setTimeRange(value);
         if (value !== 'custom') {
-            setDateRange({});
+            clearDateRange();
         }
     };
 
@@ -83,12 +83,12 @@ export default function Dashboard({
             {flash?.message && <AlertSuccess message={flash?.message} />}
             <Head title="Dashboard" />
             <div key={reloadKey}>
-                <div className="flex h-16 items-center justify-between px-4">
+                <div className="flex min-h-16 flex-col justify-center gap-3 px-4 py-3 sm:h-16 sm:flex-row sm:items-center sm:justify-between sm:py-0">
                     <div className="flex items-center gap-2">
                         <Icon iconNode={LayoutGridIcon} className="h-8 w-8" />
                         <h2 className="text-xl font-semibold tracking-tight">Dashboard</h2>
                     </div>
-                    <div>
+                    <div className="min-w-0 self-start sm:self-auto">
                         <Breadcrumbs breadcrumbs={breadcrumbs} />
                     </div>
                 </div>
@@ -160,9 +160,29 @@ export default function Dashboard({
                         </div>
                     )}
 
+                    {tenantFeedbackRequest?.hasPending && (
+                        <div className="mb-4 flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+                            <div className="flex items-center gap-3">
+                                <MessageSquareHeart className="h-5 w-5 text-amber-900" />
+                                <div className="text-sm text-amber-900">
+                                    Queremos ouvir sua experiência com o SigmaOS.
+                                    <Badge variant="secondary" className="ml-2 bg-white text-amber-900">
+                                        Leva menos de 1 minuto
+                                    </Badge>
+                                </div>
+                            </div>
+                            <a
+                                href={tenantFeedbackRequest.url}
+                                className="text-sm font-medium text-amber-900 underline underline-offset-4"
+                            >
+                                Enviar feedback
+                            </a>
+                        </div>
+                    )}
+
                     <Tabs defaultValue="account" className="w-full">
                         {!isTechnician && (
-                            <TabsList>
+                            <TabsList className="h-auto w-full flex-wrap justify-start gap-2 md:max-w-96">
                                 <TabsTrigger value="account">Operacional</TabsTrigger>
                                 <TabsTrigger value="password">Financeiro</TabsTrigger>
                                 {canUseSales && <TabsTrigger value="sales">Vendas</TabsTrigger>}

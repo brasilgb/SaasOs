@@ -56,11 +56,7 @@ export default function CustomerForm({ initialData }: { initialData?: Customer }
             street: 'street',
             complement: 'complement',
         },
-        setData: (key: any, value: any) => {
-            if (zipcodeToSearch !== null) {
-                setData(key, value);
-            }
-        },
+        setData: setData as any,
         setError,
         clearErrors,
     } as any);
@@ -129,8 +125,19 @@ export default function CustomerForm({ initialData }: { initialData?: Customer }
                             <Input
                                 type="text"
                                 id="zipcode"
-                                value={maskCep(data.zipcode)}
-                                onChange={(e) => setData('zipcode', unMask(e.target.value) ?? '')}
+                                value={maskCep(data.zipcode || '')}
+                                onChange={(e) => {
+                                    const val = unMask(e.target.value) ?? '';
+                                    setData('zipcode', val);
+                                    clearErrors('zipcode' as any);
+
+                                    // Dispara busca ao completar 8 dígitos, caso contrário reseta o gatilho
+                                    if (val.length === 8) {
+                                        setZipcodeToSearch(val);
+                                    } else if (zipcodeToSearch !== null) {
+                                        setZipcodeToSearch(null);
+                                    }
+                                }}
                                 maxLength={9}
                                 disabled={isZipcodeLoading}
                             />
@@ -138,7 +145,20 @@ export default function CustomerForm({ initialData }: { initialData?: Customer }
                                 <Loader2Icon className="text-muted-foreground absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 animate-spin" />
                             )}
                         </div>
-                        <Button type="button" size="icon" variant="outline" onClick={() => setZipcodeToSearch(data.zipcode)}>
+                        <Button
+                            type="button"
+                            size="icon"
+                            variant="outline"
+                            onClick={() => {
+                                const val = unMask(data.zipcode) ?? '';
+                                if (val.length === 8) {
+                                    // Forçamos o reset para garantir que o hook dispare a busca novamente
+                                    setZipcodeToSearch(null);
+                                    setTimeout(() => setZipcodeToSearch(val), 50);
+                                }
+                            }}
+                            disabled={isZipcodeLoading || unMask(data.zipcode)?.length !== 8}
+                        >
                             <Search className="h-4 w-4" />
                         </Button>
                     </div>
@@ -147,7 +167,7 @@ export default function CustomerForm({ initialData }: { initialData?: Customer }
                 <div className="grid gap-2">
                     <Label htmlFor="state">UF</Label>
                     <Input type="text" id="state" value={data.state} onChange={(e) => setData('state', e.target.value)} />
-                    {errors.state && <div>{errors.state}</div>}
+                    {errors.state && <div className="text-sm text-red-500">{errors.state}</div>}
                 </div>
 
                 <div className="grid gap-2 md:col-span-2">

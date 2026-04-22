@@ -48,7 +48,20 @@ php artisan test
 npm run types
 ```
 
-Observação: no estado atual do projeto, `npm run types` ainda pode falhar por erros TypeScript antigos em arquivos não relacionados às features recentes.
+No estado atual do projeto, `php artisan test` e `npm run types` devem permanecer verdes antes de qualquer deploy.
+
+## CI
+
+O repositório possui uma workflow de CI em `.github/workflows/ci.yml` para validar automaticamente:
+
+- `npm run types`
+- `php artisan test`
+
+## Produção
+
+Antes de publicar em ambiente real, siga o checklist versionado em [docs/production-checklist.md](docs/production-checklist.md).
+
+Se o deploy for em HostGator Turbo compartilhado, siga também o guia específico em [docs/deploy-hostgator-turbo.md](docs/deploy-hostgator-turbo.md).
 
 ## Configurações gerais
 

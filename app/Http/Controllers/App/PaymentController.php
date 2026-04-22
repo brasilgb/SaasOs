@@ -5,26 +5,21 @@ namespace App\Http\Controllers\App;
 use App\Http\Controllers\Controller;
 use App\Models\Admin\Plan;
 use App\Models\App\Payment;
+use App\Services\MercadoPagoService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use MercadoPago\Client\Common\RequestOptions;
-use MercadoPago\Client\Payment\PaymentClient;
 use MercadoPago\Exceptions\MPApiException;
-use MercadoPago\MercadoPagoConfig;
 
 class PaymentController extends Controller
 {
-    public function __construct()
-    {
-        MercadoPagoConfig::setAccessToken(config('services.mercadopago.token'));
-    }
+    public function __construct(private readonly MercadoPagoService $mercadoPagoService) {}
 
     public function generatePix(Request $request)
     {
         try {
             $validated = $request->validate([
-                'plan_id' => ['required', 'integer', 'exists:plans,id', 'not_in:1,2'],
+                'plan_id' => ['required', 'integer', 'exists:plans,id'],
             ]);
 
             $tenant = auth()->user()->tenant;
@@ -33,19 +28,15 @@ class PaymentController extends Controller
             }
 
             $plan = Plan::findOrFail($validated['plan_id']);
-            if ((float) $plan->value <= 0) {
+            if ($plan->isTrial() || (float) $plan->value <= 0) {
                 return response()->json(['error' => 'Plano inválido para cobrança PIX.'], 422);
             }
 
-            $client = new PaymentClient;
             $webhookToken = config('services.mercadopago.webhook_token');
             if (! $webhookToken) {
                 return response()->json(['error' => 'Webhook token não configurado.'], 500);
             }
             $idempotencyKey = Str::uuid()->toString();
-
-            $options = new RequestOptions;
-            $options->setCustomHeaders(['x-idempotency-key' => $idempotencyKey]);
 
             $paymentRequest = [
                 'transaction_amount' => (float) $plan->value,
@@ -66,7 +57,7 @@ class PaymentController extends Controller
                 'notification_url' => str_replace('http://', 'https://', route('webhook.mercadopago', ['token' => $webhookToken])),
             ];
 
-            $payment = $client->create($paymentRequest, $options);
+            $payment = $this->mercadoPagoService->createPixPayment($paymentRequest, $idempotencyKey);
 
             Payment::updateOrCreate(
                 ['payment_id' => (string) $payment->id],

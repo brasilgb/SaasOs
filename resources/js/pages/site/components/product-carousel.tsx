@@ -41,8 +41,8 @@ const products: Product[] = [
     },
     {
         id: 6,
-        title: 'Atualizações, follow-ups e lembretes',
-        description: 'Envie avisos, acompanhe status, organize follow-ups e faça lembretes de pagamentos pendentes.',
+        title: 'Atualizações, acompanhamentos e lembretes',
+        description: 'Envie avisos, acompanhe status, organize acompanhamentos e faça lembretes de pagamentos pendentes.',
         image: '/images/slide/6.png',
     },
 ];

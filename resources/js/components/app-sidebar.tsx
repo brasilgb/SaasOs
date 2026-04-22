@@ -10,7 +10,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { mainConfItems, mainNavItems, mainUserItems } from '@/Utils/navLinks';
+import { footerNavItems, mainConfItems, mainNavItems, mainUserItems } from '@/Utils/navLinks';
 import { Link } from '@inertiajs/react';
 import AppLogo from './app-logo';
 import NavMainCollapsible from './nav-main-collapsible';
@@ -40,7 +40,7 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-                <NavFooter className="mt-auto" />
+                <NavFooter items={footerNavItems} className="mt-auto" />
             </SidebarFooter>
         </Sidebar>
     );

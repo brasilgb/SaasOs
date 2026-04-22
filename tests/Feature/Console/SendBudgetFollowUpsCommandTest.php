@@ -42,6 +42,7 @@ class SendBudgetFollowUpsCommandTest extends TestCase
             'mail_from_address' => 'noreply@example.com',
             'mail_from_name' => 'Sigma OS',
             'communication_follow_up_cooldown_days' => 2,
+            'automatic_follow_ups_enabled' => true,
         ]);
 
         $order = Order::factory()->forTenant($tenant->id)->create([
@@ -88,6 +89,7 @@ class SendBudgetFollowUpsCommandTest extends TestCase
             'mail_from_address' => 'noreply@example.com',
             'mail_from_name' => 'Sigma OS',
             'communication_follow_up_cooldown_days' => 3,
+            'automatic_follow_ups_enabled' => true,
         ]);
 
         $order = Order::factory()->forTenant($tenant->id)->create([
@@ -132,6 +134,7 @@ class SendBudgetFollowUpsCommandTest extends TestCase
             'mail_from_address' => 'noreply@example.com',
             'mail_from_name' => 'Sigma OS',
             'communication_follow_up_cooldown_days' => 2,
+            'automatic_follow_ups_enabled' => true,
         ]);
 
         $order = Order::factory()->forTenant($tenant->id)->create([
@@ -175,6 +178,7 @@ class SendBudgetFollowUpsCommandTest extends TestCase
             'mail_encryption' => 'tls',
             'mail_from_address' => 'noreply@example.com',
             'mail_from_name' => 'Sigma OS',
+            'automatic_follow_ups_enabled' => true,
         ]);
 
         $order = Order::factory()->forTenant($tenant->id)->create([
