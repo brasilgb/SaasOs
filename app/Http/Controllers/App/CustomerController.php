@@ -348,9 +348,9 @@ class CustomerController extends Controller
                 $message .= ' Primeiros erros: ' . implode(' | ', array_slice($errors, 0, 3)) . '.';
             }
 
-            return redirect()->back()->with('success', $message);
+            return redirect()->back()->with('import_success', $message);
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Falha na importação: ' . $e->getMessage());
+            return redirect()->back()->with('import_error', 'Falha na importação: ' . $e->getMessage());
         }
     }
 
@@ -442,7 +442,7 @@ class CustomerController extends Controller
         $data['customer_number'] = Customer::exists() ? Customer::latest()->first()->customer_number + 1 : 1;
         Customer::create($data);
 
-        return redirect()->route('app.customers.index')->with('success', 'Cliente cadastrado com sucesso!');
+        return redirect()->route('app.customers.index');
     }
 
     /**
@@ -484,7 +484,7 @@ class CustomerController extends Controller
         $request->validated();
         $customer->update($data);
 
-        return redirect()->route('app.customers.show', ['customer' => $customer->id])->with('success', 'Cliente alterado com sucesso!');
+        return redirect()->route('app.customers.show', ['customer' => $customer->id]);
     }
 
     /**

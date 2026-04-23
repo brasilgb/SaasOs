@@ -21,7 +21,16 @@ function ReceiptCopy({
     checklist: any;
     qrcode: boolean;
 }) {
-    const listchec = checklist && (checklist?.checklist).split(',');
+    const checklistItems = checklist?.checklist
+        ? String(checklist.checklist)
+              .split(',')
+              .map((item) => item.trim())
+              .filter(Boolean)
+        : [];
+    const orderParts = order?.order_parts ?? order?.orderParts ?? [];
+    const partQuantity = (part: any) => Number(part?.pivot?.quantity ?? part?.quantity ?? 1) || 1;
+    const partTotal = (part: any) => Number(part?.sale_price ?? 0) * partQuantity(part);
+    const partsValue = orderParts.length > 0 ? orderParts.reduce((total: number, part: any) => total + partTotal(part), 0) : order?.parts_value;
 
     const option = {
         year: 'numeric',
@@ -42,7 +51,11 @@ function ReceiptCopy({
             <div className="mb-1.5 flex items-start justify-between">
                 <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-200 print:bg-gray-300">
                     <span className="text-[10px] font-bold">
-                        <img src={`${company?.logo ? `/storage/logos/${company?.logo}` : '/images/default.png'}`} alt="" />
+                        <img
+                            src={`${company?.logo ? `/storage/logos/${company.logo}` : '/images/default.png'}`}
+                            alt={company?.companyname ? `Logo ${company.companyname}` : 'Logo da empresa'}
+                            className="h-12 w-12 object-contain"
+                        />
                     </span>
                 </div>
                 <div className="flex flex-1 items-center justify-around gap-4 text-[10px]">
@@ -130,12 +143,11 @@ function ReceiptCopy({
                     <h2 className="mb-1.5 border-b border-gray-100 bg-gray-50 p-1 text-[10px] font-semibold">Checklist</h2>
                     <div className="rounded-lg print:bg-gray-100">
                         <ul className="flex flex-wrap items-center justify-start gap-1">
-                            {listchec &&
-                                listchec?.map((list: any) => (
-                                    <li className="flex items-center gap-2 text-xs">
-                                        <Square className="h-3 w-3" /> {list}
-                                    </li>
-                                ))}
+                            {checklistItems.map((list: string) => (
+                                <li key={list} className="flex items-center gap-2 text-xs">
+                                    <Square className="h-3 w-3" /> {list}
+                                </li>
+                            ))}
                         </ul>
                     </div>
                 </div>
@@ -164,10 +176,13 @@ function ReceiptCopy({
                     <h2 className="mb-1.5 border-b border-gray-100 bg-gray-50 p-1 text-[10px] font-semibold">Serviço Prestado</h2>
                     <div className="rounded-lg bg-gray-50 print:bg-gray-100">
                         <p className="mb-1.5 text-[10px]">{order?.services_performed}</p>
-                        {order?.order_parts.length > 0 ? (
+                        {orderParts.length > 0 ? (
                             <p className="mb-1.5 text-[10px]">
                                 <span className="font-bold">Peças adiciondas: </span>
-                                {order?.order_parts.map((part: any) => part.name).join(', ')}
+                                {orderParts.map((part: any) => {
+                                    const quantity = partQuantity(part);
+                                    return quantity > 1 ? `${quantity}x ${part.name}` : part.name;
+                                }).join(', ')}
                             </p>
                         ) : (
                             <p className="mb-1.5 text-[10px]">
@@ -178,18 +193,7 @@ function ReceiptCopy({
                         <div className="flex items-center justify-between border-t border-gray-300">
                             <div className="flex items-center justify-between gap-2 pt-2">
                                 <span className="text-xs font-medium">Peças: </span>
-                                {order?.order_parts.length > 0 ? (
-                                    <span className="text-xs font-medium text-gray-600">
-                                        R${' '}
-                                        {maskMoney(
-                                            String(
-                                                order?.order_parts.reduce((total: number, part: any) => total + (Number(part.sale_price) || 0), 0),
-                                            ),
-                                        )}
-                                    </span>
-                                ) : (
-                                    <span className="text-xs font-medium text-gray-600">R$ {maskMoney(order?.parts_value)}</span>
-                                )}
+                                <span className="text-xs font-medium text-gray-600">R$ {maskMoney(partsValue)}</span>
                             </div>
                             <div className="flex items-center justify-between gap-2 pt-2">
                                 <span className="text-xs font-medium">Serviço: </span>

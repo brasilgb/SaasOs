@@ -1,4 +1,4 @@
-import { Document, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
+import { Document, Image, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 
 type Props = {
     order: any;
@@ -15,10 +15,21 @@ const styles = StyleSheet.create({
         color: '#111827',
     },
     header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
         marginBottom: 10,
         paddingBottom: 6,
         borderBottomWidth: 1,
         borderBottomColor: '#e5e7eb',
+    },
+    logo: {
+        width: 42,
+        height: 42,
+        objectFit: 'contain',
+    },
+    headerText: {
+        flex: 1,
     },
     title: {
         fontSize: 14,
@@ -83,18 +94,49 @@ function formatMoney(value: any) {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value ?? 0));
 }
 
+function partQuantity(part: any) {
+    return Number(part?.pivot?.quantity ?? part?.quantity ?? 1) || 1;
+}
+
+function partTotal(part: any) {
+    return Number(part?.sale_price ?? 0) * partQuantity(part);
+}
+
+function partsDescription(orderParts: any[], fallback: any) {
+    if (orderParts.length === 0) {
+        return fallback || '-';
+    }
+
+    return orderParts
+        .map((part: any) => {
+            const quantity = partQuantity(part);
+            const name = part?.name ?? 'Peça';
+
+            return quantity > 1 ? `${quantity}x ${name}` : name;
+        })
+        .join(', ');
+}
+
+function logoSource(company: any) {
+    return company?.logo ? `/storage/logos/${company.logo}` : '/images/default.png';
+}
+
 export default function OrderReceiptPDF({ order, company, type, receipt, checklist }: Props) {
     const checklistItems = checklist?.checklist ? String(checklist.checklist).split(',').map((item: string) => item.trim()).filter(Boolean) : [];
     const orderParts = order?.order_parts ?? order?.orderParts ?? [];
+    const partsValue = orderParts.length > 0 ? orderParts.reduce((total: number, part: any) => total + partTotal(part), 0) : order?.parts_value;
 
     return (
         <Document title={`${titleByType(type)} - OS ${order?.order_number ?? ''}`}>
             <Page size="A4" style={styles.page}>
                 <View style={styles.header}>
-                    <Text style={styles.title}>{titleByType(type)}</Text>
-                    <Text style={styles.subtitle}>
-                        {company?.companyname ?? ''} | CNPJ: {company?.cnpj ?? '-'} | OS #{order?.order_number ?? '-'}
-                    </Text>
+                    <Image style={styles.logo} source={logoSource(company)} />
+                    <View style={styles.headerText}>
+                        <Text style={styles.title}>{titleByType(type)}</Text>
+                        <Text style={styles.subtitle}>
+                            {company?.companyname ?? ''} | CNPJ: {company?.cnpj ?? '-'} | OS #{order?.order_number ?? '-'}
+                        </Text>
+                    </View>
                 </View>
 
                 <View style={styles.section}>
@@ -137,9 +179,9 @@ export default function OrderReceiptPDF({ order, company, type, receipt, checkli
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Serviço Prestado</Text>
                         <Text style={styles.text}>{order?.services_performed ?? '-'}</Text>
-                        <Text style={styles.text}>
-                            Peças: {orderParts.length > 0 ? orderParts.map((part: any) => part?.name).filter(Boolean).join(', ') : order?.parts ?? '-'}
-                        </Text>
+                        <Text style={styles.text}>Peças: {partsDescription(orderParts, order?.parts)}</Text>
+                        <Text style={styles.text}>Valor das peças: {formatMoney(partsValue)}</Text>
+                        <Text style={styles.text}>Valor do serviço: {formatMoney(order?.service_value)}</Text>
                         <Text style={styles.text}>Total: {formatMoney(order?.service_cost)}</Text>
                     </View>
                 )}

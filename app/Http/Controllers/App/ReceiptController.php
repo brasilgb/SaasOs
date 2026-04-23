@@ -24,15 +24,11 @@ class ReceiptController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Receipt $receipt)
+    public function index()
     {
         Gate::authorize('receipts.access');
 
-        if (Receipt::get()->isEmpty()) {
-            Receipt::create();
-        }
-        $query = Receipt::orderBy('id', 'DESC')->first();
-        $receipt = Receipt::where('id', $query->id)->first();
+        $receipt = Receipt::query()->latest('id')->first() ?? Receipt::create();
 
         return Inertia::render('app/receipts/index', ['receipt' => $receipt]);
     }
@@ -41,7 +37,12 @@ class ReceiptController extends Controller
     {
         Gate::authorize('receipts.access');
 
-        $data = $request->all();
+        $data = $request->validate([
+            'receivingequipment' => ['nullable', 'string'],
+            'equipmentdelivery' => ['nullable', 'string'],
+            'budgetissuance' => ['nullable', 'string'],
+        ]);
+
         $receipt->update($data);
 
         return redirect()->route('app.receipts.index', ['receipts' => $receipt->id])->with('success', 'Recibos editados com sucesso');

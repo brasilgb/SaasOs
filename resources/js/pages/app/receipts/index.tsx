@@ -8,6 +8,7 @@ import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import { Cog, Save } from 'lucide-react';
+import type { FormEvent } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -21,13 +22,13 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Receipts({ receipt }: any) {
-    const { data, setData, patch, progress, processing, errors } = useForm({
-        receivingequipment: receipt?.receivingequipment,
-        equipmentdelivery: receipt?.equipmentdelivery,
-        budgetissuance: receipt?.budgetissuance,
+    const { data, setData, patch, processing } = useForm({
+        receivingequipment: receipt?.receivingequipment ?? '',
+        equipmentdelivery: receipt?.equipmentdelivery ?? '',
+        budgetissuance: receipt?.budgetissuance ?? '',
     });
 
-    const handleSubmit = (e: any) => {
+    const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
         patch(route('app.receipts.update', receipt?.id), {
             onSuccess: () => {

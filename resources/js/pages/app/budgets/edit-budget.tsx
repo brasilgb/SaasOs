@@ -31,7 +31,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function EditBudget({ budgets, budget, equipments, page, search }: any) {
     return (
         <AppLayout>
-            <Head title="Mensagens" />
+            <Head title="Orçamentos" />
             <div className="flex h-16 items-center justify-between px-4">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={PackagePlus} className="h-8 w-8" />

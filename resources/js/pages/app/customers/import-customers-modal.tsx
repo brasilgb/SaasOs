@@ -1,6 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { toastSuccess, toastWarning } from '@/components/app-toast-messages';
-import { useForm, usePage } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import { X } from 'lucide-react';
 import { ChangeEvent, FormEvent } from 'react';
 
@@ -17,21 +16,12 @@ export default function ImportCustomersModal({ isOpen, onClose }: Props) {
     const { data, setData, post, processing, errors, reset } = useForm<FormData>({
         arquivo: null,
     });
-    const { flash } = usePage().props as any;
 
     if (!isOpen) return null;
 
     const submit = (e: FormEvent) => {
         e.preventDefault();
         post(route('app.import.customer'), {
-            onFinish: () => {
-                if (flash.success) {
-                    toastSuccess('Importação concluída', String(flash.success));
-                }
-                if (flash.error) {
-                    toastWarning('Falha na importação', String(flash.error));
-                }
-            },
             onSuccess: () => {
                 reset();
                 onClose();

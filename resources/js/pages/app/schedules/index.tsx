@@ -191,7 +191,7 @@ export default function Schedules({ schedules, search, status }: any) {
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="flex h-16 w-full items-center justify-center">
+                                    <TableCell colSpan={7} className="flex h-16 w-full items-center justify-center">
                                         Não há dados a serem mostrados no momento.
                                     </TableCell>
                                 </TableRow>
@@ -199,7 +199,7 @@ export default function Schedules({ schedules, search, status }: any) {
                         </TableBody>
                         <TableFooter>
                             <TableRow>
-                                <TableCell colSpan={6}>
+                                <TableCell colSpan={7}>
                                     <AppPagination data={schedules} />
                                 </TableCell>
                             </TableRow>

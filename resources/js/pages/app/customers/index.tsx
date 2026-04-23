@@ -42,14 +42,20 @@ export default function Customers({ customers, search, pending }: any) {
     const canManageCustomers = auth?.permissions?.includes('customers');
 
     useEffect(() => {
-        // Se houver mensagem de sucesso
-        if (flash.success) {
-            toastSuccess('Importação concluída', String(flash.success));
+        if (flash.import_success) {
+            toastSuccess('Importação concluída', String(flash.import_success));
         }
 
-        // Se houver erros de validação (ex: arquivo inválido)
+        if (flash.import_error) {
+            toastWarning('Falha na importação', String(flash.import_error));
+        }
+
+        if (flash.success) {
+            toastSuccess('Sucesso', String(flash.success));
+        }
+
         if (flash.error) {
-            toastWarning(flash.error);
+            toastWarning('Erro', String(flash.error));
         }
     }, [flash]);
 
