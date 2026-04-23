@@ -8,8 +8,8 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { usePersistedPeriodFilter } from '@/hooks/use-persisted-period-filter';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/react';
-import { AlertTriangle, LayoutGridIcon, MessageSquareHeart } from 'lucide-react';
+import { Head } from '@inertiajs/react';
+import { LayoutGridIcon, MessageSquareHeart } from 'lucide-react';
 import moment from 'moment';
 import FinanceiroOrders from './fin-order/ordens';
 import FinanceiroSales from './fin-order/sales';
@@ -40,7 +40,6 @@ export default function Dashboard({
     cashier,
     flash,
     auth,
-    customerFeedbackAlert,
     tenantFeedbackRequest,
 }: any) {
     const { timeRange, dateRange, setTimeRange, setDateRange, clearDateRange } = usePersistedPeriodFilter('dashboard-period-filter');
@@ -130,35 +129,6 @@ export default function Dashboard({
                             </ToggleGroup>
                         </div>
                     </div>
-
-                    {customerFeedbackAlert?.hasAlert && (
-                        <div className="mb-4 flex items-center justify-between rounded-lg border border-rose-300 bg-rose-50 px-4 py-3">
-                            <div className="flex items-center gap-3">
-                                <AlertTriangle className="h-5 w-5 text-rose-900" />
-                                <div className="text-sm text-rose-900">
-                                    Há avaliações críticas aguardando tratativa.
-                                    {customerFeedbackAlert?.pending ? (
-                                        <Badge variant="secondary" className="ml-2 bg-white text-rose-900">
-                                            {customerFeedbackAlert.pending} pendente(s)
-                                        </Badge>
-                                    ) : null}
-                                    {customerFeedbackAlert?.unassigned ? (
-                                        <Badge variant="secondary" className="ml-2 bg-white text-rose-900">
-                                            {customerFeedbackAlert.unassigned} sem responsável
-                                        </Badge>
-                                    ) : null}
-                                    {customerFeedbackAlert?.overdue ? (
-                                        <Badge variant="secondary" className="ml-2 bg-white text-rose-900">
-                                            {customerFeedbackAlert.overdue} vencida(s) no SLA
-                                        </Badge>
-                                    ) : null}
-                                </div>
-                            </div>
-                            <Link href={route('app.quality.index')} className="text-sm font-medium text-rose-900 underline underline-offset-4">
-                                Ver tratativas
-                            </Link>
-                        </div>
-                    )}
 
                     {tenantFeedbackRequest?.hasPending && (
                         <div className="mb-4 flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">

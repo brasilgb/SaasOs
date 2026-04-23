@@ -75,6 +75,13 @@ class Order extends Model
         return $this->hasMany(OrderPayment::class)->latest('paid_at');
     }
 
+    public function fiscalDocuments(): HasMany
+    {
+        return $this->hasMany(FiscalDocument::class, 'documentable_id')
+            ->where('documentable_type', self::class)
+            ->latest();
+    }
+
     public function warrantySourceOrder(): BelongsTo
     {
         return $this->belongsTo(self::class, 'warranty_source_order_id');

@@ -55,6 +55,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('company.access', fn ($user) => $user->hasPermission('company'));
         Gate::define('other-settings.access', fn ($user) => $user->hasPermission('other_settings'));
         Gate::define('receipts.access', fn ($user) => $user->hasPermission('receipts'));
+        Gate::define('fiscal-documents.access', fn ($user) => $user->hasPermission('fiscal_documents'));
         Gate::define('whatsapp-messages.access', fn ($user) => $user->hasPermission('whatsapp_messages'));
         Gate::define('customers.access', fn ($user) => $user->hasPermission('customers'));
         Gate::define('equipments.access', fn ($user) => $user->hasPermission('register_equipments'));

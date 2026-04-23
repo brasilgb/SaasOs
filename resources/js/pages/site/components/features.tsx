@@ -9,6 +9,7 @@ import {
     MessageSquare,
     Package,
     Printer,
+    ReceiptText,
     Settings,
     ShoppingCart,
     Smartphone,
@@ -45,6 +46,11 @@ const features = [
         icon: ShoppingCart,
         title: 'Vendas e Recibos',
         description: 'Registre vendas de produtos e peças no mesmo ambiente, com recibos e documentos prontos para impressão.',
+    },
+    {
+        icon: ReceiptText,
+        title: 'Notas Fiscais',
+        description: 'Configure Focus NFe, habilite NF-e de produtos e NFS-e de serviços, ou registre documentos emitidos manualmente.',
     },
     {
         icon: HandCoins,
@@ -102,9 +108,12 @@ export function Features() {
                     </h2>
 
                     <p className="mt-4 text-lg leading-relaxed text-white/72">
-                        Da entrada do equipamento ao fechamento do caixa, o SigmaOS reúne os módulos mais importantes da rotina em uma única plataforma.
+                        Da entrada do equipamento ao fechamento do caixa, o SigmaOS reúne os módulos mais importantes da rotina em uma única
+                        plataforma.
                     </p>
-                    <p className="mt-3 text-xs text-white/45">A emissão de notas fiscais é realizada por sistemas externos.</p>
+                    <p className="mt-3 text-xs text-white/45">
+                        Emissão fiscal opcional via integração Focus NFe, mediante contratação e credenciais do serviço de notas da sua empresa.
+                    </p>
                 </div>
 
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

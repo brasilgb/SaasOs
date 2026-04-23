@@ -486,7 +486,7 @@
             <p>Manual do cliente com foco operacional, financeiro e de configuração do sistema.</p>
 
             <div class="meta">
-                <div><strong>Versão do manual</strong>1.3</div>
+                <div><strong>Versão do manual</strong>1.4</div>
                 <div><strong>Atualizado em</strong>Abril de 2026</div>
                 <div><strong>Formato</strong>HTML navegável e pronto para impressão em PDF</div>
             </div>
@@ -582,8 +582,8 @@
                         </div>
                         <div class="card">
                             <strong>Financeiro</strong>
-                            Pagamentos de ordens, vendas, despesas, caixa diário, relatórios financeiros e apoio à
-                            emissão fiscal.
+                            Pagamentos de ordens, vendas, despesas, caixa diário, relatórios financeiros e emissão
+                            fiscal opcional.
                         </div>
                         <div class="card">
                             <strong>Cadastro e controle</strong>
@@ -621,16 +621,26 @@
                         validação.</p>
                     <p>Quando o SMTP está configurado corretamente, o sistema pode enviar e-mails de criação de ordem,
                         atualização de status, acompanhamento de orçamento, cobrança pendente e avisos de assinatura.</p>
-                    <h4>3.8 Abas de configurações</h4>
+                    <h4>3.8 Configurações fiscais</h4>
+                    <p>Se a sua empresa for emitir documentos fiscais pelo SigmaOS, será necessário contratar o serviço
+                        de emissão fiscal compatível e possuir as credenciais da Focus NFe. Depois disso, acesse
+                        Configurações fiscais, ative a integração, configure o ambiente de homologação ou produção,
+                        informe o token Focus NFe, opcionalmente cadastre o segredo de webhook e habilite os tipos de
+                        emissão usados pela sua empresa: NF-e de produtos e/ou NFS-e de serviços.</p>
+                    <p>Também preencha os dados fiscais padrão usados na montagem dos documentos, como regime tributário,
+                        inscrições estadual e municipal, código do município, item da lista de serviço, alíquota de ISS,
+                        séries NF-e/NFS-e, NCM, CFOP, unidades, origem e situações tributárias de ICMS, PIS e COFINS.</p>
+                    <h4>3.9 Abas de configurações</h4>
                     <p>As Outras configurações estão divididas em duas abas. Em <strong>Sistema e SMTP</strong> ficam
                         os habilitadores gerais e os dados do servidor de e-mail. Em <strong>Operacionais</strong>
                         ficam metas, indicadores, visibilidade de menus e regras de acompanhamento.</p>
-                    <h4>3.9 Ordem de implantação sugerida</h4>
+                    <h4>3.10 Ordem de implantação sugerida</h4>
                     <ol>
                         <li>Configurar dados da empresa e validar os textos de recibo.</li>
                         <li>Configurar SMTP e usar o botão de teste de e-mail.</li>
                         <li>Definir tipos de equipamento, checklists e mensagens padrão.</li>
                         <li>Decidir quais módulos ficarão ativos: peças, vendas, acompanhamentos e qualidade.</li>
+                        <li>Configurar Focus NFe, ambiente fiscal e tipos de emissão quando a empresa emitir notas pelo sistema.</li>
                         <li>Revisar metas, prazo de avaliação e intervalo de acompanhamento automático.</li>
                     </ol>
                 </section>
@@ -874,8 +884,9 @@
                     </div>
                     <p>Quando a ordem já possui data de entrega, ainda há saldo pendente e o e-mail do cliente está
                         válido, o sistema pode enviar lembrete de cobrança por e-mail.</p>
-                    <p>Dentro do modal de pagamentos também existe um resumo de apoio à emissão de NFS-e para a ordem.
-                    </p>
+                    <p>Quando a integração fiscal estiver ativa e a NFS-e estiver habilitada, a ordem pode ser enviada
+                        para emissão pela Focus NFe. Se a integração estiver desativada, a empresa ainda pode registrar
+                        manualmente os dados do comprovante fiscal.</p>
                     <h4>7.1 Botões e comportamentos</h4>
                     <ul>
                         <li><strong>Registrar pagamento:</strong> grava valor, data, forma de pagamento e observações.</li>
@@ -1148,7 +1159,8 @@
                         <li>Registro de valor total e valor pago.</li>
                         <li>Status financeiro: pendente, parcial, pago e cancelado.</li>
                         <li>Cancelamento de venda com devolução dos itens ao estoque.</li>
-                        <li>Apoio à emissão fiscal para vendas.</li>
+                        <li>Emissão de NF-e de produtos pela Focus NFe, quando configurada.</li>
+                        <li>Registro manual de comprovante fiscal quando a integração não estiver ativa.</li>
                     </ul>
                     <p>O sistema exige caixa aberto para concluir uma venda e não permite valor pago acima do total.</p>
                     <p>Ao cancelar uma venda, o sistema pode devolver o item ao estoque e registrar logs de operação
@@ -1158,7 +1170,8 @@
                         <li><strong>Nova venda:</strong> cria o lançamento comercial e reserva os itens até a conclusão.</li>
                         <li><strong>Finalizar:</strong> grava pagamento, baixa estoque e atualiza o caixa.</li>
                         <li><strong>Cancelar:</strong> encerra a venda e devolve os itens ao estoque quando aplicável.</li>
-                        <li><strong>Registrar fiscal:</strong> apoia a emissão do documento vinculado à venda.</li>
+                        <li><strong>Emitir NF-e:</strong> envia a venda para processamento pela Focus NFe, quando a integração fiscal estiver ativa.</li>
+                        <li><strong>Registrar fiscal:</strong> salva manualmente número, link e observações do documento quando necessário.</li>
                     </ul>
                 </section>
 
@@ -1317,9 +1330,9 @@
                     <p>Também é possível configurar o prazo para solicitar avaliação do cliente após a entrega e definir
                         metas mínimas para conversão de orçamento e recuperação de cobrança.</p>
                     <h4>19.4 O que o botão de teste de e-mail faz</h4>
-                    <p>Quando você usa o botão de teste SMTP, o sistema aplica temporariamente a configuração do tenant
-                        e tenta enviar um e-mail real. Isso ajuda a validar host, porta, usuário, senha, criptografia e
-                        remetente antes de liberar automações em produção.</p>
+                    <p>Quando você usa o botão de teste SMTP, o sistema aplica temporariamente a configuração de e-mail
+                        da sua empresa e tenta enviar um e-mail real. Isso ajuda a validar host, porta, usuário, senha,
+                        criptografia e remetente antes de liberar automações em produção.</p>
                     <h4>19.5 Ordem sugerida de configuração</h4>
                     <ol>
                         <li>Preencher dados da empresa e validar impressões.</li>
@@ -1390,17 +1403,17 @@
                 <section id="assinaturas">
                     <h3>23. Assinaturas, Planos E Cobrança SaaS</h3>
                     <p>Como o SigmaOS também é uma plataforma SaaS, existe um fluxo administrativo de assinatura para
-                        controle dos tenants.</p>
+                        controle das empresas clientes.</p>
                     <ul>
-                        <li>O tenant possui plano, período, status de assinatura e vencimento.</li>
+                        <li>Cada empresa possui plano, período, status de assinatura e vencimento.</li>
                         <li>O sistema pode enviar avisos por e-mail antes do vencimento, na carência e após bloqueio.</li>
                         <li>O pagamento da assinatura pode ser gerado por PIX.</li>
-                        <li>Quando o webhook do pagamento retorna como aprovado, o tenant é renovado automaticamente.</li>
+                        <li>Quando o webhook do pagamento retorna como aprovado, a assinatura da empresa é renovada automaticamente.</li>
                     </ul>
                     <h4>23.1 O que acontece por trás</h4>
                     <ul>
                         <li>O sistema grava o pagamento recebido do gateway.</li>
-                        <li>Atualiza o plano e o período do tenant.</li>
+                        <li>Atualiza o plano e o período da empresa.</li>
                         <li>Recalcula o vencimento da assinatura.</li>
                         <li>Marca a assinatura como ativa após confirmação do pagamento.</li>
                         <li>Bloqueia ou alerta acesso conforme o vencimento e a carência.</li>
@@ -1420,15 +1433,44 @@
 
                 <section id="emissao-fiscal">
                     <h3>24. Emissão Fiscal</h3>
-                    <p>O SigmaOS não substitui um emissor fiscal próprio, mas oferece apoio ao processo. Nas ordens
-                        existe resumo para NFS-e e, nas vendas, apoio para emissão fiscal de produtos conforme o fluxo
-                        da empresa.</p>
-                    <p>O objetivo é facilitar o preenchimento em sistemas externos já usados pela operação.</p>
-                    <h4>24.1 Como usar na prática</h4>
+                    <p>O SigmaOS possui módulo fiscal opcional com integração Focus NFe para a sua empresa. Para usar a
+                        emissão pelo sistema, a empresa precisa contratar o serviço de notas fiscais compatível e
+                        informar as credenciais fornecidas pela Focus NFe. Quando ativado, é possível emitir NF-e de
+                        produtos a partir de vendas e NFS-e de serviços a partir de ordens de serviço, conforme
+                        permissões, credenciais e dados fiscais configurados.</p>
+                    <p>Quando a integração não estiver ativa, vendas e ordens continuam permitindo o registro manual do
+                        comprovante ou documento fiscal, mantendo número, link, data, observações e vínculo com a operação.</p>
+                    <h4>24.1 Configurações fiscais</h4>
                     <ul>
-                        <li><strong>Na OS:</strong> consulte o resumo antes de emitir no sistema fiscal externo.</li>
-                        <li><strong>Na venda:</strong> use os dados da operação para preencher o documento correspondente.</li>
-                        <li><strong>Após emitir:</strong> registre número, chave ou referência, quando a tela permitir.</li>
+                        <li><strong>Ativar documentos fiscais:</strong> libera o módulo fiscal integrado para a sua empresa.</li>
+                        <li><strong>Ambiente:</strong> define se a emissão usa homologação ou produção.</li>
+                        <li><strong>Token Focus NFe:</strong> credencial do serviço de notas fiscais contratado pela sua empresa, armazenada de forma protegida.</li>
+                        <li><strong>Segredo de webhook:</strong> campo opcional para validar retornos enviados pela integração.</li>
+                        <li><strong>NF-e de produtos:</strong> habilita emissão fiscal para vendas de peças e produtos.</li>
+                        <li><strong>NFS-e de serviços:</strong> habilita emissão fiscal para ordens de serviço.</li>
+                    </ul>
+                    <h4>24.2 Dados fiscais padrão</h4>
+                    <p>Os dados fiscais padrão reduzem retrabalho na emissão e servem de base para os payloads enviados à
+                        Focus NFe. Revise com a contabilidade antes de operar em produção.</p>
+                    <ul>
+                        <li>Regime tributário, inscrição estadual e inscrição municipal.</li>
+                        <li>Código do município, item da lista de serviço e alíquota de ISS padrão.</li>
+                        <li>Série NF-e e série NFS-e.</li>
+                        <li>NCM, CFOP, unidade comercial e unidade tributável padrão.</li>
+                        <li>Origem e situação de ICMS, situação de PIS e situação de COFINS.</li>
+                    </ul>
+                    <h4>24.3 Como usar na prática</h4>
+                    <ul>
+                        <li><strong>Na OS:</strong> emita NFS-e quando documentos fiscais e NFS-e estiverem ativos.</li>
+                        <li><strong>Na venda:</strong> emita NF-e quando documentos fiscais e NF-e estiverem ativos.</li>
+                        <li><strong>Na listagem de notas fiscais:</strong> acompanhe tipo, origem, vínculo, número, status, emissão e links de PDF/XML quando disponíveis.</li>
+                        <li><strong>Registro manual:</strong> use quando a nota foi emitida fora do SigmaOS ou quando a integração não estiver habilitada.</li>
+                    </ul>
+                    <h4>24.4 Permissões e responsabilidade fiscal</h4>
+                    <ul>
+                        <li>O menu Notas fiscais aparece apenas para usuários com permissão fiscal e quando documentos fiscais estão ativos.</li>
+                        <li>A emissão depende de dados fiscais corretos, token válido e configuração adequada do ambiente.</li>
+                        <li>A responsabilidade pela conferência tributária, alíquotas, códigos fiscais e obrigações legais permanece com a empresa e sua contabilidade.</li>
                     </ul>
                 </section>
 
@@ -1501,7 +1543,7 @@
                             <tr>
                                 <td>Teste de e-mail</td>
                                 <td>Outras configurações</td>
-                                <td>Valida SMTP do tenant.</td>
+                                <td>Valida SMTP da sua empresa.</td>
                                 <td>Tentativa real de envio com as credenciais configuradas.</td>
                             </tr>
                         </tbody>

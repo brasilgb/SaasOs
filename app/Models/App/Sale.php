@@ -71,6 +71,13 @@ class Sale extends Model
         return $this->belongsTo(User::class, 'fiscal_registered_by');
     }
 
+    public function fiscalDocuments(): HasMany
+    {
+        return $this->hasMany(FiscalDocument::class, 'documentable_id')
+            ->where('documentable_type', self::class)
+            ->latest();
+    }
+
     public function logs(): HasMany
     {
         return $this->hasMany(SaleLog::class)->latest();

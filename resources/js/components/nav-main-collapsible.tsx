@@ -1,6 +1,7 @@
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import {
+    SidebarGroupLabel,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
@@ -14,7 +15,9 @@ import { ChevronRight, type LucideIcon } from 'lucide-react';
 
 export default function NavMainCollapsible({
     items,
+    label,
 }: {
+    label?: string;
     items: {
         title: string;
         url: string;
@@ -34,70 +37,73 @@ export default function NavMainCollapsible({
     const permissions = auth?.permissions ?? [];
 
     return (
-        <SidebarMenu>
-            {items.map((item) => {
-                const visibleSubItems = item.items?.filter((subItem) => !subItem.permission || permissions.includes(subItem.permission)) ?? [];
+        <>
+            {label && <SidebarGroupLabel>{label}</SidebarGroupLabel>}
+            <SidebarMenu>
+                {items.map((item) => {
+                    const visibleSubItems = item.items?.filter((subItem) => !subItem.permission || permissions.includes(subItem.permission)) ?? [];
 
-                if (visibleSubItems.length === 0) {
-                    return null;
-                }
+                    if (visibleSubItems.length === 0) {
+                        return null;
+                    }
 
-                // Se estiver colapsado e tiver sub-itens, usamos DropdownMenu (flutuante)
-                if (isCollapsed && visibleSubItems.length) {
+                    // Se estiver colapsado e tiver sub-itens, usamos DropdownMenu (flutuante)
+                    if (isCollapsed && visibleSubItems.length) {
+                        return (
+                            <SidebarMenuItem key={item.title}>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <SidebarMenuButton tooltip={item.title} isActive={item.isActive}>
+                                            {item.icon && <item.icon />}
+                                            <span>{item.title}</span>
+                                        </SidebarMenuButton>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent side="right" align="start" className="w-48">
+                                        {visibleSubItems.map((subItem) => (
+                                            <DropdownMenuItem key={subItem.title} asChild>
+                                                <Link
+                                                    href={subItem.url}
+                                                    className={route().current(subItem.active ?? '') ? 'bg-accent text-accent-foreground' : ''}
+                                                >
+                                                    {subItem.title}
+                                                </Link>
+                                            </DropdownMenuItem>
+                                        ))}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </SidebarMenuItem>
+                        );
+                    }
+
+                    // Se estiver aberto, mantemos o comportamento de Collapsible (sanfona)
                     return (
-                        <SidebarMenuItem key={item.title}>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <SidebarMenuButton tooltip={item.title} isActive={item.isActive}>
+                        <Collapsible key={item.title} asChild defaultOpen={item.isActive} className="group/collapsible">
+                            <SidebarMenuItem>
+                                <CollapsibleTrigger asChild>
+                                    <SidebarMenuButton tooltip={item.title}>
                                         {item.icon && <item.icon />}
                                         <span>{item.title}</span>
+                                        <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                                     </SidebarMenuButton>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent side="right" align="start" className="w-48">
-                                    {visibleSubItems.map((subItem) => (
-                                        <DropdownMenuItem key={subItem.title} asChild>
-                                            <Link
-                                                href={subItem.url}
-                                                className={route().current(subItem.active ?? '') ? 'bg-accent text-accent-foreground' : ''}
-                                            >
-                                                {subItem.title}
-                                            </Link>
-                                        </DropdownMenuItem>
-                                    ))}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </SidebarMenuItem>
+                                </CollapsibleTrigger>
+                                <CollapsibleContent>
+                                    <SidebarMenuSub>
+                                        {visibleSubItems.map((subItem) => (
+                                            <SidebarMenuSubItem key={subItem.title}>
+                                                <SidebarMenuSubButton asChild isActive={route().current(subItem.active ?? '')}>
+                                                    <Link href={subItem.url}>
+                                                        <span>{subItem.title}</span>
+                                                    </Link>
+                                                </SidebarMenuSubButton>
+                                            </SidebarMenuSubItem>
+                                        ))}
+                                    </SidebarMenuSub>
+                                </CollapsibleContent>
+                            </SidebarMenuItem>
+                        </Collapsible>
                     );
-                }
-
-                // Se estiver aberto, mantemos o comportamento de Collapsible (sanfona)
-                return (
-                    <Collapsible key={item.title} asChild defaultOpen={item.isActive} className="group/collapsible">
-                        <SidebarMenuItem>
-                            <CollapsibleTrigger asChild>
-                                <SidebarMenuButton tooltip={item.title}>
-                                    {item.icon && <item.icon />}
-                                    <span>{item.title}</span>
-                                    <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                                </SidebarMenuButton>
-                            </CollapsibleTrigger>
-                            <CollapsibleContent>
-                                <SidebarMenuSub>
-                                    {visibleSubItems.map((subItem) => (
-                                        <SidebarMenuSubItem key={subItem.title}>
-                                            <SidebarMenuSubButton asChild isActive={route().current(subItem.active ?? '')}>
-                                                <Link href={subItem.url}>
-                                                    <span>{subItem.title}</span>
-                                                </Link>
-                                            </SidebarMenuSubButton>
-                                        </SidebarMenuSubItem>
-                                    ))}
-                                </SidebarMenuSub>
-                            </CollapsibleContent>
-                        </SidebarMenuItem>
-                    </Collapsible>
-                );
-            })}
-        </SidebarMenu>
+                })}
+            </SidebarMenu>
+        </>
     );
 }

@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { maskCpfCnpj, maskMoney } from '@/Utils/mask';
-import { useForm } from '@inertiajs/react';
+import { router, useForm, usePage } from '@inertiajs/react';
 import { useEffect } from 'react';
 
 interface InvoiceModalProps {
@@ -36,6 +36,8 @@ interface InvoiceModalProps {
 }
 
 export default function InvoiceModal({ open, onClose, order, summary = null }: InvoiceModalProps) {
+    const { fiscalSetting } = usePage<{ fiscalSetting?: { enabled?: boolean; nfse_enabled?: boolean; has_api_token?: boolean } | null }>().props;
+    const focusEnabled = Boolean(fiscalSetting?.enabled && fiscalSetting?.nfse_enabled && fiscalSetting?.has_api_token);
     const orderId = order?.id;
     const partsValue = Number(summary?.parts_value ?? order.parts_value ?? 0);
     const serviceValue = Number(summary?.service_value ?? order.service_value ?? 0);
@@ -68,13 +70,23 @@ export default function InvoiceModal({ open, onClose, order, summary = null }: I
         });
     };
 
+    const handleIssueFocus = () => {
+        if (!orderId) return;
+
+        router.post(route('app.fiscal-documents.orders.issue', orderId), {}, { preserveScroll: true, onSuccess: () => onClose() });
+    };
+
     return (
         <Dialog open={open} onOpenChange={onClose}>
             <DialogContent className="max-w-md">
                 <DialogHeader>
                     <DialogTitle>Emitir Nota de Serviço</DialogTitle>
 
-                    <DialogDescription>Utilize os dados abaixo para emitir a nota no portal da prefeitura.</DialogDescription>
+                    <DialogDescription>
+                        {focusEnabled
+                            ? 'A integração Focus NFe está configurada para NFS-e. A emissão automática será feita por este módulo.'
+                            : 'Utilize os dados abaixo para emitir a nota no portal da prefeitura.'}
+                    </DialogDescription>
                 </DialogHeader>
 
                 <Card>
@@ -117,11 +129,17 @@ export default function InvoiceModal({ open, onClose, order, summary = null }: I
                 </Card>
 
                 <div className="flex justify-end">
-                    <Button asChild>
-                        <a href="https://www.nfse.gov.br/EmissorNacional" target="_blank" rel="noopener noreferrer">
-                            Abrir emissor
-                        </a>
-                    </Button>
+                    {focusEnabled ? (
+                        <Button type="button" onClick={handleIssueFocus} disabled={!orderId}>
+                            Emitir via Focus NFe
+                        </Button>
+                    ) : (
+                        <Button asChild>
+                            <a href="https://www.nfse.gov.br/EmissorNacional" target="_blank" rel="noopener noreferrer">
+                                Abrir emissor
+                            </a>
+                        </Button>
+                    )}
                 </div>
 
                 <Card>

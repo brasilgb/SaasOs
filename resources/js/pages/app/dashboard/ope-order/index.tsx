@@ -25,7 +25,6 @@ function formatBrDate(date: Date | string) {
     return moment(d).format('DD/MM/YYYY');
 }
 
-
 export default function OrderDashboard({
     timerange,
     dateRange,
@@ -69,16 +68,10 @@ export default function OrderDashboard({
         customRange && dateRange?.from && dateRange?.to
             ? `${formatBrDate(dateRange.from)} a ${formatBrDate(dateRange.to)}`
             : isTodayRange
-                ? 'Hoje'
-                : `${timerange} dias`;
+              ? 'Hoje'
+              : `${timerange} dias`;
 
     const defaultKpiDescription = 'Acessar dados';
-    const warrantyRate = Number(metrics?.warranty_return_rate ?? 0);
-    const warrantyThreshold = Number(metrics?.warranty_return_threshold ?? 0);
-    const warrantyAlert = Boolean(metrics?.warranty_return_alert);
-    const warrantySeverity =
-        warrantyRate <= 5 ? 'Saudável' : warrantyRate <= warrantyThreshold ? 'Atenção' : 'Crítico';
-    const warrantyDescription = metrics?.orders > 0 ? `Indicador ${warrantySeverity}` : 'Sem ordens no período';
 
     return (
         <div className="min-w-0">
@@ -131,7 +124,7 @@ export default function OrderDashboard({
                         title="Retorno garantia"
                         value={metrics?.warranty_returns ?? 0}
                         icon={<ShieldAlert className="h-10 w-10" />}
-                        description={warrantyDescription}
+                        description={defaultKpiDescription}
                     />
                     <KpiDashboard
                         link={route('app.quality.index')}
@@ -156,44 +149,6 @@ export default function OrderDashboard({
                     />
                 </div>
             </div>
-            {warrantyAlert && (
-                <Card className="mt-3 border-amber-300 bg-amber-50">
-                    <CardHeader className="pb-3">
-                        <CardTitle className="text-sm text-amber-900">
-                            Alerta de qualidade: taxa de retorno em garantia acima do limite
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-0 text-sm text-amber-900">
-                        O período atual está com {warrantyRate}% de retorno em garantia, acima do limite configurado de {warrantyThreshold}%.
-                        Revise os relatórios por técnico, equipamento e defeito para identificar a origem.
-                    </CardContent>
-                </Card>
-            )}
-            {!warrantyAlert && metrics?.orders > 0 && warrantyRate > 5 && (
-                <Card className="mt-3 border-blue-200 bg-blue-50">
-                    <CardHeader className="pb-3">
-                        <CardTitle className="text-sm text-blue-900">
-                            Atenção: retorno em garantia merece acompanhamento
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-0 text-sm text-blue-900">
-                        O período atual está com {warrantyRate}% de retorno em garantia. Ainda está dentro do limite configurado de{' '}
-                        {warrantyThreshold}%, mas já saiu da faixa saudável sugerida de até 5%.
-                    </CardContent>
-                </Card>
-            )}
-            {Boolean(metrics?.feedback_alert) && (
-                <Card className="mt-3 border-rose-300 bg-rose-50">
-                    <CardHeader className="pb-3">
-                        <CardTitle className="text-sm text-rose-900">
-                            Atenção: clientes avaliaram atendimentos abaixo do esperado
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-0 text-sm text-rose-900">
-                        O período atual registrou {metrics?.low_feedbacks ?? 0} avaliação(ões) com nota até 3. Revise esses casos para recuperação e melhoria operacional.
-                    </CardContent>
-                </Card>
-            )}
             <div className="mt-3 grid min-h-[210px] gap-3 2xl:grid-cols-7">
                 <div className="h-full min-w-0">
                     {others?.enablesales && canUsePdv ? (

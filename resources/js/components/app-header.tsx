@@ -16,7 +16,7 @@ import { UserMenuContent } from '@/components/user-menu-content';
 import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
-import { mainConfItems, mainNavItems, mainPlansItems, mainUserItems } from '@/Utils/navLinks';
+import { mainConfItems, mainNavGroups, mainNavItems, mainPlansItems, mainUserItems } from '@/Utils/navLinks';
 import { Link, usePage } from '@inertiajs/react';
 import { BookOpen, Folder, Menu } from 'lucide-react';
 import AppLogo from './app-logo';
@@ -55,11 +55,16 @@ type AppHeaderPageProps = SharedData & {
         user: SharedData['auth']['user'];
         permissions?: string[];
     };
+    fiscalSetting?: {
+        enabled?: boolean;
+        nfe_enabled?: boolean;
+        nfse_enabled?: boolean;
+    } | null;
 };
 
 export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     const page = usePage<AppHeaderPageProps>();
-    const { auth, othersetting } = page.props;
+    const { auth, othersetting, fiscalSetting } = page.props;
     const disableParts = !othersetting?.enableparts ? 'parts' : '';
     const disableSales = !othersetting?.enablesales ? 'sales' : '';
     const permissions = auth?.permissions ?? [];
@@ -84,21 +89,35 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                 </SheetHeader>
                                 <div className="flex h-full flex-1 flex-col space-y-4 p-4">
                                     <div className="flex h-full flex-col justify-between text-sm">
-                                        <div className="flex flex-col space-y-4">
-                                            {mainNavItems.map(
-                                                (item) =>
-                                                    (item.visibilitySetting
-                                                        ? othersetting?.[item.visibilitySetting as keyof NonNullable<typeof othersetting>] ?? false
-                                                        : true) &&
-                                                    item.enabled !== disableParts &&
-                                                    item.enabled !== disableSales &&
-                                                    (!item.permission || permissions.includes(item.permission)) && (
-                                                        <Link key={item.title} href={item.href} className="flex items-center space-x-2 font-medium">
-                                                            {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
-                                                            <span>{item.title}</span>
-                                                        </Link>
-                                                    ),
-                                            )}
+                                        <div className="flex flex-col space-y-5">
+                                            {mainNavGroups.map((group) => {
+                                                const visibleItems = group.items.filter(
+                                                    (item) =>
+                                                        (item.visibilitySetting
+                                                            ? othersetting?.[item.visibilitySetting as keyof NonNullable<typeof othersetting>] ?? false
+                                                            : true) &&
+                                                        item.enabled !== disableParts &&
+                                                        item.enabled !== disableSales &&
+                                                        (!item.fiscalSetting || Boolean(fiscalSetting?.[item.fiscalSetting])) &&
+                                                        (!item.permission || permissions.includes(item.permission)),
+                                                );
+
+                                                if (visibleItems.length === 0) {
+                                                    return null;
+                                                }
+
+                                                return (
+                                                    <div key={group.title} className="flex flex-col space-y-3">
+                                                        <span className="text-muted-foreground px-1 text-xs font-medium uppercase">{group.title}</span>
+                                                        {visibleItems.map((item) => (
+                                                            <Link key={item.title} href={item.href} className="flex items-center space-x-2 font-medium">
+                                                                {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
+                                                                <span>{item.title}</span>
+                                                            </Link>
+                                                        ))}
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
                                         <div className="flex flex-col space-y-4">
                                             {mainUserItems.map(
@@ -147,6 +166,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                             : true) &&
                                         item.enabled !== disableParts &&
                                         item.enabled !== disableSales &&
+                                        (!item.fiscalSetting || Boolean(fiscalSetting?.[item.fiscalSetting])) &&
                                         (!item.permission || permissions.includes(item.permission)) && (
                                             <NavigationMenuItem key={index} className="relative flex h-full items-center">
                                                 <Link

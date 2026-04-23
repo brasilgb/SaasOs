@@ -10,7 +10,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { footerNavItems, mainConfItems, mainNavItems, mainUserItems } from '@/Utils/navLinks';
+import { footerNavItems, mainConfItems, mainNavGroups, mainUserItems } from '@/Utils/navLinks';
 import { Link } from '@inertiajs/react';
 import AppLogo from './app-logo';
 import NavMainCollapsible from './nav-main-collapsible';
@@ -31,9 +31,11 @@ export function AppSidebar() {
             </SidebarHeader>
             <SidebarContent>
                 <SidebarGroup>
-                    <NavMain items={mainNavItems} />
+                    {mainNavGroups.map((group) => (
+                        <NavMain key={group.title} label={group.title} items={group.items} />
+                    ))}
                     <div className="my-1">
-                        <NavMainCollapsible items={mainConfItems} />
+                        <NavMainCollapsible label="Administração" items={mainConfItems} />
                     </div>
                     <NavMain items={mainUserItems} />
                 </SidebarGroup>

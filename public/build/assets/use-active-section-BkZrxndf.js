@@ -1,1 +1,0 @@
-import{r as o}from"./vendor-Czgx20rQ.js";function a(r){const[c,i]=o.useState("");return o.useEffect(()=>{const n=new IntersectionObserver(t=>{t.forEach(e=>{e.isIntersecting&&i(e.target.id)})},{rootMargin:"-40% 0px -55% 0px"});return r.forEach(t=>{const e=document.getElementById(t);e&&n.observe(e)}),()=>n.disconnect()},[r]),c}export{a as u};

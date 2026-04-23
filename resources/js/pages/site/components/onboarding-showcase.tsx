@@ -25,13 +25,14 @@ const operatingHighlights = [
     'Área pública do cliente com acompanhamento online',
     'Acompanhamentos, garantia, avaliações e métricas comerciais',
     'Financeiro, caixa, despesas, estoque e vendas no mesmo ambiente',
+    'Notas fiscais para sua empresa, com NF-e de produtos e NFS-e de serviços mediante contratação do serviço fiscal',
 ];
 
 export function OnboardingShowcase() {
     return (
         <section id="como-funciona" className="relative overflow-hidden bg-[#081223] py-20 text-white sm:py-28">
             <div className="absolute inset-0">
-                <div className="absolute left-[10%] top-20 h-56 w-56 rounded-full bg-[#f1b555]/12 blur-3xl" />
+                <div className="absolute top-20 left-[10%] h-56 w-56 rounded-full bg-[#f1b555]/12 blur-3xl" />
                 <div className="absolute right-[8%] bottom-12 h-64 w-64 rounded-full bg-[#1c8f88]/14 blur-3xl" />
                 <div className="absolute inset-0 bg-linear-to-b from-[#081223] via-[#09182d] to-[#060d18]" />
             </div>
@@ -47,8 +48,8 @@ export function OnboardingShowcase() {
                     </h2>
 
                     <p className="mt-5 max-w-2xl text-lg leading-relaxed text-white/72">
-                        Em vez de prometer treinamento em vídeo que ainda não existe, o SigmaOS mostra o produto real: telas operacionais,
-                        fluxo da rotina e um manual navegável para a equipe aprender com autonomia.
+                        Em vez de prometer treinamento em vídeo que ainda não existe, o SigmaOS mostra o produto real: telas operacionais, fluxo da
+                        rotina e um manual navegável para a equipe aprender com autonomia.
                     </p>
 
                     <div className="mt-8 grid gap-4">
@@ -68,7 +69,7 @@ export function OnboardingShowcase() {
                     </div>
 
                     <div className="mt-8 rounded-2xl border border-[#f1b555]/18 bg-[#f1b555]/8 p-6">
-                        <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#ffd6a3]">O que sua equipe encontra</p>
+                        <p className="text-sm font-semibold tracking-[0.22em] text-[#ffd6a3] uppercase">O que sua equipe encontra</p>
 
                         <ul className="mt-4 space-y-3">
                             {operatingHighlights.map((item) => (
@@ -80,11 +81,7 @@ export function OnboardingShowcase() {
                         </ul>
 
                         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                            <Button
-                                variant="outline"
-                                className="border-white/16 bg-white/8 text-white hover:bg-white/14 hover:text-white"
-                                asChild
-                            >
+                            <Button variant="outline" className="border-white/16 bg-white/8 text-white hover:bg-white/14 hover:text-white" asChild>
                                 <a href="/documentation/doc-sigmaos.html" target="_blank" rel="noopener noreferrer">
                                     Abrir manual navegável
                                 </a>

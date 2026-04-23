@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 
 import { maskCpfCnpj, maskMoney } from '@/Utils/mask';
-import { useForm } from '@inertiajs/react';
+import { router, useForm, usePage } from '@inertiajs/react';
 
 interface SaleInvoiceModalProps {
     open: boolean;
@@ -35,6 +35,8 @@ interface SaleInvoiceModalProps {
 }
 
 export default function SaleInvoiceModal({ open, onClose, sale }: SaleInvoiceModalProps) {
+    const { fiscalSetting } = usePage<{ fiscalSetting?: { enabled?: boolean; nfe_enabled?: boolean; has_api_token?: boolean } | null }>().props;
+    const focusEnabled = Boolean(fiscalSetting?.enabled && fiscalSetting?.nfe_enabled && fiscalSetting?.has_api_token);
     const saleId = sale?.numberSale?.id;
     const hasRegisteredFiscal = Boolean(sale?.fiscal_document_number || sale?.fiscal_document_url);
     const { data, setData, post, processing, errors } = useForm({
@@ -53,13 +55,23 @@ export default function SaleInvoiceModal({ open, onClose, sale }: SaleInvoiceMod
         });
     };
 
+    const handleIssueFocus = () => {
+        if (!saleId) return;
+
+        router.post(route('app.fiscal-documents.sales.issue', saleId), {}, { preserveScroll: true, onSuccess: () => onClose() });
+    };
+
     return (
         <Dialog open={open} onOpenChange={onClose}>
             <DialogContent className="max-w-md">
                 <DialogHeader>
                     <DialogTitle>Emitir Nota de Venda</DialogTitle>
 
-                    <DialogDescription>Utilize os dados abaixo para emitir a nota fiscal de produto.</DialogDescription>
+                    <DialogDescription>
+                        {focusEnabled
+                            ? 'A integração Focus NFe está configurada para NF-e. A emissão automática será feita por este módulo.'
+                            : 'Utilize os dados abaixo para emitir a nota fiscal de produto.'}
+                    </DialogDescription>
                 </DialogHeader>
 
                 <Card>
@@ -101,11 +113,17 @@ export default function SaleInvoiceModal({ open, onClose, sale }: SaleInvoiceMod
                 </Card>
 
                 <div className="flex justify-end">
-                    <Button asChild>
-                        <a href="https://www.nfe.fazenda.gov.br" target="_blank" rel="noopener noreferrer">
-                            Abrir emissor
-                        </a>
-                    </Button>
+                    {focusEnabled ? (
+                        <Button type="button" onClick={handleIssueFocus} disabled={!saleId}>
+                            Emitir via Focus NFe
+                        </Button>
+                    ) : (
+                        <Button asChild>
+                            <a href="https://www.nfe.fazenda.gov.br" target="_blank" rel="noopener noreferrer">
+                                Abrir emissor
+                            </a>
+                        </Button>
+                    )}
                 </div>
 
                 <Card>

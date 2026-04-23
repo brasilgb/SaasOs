@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\App\CashSession;
+use App\Models\App\FiscalDocument;
 use App\Models\App\Part;
 use App\Models\App\Sale;
 use App\Models\App\SaleItem;
@@ -144,6 +145,25 @@ class SaleService
             'fiscal_registered_by' => $userId,
             'fiscal_notes' => $data['fiscal_notes'] ?? null,
         ]);
+
+        FiscalDocument::updateOrCreate(
+            [
+                'documentable_type' => Sale::class,
+                'documentable_id' => $sale->id,
+                'provider' => 'manual',
+            ],
+            [
+                'tenant_id' => $sale->tenant_id,
+                'type' => 'nfe',
+                'number' => $data['fiscal_document_number'],
+                'access_key' => $fiscalDocumentKey,
+                'status' => 'registered',
+                'pdf_url' => $data['fiscal_document_url'] ?? null,
+                'issued_at' => $data['fiscal_issued_at'] ?? now(),
+                'registered_by' => $userId,
+                'notes' => $data['fiscal_notes'] ?? null,
+            ]
+        );
 
         return $sale->fresh();
     }

@@ -13,6 +13,7 @@ use App\Http\Requests\OrderRequest;
 use App\Models\App\Other;
 use App\Models\App\Customer;
 use App\Models\App\Equipment;
+use App\Models\App\FiscalDocument;
 use App\Models\App\CashSession;
 use App\Models\App\Order;
 use App\Models\App\OrderLog;
@@ -885,6 +886,26 @@ class OrderController extends Controller
             'fiscal_registered_by' => Auth::id(),
             'fiscal_notes' => $validated['fiscal_notes'] ?? null,
         ]);
+
+        FiscalDocument::updateOrCreate(
+            [
+                'documentable_type' => Order::class,
+                'documentable_id' => $order->id,
+                'provider' => 'manual',
+            ],
+            [
+                'tenant_id' => $order->tenant_id,
+                'type' => 'nfse',
+                'number' => $validated['fiscal_document_number'],
+                'access_key' => $fiscalDocumentKey,
+                'status' => 'registered',
+                'pdf_url' => $validated['fiscal_document_url'] ?? null,
+                'issued_at' => $validated['fiscal_issued_at'] ?? now(),
+                'registered_by' => Auth::id(),
+                'notes' => $validated['fiscal_notes'] ?? null,
+            ]
+        );
+
         $this->logOrderAction($order, 'fiscal_registered', [
             'fiscal_document_number' => $validated['fiscal_document_number'],
             'fiscal_document_url' => $validated['fiscal_document_url'] ?? null,
