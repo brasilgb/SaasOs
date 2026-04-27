@@ -8,6 +8,7 @@ use App\Models\App\Budget;
 use App\Models\App\Company;
 use App\Models\App\Equipment;
 use App\Models\App\Service;
+use App\Support\TenantSequence;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -83,7 +84,7 @@ class BudgetController extends Controller
     {
         $data = $request->all();
         $request->validated();
-        $data['budget_number'] = Budget::exists() ? Budget::latest()->first()->budget_number + 1 : 1;
+        $data['budget_number'] = TenantSequence::next(Budget::class, 'budget_number');
         Budget::create($data);
 
         return redirect()->route('app.budgets.index')->with('success', 'Orçamento cadastrado com sucesso');

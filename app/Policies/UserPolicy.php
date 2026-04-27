@@ -6,14 +6,30 @@ use App\Models\User;
 
 class UserPolicy
 {
-    private function canManageRole(User $actor, mixed $role): bool
+    private function sameTenantOrSystem(User $actor, User $target): bool
     {
-        if ($actor->isRoot() || $actor->isAdministrator()) {
+        if (is_null($actor->tenant_id)) {
             return true;
         }
 
+        return ! is_null($target->tenant_id)
+            && (int) $actor->tenant_id === (int) $target->tenant_id;
+    }
+
+    private function canManageRole(User $actor, mixed $role): bool
+    {
+        $role = (int) $role;
+
+        if (is_null($actor->tenant_id) && $actor->isRoot()) {
+            return true;
+        }
+
+        if ($actor->isRoot() || $actor->isAdministrator()) {
+            return in_array($role, [User::ROLE_ADMIN, User::ROLE_OPERATOR, User::ROLE_TECHNICIAN], true);
+        }
+
         if ($actor->isOperator()) {
-            return in_array((int) $role, [User::ROLE_OPERATOR, User::ROLE_TECHNICIAN], true);
+            return in_array($role, [User::ROLE_OPERATOR, User::ROLE_TECHNICIAN], true);
         }
 
         return false;
@@ -21,7 +37,8 @@ class UserPolicy
 
     private function canManageTarget(User $actor, User $target): bool
     {
-        return $this->canManageRole($actor, $target->roles);
+        return $this->sameTenantOrSystem($actor, $target)
+            && $this->canManageRole($actor, $target->roles);
     }
 
     public function viewAny(User $user): bool

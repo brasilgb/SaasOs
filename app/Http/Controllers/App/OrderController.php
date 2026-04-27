@@ -26,6 +26,7 @@ use App\Services\OrderPaymentService;
 use App\Services\OrderNotificationService;
 use App\Services\OperationalAuditService;
 use App\Support\OrderStatus;
+use App\Support\TenantSequence;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -458,10 +459,10 @@ class OrderController extends Controller
         $this->authorize('create', Order::class);
 
         $data = $request->validated();
+        Customer::query()->whereKey($data['customer_id'])->firstOrFail();
+        Equipment::query()->whereKey($data['equipment_id'])->firstOrFail();
         $tenantId = (int) ($this->currentUser()?->tenant_id ?? 0);
-        $data['order_number'] = ((int) Order::query()
-            ->where('tenant_id', $tenantId)
-            ->max('order_number')) + 1;
+        $data['order_number'] = TenantSequence::next(Order::class, 'order_number', $tenantId);
         $data['tracking_token'] = Str::uuid();
         $data['warranty_days'] = isset($data['warranty_days']) && $data['warranty_days'] !== '' ? max(0, (int) $data['warranty_days']) : null;
         $warrantySourceOrder = $this->detectWarrantyReturn(
@@ -539,8 +540,7 @@ class OrderController extends Controller
         $customers = Customer::get();
         $parts = Part::where('type', 'part')->get();
 
-        $technicals = User::where('roles', 3)
-            ->orWhere('roles', 1)
+        $technicals = User::whereIn('roles', [User::ROLE_TECHNICIAN, User::ROLE_ADMIN])
             ->where('status', 1)
             ->get();
         $models = Order::distinct()->pluck('model');
@@ -630,6 +630,9 @@ class OrderController extends Controller
 
         $data = $request->all();
         $request->validated();
+        Customer::query()->whereKey($data['customer_id'])->firstOrFail();
+        Equipment::query()->whereKey($data['equipment_id'])->firstOrFail();
+        User::query()->whereKey($data['user_id'])->firstOrFail();
         $data['budget_value'] = $this->normalizeMoneyValue($data['budget_value'] ?? 0);
         $data['parts_value'] = $this->normalizeMoneyValue($data['parts_value'] ?? 0);
         $data['service_value'] = $this->normalizeMoneyValue($data['service_value'] ?? 0);

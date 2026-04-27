@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UserRequest;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\TenantSequence;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,7 +26,10 @@ class UserController extends Controller
         if ($search) {
             $query->where('name', 'like', '%'.$search.'%');
         }
-        $users = $query->where('roles', '9')->orWhere('roles', '99')->with('tenant')->paginate(11);
+        $users = $query
+            ->whereIn('roles', [User::ROLE_ROOT_APP, User::ROLE_ROOT_SYSTEM])
+            ->with('tenant')
+            ->paginate(11);
 
         return Inertia::render('admin/users/index', ['users' => $users]);
     }
@@ -47,7 +51,12 @@ class UserController extends Controller
     {
         $data = $request->all();
         $request->validated();
-        $data['user_number'] = User::exists() ? User::latest()->first()->user_number + 1 : 1;
+        $tenantId = ! empty($data['tenant_id']) ? (int) $data['tenant_id'] : null;
+        $data['user_number'] = TenantSequence::next(
+            User::class,
+            'user_number',
+            $tenantId
+        );
         $data['password'] = Hash::make($request->password);
         Model::reguard();
         User::create($data);

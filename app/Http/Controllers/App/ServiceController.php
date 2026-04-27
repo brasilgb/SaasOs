@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ServiceRequest;
 use App\Models\App\Equipment;
 use App\Models\App\Service;
+use App\Support\TenantSequence;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -60,7 +61,7 @@ class ServiceController extends Controller
 
         $data = $request->all();
         $request->validated();
-        $data['service_number'] = Service::exists() ? Service::latest()->first()->service_number + 1 : 1;
+        $data['service_number'] = TenantSequence::next(Service::class, 'service_number');
         Service::create($data);
 
         return redirect()->route('app.register-services.index')->with('success', 'Serviço cadastrado com sucesso');

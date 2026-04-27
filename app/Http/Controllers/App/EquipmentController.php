@@ -5,6 +5,7 @@ namespace App\Http\Controllers\App;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\EquipmentRequest;
 use App\Models\App\Equipment;
+use App\Support\TenantSequence;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -46,7 +47,7 @@ class EquipmentController extends Controller
 
         $data = $request->all();
         $request->validated();
-        $data['equipment_number'] = Equipment::exists() ? Equipment::latest()->first()->equipment_number + 1 : 1;
+        $data['equipment_number'] = TenantSequence::next(Equipment::class, 'equipment_number');
         Equipment::create($data);
 
         return redirect()->route('app.register-equipments.index')->with('success', 'Equipamento cadastrado com sucesso');

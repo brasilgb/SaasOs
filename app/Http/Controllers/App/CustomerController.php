@@ -7,6 +7,7 @@ use App\Http\Requests\CustomerRequest;
 use App\Models\App\Customer;
 use App\Models\App\Order;
 use App\Models\App\OrderPayment;
+use App\Support\TenantSequence;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -439,7 +440,7 @@ class CustomerController extends Controller
 
         $data = $request->all();
         $request->validated();
-        $data['customer_number'] = Customer::exists() ? Customer::latest()->first()->customer_number + 1 : 1;
+        $data['customer_number'] = TenantSequence::next(Customer::class, 'customer_number');
         Customer::create($data);
 
         return redirect()->route('app.customers.index');

@@ -366,17 +366,17 @@ class QualityIndicatorController extends Controller
             422
         );
 
+        $assignee = null;
+        if (! empty($validated['assigned_to'])) {
+            $assignee = User::query()->whereKey($validated['assigned_to'])->firstOrFail();
+        }
+
         $order->update([
-            'customer_feedback_recovery_assigned_to' => $validated['assigned_to'] ?? null,
+            'customer_feedback_recovery_assigned_to' => $assignee?->id,
             'customer_feedback_recovery_status' => $validated['status'],
             'customer_feedback_recovery_notes' => $validated['notes'] ?? null,
             'customer_feedback_recovery_updated_at' => now(),
         ]);
-
-        $assignee = null;
-        if (! empty($validated['assigned_to'])) {
-            $assignee = User::query()->find($validated['assigned_to']);
-        }
 
         event(new OrderFeedbackRecoveryUpdated($order->id, Auth::id(), [
             'status' => $validated['status'],

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Tenantable;
 use App\Models\App\Message;
 use App\Models\App\Order;
 use App\Models\App\Expense;
@@ -18,7 +19,7 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, Tenantable;
 
     public const ROLE_ROOT_SYSTEM = 99;
     public const ROLE_ROOT_APP = 9;

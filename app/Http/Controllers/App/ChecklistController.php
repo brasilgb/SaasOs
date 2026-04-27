@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ChecklistRequest;
 use App\Models\App\Checklist;
 use App\Models\App\Equipment;
+use App\Support\TenantSequence;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -53,7 +54,7 @@ class ChecklistController extends Controller
 
         $data = $request->all();
         $request->validated();
-        $data['checklist_number'] = Checklist::exists() ? Checklist::latest()->first()->checklist_number + 1 : 1;
+        $data['checklist_number'] = TenantSequence::next(Checklist::class, 'checklist_number');
         Checklist::create($data);
 
         return redirect()->route('app.register-checklists.index')->with('success', 'Checklist cadastrado com sucesso');

@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
+use App\Support\TenantSequence;
 use Inertia\Inertia;
 
 class UserController extends Controller
@@ -38,7 +39,7 @@ class UserController extends Controller
             $query->where('name', 'like', '%'.$search.'%');
         }
         $users = $query->paginate(11)->withQueryString();
-        $firstAdminId = User::where('roles', 9)->orderBy('id', 'asc')->value('id');
+        $firstAdminId = User::where('roles', User::ROLE_ROOT_APP)->orderBy('id', 'asc')->value('id');
 
         return Inertia::render('app/users/index', ['users' => $users, 'firstAdminId' => $firstAdminId, 'search' => $search]);
     }
@@ -64,7 +65,8 @@ class UserController extends Controller
         $request->validated();
         Gate::authorize('assignRole', [User::class, $data['roles'] ?? null]);
         $data['password'] = Hash::make($request->password);
-        $data['user_number'] = User::exists() ? User::latest()->first()->user_number + 1 : 1;
+        $data['tenant_id'] = Auth::user()->tenant_id;
+        $data['user_number'] = TenantSequence::next(User::class, 'user_number');
         Model::reguard();
         User::create($data);
         Model::unguard();
@@ -111,6 +113,7 @@ class UserController extends Controller
         $request->validated();
         Gate::authorize('assignRole', [User::class, $data['roles'] ?? null]);
         $data['password'] = $request->password ? Hash::make($request->password) : $user->password;
+        $data['tenant_id'] = $user->tenant_id;
         Model::reguard();
         $user->update($data);
         Model::unguard();

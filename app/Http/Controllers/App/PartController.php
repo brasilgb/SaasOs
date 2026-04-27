@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\PartRequest;
 use App\Models\App\Part;
 use App\Models\App\PartMovement;
+use App\Support\TenantSequence;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -88,7 +89,7 @@ class PartController extends Controller
                     'reference_number' => $data['reference_number'],
                 ],
                 [
-                    'part_number' => Part::exists() ? Part::latest()->first()->part_number + 1 : 1,
+                    'part_number' => TenantSequence::next(Part::class, 'part_number', $this->currentTenantId()),
                     'type' => $data['type'],
                     'is_sellable' => $data['is_sellable'],
                     'category' => $data['category'],

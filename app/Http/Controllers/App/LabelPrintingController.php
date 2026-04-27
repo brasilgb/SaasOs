@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\App\Company;
 use App\Models\App\Other;
 use App\Models\App\Order;
+use App\Support\TenantSequence;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -57,9 +58,7 @@ class LabelPrintingController extends Controller
             return 1;
         }
 
-        return ((int) Order::query()
-            ->where('tenant_id', $tenantId)
-            ->max('order_number')) + 1;
+        return TenantSequence::next(Order::class, 'order_number', $tenantId);
     }
 
     public function index()

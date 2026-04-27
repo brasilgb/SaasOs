@@ -10,6 +10,8 @@ class TenantScope implements Scope
 {
     /**
      * Apply the scope to a given Eloquent query builder.
+     *
+     * @param  Builder<Model>  $builder
      */
     public function apply(Builder $builder, Model $model): void
     {
@@ -17,7 +19,7 @@ class TenantScope implements Scope
             $tenantId = resolveCurrentTenantId();
 
             if (! is_null($tenantId)) {
-                $builder->where('tenant_id', $tenantId);
+                $builder->where($model->qualifyColumn('tenant_id'), $tenantId);
             }
         }
     }

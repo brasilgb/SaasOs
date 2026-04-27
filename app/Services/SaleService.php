@@ -8,6 +8,7 @@ use App\Models\App\Part;
 use App\Models\App\Sale;
 use App\Models\App\SaleItem;
 use App\Models\User;
+use App\Support\TenantSequence;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -34,7 +35,7 @@ class SaleService
             }
 
             $sale = Sale::create([
-                'sales_number' => Sale::max('sales_number') + 1,
+                'sales_number' => TenantSequence::next(Sale::class, 'sales_number'),
                 'customer_id' => $data['customer_id'] ?? null,
                 'cash_session_id' => $openCashSession->id,
                 'total_amount' => $totalAmount,

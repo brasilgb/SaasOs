@@ -7,6 +7,7 @@ use App\Http\Requests\ScheduleRequest;
 use App\Models\App\Customer;
 use App\Models\App\Schedule;
 use App\Models\User;
+use App\Support\TenantSequence;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -67,7 +68,9 @@ class ScheduleController extends Controller
         $this->authorize('create', Schedule::class);
 
         $customers = Customer::get();
-        $technicals = User::where('roles', 3)->orWhere('roles', 1)->where('status', 1)->get();
+        $technicals = User::whereIn('roles', [User::ROLE_TECHNICIAN, User::ROLE_ADMIN])
+            ->where('status', 1)
+            ->get();
 
         return Inertia::render('app/schedules/create-schedule', ['customers' => $customers, 'technicals' => $technicals]);
     }
@@ -81,7 +84,9 @@ class ScheduleController extends Controller
 
         $data = $request->all();
         $request->validated();
-        $data['schedules_number'] = Schedule::exists() ? Schedule::latest()->first()->schedules_number + 1 : 1;
+        Customer::query()->whereKey($data['customer_id'])->firstOrFail();
+        User::query()->whereKey($data['user_id'])->firstOrFail();
+        $data['schedules_number'] = TenantSequence::next(Schedule::class, 'schedules_number');
         Schedule::create($data);
 
         return redirect()->route('app.schedules.index')->with('success', 'Agenda cadastrada com sucesso');
@@ -95,7 +100,9 @@ class ScheduleController extends Controller
         $this->authorize('view', $schedule);
 
         $customers = Customer::get();
-        $technicals = User::where('roles', 3)->orWhere('roles', 1)->where('status', 1)->get();
+        $technicals = User::whereIn('roles', [User::ROLE_TECHNICIAN, User::ROLE_ADMIN])
+            ->where('status', 1)
+            ->get();
 
         return Inertia::render('app/schedules/edit-schedule', [
             'schedule' => $schedule,
@@ -129,6 +136,8 @@ class ScheduleController extends Controller
 
         $data = $request->all();
         $request->validated();
+        Customer::query()->whereKey($data['customer_id'])->firstOrFail();
+        User::query()->whereKey($data['user_id'])->firstOrFail();
         $schedule->update($data);
 
         return redirect()->route('app.schedules.show', ['schedule' => $schedule->id])->with('success', 'Agenda editada com sucesso');
