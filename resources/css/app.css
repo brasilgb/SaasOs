@@ -244,8 +244,31 @@ html {
     color: var(--popover-foreground) !important;
 }
 
+.creatable-select__menu-portal,
 .order-model-select__menu-portal {
     z-index: 50 !important;
+}
+
+.creatable-select__control,
+.order-model-select__control {
+    border-color: var(--input) !important;
+    background-color: var(--background) !important;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05) !important;
+}
+
+.creatable-select__control--is-focused,
+.order-model-select__control--is-focused {
+    border-color: var(--ring) !important;
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 50%, transparent) !important;
+}
+
+.creatable-select__value-container,
+.creatable-select__indicators,
+.creatable-select__input-container,
+.order-model-select__value-container,
+.order-model-select__indicators,
+.order-model-select__input-container {
+    background-color: transparent !important;
 }
 
 /* Tipografia otimizada */

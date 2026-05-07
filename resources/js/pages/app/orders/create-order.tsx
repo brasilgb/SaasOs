@@ -16,7 +16,7 @@ import selectStyles from '@/Utils/selectStyles';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { ArrowLeft, Printer, Save, Wrench } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import Select, { type StylesConfig } from 'react-select';
+import Select from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -120,92 +120,6 @@ export default function CreateOrder({
         setData('model', value);
     };
 
-    const modelSelectStyles: StylesConfig<OptionType, false> = {
-        control: (base, state) => ({
-            ...base,
-            minHeight: '36px',
-            borderRadius: '0.375rem',
-            borderColor: state.isFocused ? 'var(--ring)' : 'var(--input)',
-            backgroundColor: 'var(--background)',
-            color: 'var(--foreground)',
-            boxShadow: state.isFocused ? '0 0 0 3px color-mix(in oklab, var(--ring) 50%, transparent)' : 'none',
-            ':hover': {
-                borderColor: state.isFocused ? 'var(--ring)' : 'var(--input)',
-            },
-        }),
-        valueContainer: (base) => ({
-            ...base,
-            padding: '0 8px',
-        }),
-        input: (base) => ({
-            ...base,
-            color: 'var(--foreground)',
-        }),
-        singleValue: (base) => ({
-            ...base,
-            color: 'var(--foreground)',
-            fontSize: '14px',
-        }),
-        placeholder: (base) => ({
-            ...base,
-            color: 'var(--muted-foreground)',
-            fontSize: '14px',
-        }),
-        clearIndicator: (base) => ({
-            ...base,
-            color: 'var(--muted-foreground)',
-        }),
-        dropdownIndicator: (base) => ({
-            ...base,
-            color: 'var(--muted-foreground)',
-        }),
-        indicatorSeparator: (base) => ({
-            ...base,
-            backgroundColor: 'var(--border)',
-        }),
-        menu: (base) => ({
-            ...base,
-            backgroundColor: 'var(--popover)',
-            color: 'var(--popover-foreground)',
-            border: '1px solid var(--border)',
-            borderRadius: '0.375rem',
-            overflow: 'hidden',
-            zIndex: 50,
-        }),
-        menuPortal: (base) => ({
-            ...base,
-            zIndex: 50,
-        }),
-        menuList: (base) => ({
-            ...base,
-            fontSize: '14px',
-            backgroundColor: 'var(--popover)',
-        }),
-        group: (base) => ({
-            ...base,
-            backgroundColor: 'var(--popover)',
-        }),
-        noOptionsMessage: (base) => ({
-            ...base,
-            backgroundColor: 'var(--popover)',
-            color: 'var(--muted-foreground)',
-        }),
-        loadingMessage: (base) => ({
-            ...base,
-            backgroundColor: 'var(--popover)',
-            color: 'var(--muted-foreground)',
-        }),
-        option: (base, state) => ({
-            ...base,
-            backgroundColor: state.isSelected
-                ? 'var(--accent)'
-                : state.isFocused
-                  ? 'color-mix(in oklab, var(--accent) 70%, var(--popover))'
-                  : 'var(--popover)',
-            color: 'var(--foreground)',
-        }),
-    };
-
     return (
         <AppLayout>
             <Head title="Ordens" />
@@ -284,10 +198,11 @@ export default function CreateOrder({
                                     onChange={changeModel}
                                     onCreateOption={createModel}
                                     isClearable
-                                    classNamePrefix="order-model-select"
+                                    classNamePrefix="creatable-select"
+                                    className="min-w-0"
                                     menuPosition="fixed"
                                     menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
-                                    styles={modelSelectStyles}
+                                    styles={selectStyles}
                                     placeholder="Selecione ou digite a nova marca/modelo"
                                     formatCreateLabel={(inputValue) => `Criar "${inputValue}"`}
                                 />
