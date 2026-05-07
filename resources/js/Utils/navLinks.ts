@@ -336,6 +336,12 @@ const mainPlansItems = [
 
 const footerNavItems: NavItem[] = [
     {
+        title: 'Documentação',
+        href: import.meta.env.VITE_APP_URL + '/documentation/doc-sigmaos.html',
+        icon: FileTextIcon,
+        external: true,
+    },
+    {
         title: 'Solicitar ajustes',
         href: route('app.improvement-requests.index'),
         icon: Lightbulb,

@@ -50,9 +50,9 @@ export default function Register() {
     };
 
     return (
-        <AuthLayout width="md:min-w-4xl !px-0" title="Criar uma conta" description="Digite seus dados abaixo para criar sua conta">
+        <AuthLayout width="w-full max-w-4xl" title="Criar uma conta" description="Digite seus dados abaixo para criar sua conta">
             <Head title="Criar uma conta" />
-            <div className="scrollbar-hide hover:scrollbar-default max-h-[80vh] overflow-y-auto px-4 md:min-w-4xl">
+            <div className="scrollbar-hide hover:scrollbar-default max-h-[72svh] min-w-0 overflow-y-auto sm:max-h-[76svh]">
                 <form className="flex flex-col gap-6" onSubmit={submit}>
                     <div className="grid gap-6 md:grid-cols-3">
                         <div className="grid gap-2 md:col-span-2">
@@ -146,8 +146,8 @@ export default function Register() {
                         </div>
                     </div>
                     <div className="grid gap-6">
-                        <div className="flex items-end justify-between gap-2">
-                            <div className="flex flex-1 flex-col gap-2">
+                        <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-end">
+                            <div className="flex min-w-0 flex-col gap-2">
                                 <Label htmlFor="password">Senha</Label>
                                 <Input
                                     id="password"
@@ -164,7 +164,7 @@ export default function Register() {
                             <Button type="button" variant="ghost" size="icon" onClick={() => setShowPassword(!showPassword)}>
                                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </Button>
-                            <div className="flex flex-1 flex-col gap-2">
+                            <div className="flex min-w-0 flex-col gap-2">
                                 <Label htmlFor="password_confirmation">Confirmar senha</Label>
                                 <Input
                                     id="password_confirmation"

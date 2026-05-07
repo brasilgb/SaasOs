@@ -14,7 +14,7 @@ export default function AppSidebarLayout({ children }: PropsWithChildren) {
             <AppContent variant="sidebar">
                 <SubscriptionBanner />
                 <AppSidebarHeader />
-                <div className="grow">{children}</div>
+                <div className="min-w-0 grow overflow-x-hidden">{children}</div>
                 <AppFooter />
                 <SubscriptionModal />
             </AppContent>

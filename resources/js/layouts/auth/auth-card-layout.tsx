@@ -13,8 +13,8 @@ export default function AuthCardLayout({
     description?: string;
 }>) {
     return (
-        <div className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
-            <div className="flex w-full max-w-md flex-col gap-6">
+        <div className="bg-muted flex min-h-svh min-w-0 flex-col items-center justify-center gap-6 p-3 sm:p-6 md:p-10">
+            <div className="flex w-full max-w-md min-w-0 flex-col gap-6">
                 <Link href={route('home')} className="flex items-center gap-2 self-center font-medium">
                     <div className="flex h-9 w-9 items-center justify-center">
                         <AppLogoIcon className="size-9 fill-current text-black dark:text-white" />
@@ -22,12 +22,12 @@ export default function AuthCardLayout({
                 </Link>
 
                 <div className="flex flex-col gap-6">
-                    <Card className="rounded-xl">
-                        <CardHeader className="px-10 pt-8 pb-0 text-center">
+                    <Card className="min-w-0 rounded-xl">
+                        <CardHeader className="px-5 pt-8 pb-0 text-center sm:px-10">
                             <CardTitle className="text-xl">{title}</CardTitle>
                             <CardDescription>{description}</CardDescription>
                         </CardHeader>
-                        <CardContent className="px-10 py-8">{children}</CardContent>
+                        <CardContent className="px-5 py-8 sm:px-10">{children}</CardContent>
                     </Card>
                 </div>
             </div>

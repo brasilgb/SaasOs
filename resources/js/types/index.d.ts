@@ -31,6 +31,7 @@ export interface NavItem {
     permission?: string;
     visibilitySetting?: string;
     fiscalSetting?: 'enabled' | 'nfe_enabled' | 'nfse_enabled';
+    external?: boolean;
 }
 
 export interface SharedData {
