@@ -1,0 +1,120 @@
+PASSO A PASSO OPERACIONAL DO SIGMAOS
+
+1. Dashboard
+
+Em Dashboard, e possivel acompanhar uma visao geral da empresa, com indicadores operacionais, financeiros e graficos de desempenho.
+Essa tela ajuda o gestor a visualizar rapidamente ordens, orcamentos, vendas, receitas e movimentacoes importantes.
+
+2. Clientes
+
+Em Clientes, e possivel cadastrar novos clientes, editar dados ja registrados, consultar informacoes de contato e manter o historico organizado.
+Tambem pode ser utilizado para facilitar contatos via WhatsApp, e-mail ou telefone.
+
+3. Ordens de Servico
+
+Em Ordens de Servico, e possivel cadastrar novas ordens, editar informacoes, acompanhar status, registrar servicos, pecas, pagamentos, observacoes, imagens e historico do atendimento.
+Tambem e possivel enviar lembretes, acompanhar aprovacao de orcamento, registrar dados fiscais e controlar o andamento da OS ate a finalizacao.
+
+4. Orcamentos
+
+Em Orcamentos, e possivel criar orcamentos predefinidos, editar valores e descricoes, vincular servicos ou produtos e enviar a proposta ao cliente por e-mail ou WhatsApp.
+Esse recurso agiliza o atendimento comercial e padroniza as propostas enviadas.
+
+5. Agendamentos
+
+Em Agendamentos, e possivel registrar compromissos, visitas, atendimentos e tarefas com data e horario.
+Esse recurso ajuda a organizar a agenda da equipe e controlar os proximos atendimentos.
+
+6. Mensagens
+
+Em Mensagens, e possivel acompanhar comunicacoes recebidas ou registradas no sistema, marcar mensagens como lidas e manter um controle dos contatos realizados com clientes.
+
+7. Pecas/Produtos
+
+Em Pecas/Produtos, e possivel cadastrar produtos, pecas ou itens utilizados nos servicos e vendas.
+Tambem e possivel editar dados, controlar informacoes como referencia, preco, estoque ou movimentacao e imprimir etiquetas quando necessario.
+
+8. Acompanhamentos
+
+Em Acompanhamentos, e possivel acompanhar clientes apos a abertura ou andamento da ordem de servico.
+O sistema ajuda a organizar retornos, pausas, respostas e contatos pendentes, melhorando o relacionamento com o cliente.
+
+9. Tarefas
+
+Em Tarefas, e possivel visualizar atividades pendentes relacionadas aos acompanhamentos, atribuir responsaveis, concluir tarefas ou reagendar acoes para outra data.
+
+10. Performance
+
+Em Performance, e possivel acompanhar indicadores comerciais e de acompanhamento, ajudando a empresa a medir resultados, contatos realizados e oportunidades de melhoria no atendimento.
+
+11. Garantia e Avaliacoes
+
+Em Garantia e Avaliacoes, e possivel acompanhar retornos de clientes, avaliacoes, garantias e situacoes que precisam de atencao apos a conclusao do servico.
+Esse recurso ajuda a melhorar a qualidade do atendimento e recuperar clientes insatisfeitos.
+
+12. Vendas
+
+Em Vendas, e possivel registrar vendas de produtos ou servicos, adicionar itens, informar formas de pagamento, emitir comprovantes, cancelar vendas quando necessario e registrar dados fiscais.
+
+13. Despesas
+
+Em Despesas, e possivel cadastrar e controlar gastos da empresa, como contas, compras, custos operacionais e outras saidas financeiras.
+
+14. Caixa Diario
+
+Em Caixa Diario, e possivel abrir e fechar o caixa, acompanhar entradas e saidas, controlar vendas, pagamentos e movimentacoes financeiras do dia.
+
+15. Notas Fiscais
+
+Em Notas Fiscais, e possivel acompanhar documentos fiscais, emitir nota fiscal para ordens de servico ou vendas e consultar o historico fiscal gerado pelo sistema.
+
+16. Relatorios
+
+Em Relatorios, e possivel consultar informacoes gerenciais sobre ordens, vendas, financeiro, clientes e desempenho da operacao.
+Esse recurso auxilia na tomada de decisao e no controle administrativo.
+
+17. Usuarios
+
+Em Usuarios, e possivel cadastrar novos usuarios, editar informacoes, definir acessos e permissoes conforme a funcao de cada colaborador.
+Tambem pode ser usado para facilitar contato via WhatsApp quando houver dados cadastrados.
+
+18. Dados da Empresa
+
+Em Dados da Empresa, e possivel cadastrar ou atualizar as informacoes da empresa, como nome, dados de contato, endereco e dados utilizados em recibos, orcamentos e documentos.
+
+19. Mensagens do WhatsApp
+
+Em Mensagens do WhatsApp, e possivel configurar modelos de mensagens predefinidas para envio aos clientes, como mensagens de orcamento, acompanhamento, cobranca, retirada, garantia e outros comunicados.
+
+20. Impressoes de Recibos
+
+Em Impressoes de Recibos, e possivel configurar modelos e opcoes de impressao para recibos usados em ordens de servico, vendas ou pagamentos.
+
+21. Impressao de Etiquetas
+
+Em Impressao de Etiquetas, e possivel configurar e imprimir etiquetas para produtos, pecas ou ordens, facilitando identificacao e organizacao interna.
+
+22. Configuracoes Fiscais
+
+Em Configuracoes Fiscais, e possivel configurar os dados necessarios para emissao e controle de documentos fiscais dentro do sistema.
+
+23. Tipo de Equipamento
+
+Em Tipo de Equipamento, e possivel cadastrar e editar categorias ou tipos de equipamentos atendidos pela empresa, facilitando o preenchimento das ordens de servico.
+
+24. Checklist
+
+Em Checklist, e possivel cadastrar listas de verificacao para serem usadas durante o atendimento, entrada de equipamento, analise tecnica ou entrega ao cliente.
+
+25. Outras Configuracoes
+
+Em Outras Configuracoes, e possivel ajustar preferencias gerais do sistema, ativar ou desativar recursos, configurar envio de e-mail, menus, acompanhamentos e outras opcoes operacionais.
+
+26. Solicitar Ajustes
+
+Em Solicitar Ajustes, o usuario pode enviar sugestoes de melhoria ou solicitacoes para evolucao do sistema, ajudando a adaptar o SigmaOS as necessidades da empresa.
+
+RESUMO COMERCIAL
+
+O SigmaOS permite controlar toda a operacao em um unico sistema: clientes, ordens de servico, orcamentos, agenda, mensagens, produtos, vendas, despesas, caixa, notas fiscais, relatorios, usuarios e configuracoes.
+Com isso, a empresa ganha organizacao, agilidade no atendimento, melhor controle financeiro e uma comunicacao mais profissional com seus clientes.
