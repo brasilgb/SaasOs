@@ -1,62 +1,4 @@
-import { useEffect } from 'react';
-
-type PartLabel = {
-    category?: string;
-    type?: string;
-    name?: string;
-    reference_number?: string | number;
-    sale_price?: string | number;
-};
-
-const BAR_PATTERNS: Record<string, string> = {
-    '0': '101001101101',
-    '1': '110100101011',
-    '2': '101100101011',
-    '3': '110110010101',
-    '4': '101001101011',
-    '5': '110100110101',
-    '6': '101100110101',
-    '7': '101001011011',
-    '8': '110100101101',
-    '9': '101100101101',
-};
-
-function normalizeBarcode(value: string) {
-    const digits = String(value || '').replace(/\D/g, '');
-    if (digits) return digits.slice(0, 12);
-
-    return `${Date.now()}`.slice(-12);
-}
-
-function Barcode({ value }: { value: string }) {
-    const pattern = `1010${value
-        .split('')
-        .map((digit) => BAR_PATTERNS[digit] ?? BAR_PATTERNS['0'])
-        .join('00')}101`;
-
-    return (
-        <svg className="part-barcode" viewBox={`0 0 ${pattern.length} 40`} preserveAspectRatio="none" aria-label={`Codigo de barras ${value}`}>
-            {pattern
-                .split('')
-                .map((bit, index) => (bit === '1' ? <rect key={`${value}-${index}`} x={index} y="0" width="1" height="40" fill="#000" /> : null))}
-        </svg>
-    );
-}
-
-export default function PrintPartLabel({ part }: { part?: PartLabel }) {
-    const barcode = normalizeBarcode(String(part?.reference_number ?? ''));
-
-    useEffect(() => {
-        const timeout = window.setTimeout(() => {
-            window.print();
-        }, 300);
-
-        return () => window.clearTimeout(timeout);
-    }, []);
-
-    return (
-        <div className="bg-white text-black">
-            <style>{`
+import{r,j as i}from"./vendor-616b0WND.js";const o={0:"101001101101",1:"110100101011",2:"101100101011",3:"110110010101",4:"101001101011",5:"110100110101",6:"101100110101",7:"101001011011",8:"110100101101",9:"101100101101"};function a(e){const t=String(e||"").replace(/\D/g,"");return t?t.slice(0,12):`${Date.now()}`.slice(-12)}function l({value:e}){const t=`1010${e.split("").map(s=>o[s]??o[0]).join("00")}101`;return i.jsx("svg",{className:"part-barcode",viewBox:`0 0 ${t.length} 40`,preserveAspectRatio:"none","aria-label":`Codigo de barras ${e}`,children:t.split("").map((s,n)=>s==="1"?i.jsx("rect",{x:n,y:"0",width:"1",height:"40",fill:"#000"},`${e}-${n}`):null)})}function c({part:e}){const t=a(String((e==null?void 0:e.reference_number)??""));return r.useEffect(()=>{const s=window.setTimeout(()=>{window.print()},300);return()=>window.clearTimeout(s)},[]),i.jsxs("div",{className:"bg-white text-black",children:[i.jsx("style",{children:`
                 @page {
                     size: 60mm 40mm;
                     margin: 0;
@@ -154,30 +96,4 @@ export default function PrintPartLabel({ part }: { part?: PartLabel }) {
                     line-height: 1;
                     text-align: center;
                 }
-            `}</style>
-
-            <div className="part-sheet">
-                <div className="part-label">
-                    <div className="part-top">
-                        <div className="part-category">{part?.category || 'Produto'}</div>
-                        <div className="part-badge">{part?.type === 'product' ? 'PRODUTO' : 'PECA'}</div>
-                    </div>
-
-                    <div className="part-name">{part?.name || 'Item sem nome'}</div>
-                    <div className="part-ref">Ref: {part?.reference_number || '-'}</div>
-                    <div className="part-price">
-                        R${' '}
-                        {Number(part?.sale_price || 0)
-                            .toFixed(2)
-                            .replace('.', ',')}
-                    </div>
-
-                    <div className="part-footer">
-                        <Barcode value={barcode} />
-                        <div className="part-code">{barcode}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-}
+            `}),i.jsx("div",{className:"part-sheet",children:i.jsxs("div",{className:"part-label",children:[i.jsxs("div",{className:"part-top",children:[i.jsx("div",{className:"part-category",children:(e==null?void 0:e.category)||"Produto"}),i.jsx("div",{className:"part-badge",children:(e==null?void 0:e.type)==="product"?"PRODUTO":"PECA"})]}),i.jsx("div",{className:"part-name",children:(e==null?void 0:e.name)||"Item sem nome"}),i.jsxs("div",{className:"part-ref",children:["Ref: ",(e==null?void 0:e.reference_number)||"-"]}),i.jsxs("div",{className:"part-price",children:["R$"," ",Number((e==null?void 0:e.sale_price)||0).toFixed(2).replace(".",",")]}),i.jsxs("div",{className:"part-footer",children:[i.jsx(l,{value:t}),i.jsx("div",{className:"part-code",children:t})]})]})})]})}export{c as default};
