@@ -2,12 +2,12 @@ import AppPagination from '@/components/app-pagination';
 import { toastSuccess, toastWarning } from '@/components/app-toast-messages';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
+import { SlaTooltip } from '@/components/sla-tooltip';
 import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import AdminLayout from '@/layouts/admin/admin-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
-import { ChevronRight, Info, Lightbulb } from 'lucide-react';
+import { ChevronRight, Lightbulb } from 'lucide-react';
 import { Fragment, useEffect, type FormEvent, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -250,17 +250,7 @@ export default function TenantImprovementRequestsIndex({ requests, filters, summ
                                         <th className="px-4 py-3 font-medium">Tipo</th>
                                         <th className="px-4 py-3 font-medium">Status</th>
                                         <th className="px-4 py-3 font-medium">
-                                            <TooltipProvider>
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
-                                                        <span className="inline-flex items-center gap-1">
-                                                            SLA
-                                                            <Info className="h-3.5 w-3.5" />
-                                                        </span>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent>Acordo de Nível de Serviço</TooltipContent>
-                                                </Tooltip>
-                                            </TooltipProvider>
+                                            <SlaTooltip>SLA</SlaTooltip>
                                         </th>
                                         <th className="px-4 py-3 font-medium">Criada em</th>
                                     </tr>
@@ -301,10 +291,12 @@ export default function TenantImprovementRequestsIndex({ requests, filters, summ
                                                     <td className="px-4 py-3">
                                                         {sla ? (
                                                             <span className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold ${sla.className}`}>
-                                                                {sla.label}
+                                                                <SlaTooltip>{sla.label}</SlaTooltip>
                                                             </span>
                                                         ) : (
-                                                            <span className="text-xs text-muted-foreground">Sem SLA</span>
+                                                            <span className="text-xs text-muted-foreground">
+                                                                <SlaTooltip>Sem SLA</SlaTooltip>
+                                                            </span>
                                                         )}
                                                     </td>
                                                     <td className="px-4 py-3 text-muted-foreground">

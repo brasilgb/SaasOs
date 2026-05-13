@@ -14,7 +14,7 @@ import { useMemo, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: route('app.dashboard') },
-    { title: 'Tarefas', href: route('app.follow-ups.tasks') },
+    { title: 'Tarefas de atendimento', href: route('app.follow-ups.tasks') },
 ];
 
 export default function FollowUpTasks({ filters, summary, dailyAgenda, technicians }: any) {
@@ -139,19 +139,24 @@ export default function FollowUpTasks({ filters, summary, dailyAgenda, technicia
 
     return (
         <AppLayout>
-            <Head title="Tarefas" />
+            <Head title="Tarefas de atendimento" />
 
-            <div className="flex h-16 items-center justify-between px-4">
+            <div className="flex min-h-20 items-center justify-between gap-4 px-4 py-3">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={ClipboardList} className="h-8 w-8" />
-                    <h2 className="text-xl font-semibold tracking-tight">Tarefas</h2>
+                    <div>
+                        <h2 className="text-xl font-semibold tracking-tight">Tarefas de atendimento</h2>
+                        <p className="text-muted-foreground text-sm">
+                            Aqui ficam os contatos e tratativas que precisam de alguém responsável hoje.
+                        </p>
+                    </div>
                 </div>
                 <div>
                     <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
 
-            <div className="p-4 space-y-4">
+            <div className="space-y-4 p-4">
 
                 <Card>
                     <CardHeader>
@@ -168,7 +173,7 @@ export default function FollowUpTasks({ filters, summary, dailyAgenda, technicia
                                     <SelectItem value="all">Todos</SelectItem>
                                     <SelectItem value="budget">Orçamento</SelectItem>
                                     <SelectItem value="payment">Cobrança</SelectItem>
-                                    <SelectItem value="feedback">Insatisfação</SelectItem>
+                                    <SelectItem value="feedback">Cliente insatisfeito</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -187,14 +192,14 @@ export default function FollowUpTasks({ filters, summary, dailyAgenda, technicia
                             </Select>
                         </div>
                         <div className="space-y-2">
-                            <span className="text-sm font-medium">Responsável pelo acompanhamento</span>
+                            <span className="text-sm font-medium">Responsável pelo contato</span>
                             <Select value={filters?.assigned_to ?? 'all'} onValueChange={(value) => applyFilters({ assigned_to: value })}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Todos" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="all">Todos</SelectItem>
-                                    <SelectItem value="unassigned">Sem responsável pelo acompanhamento</SelectItem>
+                                    <SelectItem value="unassigned">Sem responsável pelo contato</SelectItem>
                                     {technicians?.map((technician: any) => (
                                         <SelectItem key={`filter-${technician.id}`} value={String(technician.id)}>
                                             {technician.name}
@@ -232,11 +237,11 @@ export default function FollowUpTasks({ filters, summary, dailyAgenda, technicia
                         <CardContent className="text-3xl font-bold">{summary?.payment_tasks ?? 0}</CardContent>
                     </Card>
                     <Card>
-                        <CardHeader><CardTitle className="text-base">Insatisfação</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="text-base">Clientes insatisfeitos</CardTitle></CardHeader>
                         <CardContent className="text-3xl font-bold">{summary?.feedback_tasks ?? 0}</CardContent>
                     </Card>
                     <Card>
-                        <CardHeader><CardTitle className="text-base">Sem responsável pelo acompanhamento</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="text-base">Sem responsável</CardTitle></CardHeader>
                         <CardContent className="text-3xl font-bold">{summary?.unassigned_tasks ?? 0}</CardContent>
                     </Card>
                     <Card>
@@ -248,7 +253,7 @@ export default function FollowUpTasks({ filters, summary, dailyAgenda, technicia
                 <Card>
                     <CardHeader>
                         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                            <CardTitle className="text-base">Central de tarefas do dia</CardTitle>
+                            <CardTitle className="text-base">Lista do que precisa ser feito</CardTitle>
                             {canManageOrders && (
                                 <Button type="button" variant="outline" onClick={handleBulkAssignToMe} disabled={selectedCount === 0 || !auth?.id}>
                                     <UserPlus className="h-4 w-4" />
@@ -259,7 +264,7 @@ export default function FollowUpTasks({ filters, summary, dailyAgenda, technicia
                     </CardHeader>
                     <CardContent>
                         {!dailyAgenda?.length ? (
-                            <p className="text-muted-foreground text-sm">Nenhuma tarefa prioritária no momento.</p>
+                            <p className="text-muted-foreground text-sm">Nenhum contato ou tratativa prioritária no momento.</p>
                         ) : (
                             <div className="max-h-[620px] overflow-auto rounded-lg border">
                                 <Table>
@@ -276,8 +281,8 @@ export default function FollowUpTasks({ filters, summary, dailyAgenda, technicia
                                             </TableHead>
                                             <TableHead>#</TableHead>
                                             <TableHead>Cliente</TableHead>
-                                            <TableHead>Técnico</TableHead>
-                                            <TableHead>Responsável pelo acompanhamento</TableHead>
+                                            <TableHead>Técnico da OS</TableHead>
+                                            <TableHead>Responsável pelo contato</TableHead>
                                             <TableHead>Tipo</TableHead>
                                             <TableHead>Dias</TableHead>
                                             <TableHead>Próxima ação</TableHead>
@@ -312,7 +317,7 @@ export default function FollowUpTasks({ filters, summary, dailyAgenda, technicia
                                                                 <SelectValue placeholder="Definir responsável pelo acompanhamento" />
                                                             </SelectTrigger>
                                                             <SelectContent>
-                                                                <SelectItem value="unassigned">Sem responsável pelo acompanhamento</SelectItem>
+                                                                <SelectItem value="unassigned">Sem responsável pelo contato</SelectItem>
                                                                 {technicians?.map((technician: any) => (
                                                                     <SelectItem key={`task-${technician.id}`} value={String(technician.id)}>
                                                                         {technician.name}
@@ -321,7 +326,7 @@ export default function FollowUpTasks({ filters, summary, dailyAgenda, technicia
                                                             </SelectContent>
                                                         </Select>
                                                     ) : (
-                                                        <span className="text-sm">{item.assigned_to ?? 'Sem responsável pelo acompanhamento'}</span>
+                                                        <span className="text-sm">{item.assigned_to ?? 'Sem responsável pelo contato'}</span>
                                                     )}
                                                 </TableCell>
                                                 <TableCell className="capitalize">

@@ -21,7 +21,7 @@ import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: route('app.dashboard') },
-    { title: 'Acompanhamentos', href: route('app.follow-ups.index') },
+    { title: 'Acompanhamentos de clientes', href: route('app.follow-ups.index') },
 ];
 
 function formatDateRange(date?: Date | string) {
@@ -212,7 +212,7 @@ function FollowUpTable({
                                     <TableRow>
                                         <TableHead>#</TableHead>
                                         <TableHead>Cliente</TableHead>
-                                        <TableHead>Técnico</TableHead>
+                                        <TableHead>Técnico da OS</TableHead>
                                         <TableHead>Status</TableHead>
                                         {type === 'payment' && <TableHead>Saldo pendente</TableHead>}
                                         <TableHead>Dias sem retorno</TableHead>
@@ -340,7 +340,7 @@ function FollowUpTable({
     );
 }
 
-export default function FollowUps({ filters, summary, budgetOrders, paymentOrders, technicians, technicianSummary, technicianRanking, trends }: any) {
+export default function FollowUps({ filters, summary, budgetOrders, paymentOrders, technicians, trends }: any) {
     const { auth } = usePage<{ auth?: { role?: string; permissions?: string[] } }>().props;
     const canManageOrders = Boolean(auth?.role !== 'technician' && auth?.permissions?.includes('orders'));
     const [search, setSearch] = useState(filters?.search ?? '');
@@ -396,12 +396,17 @@ export default function FollowUps({ filters, summary, budgetOrders, paymentOrder
 
     return (
         <AppLayout>
-            <Head title="Acompanhamentos" />
+            <Head title="Acompanhamentos de clientes" />
 
-            <div className="flex h-16 items-center justify-between px-4">
+            <div className="flex min-h-20 items-center justify-between gap-4 px-4 py-3">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={MessageSquareWarning} className="h-8 w-8" />
-                    <h2 className="text-xl font-semibold tracking-tight">Acompanhamentos</h2>
+                    <div>
+                        <h2 className="text-xl font-semibold tracking-tight">Acompanhamentos de clientes</h2>
+                        <p className="text-muted-foreground text-sm">
+                            Use esta tela para ver quais clientes precisam de retorno sobre orçamento parado ou saldo pendente.
+                        </p>
+                    </div>
                 </div>
                 <div>
                     <Breadcrumbs breadcrumbs={breadcrumbs} />
@@ -411,7 +416,7 @@ export default function FollowUps({ filters, summary, budgetOrders, paymentOrder
             <div className="p-4">
                 <div className="mb-4 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
                     <div className="flex items-center gap-2">
-                        <span className="text-muted-foreground text-xs font-medium">Período gerencial: {metricsPeriodLabel}</span>
+                        <span className="text-muted-foreground text-xs font-medium">Período dos indicadores: {metricsPeriodLabel}</span>
                     </div>
                     <div className="w-full sm:w-auto">
                         <DatePicker mode={'range'} setDate={onMetricsDateRangeChange} date={metricsDateRange} />
@@ -428,7 +433,7 @@ export default function FollowUps({ filters, summary, budgetOrders, paymentOrder
                         <CardContent className="text-3xl font-bold">{summary?.payment_follow_ups ?? 0}</CardContent>
                     </Card>
                     <Card>
-                        <CardHeader><CardTitle className="text-base">Janela de contato</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="text-base">Dias para entrar na lista</CardTitle></CardHeader>
                         <CardContent className="text-3xl font-bold">{summary?.threshold_days ?? 0}d</CardContent>
                     </Card>
                 </div>
@@ -436,24 +441,24 @@ export default function FollowUps({ filters, summary, budgetOrders, paymentOrder
                 <div className="mt-4 grid gap-4 xl:grid-cols-[1.1fr_1.1fr_1.2fr_1.2fr_1.4fr_1.4fr]">
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-base">Recuperação de orçamento</CardTitle>
+                            <CardTitle className="text-base">Orçamentos retomados</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2">
                             <div className="text-3xl font-bold">{summary?.recovery?.budget?.rate ?? 0}%</div>
                             <div className="text-muted-foreground text-sm">
-                                {summary?.recovery?.budget?.recovered ?? 0} recuperado(s) de {summary?.recovery?.budget?.contacted ?? 0} contato(s)
+                                {summary?.recovery?.budget?.recovered ?? 0} aprovado(s) ou movimentado(s) depois de {summary?.recovery?.budget?.contacted ?? 0} contato(s)
                             </div>
                         </CardContent>
                     </Card>
 
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-base">Recuperação de cobrança</CardTitle>
+                            <CardTitle className="text-base">Cobranças resolvidas</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2">
                             <div className="text-3xl font-bold">{summary?.recovery?.payment?.rate ?? 0}%</div>
                             <div className="text-muted-foreground text-sm">
-                                {summary?.recovery?.payment?.recovered ?? 0} recuperado(s) de {summary?.recovery?.payment?.contacted ?? 0} contato(s)
+                                {summary?.recovery?.payment?.recovered ?? 0} pagamento(s) recebido(s) depois de {summary?.recovery?.payment?.contacted ?? 0} contato(s)
                             </div>
                         </CardContent>
                     </Card>
@@ -502,77 +507,20 @@ export default function FollowUps({ filters, summary, budgetOrders, paymentOrder
 
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-base">Fila por técnico</CardTitle>
+                            <CardTitle className="text-base">Quem deve cuidar destes contatos?</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            {!technicianSummary?.length ? (
-                                <p className="text-muted-foreground text-sm">Nenhum técnico com acompanhamentos na fila.</p>
-                            ) : (
-                                <div className="max-h-[220px] overflow-auto rounded-lg border">
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>Técnico</TableHead>
-                                                <TableHead>Fila</TableHead>
-                                                <TableHead>Sem contato</TableHead>
-                                                <TableHead>Pausado</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {technicianSummary.map((item: any) => (
-                                                <TableRow key={item.user_id ?? item.name}>
-                                                    <TableCell>
-                                                        <div className="flex flex-col">
-                                                            <span className="font-medium">{item.name}</span>
-                                                            <span className="text-muted-foreground text-xs">
-                                                                {item.budget_follow_ups} orçamento • {item.payment_follow_ups} cobrança
-                                                            </span>
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell>{item.total}</TableCell>
-                                                    <TableCell>{item.no_contact}</TableCell>
-                                                    <TableCell>{item.paused}</TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base">Pior taxa de recuperação</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            {!technicianRanking?.length ? (
-                                <p className="text-muted-foreground text-sm">Ainda não há histórico suficiente para ranking.</p>
-                            ) : (
-                                <div className="space-y-3">
-                                    {technicianRanking.map((item: any) => (
-                                        <div key={item.user_id} className="flex items-center justify-between rounded-lg border p-3">
-                                            <div className="flex flex-col">
-                                                <span className="font-medium">{item.name}</span>
-                                                <span className="text-muted-foreground text-xs">
-                                                    {item.recovered} recuperado(s) de {item.contacted} contato(s)
-                                                </span>
-                                            </div>
-                                            <Badge variant="secondary" className={item.rate <= 40 ? 'bg-rose-100 text-rose-900 hover:bg-rose-100' : 'bg-amber-100 text-amber-900 hover:bg-amber-100'}>
-                                                {item.rate}%
-                                            </Badge>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
+                            <p className="text-muted-foreground text-sm">
+                                Estes contatos são responsabilidade do atendimento ou financeiro. O técnico aparece na ordem apenas como responsável pelo serviço.
+                            </p>
                         </CardContent>
                     </Card>
                 </div>
 
-                <div className="mt-4 grid gap-4 xl:grid-cols-[1.1fr_1.1fr_1.8fr]">
+                <div className="mt-4 grid gap-4 xl:grid-cols-2">
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-base">Conversão de orçamento</CardTitle>
+                            <CardTitle className="text-base">Aprovação após contato</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2">
                             <div className="text-3xl font-bold">{summary?.commercial?.budget?.rate ?? 0}%</div>
@@ -595,7 +543,7 @@ export default function FollowUps({ filters, summary, budgetOrders, paymentOrder
 
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-base">Recuperação de cobrança</CardTitle>
+                            <CardTitle className="text-base">Pagamento após contato</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2">
                             <div className="text-3xl font-bold">{summary?.commercial?.payment?.rate ?? 0}%</div>
@@ -613,58 +561,17 @@ export default function FollowUps({ filters, summary, budgetOrders, paymentOrder
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base">Conversão e cobrança por técnico</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            {!summary?.commercial?.technicians?.length ? (
-                                <p className="text-muted-foreground text-sm">Ainda não há histórico suficiente por técnico.</p>
-                            ) : (
-                                <div className="max-h-[220px] overflow-auto rounded-lg border">
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>Técnico</TableHead>
-                                                <TableHead>Orçamento</TableHead>
-                                                <TableHead>Cobrança</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {summary.commercial.technicians.map((item: any) => (
-                                                <TableRow key={item.user_id}>
-                                                    <TableCell>{item.name}</TableCell>
-                                                    <TableCell>
-                                                        <div className="flex flex-col">
-                                                            <span>{item.budget_rate}%</span>
-                                                            <span className="text-muted-foreground text-xs">{item.budget_contacted} contato(s)</span>
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <div className="flex flex-col">
-                                                            <span>{item.payment_rate}%</span>
-                                                            <span className="text-muted-foreground text-xs">{item.payment_contacted} contato(s)</span>
-                                                        </div>
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
                 </div>
 
                 <div className="mt-4 grid gap-4 xl:grid-cols-2">
                     <ChartFollowUpTrend
-                        title="Evolução da conversão de orçamento"
-                        description="Taxa de recuperação dos contatos de orçamento no período selecionado."
+                        title="Evolução da aprovação de orçamento"
+                        description="Mostra se os contatos feitos sobre orçamento parado estão ajudando a gerar aprovação."
                         trend={trends?.budget}
                     />
                     <ChartFollowUpTrend
-                        title="Evolução da recuperação de cobrança"
-                        description="Taxa de recuperação dos contatos de cobrança no período selecionado."
+                        title="Evolução de pagamento após cobrança"
+                        description="Mostra se os contatos de cobrança estão ajudando a receber saldos pendentes."
                         trend={trends?.payment}
                     />
                 </div>
@@ -710,7 +617,7 @@ export default function FollowUps({ filters, summary, budgetOrders, paymentOrder
 
                         <div className="space-y-2 xl:space-y-0">
                             <div className="flex flex-col gap-2 xl:flex-row xl:items-center">
-                                <Label className="xl:min-w-14">Técnico</Label>
+                                <Label className="xl:min-w-24">Técnico da OS</Label>
                                 <Select
                                     value={filters?.technician_id ? String(filters.technician_id) : 'all'}
                                     onValueChange={(value) =>

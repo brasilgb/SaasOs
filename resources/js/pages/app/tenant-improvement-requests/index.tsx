@@ -2,6 +2,7 @@ import AppPagination from '@/components/app-pagination';
 import { toastSuccess, toastWarning } from '@/components/app-toast-messages';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
+import { SlaTooltip } from '@/components/sla-tooltip';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
@@ -214,7 +215,7 @@ export default function TenantImprovementRequestsIndex({ requests, requestTypes,
                                                 </span>
                                                 {sla ? (
                                                     <span className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold ${sla.className}`}>
-                                                        {sla.label}
+                                                        <SlaTooltip>{sla.label}</SlaTooltip>
                                                     </span>
                                                 ) : null}
                                             </div>

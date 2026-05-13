@@ -242,8 +242,8 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                     <div className="grid w-full gap-4 xl:grid-cols-2">
                                         <div className="bg-card text-card-foreground flex items-center justify-between rounded-2xl border p-4 shadow-sm">
                                             <div>
-                                                <p className="font-medium">Acompanhamentos</p>
-                                                <p className="text-muted-foreground text-sm">Menu de follow-ups gerais.</p>
+                                                <p className="font-medium">Acompanhamentos de clientes</p>
+                                                <p className="text-muted-foreground text-sm">Lista ordens que precisam de retorno sobre orçamento ou cobrança.</p>
                                             </div>
                                             <Switch
                                                 id="show_follow_ups_menu"
@@ -255,8 +255,8 @@ export default function Others({ othersettings, company, time_remaining, mailSet
 
                                         <div className="bg-card text-card-foreground flex items-center justify-between rounded-2xl border p-4 shadow-sm">
                                             <div>
-                                                <p className="font-medium">Tarefas</p>
-                                                <p className="text-muted-foreground text-sm">Fila operacional de tarefas do time.</p>
+                                                <p className="font-medium">Tarefas de atendimento</p>
+                                                <p className="text-muted-foreground text-sm">Organiza quem deve fazer cada contato ou tratativa do dia.</p>
                                             </div>
                                             <Switch
                                                 id="show_tasks_menu"
@@ -268,8 +268,8 @@ export default function Others({ othersettings, company, time_remaining, mailSet
 
                                         <div className="bg-card text-card-foreground flex items-center justify-between rounded-2xl border p-4 shadow-sm">
                                             <div>
-                                                <p className="font-medium">Perf. comercial</p>
-                                                <p className="text-muted-foreground text-sm">Indicadores de conversão e recuperação.</p>
+                                                <p className="font-medium">Performance comercial</p>
+                                                <p className="text-muted-foreground text-sm">Mostra aprovação de orçamentos e pagamentos recuperados pela operação.</p>
                                             </div>
                                             <Switch
                                                 id="show_commercial_performance_menu"
@@ -281,8 +281,8 @@ export default function Others({ othersettings, company, time_remaining, mailSet
 
                                         <div className="bg-card text-card-foreground flex items-center justify-between rounded-2xl border p-4 shadow-sm">
                                             <div>
-                                                <p className="font-medium">Garantia/Avaliações</p>
-                                                <p className="text-muted-foreground text-sm">Área de garantia e feedbacks de clientes.</p>
+                                                <p className="font-medium">Garantia e avaliações</p>
+                                                <p className="text-muted-foreground text-sm">Acompanha retornos em garantia e clientes insatisfeitos.</p>
                                             </div>
                                             <Switch
                                                 id="show_quality_menu"
@@ -410,7 +410,7 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                 <div className="space-y-6 rounded-2xl border p-5">
                                     <HeadingSmall
                                         title="Metas de performance comercial"
-                                        description="Defina as metas mínimas esperadas para conversão de orçamento e recuperação de cobrança. A página de performance comercial passa a sinalizar quando a taxa atual ficar abaixo da meta."
+                                        description="Defina as metas mínimas esperadas para aprovação de orçamento e pagamento após cobrança. A página de performance comercial passa a sinalizar quando a taxa atual ficar abaixo da meta."
                                     />
 
                                     <div className="grid w-full gap-4 xl:grid-cols-2">
@@ -438,7 +438,7 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label htmlFor="payment_recovery_target">Meta de recuperação de cobrança (%)</Label>
+                                            <Label htmlFor="payment_recovery_target">Meta de pagamento após cobrança (%)</Label>
                                             <Input
                                                 id="payment_recovery_target"
                                                 type="number"

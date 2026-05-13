@@ -2,6 +2,7 @@ import { Breadcrumbs } from '@/components/breadcrumbs';
 import { ChartQualityTrend } from '@/components/Charts/chart-quality-trend';
 import { DatePicker } from '@/components/date-picker';
 import { Icon } from '@/components/icon';
+import { SlaTooltip } from '@/components/sla-tooltip';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,7 +23,7 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: route('app.dashboard'),
     },
     {
-        title: 'Ações de garantia',
+        title: 'Garantia e avaliações',
         href: route('app.quality.index'),
     },
 ];
@@ -139,7 +140,11 @@ function FeedbackRecoveryCard({
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        {item.recovery_overdue ? <Badge variant="secondary" className="bg-white text-rose-900">SLA vencido</Badge> : null}
+                                        {item.recovery_overdue ? (
+                                            <Badge variant="secondary" className="bg-white text-rose-900">
+                                                <SlaTooltip>SLA vencido</SlaTooltip>
+                                            </Badge>
+                                        ) : null}
                                         <Badge variant="destructive">Nota {item.rating}</Badge>
                                     </div>
                                 </div>
@@ -217,7 +222,7 @@ function FeedbackRecoveryCard({
                                     </div>
                                 </div>
                                 <div className="mt-3">
-                                    <div className="mb-1 text-xs font-medium text-slate-500">Observação da recuperação</div>
+                                    <div className="mb-1 text-xs font-medium text-slate-500">Observação da tratativa</div>
                                     <textarea
                                         value={form.notes}
                                         onChange={(e) =>
@@ -348,60 +353,65 @@ export default function QualityIndicators({
 
     return (
         <AppLayout>
-            <Head title="Ações de garantia" />
+            <Head title="Garantia e avaliações" />
 
-            <div className="flex h-16 items-center justify-between px-4">
+            <div className="flex min-h-20 items-center justify-between gap-4 px-4 py-3">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={ShieldAlert} className="h-8 w-8" />
-                    <h2 className="text-xl font-semibold tracking-tight">Ações de garantia</h2>
+                    <div>
+                        <h2 className="text-xl font-semibold tracking-tight">Garantia e avaliações</h2>
+                        <p className="text-muted-foreground text-sm">
+                            Acompanhe retornos em garantia e clientes que deram nota baixa para organizar a tratativa.
+                        </p>
+                    </div>
                 </div>
                 <div>
                     <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
 
-            <div className="p-4"> 
-                    <div className='mb-4 xl:mb-0 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between'>
-                        <div className="flex items-center gap-2">
-                            <span className="text-muted-foreground text-xs font-medium">Período: {timerangeLabel}</span>
-                        </div>
-                        <div className="w-full sm:w-auto">
-                            <DatePicker mode={'range'} setDate={onDateRangeChange} date={dateRange} />
-                        </div>
-                        <div className="flex min-w-0 flex-col gap-2 xl:items-end">
-                            <ToggleGroup
-                                type="single"
-                                value={timeRange}
-                                onValueChange={onTimeRangeChange}
-                                className="bg-muted flex w-full justify-start gap-2 overflow-x-auto rounded-lg p-1 sm:w-auto"
-                            >
-                                <ToggleGroupItem value="1" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                                    Hoje
-                                </ToggleGroupItem>
-
-                                <ToggleGroupItem value="7" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                                    7 dias
-                                </ToggleGroupItem>
-
-                                <ToggleGroupItem value="30" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                                    30 dias
-                                </ToggleGroupItem>
-
-                                <ToggleGroupItem value="60" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                                    60 dias
-                                </ToggleGroupItem>
-
-                                <ToggleGroupItem value="custom" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                                    Intervalo
-                                </ToggleGroupItem>
-                            </ToggleGroup>
-                        </div>
+            <div className="p-4">
+                <div className="mb-4 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+                    <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground text-xs font-medium">Período analisado: {timerangeLabel}</span>
                     </div>
+                    <div className="w-full sm:w-auto">
+                        <DatePicker mode={'range'} setDate={onDateRangeChange} date={dateRange} />
+                    </div>
+                    <div className="flex min-w-0 flex-col gap-2 xl:items-end">
+                        <ToggleGroup
+                            type="single"
+                            value={timeRange}
+                            onValueChange={onTimeRangeChange}
+                            className="bg-muted flex w-full justify-start gap-2 overflow-x-auto rounded-lg p-1 sm:w-auto"
+                        >
+                            <ToggleGroupItem value="1" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                                Hoje
+                            </ToggleGroupItem>
+
+                            <ToggleGroupItem value="7" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                                7 dias
+                            </ToggleGroupItem>
+
+                            <ToggleGroupItem value="30" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                                30 dias
+                            </ToggleGroupItem>
+
+                            <ToggleGroupItem value="60" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                                60 dias
+                            </ToggleGroupItem>
+
+                            <ToggleGroupItem value="custom" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                                Intervalo
+                            </ToggleGroupItem>
+                        </ToggleGroup>
+                    </div>
+                </div>
 
                 <Tabs defaultValue="warranty" className="mt-4">
                     <TabsList>
-                        <TabsTrigger value="warranty">Garantia</TabsTrigger>
-                        <TabsTrigger value="feedback">Avaliações</TabsTrigger>
+                        <TabsTrigger value="warranty">Retornos em garantia</TabsTrigger>
+                        <TabsTrigger value="feedback">Avaliações de clientes</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="warranty" className="space-y-4">
@@ -452,7 +462,7 @@ export default function QualityIndicators({
 
                         <Card>
                             <CardHeader className="pb-3">
-                                <CardTitle className="text-base">Fila de recuperação</CardTitle>
+                                <CardTitle className="text-base">Fila de tratativas com clientes</CardTitle>
                             </CardHeader>
                             <CardContent className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                                 <Card>
@@ -468,7 +478,11 @@ export default function QualityIndicators({
                                     <CardContent className="text-3xl font-bold">{summary?.recovery_resolved ?? 0}</CardContent>
                                 </Card>
                                 <Card>
-                                    <CardHeader><CardTitle className="text-base">Fora do SLA</CardTitle></CardHeader>
+                                    <CardHeader>
+                                        <CardTitle className="text-base">
+                                            <SlaTooltip>Fora do SLA</SlaTooltip>
+                                        </CardTitle>
+                                    </CardHeader>
                                     <CardContent className="text-3xl font-bold">{summary?.recovery_overdue ?? 0}</CardContent>
                                 </Card>
                             </CardContent>
@@ -480,7 +494,8 @@ export default function QualityIndicators({
                                     <CardTitle className="text-sm text-rose-900">Tratativas críticas fora do prazo</CardTitle>
                                 </CardHeader>
                                 <CardContent className="pt-0 text-sm text-rose-900">
-                                    Existem {summary?.recovery_overdue ?? 0} caso(s) de insatisfação sem resolução dentro do SLA de {summary?.recovery_sla_days ?? 3} dias.
+                                    Existem {summary?.recovery_overdue ?? 0} caso(s) de insatisfação sem resolução dentro do{' '}
+                                    <SlaTooltip>SLA</SlaTooltip> de {summary?.recovery_sla_days ?? 3} dias.
                                 </CardContent>
                             </Card>
                         )}
@@ -551,7 +566,7 @@ export default function QualityIndicators({
                         <section className="space-y-4">
                             <Card className="border-border bg-card">
                                 <CardHeader className="pb-3">
-                                    <CardTitle className="text-base">Recuperação das avaliações</CardTitle>
+                                    <CardTitle className="text-base">Tratativa das avaliações baixas</CardTitle>
                                     <p className="text-muted-foreground text-sm">
                                         Use os filtros abaixo para organizar a fila de clientes insatisfeitos e tratar os casos pendentes.
                                     </p>

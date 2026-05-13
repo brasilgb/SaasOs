@@ -4,7 +4,6 @@ import { DatePicker } from '@/components/date-picker';
 import { Icon } from '@/components/icon';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
@@ -24,7 +23,7 @@ function formatDateRange(date?: Date | string) {
     return moment(d).format('DD/MM/YYYY');
 }
 
-export default function FollowUpPerformance({ filters, summary, technicianRanking, trends }: any) {
+export default function FollowUpPerformance({ filters, summary, trends }: any) {
     const [dateRange, setDateRange] = useState<any>({
         from: filters?.from,
         to: filters?.to,
@@ -69,10 +68,15 @@ export default function FollowUpPerformance({ filters, summary, technicianRankin
         <AppLayout>
             <Head title="Performance comercial" />
 
-            <div className="flex h-16 items-center justify-between px-4">
+            <div className="flex min-h-20 items-center justify-between gap-4 px-4 py-3">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={BarChart3} className="h-8 w-8" />
-                    <h2 className="text-xl font-semibold tracking-tight">Performance comercial</h2>
+                    <div>
+                        <h2 className="text-xl font-semibold tracking-tight">Performance comercial</h2>
+                        <p className="text-muted-foreground text-sm">
+                            Entenda se os contatos com clientes estão ajudando a aprovar orçamentos e receber pagamentos pendentes.
+                        </p>
+                    </div>
                 </div>
                 <div>
                     <Breadcrumbs breadcrumbs={breadcrumbs} />
@@ -91,7 +95,7 @@ export default function FollowUpPerformance({ filters, summary, technicianRankin
 
                 <div className="mb-4 grid gap-4 xl:grid-cols-2">
                     <Card>
-                        <CardHeader><CardTitle className="text-base">Comparação de conversão de orçamento</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="text-base">Comparação de aprovação de orçamento</CardTitle></CardHeader>
                         <CardContent className="space-y-2">
                             <div className="text-2xl font-bold">{directionLabel(summary?.comparison?.budget?.direction)}</div>
                             <div className="text-muted-foreground text-sm">
@@ -104,7 +108,7 @@ export default function FollowUpPerformance({ filters, summary, technicianRankin
                     </Card>
 
                     <Card>
-                        <CardHeader><CardTitle className="text-base">Comparação de recuperação de cobrança</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="text-base">Comparação de pagamento após cobrança</CardTitle></CardHeader>
                         <CardContent className="space-y-2">
                             <div className="text-2xl font-bold">{directionLabel(summary?.comparison?.payment?.direction)}</div>
                             <div className="text-muted-foreground text-sm">
@@ -119,7 +123,7 @@ export default function FollowUpPerformance({ filters, summary, technicianRankin
 
                 <div className="grid gap-4 xl:grid-cols-4">
                     <Card>
-                        <CardHeader><CardTitle className="text-base">Conversão de orçamento</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="text-base">Aprovação de orçamento</CardTitle></CardHeader>
                         <CardContent className="space-y-2">
                             <div className="text-3xl font-bold">{summary?.commercial?.budget?.rate ?? 0}%</div>
                             <div className="text-muted-foreground text-sm">
@@ -132,7 +136,7 @@ export default function FollowUpPerformance({ filters, summary, technicianRankin
                     </Card>
 
                     <Card>
-                        <CardHeader><CardTitle className="text-base">Recuperação de cobrança</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="text-base">Pagamento após cobrança</CardTitle></CardHeader>
                         <CardContent className="space-y-2">
                             <div className="text-3xl font-bold">{summary?.commercial?.payment?.rate ?? 0}%</div>
                             <div className="text-muted-foreground text-sm">
@@ -196,7 +200,7 @@ export default function FollowUpPerformance({ filters, summary, technicianRankin
                     </Card>
 
                     <Card>
-                        <CardHeader><CardTitle className="text-base">Cobranças no período</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="text-base">Pagamentos cobrados no período</CardTitle></CardHeader>
                         <CardContent className="flex flex-wrap gap-2">
                             <Badge variant="secondary" className="bg-emerald-100 text-emerald-900 hover:bg-emerald-100">
                                 Recuperadas: {summary?.commercial?.payment?.recovered ?? 0}
@@ -210,81 +214,25 @@ export default function FollowUpPerformance({ filters, summary, technicianRankin
 
                 <div className="mt-4 grid gap-4 xl:grid-cols-2">
                     <ChartFollowUpTrend
-                        title="Evolução da conversão de orçamento"
-                        description="Taxa de recuperação dos contatos de orçamento no período."
+                        title="Evolução da aprovação de orçamento"
+                        description="Percentual de orçamentos que avançaram depois do contato com o cliente."
                         trend={trends?.budget}
                     />
                     <ChartFollowUpTrend
-                        title="Evolução da recuperação de cobrança"
-                        description="Taxa de recuperação dos contatos de cobrança no período."
+                        title="Evolução de pagamento após cobrança"
+                        description="Percentual de cobranças que tiveram pagamento recebido depois do contato."
                         trend={trends?.payment}
                     />
                 </div>
 
-                <div className="mt-4 grid gap-4 xl:grid-cols-2">
-                    <Card>
-                        <CardHeader><CardTitle className="text-base">Pior taxa de recuperação</CardTitle></CardHeader>
-                        <CardContent>
-                            {!technicianRanking?.length ? (
-                                <p className="text-muted-foreground text-sm">Ainda não há histórico suficiente para ranking.</p>
-                            ) : (
-                                <div className="space-y-3">
-                                    {technicianRanking.map((item: any) => (
-                                        <div key={item.user_id} className="flex items-center justify-between rounded-lg border p-3">
-                                            <div className="flex flex-col">
-                                                <span className="font-medium">{item.name}</span>
-                                                <span className="text-muted-foreground text-xs">
-                                                    {item.recovered} recuperado(s) de {item.contacted} contato(s)
-                                                </span>
-                                            </div>
-                                            <Badge variant="secondary">{item.rate}%</Badge>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader><CardTitle className="text-base">Conversão e cobrança por técnico</CardTitle></CardHeader>
-                        <CardContent>
-                            {!summary?.commercial?.technicians?.length ? (
-                                <p className="text-muted-foreground text-sm">Ainda não há histórico suficiente por técnico.</p>
-                            ) : (
-                                <div className="max-h-[320px] overflow-auto rounded-lg border">
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>Técnico</TableHead>
-                                                <TableHead>Orçamento</TableHead>
-                                                <TableHead>Cobrança</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {summary.commercial.technicians.map((item: any) => (
-                                                <TableRow key={item.user_id}>
-                                                    <TableCell>{item.name}</TableCell>
-                                                    <TableCell>
-                                                        <div className="flex flex-col">
-                                                            <span>{item.budget_rate}%</span>
-                                                            <span className="text-muted-foreground text-xs">{item.budget_contacted} contato(s)</span>
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <div className="flex flex-col">
-                                                            <span>{item.payment_rate}%</span>
-                                                            <span className="text-muted-foreground text-xs">{item.payment_contacted} contato(s)</span>
-                                                        </div>
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                </div>
+                <Card className="mt-4">
+                    <CardHeader><CardTitle className="text-base">O que esta página mede</CardTitle></CardHeader>
+                    <CardContent>
+                        <p className="text-muted-foreground text-sm">
+                            Esta página mede o resultado dos contatos feitos pelo atendimento ou financeiro. Ela não mede produtividade ou qualidade técnica.
+                        </p>
+                    </CardContent>
+                </Card>
             </div>
         </AppLayout>
     );

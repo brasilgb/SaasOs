@@ -97,10 +97,10 @@ const mainNavGroups: NavGroup[] = [
         ],
     },
     {
-        title: 'Relacionamento',
+        title: 'Relacionamento com cliente',
         items: [
             {
-                title: 'Acompanhamentos',
+                title: 'Acompanhamentos de clientes',
                 href: route('app.follow-ups.index'),
                 icon: Mail,
                 active: 'app.follow-ups.index',
@@ -109,7 +109,7 @@ const mainNavGroups: NavGroup[] = [
                 visibilitySetting: 'show_follow_ups_menu',
             },
             {
-                title: 'Tarefas',
+                title: 'Tarefas de atendimento',
                 href: route('app.follow-ups.tasks'),
                 icon: ClipboardList,
                 active: 'app.follow-ups.tasks',
@@ -118,7 +118,7 @@ const mainNavGroups: NavGroup[] = [
                 visibilitySetting: 'show_tasks_menu',
             },
             {
-                title: 'Performance',
+                title: 'Performance comercial',
                 href: route('app.follow-ups.performance'),
                 icon: Sparkles,
                 active: 'app.follow-ups.performance',

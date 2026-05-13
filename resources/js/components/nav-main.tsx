@@ -63,17 +63,17 @@ export function NavMain({ items = [], label }: { items: NavItem[]; label?: strin
                             <Link href={item.href} prefetch>
                                 {item.icon && <item.icon />}
                                 <span>{item.title}</span>
-                                {item.title === 'Performance' && performanceAlert?.hasAlert && (
+                                {item.active === 'app.follow-ups.performance' && performanceAlert?.hasAlert && (
                                     <Badge variant="destructive" className="ml-auto h-5 px-1.5 text-[10px]">
                                         Alerta
                                     </Badge>
                                 )}
-                                {item.title === 'Garantia e avaliações' && customerFeedbackAlert?.hasAlert && (
+                                {item.active === 'app.quality.*' && customerFeedbackAlert?.hasAlert && (
                                     <Badge variant="destructive" className="ml-auto h-5 px-1.5 text-[10px]">
                                         Alerta
                                     </Badge>
                                 )}
-                                {item.title === 'Tarefas' && taskIndicator?.hasTasks && Number(taskIndicator?.total ?? 0) > 0 && (
+                                {item.active === 'app.follow-ups.tasks' && taskIndicator?.hasTasks && Number(taskIndicator?.total ?? 0) > 0 && (
                                     <Badge variant="secondary" className="ml-auto h-5 min-w-5 px-1.5 text-[10px]">
                                         {taskIndicator.total}
                                     </Badge>
