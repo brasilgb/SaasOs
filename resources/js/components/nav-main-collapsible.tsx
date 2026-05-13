@@ -42,6 +42,7 @@ export default function NavMainCollapsible({
             <SidebarMenu>
                 {items.map((item) => {
                     const visibleSubItems = item.items?.filter((subItem) => !subItem.permission || permissions.includes(subItem.permission)) ?? [];
+                    const isActive = item.isActive ?? visibleSubItems.some((subItem) => route().current(subItem.active ?? ''));
 
                     if (visibleSubItems.length === 0) {
                         return null;
@@ -53,7 +54,7 @@ export default function NavMainCollapsible({
                             <SidebarMenuItem key={item.title}>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <SidebarMenuButton tooltip={item.title} isActive={item.isActive}>
+                                        <SidebarMenuButton isActive={isActive} aria-label={item.title}>
                                             {item.icon && <item.icon />}
                                             <span>{item.title}</span>
                                         </SidebarMenuButton>
@@ -77,10 +78,10 @@ export default function NavMainCollapsible({
 
                     // Se estiver aberto, mantemos o comportamento de Collapsible (sanfona)
                     return (
-                        <Collapsible key={item.title} asChild defaultOpen={item.isActive} className="group/collapsible">
+                        <Collapsible key={item.title} asChild defaultOpen={isActive} className="group/collapsible">
                             <SidebarMenuItem>
                                 <CollapsibleTrigger asChild>
-                                    <SidebarMenuButton tooltip={item.title}>
+                                    <SidebarMenuButton isActive={isActive} aria-label={item.title}>
                                         {item.icon && <item.icon />}
                                         <span>{item.title}</span>
                                         <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />

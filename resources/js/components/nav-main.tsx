@@ -97,7 +97,7 @@ export function NavMain({ items = [], label, collapsible = false }: { items: Nav
                     <SidebarMenuItem>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <SidebarMenuButton tooltip={label} isActive={isActive}>
+                                <SidebarMenuButton isActive={isActive} aria-label={label}>
                                     {ParentIcon && <ParentIcon />}
                                     <span>{label}</span>
                                 </SidebarMenuButton>
@@ -122,7 +122,7 @@ export function NavMain({ items = [], label, collapsible = false }: { items: Nav
                 <Collapsible asChild defaultOpen={isActive} className="group/collapsible">
                     <SidebarMenuItem>
                         <CollapsibleTrigger asChild>
-                            <SidebarMenuButton tooltip={label} isActive={isActive}>
+                            <SidebarMenuButton isActive={isActive} aria-label={label}>
                                 {ParentIcon && <ParentIcon />}
                                 <span>{label}</span>
                                 <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
