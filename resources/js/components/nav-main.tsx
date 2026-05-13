@@ -1,7 +1,19 @@
 import { Badge } from '@/components/ui/badge';
-import { SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+    SidebarGroupLabel,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+    SidebarMenuSub,
+    SidebarMenuSubButton,
+    SidebarMenuSubItem,
+    useSidebar,
+} from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
+import { ChevronRight } from 'lucide-react';
 
 type NavMainPageProps = {
     othersetting?: {
@@ -32,8 +44,10 @@ type NavMainPageProps = {
     } | null;
 };
 
-export function NavMain({ items = [], label }: { items: NavItem[]; label?: string }) {
+export function NavMain({ items = [], label, collapsible = false }: { items: NavItem[]; label?: string; collapsible?: boolean }) {
     const { othersetting, auth, performanceAlert, customerFeedbackAlert, taskIndicator, fiscalSetting } = usePage<NavMainPageProps>().props;
+    const { state } = useSidebar();
+    const isCollapsed = state === 'collapsed';
     const disableSales = !othersetting?.enablesales ? 'sales' : '';
     const permissions = auth?.permissions ?? [];
     const canAccessSalesModules =
@@ -53,6 +67,87 @@ export function NavMain({ items = [], label }: { items: NavItem[]; label?: strin
         return null;
     }
 
+    const renderItemBadge = (item: NavItem) => (
+        <>
+            {item.active === 'app.follow-ups.performance' && performanceAlert?.hasAlert && (
+                <Badge variant="destructive" className="ml-auto h-5 px-1.5 text-[10px]">
+                    Alerta
+                </Badge>
+            )}
+            {item.active === 'app.quality.*' && customerFeedbackAlert?.hasAlert && (
+                <Badge variant="destructive" className="ml-auto h-5 px-1.5 text-[10px]">
+                    Alerta
+                </Badge>
+            )}
+            {item.active === 'app.follow-ups.tasks' && taskIndicator?.hasTasks && Number(taskIndicator?.total ?? 0) > 0 && (
+                <Badge variant="secondary" className="ml-auto h-5 min-w-5 px-1.5 text-[10px]">
+                    {taskIndicator.total}
+                </Badge>
+            )}
+        </>
+    );
+
+    if (collapsible && label) {
+        const ParentIcon = visibleItems[0]?.icon;
+        const isActive = visibleItems.some((item) => route().current(item.active ?? ''));
+
+        if (isCollapsed) {
+            return (
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <SidebarMenuButton tooltip={label} isActive={isActive}>
+                                    {ParentIcon && <ParentIcon />}
+                                    <span>{label}</span>
+                                </SidebarMenuButton>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent side="right" align="start" className="w-56">
+                                {visibleItems.map((item) => (
+                                    <DropdownMenuItem key={item.title} asChild>
+                                        <Link href={item.href} className={route().current(item.active ?? '') ? 'bg-accent text-accent-foreground' : ''}>
+                                            {item.title}
+                                        </Link>
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </SidebarMenuItem>
+                </SidebarMenu>
+            );
+        }
+
+        return (
+            <SidebarMenu>
+                <Collapsible asChild defaultOpen={isActive} className="group/collapsible">
+                    <SidebarMenuItem>
+                        <CollapsibleTrigger asChild>
+                            <SidebarMenuButton tooltip={label} isActive={isActive}>
+                                {ParentIcon && <ParentIcon />}
+                                <span>{label}</span>
+                                <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                            </SidebarMenuButton>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                            <SidebarMenuSub>
+                                {visibleItems.map((item) => (
+                                    <SidebarMenuSubItem key={item.title}>
+                                        <SidebarMenuSubButton asChild isActive={route().current(item.active ?? '')}>
+                                            <Link href={item.href}>
+                                                <span>{item.title}</span>
+                                                {renderItemBadge(item)}
+                                            </Link>
+                                        </SidebarMenuSubButton>
+                                    </SidebarMenuSubItem>
+                                ))}
+                            </SidebarMenuSub>
+                        </CollapsibleContent>
+                    </SidebarMenuItem>
+                </Collapsible>
+            </SidebarMenu>
+        );
+    }
+
     return (
         <>
             {label && <SidebarGroupLabel>{label}</SidebarGroupLabel>}
@@ -63,21 +158,7 @@ export function NavMain({ items = [], label }: { items: NavItem[]; label?: strin
                             <Link href={item.href} prefetch>
                                 {item.icon && <item.icon />}
                                 <span>{item.title}</span>
-                                {item.active === 'app.follow-ups.performance' && performanceAlert?.hasAlert && (
-                                    <Badge variant="destructive" className="ml-auto h-5 px-1.5 text-[10px]">
-                                        Alerta
-                                    </Badge>
-                                )}
-                                {item.active === 'app.quality.*' && customerFeedbackAlert?.hasAlert && (
-                                    <Badge variant="destructive" className="ml-auto h-5 px-1.5 text-[10px]">
-                                        Alerta
-                                    </Badge>
-                                )}
-                                {item.active === 'app.follow-ups.tasks' && taskIndicator?.hasTasks && Number(taskIndicator?.total ?? 0) > 0 && (
-                                    <Badge variant="secondary" className="ml-auto h-5 min-w-5 px-1.5 text-[10px]">
-                                        {taskIndicator.total}
-                                    </Badge>
-                                )}
+                                {renderItemBadge(item)}
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>

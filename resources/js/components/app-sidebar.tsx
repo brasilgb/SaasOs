@@ -32,7 +32,12 @@ export function AppSidebar() {
             <SidebarContent>
                 <SidebarGroup>
                     {mainNavGroups.map((group) => (
-                        <NavMain key={group.title} label={group.title} items={group.items} />
+                        <NavMain
+                            key={group.title}
+                            label={group.title}
+                            items={group.items}
+                            collapsible={group.title === 'Relacionamento com cliente'}
+                        />
                     ))}
                     <div className="my-1">
                         <NavMainCollapsible label="Administração" items={mainConfItems} />
