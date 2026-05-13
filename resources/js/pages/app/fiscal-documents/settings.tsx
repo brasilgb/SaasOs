@@ -8,10 +8,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
-import { ReceiptText, Save } from 'lucide-react';
+import { HelpCircle, ReceiptText, Save } from 'lucide-react';
 import type { FormEvent } from 'react';
 
 type FiscalSetting = {
@@ -51,6 +52,28 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '#',
     },
 ];
+
+function FieldLabel({ htmlFor, children, help }: { htmlFor: string; children: string; help: string }) {
+    return (
+        <div className="flex items-center gap-1.5">
+            <Label htmlFor={htmlFor}>{children}</Label>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <button
+                        type="button"
+                        className="text-muted-foreground hover:text-foreground focus:ring-ring inline-flex rounded-sm focus:ring-2 focus:outline-none"
+                    >
+                        <HelpCircle className="h-3.5 w-3.5" />
+                        <span className="sr-only">Ajuda sobre {children}</span>
+                    </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-72 leading-snug">
+                    {help}
+                </TooltipContent>
+            </Tooltip>
+        </div>
+    );
+}
 
 export default function FiscalDocumentSettings({ fiscalSetting }: { fiscalSetting: FiscalSetting }) {
     const { data, setData, put, processing, errors } = useForm({
@@ -106,15 +129,24 @@ export default function FiscalDocumentSettings({ fiscalSetting }: { fiscalSettin
                     <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                         <div>
                             <CardTitle>Integração Focus NFe</CardTitle>
-                            <CardDescription>Ative a emissão fiscal por tenant usando as credenciais contratadas diretamente com a Focus NFe.</CardDescription>
+                            <CardDescription>
+                                Ative a emissão fiscal por tenant usando as credenciais contratadas diretamente com a Focus NFe.
+                            </CardDescription>
                         </div>
                         <Badge variant={data.enabled ? 'default' : 'secondary'}>{data.enabled ? 'Ativo' : 'Inativo'}</Badge>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="flex items-center justify-between rounded-md border p-3">
                             <div>
-                                <Label htmlFor="enabled">Ativar documentos fiscais</Label>
-                                <p className="text-muted-foreground text-sm">Quando desativado, vendas e ordens continuam usando o registro manual atual.</p>
+                                <FieldLabel
+                                    htmlFor="enabled"
+                                    help="Liga a integração fiscal do tenant. Quando desligado, OS e vendas continuam permitindo apenas registro manual do comprovante fiscal."
+                                >
+                                    Ativar documentos fiscais
+                                </FieldLabel>
+                                <p className="text-muted-foreground text-sm">
+                                    Quando desativado, vendas e ordens continuam usando o registro manual atual.
+                                </p>
                             </div>
                             <Switch id="enabled" checked={data.enabled} onCheckedChange={(checked) => setData('enabled', checked)} />
                         </div>
@@ -131,7 +163,12 @@ export default function FiscalDocumentSettings({ fiscalSetting }: { fiscalSettin
                             </CardHeader>
                             <CardContent className="grid gap-4 md:grid-cols-2">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="environment">Ambiente</Label>
+                                    <FieldLabel
+                                        htmlFor="environment"
+                                        help="Define se as chamadas para a Focus NFe serão feitas em homologação para testes ou em produção para emissão fiscal válida."
+                                    >
+                                        Ambiente
+                                    </FieldLabel>
                                     <select
                                         id="environment"
                                         className="border-input bg-background ring-offset-background focus-visible:ring-ring h-10 rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
@@ -145,7 +182,12 @@ export default function FiscalDocumentSettings({ fiscalSetting }: { fiscalSettin
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="api_token">Token Focus NFe</Label>
+                                    <FieldLabel
+                                        htmlFor="api_token"
+                                        help="Credencial usada para autenticar as chamadas na API da Focus NFe. O token fica criptografado e não é exibido novamente após salvar."
+                                    >
+                                        Token Focus NFe
+                                    </FieldLabel>
                                     <Input
                                         id="api_token"
                                         type="password"
@@ -157,7 +199,12 @@ export default function FiscalDocumentSettings({ fiscalSetting }: { fiscalSettin
                                 </div>
 
                                 <div className="grid gap-2 md:col-span-2">
-                                    <Label htmlFor="webhook_secret">Segredo de webhook</Label>
+                                    <FieldLabel
+                                        htmlFor="webhook_secret"
+                                        help="Segredo usado para validar notificações enviadas pela Focus NFe ao SigmaOS. Não é necessário para a sincronização manual por consulta."
+                                    >
+                                        Segredo de webhook
+                                    </FieldLabel>
                                     <Input
                                         id="webhook_secret"
                                         type="password"
@@ -178,18 +225,36 @@ export default function FiscalDocumentSettings({ fiscalSetting }: { fiscalSettin
                             <CardContent className="grid gap-4 md:grid-cols-2">
                                 <div className="flex items-center justify-between rounded-md border p-3">
                                     <div>
-                                        <Label htmlFor="nfe_enabled">NF-e de produtos</Label>
+                                        <FieldLabel
+                                            htmlFor="nfe_enabled"
+                                            help="Habilita emissão de NF-e pela Focus NFe para vendas de peças e produtos. Usa os campos fiscais de produto, como NCM, CFOP, ICMS, PIS e COFINS."
+                                        >
+                                            NF-e de produtos
+                                        </FieldLabel>
                                         <p className="text-muted-foreground text-sm">Usada nas vendas de peças/produtos.</p>
                                     </div>
-                                    <Switch id="nfe_enabled" checked={data.nfe_enabled} onCheckedChange={(checked) => setData('nfe_enabled', checked)} />
+                                    <Switch
+                                        id="nfe_enabled"
+                                        checked={data.nfe_enabled}
+                                        onCheckedChange={(checked) => setData('nfe_enabled', checked)}
+                                    />
                                 </div>
 
                                 <div className="flex items-center justify-between rounded-md border p-3">
                                     <div>
-                                        <Label htmlFor="nfse_enabled">NFS-e de serviços</Label>
+                                        <FieldLabel
+                                            htmlFor="nfse_enabled"
+                                            help="Habilita emissão de NFS-e pela Focus NFe para ordens de serviço. Usa dados municipais e de serviço, como inscrição municipal, município, item da lista e ISS."
+                                        >
+                                            NFS-e de serviços
+                                        </FieldLabel>
                                         <p className="text-muted-foreground text-sm">Usada nas ordens de serviço.</p>
                                     </div>
-                                    <Switch id="nfse_enabled" checked={data.nfse_enabled} onCheckedChange={(checked) => setData('nfse_enabled', checked)} />
+                                    <Switch
+                                        id="nfse_enabled"
+                                        checked={data.nfse_enabled}
+                                        onCheckedChange={(checked) => setData('nfse_enabled', checked)}
+                                    />
                                 </div>
                             </CardContent>
                         </Card>
@@ -201,19 +266,42 @@ export default function FiscalDocumentSettings({ fiscalSetting }: { fiscalSettin
                             </CardHeader>
                             <CardContent className="grid gap-4 md:grid-cols-3">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="company_tax_regime">Regime tributário</Label>
-                                    <Input id="company_tax_regime" value={data.company_tax_regime} onChange={(e) => setData('company_tax_regime', e.target.value)} />
+                                    <FieldLabel
+                                        htmlFor="company_tax_regime"
+                                        help="Usado principalmente na NF-e para informar o regime tributário do emitente no payload enviado à Focus. Confirme o código com a contabilidade."
+                                    >
+                                        Regime tributário
+                                    </FieldLabel>
+                                    <Input
+                                        id="company_tax_regime"
+                                        value={data.company_tax_regime}
+                                        onChange={(e) => setData('company_tax_regime', e.target.value)}
+                                    />
                                     <InputError message={errors.company_tax_regime} />
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="state_registration">Inscrição estadual</Label>
-                                    <Input id="state_registration" value={data.state_registration} onChange={(e) => setData('state_registration', e.target.value)} />
+                                    <FieldLabel
+                                        htmlFor="state_registration"
+                                        help="Usada na NF-e de produtos como inscrição estadual do emitente. Pode ser obrigatória conforme UF, regime e operação."
+                                    >
+                                        Inscrição estadual
+                                    </FieldLabel>
+                                    <Input
+                                        id="state_registration"
+                                        value={data.state_registration}
+                                        onChange={(e) => setData('state_registration', e.target.value)}
+                                    />
                                     <InputError message={errors.state_registration} />
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="municipal_registration">Inscrição municipal</Label>
+                                    <FieldLabel
+                                        htmlFor="municipal_registration"
+                                        help="Usada na NFS-e de serviços como inscrição municipal do prestador perante a prefeitura."
+                                    >
+                                        Inscrição municipal
+                                    </FieldLabel>
                                     <Input
                                         id="municipal_registration"
                                         value={data.municipal_registration}
@@ -223,49 +311,109 @@ export default function FiscalDocumentSettings({ fiscalSetting }: { fiscalSettin
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="service_city_code">Código do município</Label>
-                                    <Input id="service_city_code" value={data.service_city_code} onChange={(e) => setData('service_city_code', e.target.value)} />
+                                    <FieldLabel
+                                        htmlFor="service_city_code"
+                                        help="Usado na NFS-e para identificar o município de prestação/emissão do serviço. Normalmente é o código IBGE da cidade."
+                                    >
+                                        Código do município
+                                    </FieldLabel>
+                                    <Input
+                                        id="service_city_code"
+                                        value={data.service_city_code}
+                                        onChange={(e) => setData('service_city_code', e.target.value)}
+                                    />
                                     <InputError message={errors.service_city_code} />
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="service_list_item">Item da lista de serviço</Label>
-                                    <Input id="service_list_item" value={data.service_list_item} onChange={(e) => setData('service_list_item', e.target.value)} />
+                                    <FieldLabel
+                                        htmlFor="service_list_item"
+                                        help="Usado na NFS-e para classificar o serviço prestado, por exemplo 14.01 para manutenção/conserto. Deve ser validado com a prefeitura ou contador."
+                                    >
+                                        Item da lista de serviço
+                                    </FieldLabel>
+                                    <Input
+                                        id="service_list_item"
+                                        value={data.service_list_item}
+                                        onChange={(e) => setData('service_list_item', e.target.value)}
+                                    />
                                     <InputError message={errors.service_list_item} />
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="default_iss_rate">Alíquota ISS padrão (%)</Label>
-                                    <Input id="default_iss_rate" value={data.default_iss_rate} onChange={(e) => setData('default_iss_rate', e.target.value)} />
+                                    <FieldLabel
+                                        htmlFor="default_iss_rate"
+                                        help="Usada na NFS-e para calcular/informar a alíquota padrão de ISS dos serviços emitidos."
+                                    >
+                                        Alíquota ISS padrão (%)
+                                    </FieldLabel>
+                                    <Input
+                                        id="default_iss_rate"
+                                        value={data.default_iss_rate}
+                                        onChange={(e) => setData('default_iss_rate', e.target.value)}
+                                    />
                                     <InputError message={errors.default_iss_rate} />
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="default_nfe_series">Série NF-e</Label>
-                                    <Input id="default_nfe_series" value={data.default_nfe_series} onChange={(e) => setData('default_nfe_series', e.target.value)} />
+                                    <FieldLabel
+                                        htmlFor="default_nfe_series"
+                                        help="Série padrão da NF-e de produtos, quando a empresa utiliza controle de série. Pode ficar vazio se a Focus/emitente já definir isso."
+                                    >
+                                        Série NF-e
+                                    </FieldLabel>
+                                    <Input
+                                        id="default_nfe_series"
+                                        value={data.default_nfe_series}
+                                        onChange={(e) => setData('default_nfe_series', e.target.value)}
+                                    />
                                     <InputError message={errors.default_nfe_series} />
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="default_nfse_series">Série NFS-e</Label>
-                                    <Input id="default_nfse_series" value={data.default_nfse_series} onChange={(e) => setData('default_nfse_series', e.target.value)} />
+                                    <FieldLabel
+                                        htmlFor="default_nfse_series"
+                                        help="Série padrão da NFS-e de serviços, quando exigida pelo município ou pela configuração da Focus."
+                                    >
+                                        Série NFS-e
+                                    </FieldLabel>
+                                    <Input
+                                        id="default_nfse_series"
+                                        value={data.default_nfse_series}
+                                        onChange={(e) => setData('default_nfse_series', e.target.value)}
+                                    />
                                     <InputError message={errors.default_nfse_series} />
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="default_ncm">NCM padrão</Label>
+                                    <FieldLabel
+                                        htmlFor="default_ncm"
+                                        help="Usado na NF-e de produtos para classificar mercadorias. É obrigatório no fluxo atual de NF-e e deve corresponder ao tipo de produto vendido."
+                                    >
+                                        NCM padrão
+                                    </FieldLabel>
                                     <Input id="default_ncm" value={data.default_ncm} onChange={(e) => setData('default_ncm', e.target.value)} />
                                     <InputError message={errors.default_ncm} />
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="default_cfop">CFOP padrão</Label>
+                                    <FieldLabel
+                                        htmlFor="default_cfop"
+                                        help="Usado na NF-e de produtos para indicar a natureza fiscal da operação, como venda dentro do estado. Confirme o código correto com a contabilidade."
+                                    >
+                                        CFOP padrão
+                                    </FieldLabel>
                                     <Input id="default_cfop" value={data.default_cfop} onChange={(e) => setData('default_cfop', e.target.value)} />
                                     <InputError message={errors.default_cfop} />
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="default_commercial_unit">Unidade comercial</Label>
+                                    <FieldLabel
+                                        htmlFor="default_commercial_unit"
+                                        help="Usada na NF-e como unidade em que o produto é vendido ao cliente. Exemplo comum: UN."
+                                    >
+                                        Unidade comercial
+                                    </FieldLabel>
                                     <Input
                                         id="default_commercial_unit"
                                         value={data.default_commercial_unit}
@@ -275,19 +423,42 @@ export default function FiscalDocumentSettings({ fiscalSetting }: { fiscalSettin
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="default_tax_unit">Unidade tributável</Label>
-                                    <Input id="default_tax_unit" value={data.default_tax_unit} onChange={(e) => setData('default_tax_unit', e.target.value)} />
+                                    <FieldLabel
+                                        htmlFor="default_tax_unit"
+                                        help="Usada na NF-e como unidade considerada para tributação. Em operações simples costuma ser igual à unidade comercial, como UN."
+                                    >
+                                        Unidade tributável
+                                    </FieldLabel>
+                                    <Input
+                                        id="default_tax_unit"
+                                        value={data.default_tax_unit}
+                                        onChange={(e) => setData('default_tax_unit', e.target.value)}
+                                    />
                                     <InputError message={errors.default_tax_unit} />
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="default_icms_origin">Origem ICMS</Label>
-                                    <Input id="default_icms_origin" value={data.default_icms_origin} onChange={(e) => setData('default_icms_origin', e.target.value)} />
+                                    <FieldLabel
+                                        htmlFor="default_icms_origin"
+                                        help="Usada na NF-e para indicar a origem da mercadoria no ICMS. Exemplo: 0 para nacional."
+                                    >
+                                        Origem ICMS
+                                    </FieldLabel>
+                                    <Input
+                                        id="default_icms_origin"
+                                        value={data.default_icms_origin}
+                                        onChange={(e) => setData('default_icms_origin', e.target.value)}
+                                    />
                                     <InputError message={errors.default_icms_origin} />
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="default_icms_situation">Situação ICMS</Label>
+                                    <FieldLabel
+                                        htmlFor="default_icms_situation"
+                                        help="Usada na NF-e para informar a situação tributária do ICMS. O padrão 102 costuma ser usado em Simples Nacional, mas deve ser confirmado."
+                                    >
+                                        Situação ICMS
+                                    </FieldLabel>
                                     <Input
                                         id="default_icms_situation"
                                         value={data.default_icms_situation}
@@ -297,13 +468,27 @@ export default function FiscalDocumentSettings({ fiscalSetting }: { fiscalSettin
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="default_pis_situation">Situação PIS</Label>
-                                    <Input id="default_pis_situation" value={data.default_pis_situation} onChange={(e) => setData('default_pis_situation', e.target.value)} />
+                                    <FieldLabel
+                                        htmlFor="default_pis_situation"
+                                        help="Usada na NF-e para informar a situação tributária do PIS nos itens de produto."
+                                    >
+                                        Situação PIS
+                                    </FieldLabel>
+                                    <Input
+                                        id="default_pis_situation"
+                                        value={data.default_pis_situation}
+                                        onChange={(e) => setData('default_pis_situation', e.target.value)}
+                                    />
                                     <InputError message={errors.default_pis_situation} />
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="default_cofins_situation">Situação COFINS</Label>
+                                    <FieldLabel
+                                        htmlFor="default_cofins_situation"
+                                        help="Usada na NF-e para informar a situação tributária do COFINS nos itens de produto."
+                                    >
+                                        Situação COFINS
+                                    </FieldLabel>
                                     <Input
                                         id="default_cofins_situation"
                                         value={data.default_cofins_situation}

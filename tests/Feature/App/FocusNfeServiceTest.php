@@ -4,6 +4,7 @@ namespace Tests\Feature\App;
 
 use App\Models\App\Company;
 use App\Models\App\Customer;
+use App\Models\App\FiscalDocument;
 use App\Models\App\FiscalSetting;
 use App\Models\App\Order;
 use App\Models\App\Part;
@@ -135,6 +136,15 @@ class FocusNfeServiceTest extends TestCase
             'registered_by' => $this->user->id,
         ]);
 
+        $this->assertDatabaseHas('sales', [
+            'id' => $sale->id,
+            'tenant_id' => $this->tenant->id,
+            'fiscal_document_number' => '12345',
+            'fiscal_document_key' => '35260411222333000181550010000123451000012345',
+            'fiscal_document_url' => 'https://focus.test/danfe.pdf',
+            'fiscal_registered_by' => $this->user->id,
+        ]);
+
         Http::assertSent(function (Request $request) use ($sale) {
             $payload = $request->data();
 
@@ -207,6 +217,15 @@ class FocusNfeServiceTest extends TestCase
             'registered_by' => $this->user->id,
         ]);
 
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'tenant_id' => $this->tenant->id,
+            'fiscal_document_number' => '789',
+            'fiscal_document_key' => 'ABC123',
+            'fiscal_document_url' => 'https://focus.test/nfse.pdf',
+            'fiscal_registered_by' => $this->user->id,
+        ]);
+
         Http::assertSent(function (Request $request) use ($order) {
             $payload = $request->data();
 
@@ -222,6 +241,60 @@ class FocusNfeServiceTest extends TestCase
                 && $payload['servico']['item_lista_servico'] === '14.01'
                 && $payload['servico']['valor_servicos'] === 450.0
                 && $payload['servico']['discriminacao'] === 'Troca de conector e limpeza tecnica';
+        });
+    }
+
+    public function test_it_refreshes_focus_document_status_by_reference(): void
+    {
+        Http::fake([
+            'api.focusnfe.com.br/v2/nfe/nfe-'.$this->tenant->id.'-*' => Http::response([
+                'status' => 'autorizado',
+                'numero' => '99887',
+                'serie' => '1',
+                'chave_nfe' => '35260411222333000181550010000998871000099887',
+                'caminho_danfe' => 'https://focus.test/danfe-sync.pdf',
+                'caminho_xml_nota_fiscal' => 'https://focus.test/nfe-sync.xml',
+            ], 200),
+        ]);
+
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $sale = Sale::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'status' => 'completed',
+        ]);
+
+        $document = FiscalDocument::create([
+            'tenant_id' => $this->tenant->id,
+            'documentable_type' => Sale::class,
+            'documentable_id' => $sale->id,
+            'type' => 'nfe',
+            'provider' => 'focus_nfe',
+            'environment' => 'sandbox',
+            'provider_reference' => "nfe-{$this->tenant->id}-{$sale->id}",
+            'status' => 'processing',
+            'registered_by' => $this->user->id,
+        ]);
+
+        $refreshed = app(FocusNfeService::class)->refreshDocument($document);
+
+        expect($refreshed->status)->toBe('autorizado')
+            ->and($refreshed->number)->toBe('99887')
+            ->and($refreshed->access_key)->toBe('35260411222333000181550010000998871000099887')
+            ->and($refreshed->pdf_url)->toBe('https://focus.test/danfe-sync.pdf')
+            ->and($refreshed->xml_url)->toBe('https://focus.test/nfe-sync.xml');
+
+        $this->assertDatabaseHas('sales', [
+            'id' => $sale->id,
+            'tenant_id' => $this->tenant->id,
+            'fiscal_document_number' => '99887',
+            'fiscal_document_key' => '35260411222333000181550010000998871000099887',
+            'fiscal_document_url' => 'https://focus.test/danfe-sync.pdf',
+        ]);
+
+        Http::assertSent(function (Request $request) use ($sale) {
+            return $request->method() === 'GET'
+                && str_contains((string) $request->url(), "/v2/nfe/nfe-{$this->tenant->id}-{$sale->id}")
+                && $request->hasHeader('Authorization', 'Basic '.base64_encode('focus-token-teste:'));
         });
     }
 }

@@ -16,9 +16,7 @@ use Inertia\Response;
 
 class FiscalDocumentController extends Controller
 {
-    public function __construct(private readonly FocusNfeService $focusNfeService)
-    {
-    }
+    public function __construct(private readonly FocusNfeService $focusNfeService) {}
 
     public function index(): Response
     {
@@ -128,6 +126,19 @@ class FiscalDocumentController extends Controller
         }
 
         return back()->with('success', 'NF-e enviada para processamento na Focus NFe. Referência: '.$document->provider_reference);
+    }
+
+    public function sync(FiscalDocument $fiscalDocument): RedirectResponse
+    {
+        Gate::authorize('fiscal-documents.access');
+
+        try {
+            $document = $this->focusNfeService->refreshDocument($fiscalDocument);
+        } catch (\RuntimeException $exception) {
+            return back()->with('error', $exception->getMessage());
+        }
+
+        return back()->with('success', 'Documento fiscal sincronizado com a Focus NFe. Status: '.$document->status);
     }
 
     private function settingPayload(FiscalSetting $setting): array

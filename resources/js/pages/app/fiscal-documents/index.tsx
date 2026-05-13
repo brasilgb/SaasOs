@@ -6,8 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/react';
-import { ExternalLink, FileText, ReceiptText, Settings } from 'lucide-react';
+import { Head, Link, router } from '@inertiajs/react';
+import { ExternalLink, FileText, ReceiptText, RefreshCw, Settings } from 'lucide-react';
 
 type FiscalDocument = {
     id: number;
@@ -46,6 +46,10 @@ function documentTargetLabel(document: FiscalDocument) {
 }
 
 export default function FiscalDocuments({ documents = [] }: { documents?: FiscalDocument[] }) {
+    const handleSync = (document: FiscalDocument) => {
+        router.post(route('app.fiscal-documents.sync', document.id), {}, { preserveScroll: true });
+    };
+
     return (
         <AppLayout>
             <Head title="Notas fiscais" />
@@ -99,8 +103,21 @@ export default function FiscalDocuments({ documents = [] }: { documents?: Fiscal
                                             <TableCell>
                                                 <Badge variant="secondary">{document.status}</Badge>
                                             </TableCell>
-                                            <TableCell>{document.issued_at ? new Date(document.issued_at).toLocaleDateString('pt-BR') : '-'}</TableCell>
+                                            <TableCell>
+                                                {document.issued_at ? new Date(document.issued_at).toLocaleDateString('pt-BR') : '-'}
+                                            </TableCell>
                                             <TableCell className="flex justify-end gap-2">
+                                                {document.provider === 'focus_nfe' && (
+                                                    <Button
+                                                        size="icon"
+                                                        variant="outline"
+                                                        type="button"
+                                                        onClick={() => handleSync(document)}
+                                                        aria-label="Sincronizar com Focus NFe"
+                                                    >
+                                                        <RefreshCw className="h-4 w-4" />
+                                                    </Button>
+                                                )}
                                                 {document.pdf_url && (
                                                     <Button size="icon" variant="outline" asChild>
                                                         <a href={document.pdf_url} target="_blank" rel="noopener noreferrer" aria-label="Abrir PDF">

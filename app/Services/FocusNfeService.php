@@ -8,6 +8,7 @@ use App\Models\App\FiscalSetting;
 use App\Models\App\Order;
 use App\Models\App\Sale;
 use Illuminate\Http\Client\Response;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
@@ -37,6 +38,24 @@ class FocusNfeService
         $payload = $this->buildNfsePayload($order, $setting);
 
         return $this->sendAndUpdate($document, 'nfse', $document->provider_reference, $payload, $setting);
+    }
+
+    public function refreshDocument(FiscalDocument $document): FiscalDocument
+    {
+        if ($document->provider !== 'focus_nfe' || blank($document->provider_reference)) {
+            throw new RuntimeException('Documento fiscal sem referência válida da Focus NFe.');
+        }
+
+        $endpoint = match ($document->type) {
+            'nfe' => 'nfe',
+            'nfse' => 'nfse',
+            default => throw new RuntimeException('Tipo de documento fiscal não suportado para consulta na Focus NFe.'),
+        };
+
+        $setting = $this->activeSetting($endpoint === 'nfe' ? 'nfe_enabled' : 'nfse_enabled');
+        $response = $this->get($endpoint, $document->provider_reference, $setting);
+
+        return $this->updateFromFocusResponse($document, $response);
     }
 
     private function activeSetting(string $feature): FiscalSetting
@@ -75,20 +94,34 @@ class FocusNfeService
     private function sendAndUpdate(FiscalDocument $document, string $endpoint, string $reference, array $payload, FiscalSetting $setting): FiscalDocument
     {
         $response = $this->post($endpoint, $reference, $payload, $setting);
+
+        return $this->updateFromFocusResponse($document, $response, $payload);
+    }
+
+    private function updateFromFocusResponse(FiscalDocument $document, Response $response, ?array $requestPayload = null): FiscalDocument
+    {
         $body = $response->json() ?? [];
 
         if ($response->successful()) {
+            $number = $body['numero'] ?? $body['numero_nfse'] ?? null;
+            $accessKey = $body['chave_nfe'] ?? $body['codigo_verificacao'] ?? null;
+            $pdfUrl = $body['caminho_danfe'] ?? $body['url_danfe'] ?? $body['url'] ?? null;
+            $xmlUrl = $body['caminho_xml_nota_fiscal'] ?? $body['url_xml'] ?? null;
+            $issuedAt = now();
+
             $document->update([
                 'status' => $this->statusFromResponse($body, 'processing'),
-                'number' => $body['numero'] ?? $body['numero_nfse'] ?? null,
+                'number' => $number,
                 'series' => $body['serie'] ?? null,
-                'access_key' => $body['chave_nfe'] ?? $body['codigo_verificacao'] ?? null,
-                'pdf_url' => $body['caminho_danfe'] ?? $body['url_danfe'] ?? $body['url'] ?? null,
-                'xml_url' => $body['caminho_xml_nota_fiscal'] ?? $body['url_xml'] ?? null,
-                'issued_at' => now(),
-                'request_payload' => $payload,
+                'access_key' => $accessKey,
+                'pdf_url' => $pdfUrl,
+                'xml_url' => $xmlUrl,
+                'issued_at' => $issuedAt,
+                'request_payload' => $requestPayload ?? $document->request_payload,
                 'response_payload' => $body,
             ]);
+
+            $this->updateDocumentableFiscalFields($document, $number, $accessKey, $pdfUrl, $issuedAt);
 
             return $document->fresh();
         }
@@ -102,7 +135,29 @@ class FocusNfeService
             'error_message' => Str::limit((string) $message, 2000, ''),
         ]);
 
-        throw new RuntimeException('Focus NFe recusou a emissão: '.Str::limit((string) $message, 500, ''));
+        throw new RuntimeException('Focus NFe retornou erro para o documento: '.Str::limit((string) $message, 500, ''));
+    }
+
+    private function updateDocumentableFiscalFields(FiscalDocument $document, ?string $number, ?string $accessKey, ?string $pdfUrl, Carbon $issuedAt): void
+    {
+        if (blank($number) && blank($accessKey) && blank($pdfUrl)) {
+            return;
+        }
+
+        $documentable = $document->documentable;
+
+        if (! $documentable instanceof Order && ! $documentable instanceof Sale) {
+            return;
+        }
+
+        $documentable->update([
+            'fiscal_document_number' => $number ?: $documentable->fiscal_document_number,
+            'fiscal_document_key' => $accessKey ?: $documentable->fiscal_document_key,
+            'fiscal_document_url' => $pdfUrl ?: $documentable->fiscal_document_url,
+            'fiscal_issued_at' => $issuedAt,
+            'fiscal_registered_by' => Auth::id(),
+            'fiscal_notes' => 'Emitido via Focus NFe. Referência: '.$document->provider_reference,
+        ]);
     }
 
     private function post(string $endpoint, string $reference, array $payload, FiscalSetting $setting): Response
@@ -112,6 +167,14 @@ class FocusNfeService
             ->withBasicAuth($setting->api_token, '')
             ->timeout(30)
             ->post(self::BASE_URL.'/'.$endpoint.'?ref='.urlencode($reference), $payload);
+    }
+
+    private function get(string $endpoint, string $reference, FiscalSetting $setting): Response
+    {
+        return Http::acceptJson()
+            ->withBasicAuth($setting->api_token, '')
+            ->timeout(30)
+            ->get(self::BASE_URL.'/'.$endpoint.'/'.urlencode($reference));
     }
 
     private function buildNfePayload(Sale $sale, FiscalSetting $setting): array

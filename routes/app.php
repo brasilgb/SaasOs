@@ -1,15 +1,15 @@
 <?php
 
 use App\Http\Controllers\App\BudgetController;
-use App\Http\Controllers\App\ChecklistController;
 use App\Http\Controllers\App\CashSessionController;
+use App\Http\Controllers\App\ChecklistController;
 use App\Http\Controllers\App\CompanyController;
 use App\Http\Controllers\App\CustomerController;
 use App\Http\Controllers\App\DashboardController;
-use App\Http\Controllers\App\ExpenseController;
-use App\Http\Controllers\App\FollowUpController;
-use App\Http\Controllers\App\FiscalDocumentController;
 use App\Http\Controllers\App\EquipmentController;
+use App\Http\Controllers\App\ExpenseController;
+use App\Http\Controllers\App\FiscalDocumentController;
+use App\Http\Controllers\App\FollowUpController;
 use App\Http\Controllers\App\ImageController;
 use App\Http\Controllers\App\LabelPrintingController;
 use App\Http\Controllers\App\MessageController;
@@ -75,6 +75,7 @@ Route::get('fiscal-documents/settings', [FiscalDocumentController::class, 'setti
 Route::put('fiscal-documents/settings/{fiscalSetting}', [FiscalDocumentController::class, 'update'])->name('fiscal-documents.settings.update');
 Route::post('fiscal-documents/orders/{order}/issue', [FiscalDocumentController::class, 'issueOrder'])->name('fiscal-documents.orders.issue');
 Route::post('fiscal-documents/sales/{sale}/issue', [FiscalDocumentController::class, 'issueSale'])->name('fiscal-documents.sales.issue');
+Route::post('fiscal-documents/{fiscalDocument}/sync', [FiscalDocumentController::class, 'sync'])->name('fiscal-documents.sync');
 Route::resource('register-equipments', EquipmentController::class)->parameters(['register-equipments' => 'equipment']);
 Route::resource('register-services', ServiceController::class)->parameters(['register-services' => 'service']);
 Route::resource('register-checklists', ChecklistController::class)->parameters(['register-checklists' => 'checklist']);
