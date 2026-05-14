@@ -19,7 +19,7 @@ const MAX_IMAGES = 4;
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Painel',
         href: route('app.dashboard'),
     },
     {

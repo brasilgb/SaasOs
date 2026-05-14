@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import AdminLayout from '@/layouts/admin/admin-layout';
 import type { BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
-import { Building, Save } from 'lucide-react';
+import { Cog, Save } from 'lucide-react';
 
 interface Settings {
     id: number;
@@ -57,7 +57,7 @@ export default function SettingsIndex({ settings }: { settings: Settings }) {
             <Head title="Configurações" />
             <div className="flex min-h-16 w-full flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-2">
-                    <Icon iconNode={Building} className="h-8 w-8" />
+                    <Icon iconNode={Cog} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Configurações</h2>
                 </div>
                 <div className="sm:ml-auto sm:text-right">
@@ -66,7 +66,7 @@ export default function SettingsIndex({ settings }: { settings: Settings }) {
             </div>
 
             <div className="w-full p-4">
-                <div className="w-full rounded-2xl border bg-card p-5 shadow-sm sm:p-6">
+                <div className="bg-card w-full rounded-2xl border p-5 shadow-sm sm:p-6">
                     <div className="space-y-6">
                         <HeadingSmall title="Configurações de aparência" description="Altere a aparencia do sistema entre temas claro ou escuro." />
                         <AppearanceTabs />
@@ -75,7 +75,7 @@ export default function SettingsIndex({ settings }: { settings: Settings }) {
                     <form onSubmit={handleSubmit} autoComplete="off" className="mt-8 w-full space-y-8">
                         <div className="space-y-3">
                             <Label>Imagem de logo</Label>
-                            <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-2xl border bg-muted/30 p-3">
+                            <div className="bg-muted/30 flex h-28 w-28 items-center justify-center overflow-hidden rounded-2xl border p-3">
                                 <img
                                     src={`/storage/logos/${settings.logo ? settings.logo : 'default.png'}`}
                                     alt="Imagem de logo"

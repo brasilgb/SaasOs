@@ -19,11 +19,11 @@ import { useEffect, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Painel',
         href: route('app.dashboard'),
     },
     {
-        title: 'Garantia e avaliações',
+        title: 'Garantias e avaliações',
         href: route('app.quality.index'),
     },
 ];
@@ -131,119 +131,125 @@ function FeedbackRecoveryCard({
                             const form = getForm(item);
 
                             return (
-                            <div key={item.id} className={`rounded-lg border p-3 ${item.recovery_overdue ? 'border-rose-300 bg-rose-50/50' : ''}`}>
-                                <div className="flex items-center justify-between gap-3">
-                                    <div>
-                                        <div className="font-medium">OS #{item.order_number} • {item.customer}</div>
-                                        <div className="text-muted-foreground text-xs">
-                                            {item.submitted_at ? moment(item.submitted_at).format('DD/MM/YYYY HH:mm') : '-'}
+                                <div
+                                    key={item.id}
+                                    className={`rounded-lg border p-3 ${item.recovery_overdue ? 'border-rose-300 bg-rose-50/50' : ''}`}
+                                >
+                                    <div className="flex items-center justify-between gap-3">
+                                        <div>
+                                            <div className="font-medium">
+                                                OS #{item.order_number} • {item.customer}
+                                            </div>
+                                            <div className="text-muted-foreground text-xs">
+                                                {item.submitted_at ? moment(item.submitted_at).format('DD/MM/YYYY HH:mm') : '-'}
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            {item.recovery_overdue ? (
+                                                <Badge variant="secondary" className="bg-white text-rose-900">
+                                                    <SlaTooltip>SLA vencido</SlaTooltip>
+                                                </Badge>
+                                            ) : null}
+                                            <Badge variant="destructive">Nota {item.rating}</Badge>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        {item.recovery_overdue ? (
-                                            <Badge variant="secondary" className="bg-white text-rose-900">
-                                                <SlaTooltip>SLA vencido</SlaTooltip>
-                                            </Badge>
-                                        ) : null}
-                                        <Badge variant="destructive">Nota {item.rating}</Badge>
-                                    </div>
-                                </div>
-                                {item.comment ? <p className="mt-2 text-sm text-slate-600">{item.comment}</p> : null}
-                                <div className="mt-3 grid gap-3 md:grid-cols-3">
-                                    <div>
-                                        <div className="mb-1 text-xs font-medium text-slate-500">Responsável</div>
-                                        <select
-                                            value={form.assigned_to}
-                                            onChange={(e) =>
-                                                setForms((prev) => ({
-                                                    ...prev,
-                                                    [item.id]: { ...form, assigned_to: e.target.value },
-                                                }))
-                                            }
-                                            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
-                                        >
-                                            <option value="">Sem responsável</option>
-                                            {assignees?.map((assignee) => (
-                                                <option key={assignee.id} value={assignee.id}>
-                                                    {assignee.name}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <div className="mb-1 text-xs font-medium text-slate-500">Status da tratativa</div>
-                                        <select
-                                            value={form.status}
-                                            onChange={(e) =>
-                                                setForms((prev) => ({
-                                                    ...prev,
-                                                    [item.id]: { ...form, status: e.target.value },
-                                                }))
-                                            }
-                                            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
-                                        >
-                                            <option value="pending">Pendente</option>
-                                            <option value="in_progress">Em tratativa</option>
-                                            <option value="resolved">Resolvido</option>
-                                        </select>
-                                    </div>
-                                    <div className="flex items-end">
-                                        <div className="flex w-full gap-2">
-                                            {!form.assigned_to && currentUserId ? (
+                                    {item.comment ? <p className="mt-2 text-sm text-slate-600">{item.comment}</p> : null}
+                                    <div className="mt-3 grid gap-3 md:grid-cols-3">
+                                        <div>
+                                            <div className="mb-1 text-xs font-medium text-slate-500">Responsável</div>
+                                            <select
+                                                value={form.assigned_to}
+                                                onChange={(e) =>
+                                                    setForms((prev) => ({
+                                                        ...prev,
+                                                        [item.id]: { ...form, assigned_to: e.target.value },
+                                                    }))
+                                                }
+                                                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                                            >
+                                                <option value="">Sem responsável</option>
+                                                {assignees?.map((assignee) => (
+                                                    <option key={assignee.id} value={assignee.id}>
+                                                        {assignee.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <div className="mb-1 text-xs font-medium text-slate-500">Status da tratativa</div>
+                                            <select
+                                                value={form.status}
+                                                onChange={(e) =>
+                                                    setForms((prev) => ({
+                                                        ...prev,
+                                                        [item.id]: { ...form, status: e.target.value },
+                                                    }))
+                                                }
+                                                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                                            >
+                                                <option value="pending">Pendente</option>
+                                                <option value="in_progress">Em tratativa</option>
+                                                <option value="resolved">Resolvido</option>
+                                            </select>
+                                        </div>
+                                        <div className="flex items-end">
+                                            <div className="flex w-full gap-2">
+                                                {!form.assigned_to && currentUserId ? (
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        className="flex-1"
+                                                        onClick={() =>
+                                                            setForms((prev) => ({
+                                                                ...prev,
+                                                                [item.id]: { ...form, assigned_to: String(currentUserId), status: 'in_progress' },
+                                                            }))
+                                                        }
+                                                    >
+                                                        Assumir
+                                                    </Button>
+                                                ) : null}
                                                 <Button
                                                     type="button"
-                                                    variant="outline"
                                                     className="flex-1"
                                                     onClick={() =>
-                                                        setForms((prev) => ({
-                                                            ...prev,
-                                                            [item.id]: { ...form, assigned_to: String(currentUserId), status: 'in_progress' },
-                                                        }))
+                                                        onSave({
+                                                            orderId: item.id,
+                                                            assigned_to: form.assigned_to,
+                                                            status: form.status,
+                                                            notes: form.notes,
+                                                        })
                                                     }
                                                 >
-                                                    Assumir
+                                                    Salvar tratativa
                                                 </Button>
-                                            ) : null}
-                                            <Button
-                                                type="button"
-                                                className="flex-1"
-                                                onClick={() =>
-                                                    onSave({
-                                                        orderId: item.id,
-                                                        assigned_to: form.assigned_to,
-                                                        status: form.status,
-                                                        notes: form.notes,
-                                                    })
-                                                }
-                                            >
-                                                Salvar tratativa
-                                            </Button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div className="mt-3">
-                                    <div className="mb-1 text-xs font-medium text-slate-500">Observação da tratativa</div>
-                                    <textarea
-                                        value={form.notes}
-                                        onChange={(e) =>
-                                            setForms((prev) => ({
-                                                ...prev,
-                                                [item.id]: { ...form, notes: e.target.value },
-                                            }))
-                                        }
-                                        rows={3}
-                                        className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
-                                        placeholder="Registre como a equipe tratou essa insatisfação."
-                                    />
-                                </div>
-                                {item.recovery_updated_at ? (
-                                    <div className="mt-2 text-xs text-slate-500">
-                                        Última atualização: {moment(item.recovery_updated_at).format('DD/MM/YYYY HH:mm')}
-                                        {item.recovery_assigned_to ? ` • ${item.recovery_assigned_to}` : ''}
+                                    <div className="mt-3">
+                                        <div className="mb-1 text-xs font-medium text-slate-500">Observação da tratativa</div>
+                                        <textarea
+                                            value={form.notes}
+                                            onChange={(e) =>
+                                                setForms((prev) => ({
+                                                    ...prev,
+                                                    [item.id]: { ...form, notes: e.target.value },
+                                                }))
+                                            }
+                                            rows={3}
+                                            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                                            placeholder="Registre como a equipe tratou essa insatisfação."
+                                        />
                                     </div>
-                                ) : null}
-                            </div>
-                        )})}
+                                    {item.recovery_updated_at ? (
+                                        <div className="mt-2 text-xs text-slate-500">
+                                            Última atualização: {moment(item.recovery_updated_at).format('DD/MM/YYYY HH:mm')}
+                                            {item.recovery_assigned_to ? ` • ${item.recovery_assigned_to}` : ''}
+                                        </div>
+                                    ) : null}
+                                </div>
+                            );
+                        })}
                     </div>
                 ) : (
                     <p className="text-muted-foreground text-sm">Nenhuma avaliação crítica no período.</p>
@@ -265,13 +271,16 @@ export default function QualityIndicators({
     const [recoveryStatusFilter, setRecoveryStatusFilter] = useState('all');
     const [assignedToFilter, setAssignedToFilter] = useState('all');
 
-    const hasCustomRange = dateRange?.from && dateRange?.to;
-    const timerangeForRequests = hasCustomRange
-        ? Math.max(1, Math.ceil((new Date(dateRange.to).getTime() - new Date(dateRange.from).getTime()) / (1000 * 60 * 60 * 24)) + 1)
-        : Number(timeRange);
+    const customRangeFrom = dateRange.from;
+    const customRangeTo = dateRange.to;
+    const hasCustomRange = Boolean(customRangeFrom && customRangeTo);
+    const timerangeForRequests =
+        customRangeFrom && customRangeTo
+            ? Math.max(1, Math.ceil((new Date(customRangeTo).getTime() - new Date(customRangeFrom).getTime()) / (1000 * 60 * 60 * 24)) + 1)
+            : Number(timeRange);
 
     const timerangeLabel = hasCustomRange
-        ? `${formatDateRange(dateRange.from)} até ${formatDateRange(dateRange.to)}`
+        ? `${formatDateRange(customRangeFrom)} até ${formatDateRange(customRangeTo)}`
         : timeRange === '1'
           ? 'Hoje'
           : `${timeRange} dias`;
@@ -324,18 +333,9 @@ export default function QualityIndicators({
     const comparison = metrics?.comparison;
     const severity = severityConfig(summary?.severity ?? 'Saudavel');
     const SeverityIcon = severity.icon;
-    const comparisonLabel =
-        comparison?.direction === 'melhorou'
-            ? 'Melhorou'
-            : comparison?.direction === 'piorou'
-              ? 'Piorou'
-              : 'Estável';
+    const comparisonLabel = comparison?.direction === 'melhorou' ? 'Melhorou' : comparison?.direction === 'piorou' ? 'Piorou' : 'Estável';
     const comparisonTextClass =
-        comparison?.direction === 'melhorou'
-            ? 'text-emerald-800'
-            : comparison?.direction === 'piorou'
-              ? 'text-amber-900'
-              : 'text-slate-700';
+        comparison?.direction === 'melhorou' ? 'text-emerald-800' : comparison?.direction === 'piorou' ? 'text-amber-900' : 'text-slate-700';
 
     const saveRecovery = ({ orderId, assigned_to, status, notes }: { orderId: number; assigned_to: string; status: string; notes: string }) => {
         router.post(
@@ -353,13 +353,13 @@ export default function QualityIndicators({
 
     return (
         <AppLayout>
-            <Head title="Garantia e avaliações" />
+            <Head title="Garantias e avaliações" />
 
             <div className="flex min-h-20 items-center justify-between gap-4 px-4 py-3">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={ShieldAlert} className="h-8 w-8" />
                     <div>
-                        <h2 className="text-xl font-semibold tracking-tight">Garantia e avaliações</h2>
+                        <h2 className="text-xl font-semibold tracking-tight">Garantias e avaliações</h2>
                         <p className="text-muted-foreground text-sm">
                             Acompanhe retornos em garantia e clientes que deram nota baixa para organizar a tratativa.
                         </p>
@@ -420,8 +420,8 @@ export default function QualityIndicators({
                                 <div>
                                     <CardTitle className={`text-base ${severity.textClass}`}>Panorama da garantia</CardTitle>
                                     <p className={`mt-2 text-sm ${severity.textClass}`}>
-                                        Situação {severity.label}. Taxa atual de retorno em garantia: {summary?.warranty_return_rate ?? 0}%,
-                                        com limite configurado de {summary?.warranty_return_threshold ?? 0}%.
+                                        Situação {severity.label}. Taxa atual de retorno em garantia: {summary?.warranty_return_rate ?? 0}%, com
+                                        limite configurado de {summary?.warranty_return_threshold ?? 0}%.
                                     </p>
                                     <p className={`mt-2 text-sm font-medium ${comparisonTextClass}`}>
                                         {comparisonLabel} em relação ao período anterior: {comparison?.previous_warranty_return_rate ?? 0}% antes,{' '}
@@ -438,23 +438,33 @@ export default function QualityIndicators({
                             </CardHeader>
                             <CardContent className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
                                 <Card>
-                                    <CardHeader><CardTitle className="text-base">Ordens analisadas</CardTitle></CardHeader>
+                                    <CardHeader>
+                                        <CardTitle className="text-base">Ordens analisadas</CardTitle>
+                                    </CardHeader>
                                     <CardContent className="text-3xl font-bold">{summary?.total_orders ?? 0}</CardContent>
                                 </Card>
                                 <Card>
-                                    <CardHeader><CardTitle className="text-base">Retornos</CardTitle></CardHeader>
+                                    <CardHeader>
+                                        <CardTitle className="text-base">Retornos</CardTitle>
+                                    </CardHeader>
                                     <CardContent className="text-3xl font-bold">{summary?.warranty_returns ?? 0}</CardContent>
                                 </Card>
                                 <Card>
-                                    <CardHeader><CardTitle className="text-base">Em aberto</CardTitle></CardHeader>
+                                    <CardHeader>
+                                        <CardTitle className="text-base">Em aberto</CardTitle>
+                                    </CardHeader>
                                     <CardContent className="text-3xl font-bold">{summary?.open_warranty_returns ?? 0}</CardContent>
                                 </Card>
                                 <Card>
-                                    <CardHeader><CardTitle className="text-base">Clientes afetados</CardTitle></CardHeader>
+                                    <CardHeader>
+                                        <CardTitle className="text-base">Clientes afetados</CardTitle>
+                                    </CardHeader>
                                     <CardContent className="text-3xl font-bold">{summary?.affected_customers ?? 0}</CardContent>
                                 </Card>
                                 <Card>
-                                    <CardHeader><CardTitle className="text-base">Média até retorno</CardTitle></CardHeader>
+                                    <CardHeader>
+                                        <CardTitle className="text-base">Média até retorno</CardTitle>
+                                    </CardHeader>
                                     <CardContent className="text-3xl font-bold">{summary?.avg_days_to_return ?? 0}d</CardContent>
                                 </Card>
                             </CardContent>
@@ -466,15 +476,21 @@ export default function QualityIndicators({
                             </CardHeader>
                             <CardContent className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                                 <Card>
-                                    <CardHeader><CardTitle className="text-base">Pendentes</CardTitle></CardHeader>
+                                    <CardHeader>
+                                        <CardTitle className="text-base">Pendentes</CardTitle>
+                                    </CardHeader>
                                     <CardContent className="text-3xl font-bold">{summary?.recovery_pending ?? 0}</CardContent>
                                 </Card>
                                 <Card>
-                                    <CardHeader><CardTitle className="text-base">Em tratativa</CardTitle></CardHeader>
+                                    <CardHeader>
+                                        <CardTitle className="text-base">Em tratativa</CardTitle>
+                                    </CardHeader>
                                     <CardContent className="text-3xl font-bold">{summary?.recovery_in_progress ?? 0}</CardContent>
                                 </Card>
                                 <Card>
-                                    <CardHeader><CardTitle className="text-base">Resolvidas</CardTitle></CardHeader>
+                                    <CardHeader>
+                                        <CardTitle className="text-base">Resolvidas</CardTitle>
+                                    </CardHeader>
                                     <CardContent className="text-3xl font-bold">{summary?.recovery_resolved ?? 0}</CardContent>
                                 </Card>
                                 <Card>
@@ -534,19 +550,27 @@ export default function QualityIndicators({
                             </CardHeader>
                             <CardContent className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                                 <Card>
-                                    <CardHeader><CardTitle className="text-base">Feedbacks recebidos</CardTitle></CardHeader>
+                                    <CardHeader>
+                                        <CardTitle className="text-base">Feedbacks recebidos</CardTitle>
+                                    </CardHeader>
                                     <CardContent className="text-3xl font-bold">{summary?.feedback_responses ?? 0}</CardContent>
                                 </Card>
                                 <Card>
-                                    <CardHeader><CardTitle className="text-base">Nota média</CardTitle></CardHeader>
+                                    <CardHeader>
+                                        <CardTitle className="text-base">Nota média</CardTitle>
+                                    </CardHeader>
                                     <CardContent className="text-3xl font-bold">{summary?.feedback_average_rating ?? 0}</CardContent>
                                 </Card>
                                 <Card>
-                                    <CardHeader><CardTitle className="text-base">Taxa de resposta</CardTitle></CardHeader>
+                                    <CardHeader>
+                                        <CardTitle className="text-base">Taxa de resposta</CardTitle>
+                                    </CardHeader>
                                     <CardContent className="text-3xl font-bold">{summary?.feedback_response_rate ?? 0}%</CardContent>
                                 </Card>
                                 <Card>
-                                    <CardHeader><CardTitle className="text-base">Críticas totais</CardTitle></CardHeader>
+                                    <CardHeader>
+                                        <CardTitle className="text-base">Críticas totais</CardTitle>
+                                    </CardHeader>
                                     <CardContent className="text-3xl font-bold">{summary?.low_feedbacks ?? 0}</CardContent>
                                 </Card>
                             </CardContent>

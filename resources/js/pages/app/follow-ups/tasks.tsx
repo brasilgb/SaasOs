@@ -13,8 +13,8 @@ import { CircleCheckBig, ClipboardList, Clock3, Star, UserPlus, Wrench } from 'l
 import { useMemo, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: route('app.dashboard') },
-    { title: 'Tarefas de atendimento', href: route('app.follow-ups.tasks') },
+    { title: 'Painel', href: route('app.dashboard') },
+    { title: 'Central de pendências', href: route('app.follow-ups.tasks') },
 ];
 
 export default function FollowUpTasks({ filters, summary, dailyAgenda, technicians }: any) {
@@ -139,15 +139,15 @@ export default function FollowUpTasks({ filters, summary, dailyAgenda, technicia
 
     return (
         <AppLayout>
-            <Head title="Tarefas de atendimento" />
+            <Head title="Central de pendências" />
 
             <div className="flex min-h-20 items-center justify-between gap-4 px-4 py-3">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={ClipboardList} className="h-8 w-8" />
                     <div>
-                        <h2 className="text-xl font-semibold tracking-tight">Tarefas de atendimento</h2>
+                        <h2 className="text-xl font-semibold tracking-tight">Central de pendências</h2>
                         <p className="text-muted-foreground text-sm">
-                            Aqui ficam os contatos e tratativas que precisam de alguém responsável hoje.
+                            Veja contatos, cobranças e tratativas que precisam de ação ou responsável.
                         </p>
                     </div>
                 </div>
@@ -225,7 +225,7 @@ export default function FollowUpTasks({ filters, summary, dailyAgenda, technicia
 
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
                     <Card>
-                        <CardHeader><CardTitle className="text-base">Tarefas do dia</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="text-base">Pendências abertas</CardTitle></CardHeader>
                         <CardContent className="text-3xl font-bold">{summary?.today_tasks ?? 0}</CardContent>
                     </Card>
                     <Card>

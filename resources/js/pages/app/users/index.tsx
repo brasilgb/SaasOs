@@ -15,7 +15,7 @@ import moment from 'moment';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Painel',
         href: route('app.dashboard'),
     },
     {
@@ -34,26 +34,26 @@ export default function Users({ users, firstAdminId, search }: any) {
     return (
         <AppLayout>
             <Head title="Usuários" />
-            <div className="mb-4 flex h-16 items-center justify-between px-4">
+            <div className="flex min-h-16 flex-col justify-center gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:py-0">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={UserCog} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Usuários</h2>
                 </div>
-                <div>
+                <div className="min-w-0 self-start sm:self-auto">
                     <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
 
-            <div className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
-                <div className="w-full">
-                    <InputSearch placeholder="Buscar usuário por nome" url="app.users.index" />
+            <div className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="w-full lg:flex-none">
+                    <InputSearch placeholder="Buscar usuário por nome" url="app.users.index" className="lg:w-[420px]" />
                 </div>
-                <div className="flex w-full justify-end">
+                <div className="flex w-full justify-end lg:w-auto lg:flex-none">
                     {canCreateUsers && (
-                        <Button variant={'default'} asChild>
-                            <Link href={route('app.users.create')} className="w-full md:w-auto">
+                        <Button variant={'default'} asChild className="w-full whitespace-nowrap sm:w-auto">
+                            <Link href={route('app.users.create')}>
                                 <Plus className="h-4 w-4" />
-                                <span>Novo Usuário</span>
+                                <span>Novo usuário</span>
                             </Link>
                         </Button>
                     )}
@@ -72,7 +72,7 @@ export default function Users({ users, firstAdminId, search }: any) {
                                 <TableHead>Função</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead>Cadastro</TableHead>
-                                <TableHead></TableHead>
+                                <TableHead className="min-w-[120px]"></TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -86,28 +86,44 @@ export default function Users({ users, firstAdminId, search }: any) {
                                         <TableCell>{<StatusBadge category="role" value={user.roles} />}</TableCell>
                                         <TableCell>{<StatusBadge category="userStatus" value={user.status} />}</TableCell>
                                         <TableCell>{moment(user.created_at).format('DD/MM/YYYY')}</TableCell>
-                                        <TableCell className="flex justify-end gap-2">
-                                            {canUpdateUsers && (
-                                                <Button asChild size="icon" className="bg-orange-500 text-white hover:bg-orange-600">
-                                                    <Link href={route('app.users.edit', user.id)} data={{ page: users.current_page, search: search }}>
-                                                        <Edit />
-                                                    </Link>
-                                                </Button>
-                                            )}
-                                            {canDeleteUsers &&
-                                                (user.roles === 9 && user.id === firstAdminId ? (
-                                                    <Button variant="destructive" size="icon" disabled={true}>
-                                                        <Trash2Icon className="h-4 w-4" />
+                                        <TableCell className="min-w-[120px]">
+                                            <div className="flex flex-wrap justify-end gap-2">
+                                                {canUpdateUsers && (
+                                                    <Button
+                                                        asChild
+                                                        size="icon"
+                                                        className="bg-orange-500 text-white hover:bg-orange-600"
+                                                        title="Editar usuário"
+                                                    >
+                                                        <Link
+                                                            href={route('app.users.edit', user.id)}
+                                                            data={{ page: users.current_page, search: search }}
+                                                            aria-label={`Editar usuário ${user.name}`}
+                                                        >
+                                                            <Edit className="h-4 w-4" />
+                                                        </Link>
                                                     </Button>
-                                                ) : (
-                                                    <ActionDelete title={'este usuário'} url={'app.users.destroy'} param={user.id} />
-                                                ))}
+                                                )}
+                                                {canDeleteUsers &&
+                                                    (user.roles === 9 && user.id === firstAdminId ? (
+                                                        <Button
+                                                            variant="destructive"
+                                                            size="icon"
+                                                            disabled={true}
+                                                            title="Administrador principal não pode ser excluído"
+                                                        >
+                                                            <Trash2Icon className="h-4 w-4" />
+                                                        </Button>
+                                                    ) : (
+                                                        <ActionDelete title={'este usuário'} url={'app.users.destroy'} param={user.id} />
+                                                    ))}
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={7} className="flex h-16 w-full items-center justify-center">
+                                    <TableCell colSpan={8} className="flex h-16 w-full items-center justify-center">
                                         Não há dados a serem mostrados no momento.
                                     </TableCell>
                                 </TableRow>
@@ -116,7 +132,7 @@ export default function Users({ users, firstAdminId, search }: any) {
                         {users?.data.length > users?.total && (
                             <TableFooter>
                                 <TableRow>
-                                    <TableCell colSpan={7}>
+                                    <TableCell colSpan={8}>
                                         <AppPagination data={users} />
                                     </TableCell>
                                 </TableRow>

@@ -93,7 +93,7 @@ export default function OrderDashboard({
                     />
                     <KpiDashboard
                         link={route('app.schedules.index')}
-                        title="Agendamentos"
+                        title="Agenda"
                         value={metrics?.schedules ?? 0}
                         icon={<Calendar className="h-10 w-10" />}
                         description={defaultKpiDescription}
@@ -155,13 +155,13 @@ export default function OrderDashboard({
                         <div className="flex h-full flex-col gap-3">
                             <Card className="flex h-full flex-col items-center justify-center gap-3 p-4">
                                 <div className="w-full rounded-lg border p-3 text-center">
-                                    <div className="text-sm font-medium">Caixa diário</div>
+                                    <div className="text-sm font-medium">Caixa</div>
                                     <div className={`text-xs ${isCashierOpen ? 'text-emerald-600' : 'text-amber-600'}`}>
                                         {isCashierOpen ? 'Aberto' : 'Fechado'}
                                     </div>
                                     {!isCashierOpen && (
                                         <Button variant="outline" size="sm" className="mt-2" asChild>
-                                            <Link href={route('app.cashier.index')}>Abrir caixa diário</Link>
+                                            <Link href={route('app.cashier.index')}>Abrir caixa</Link>
                                         </Button>
                                     )}
                                 </div>
@@ -194,7 +194,7 @@ export default function OrderDashboard({
                                 <div className="w-full overflow-x-auto">
                                     <TabsList className="w-max min-w-full flex-nowrap">
                                         <TabsTrigger className="px-2 whitespace-nowrap" value="va">
-                                            Agendamentos
+                                            Agenda
                                             <Badge className="ml-1 text-xs">{orders?.agendados.length}</Badge>
                                         </TabsTrigger>
 

@@ -13,7 +13,7 @@ import { useEffect, type FormEvent } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Painel',
         href: route('app.dashboard'),
     },
     {

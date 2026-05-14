@@ -1,40 +1,45 @@
 import { type NavGroup, type NavItem } from '@/types';
 import {
-    BanknoteArrowUpIcon,
+    BadgeCheck,
+    BanknoteArrowDownIcon,
+    Barcode,
+    BookOpenText,
     Building,
     Calendar,
+    CalendarRange,
+    ClipboardCheck,
     ClipboardList,
     Cog,
     CogIcon,
     Copyright,
+    FileChartColumn,
     FileTextIcon,
-    ReceiptText,
-    Mail,
     HandCoins,
     LayoutGrid,
     Lightbulb,
-    MemoryStick,
+    MessageCircle,
     MessageCircleCode,
     MessageSquareMore,
-    MessageSquareQuote,
     Monitor,
-    PackagePlus,
+    PackageCheck,
     Printer,
-    ShoppingCartIcon,
+    ReceiptText,
+    ScrollText,
     ShieldAlert,
-    Sparkles,
-    Tags,
+    ShoppingCartIcon,
     UserCog,
     Users2,
+    WalletCards,
     Wrench,
 } from 'lucide-react';
 
 const mainNavGroups: NavGroup[] = [
     {
         title: 'Geral',
+        icon: LayoutGrid,
         items: [
             {
-                title: 'Dashboard',
+                title: 'Painel',
                 href: route('app.dashboard'),
                 icon: LayoutGrid,
                 active: 'app.dashboard',
@@ -45,6 +50,7 @@ const mainNavGroups: NavGroup[] = [
     },
     {
         title: 'Operacional',
+        icon: Wrench,
         items: [
             {
                 title: 'Clientes',
@@ -65,13 +71,13 @@ const mainNavGroups: NavGroup[] = [
             {
                 title: 'Orçamentos',
                 href: route('app.budgets.index'),
-                icon: PackagePlus,
+                icon: ScrollText,
                 active: 'app.budgets.*',
                 enabled: 'budgets',
                 permission: 'budgets',
             },
             {
-                title: 'Agendamentos',
+                title: 'Agenda',
                 href: route('app.schedules.index'),
                 icon: Calendar,
                 active: 'app.schedules.*',
@@ -87,9 +93,9 @@ const mainNavGroups: NavGroup[] = [
                 permission: 'messages',
             },
             {
-                title: 'Peças/Produtos',
+                title: 'Peças e produtos',
                 href: route('app.parts.index'),
-                icon: MemoryStick,
+                icon: PackageCheck,
                 active: 'app.parts.*',
                 enabled: 'parts',
                 permission: 'parts',
@@ -97,19 +103,20 @@ const mainNavGroups: NavGroup[] = [
         ],
     },
     {
-        title: 'Relac. clientes',
+        title: 'Relacionamento',
+        icon: MessageCircle,
         items: [
             {
-                title: 'Acompanhamentos',
+                title: 'Retornos ao cliente',
                 href: route('app.follow-ups.index'),
-                icon: Mail,
+                icon: MessageCircle,
                 active: 'app.follow-ups.index',
                 enabled: 'orders',
                 permission: 'orders',
                 visibilitySetting: 'show_follow_ups_menu',
             },
             {
-                title: 'Tarefas',
+                title: 'Central de pendências',
                 href: route('app.follow-ups.tasks'),
                 icon: ClipboardList,
                 active: 'app.follow-ups.tasks',
@@ -118,16 +125,16 @@ const mainNavGroups: NavGroup[] = [
                 visibilitySetting: 'show_tasks_menu',
             },
             {
-                title: 'Performance',
+                title: 'Resultados dos contatos',
                 href: route('app.follow-ups.performance'),
-                icon: Sparkles,
+                icon: FileChartColumn,
                 active: 'app.follow-ups.performance',
                 enabled: 'orders',
                 permission: 'orders',
                 visibilitySetting: 'show_commercial_performance_menu',
             },
             {
-                title: 'Garantia e avaliações',
+                title: 'Garantias e avaliações',
                 href: route('app.quality.index'),
                 icon: ShieldAlert,
                 active: 'app.quality.*',
@@ -139,6 +146,7 @@ const mainNavGroups: NavGroup[] = [
     },
     {
         title: 'Financeiro',
+        icon: WalletCards,
         items: [
             {
                 title: 'Vendas',
@@ -151,15 +159,15 @@ const mainNavGroups: NavGroup[] = [
             {
                 title: 'Despesas',
                 href: route('app.expenses.index'),
-                icon: BanknoteArrowUpIcon,
+                icon: BanknoteArrowDownIcon,
                 active: 'app.expenses.*',
                 enabled: 'sales',
                 permission: 'sales',
             },
             {
-                title: 'Caixa diário',
+                title: 'Caixa',
                 href: route('app.cashier.index'),
-                icon: HandCoins,
+                icon: WalletCards,
                 active: 'app.cashier.*',
                 enabled: 'sales',
                 permission: 'sales',
@@ -226,7 +234,7 @@ const mainConfItems = [
             {
                 title: 'Impressão de etiquetas',
                 url: route('app.label-printing.index'),
-                icon: Tags,
+                icon: Barcode,
                 active: 'app.label-printing.*',
                 permission: 'label_printing',
             },
@@ -247,7 +255,7 @@ const mainConfItems = [
             {
                 title: 'Checklist',
                 url: route('app.register-checklists.index'),
-                icon: ClipboardList,
+                icon: ClipboardCheck,
                 active: 'app.register-checklists.*',
                 permission: 'register_checklists',
             },
@@ -284,7 +292,7 @@ const mainAdminItems = [
     {
         title: 'Melhorias SaaS',
         href: route('admin.tenant-improvement-requests.index'),
-        icon: MessageSquareQuote,
+        icon: Lightbulb,
         active: 'admin.tenant-improvement-requests.*',
     },
     {
@@ -316,13 +324,13 @@ const mainPlansItems = [
             {
                 title: 'Cadastrar períodos',
                 url: route('admin.periods.index'),
-                icon: Sparkles,
+                icon: CalendarRange,
                 active: 'admin.periods.*',
             },
             {
                 title: 'Cadastrar característica',
                 url: route('admin.features.index'),
-                icon: Sparkles,
+                icon: BadgeCheck,
                 active: 'admin.features.*',
             },
         ],
@@ -333,7 +341,7 @@ const footerNavItems: NavItem[] = [
     {
         title: 'Documentação',
         href: import.meta.env.VITE_APP_URL + '/documentation/doc-sigmaos.html',
-        icon: FileTextIcon,
+        icon: BookOpenText,
         external: true,
     },
     {

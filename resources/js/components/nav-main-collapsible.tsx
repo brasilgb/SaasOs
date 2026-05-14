@@ -26,6 +26,7 @@ export default function NavMainCollapsible({
         items?: {
             title: string;
             url: string;
+            icon?: LucideIcon;
             active?: string;
             permission?: string;
         }[];
@@ -66,7 +67,8 @@ export default function NavMainCollapsible({
                                                     href={subItem.url}
                                                     className={route().current(subItem.active ?? '') ? 'bg-accent text-accent-foreground' : ''}
                                                 >
-                                                    {subItem.title}
+                                                    {subItem.icon && <subItem.icon className="h-4 w-4 shrink-0" />}
+                                                    <span className="truncate">{subItem.title}</span>
                                                 </Link>
                                             </DropdownMenuItem>
                                         ))}
@@ -93,7 +95,8 @@ export default function NavMainCollapsible({
                                             <SidebarMenuSubItem key={subItem.title}>
                                                 <SidebarMenuSubButton asChild isActive={route().current(subItem.active ?? '')}>
                                                     <Link href={subItem.url}>
-                                                        <span>{subItem.title}</span>
+                                                        {subItem.icon && <subItem.icon className="h-4 w-4 shrink-0" />}
+                                                        <span className="truncate">{subItem.title}</span>
                                                     </Link>
                                                 </SidebarMenuSubButton>
                                             </SidebarMenuSubItem>

@@ -12,12 +12,12 @@ import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { maskCpfCnpj } from '@/Utils/mask';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
-import { Save, Wrench } from 'lucide-react';
+import { CogIcon, Save } from 'lucide-react';
 import { useEffect } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Painel',
         href: route('app.dashboard'),
     },
     {
@@ -89,7 +89,7 @@ export default function Others({ othersettings, company, time_remaining, mailSet
             <Head title="Outras configurações" />
             <div className="flex min-h-16 w-full flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-2">
-                    <Icon iconNode={Wrench} className="h-8 w-8" />
+                    <Icon iconNode={CogIcon} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Outras configurações</h2>
                 </div>
                 <div className="sm:ml-auto sm:text-right">
@@ -98,7 +98,7 @@ export default function Others({ othersettings, company, time_remaining, mailSet
             </div>
 
             <div className="w-full p-4">
-                <div className="w-full rounded-2xl border bg-card p-5 shadow-sm sm:p-6">
+                <div className="bg-card w-full rounded-2xl border p-5 shadow-sm sm:p-6">
                     <div className="mb-8 space-y-6">
                         <HeadingSmall
                             title="Licença de uso do sistema"
@@ -204,7 +204,9 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                                 value={data.mail_password}
                                                 disabled={!canManageOtherSettings}
                                                 onChange={(e) => setData('mail_password', e.target.value)}
-                                                placeholder={mailSettings?.mail_password_set ? '•••••••• (deixe em branco para manter)' : 'Digite a senha SMTP'}
+                                                placeholder={
+                                                    mailSettings?.mail_password_set ? '•••••••• (deixe em branco para manter)' : 'Digite a senha SMTP'
+                                                }
                                             />
                                         </div>
                                         <div className="space-y-2 xl:col-span-2">
@@ -242,8 +244,10 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                     <div className="grid w-full gap-4 xl:grid-cols-2">
                                         <div className="bg-card text-card-foreground flex items-center justify-between rounded-2xl border p-4 shadow-sm">
                                             <div>
-                                                <p className="font-medium">Acompanhamentos de clientes</p>
-                                                <p className="text-muted-foreground text-sm">Lista ordens que precisam de retorno sobre orçamento ou cobrança.</p>
+                                                <p className="font-medium">Retornos ao cliente</p>
+                                                <p className="text-muted-foreground text-sm">
+                                                    Lista ordens que precisam de retorno sobre orçamento ou cobrança.
+                                                </p>
                                             </div>
                                             <Switch
                                                 id="show_follow_ups_menu"
@@ -255,8 +259,10 @@ export default function Others({ othersettings, company, time_remaining, mailSet
 
                                         <div className="bg-card text-card-foreground flex items-center justify-between rounded-2xl border p-4 shadow-sm">
                                             <div>
-                                                <p className="font-medium">Tarefas de atendimento</p>
-                                                <p className="text-muted-foreground text-sm">Organiza quem deve fazer cada contato ou tratativa do dia.</p>
+                                                <p className="font-medium">Central de pendências</p>
+                                                <p className="text-muted-foreground text-sm">
+                                                    Organiza quem deve fazer cada contato ou tratativa do dia.
+                                                </p>
                                             </div>
                                             <Switch
                                                 id="show_tasks_menu"
@@ -268,8 +274,10 @@ export default function Others({ othersettings, company, time_remaining, mailSet
 
                                         <div className="bg-card text-card-foreground flex items-center justify-between rounded-2xl border p-4 shadow-sm">
                                             <div>
-                                                <p className="font-medium">Performance comercial</p>
-                                                <p className="text-muted-foreground text-sm">Mostra aprovação de orçamentos e pagamentos recuperados pela operação.</p>
+                                                <p className="font-medium">Resultados dos contatos</p>
+                                                <p className="text-muted-foreground text-sm">
+                                                    Mostra aprovação de orçamentos e pagamentos recuperados pela operação.
+                                                </p>
                                             </div>
                                             <Switch
                                                 id="show_commercial_performance_menu"
@@ -281,8 +289,10 @@ export default function Others({ othersettings, company, time_remaining, mailSet
 
                                         <div className="bg-card text-card-foreground flex items-center justify-between rounded-2xl border p-4 shadow-sm">
                                             <div>
-                                                <p className="font-medium">Garantia e avaliações</p>
-                                                <p className="text-muted-foreground text-sm">Acompanha retornos em garantia e clientes insatisfeitos.</p>
+                                                <p className="font-medium">Garantias e avaliações</p>
+                                                <p className="text-muted-foreground text-sm">
+                                                    Acompanha retornos em garantia e clientes insatisfeitos.
+                                                </p>
                                             </div>
                                             <Switch
                                                 id="show_quality_menu"
@@ -312,16 +322,13 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                                 value={data.warranty_return_alert_threshold}
                                                 disabled={!canManageOtherSettings}
                                                 onChange={(e) =>
-                                                    setData(
-                                                        'warranty_return_alert_threshold',
-                                                        e.target.value === '' ? '' : Number(e.target.value),
-                                                    )
+                                                    setData('warranty_return_alert_threshold', e.target.value === '' ? '' : Number(e.target.value))
                                                 }
                                                 placeholder="10"
                                             />
                                             <p className="text-muted-foreground text-xs leading-relaxed">
-                                                Referência sugerida: até 5% saudável, entre 5% e 10% atenção, acima de 10% crítico.
-                                                Ajuste conforme o perfil técnico e o tipo de equipamento da operação.
+                                                Referência sugerida: até 5% saudável, entre 5% e 10% atenção, acima de 10% crítico. Ajuste conforme o
+                                                perfil técnico e o tipo de equipamento da operação.
                                             </p>
                                         </div>
                                     </div>
@@ -338,7 +345,8 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                             <div>
                                                 <p className="font-medium">Envio automático de follow-up</p>
                                                 <p className="text-muted-foreground text-sm">
-                                                    Quando desabilitado, o sistema não envia automaticamente e-mails de orçamento parado nem de cobrança pendente.
+                                                    Quando desabilitado, o sistema não envia automaticamente e-mails de orçamento parado nem de
+                                                    cobrança pendente.
                                                 </p>
                                             </div>
                                             <Switch
@@ -368,8 +376,8 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                                 placeholder="2"
                                             />
                                             <p className="text-muted-foreground text-xs leading-relaxed">
-                                                Esse valor é usado na listagem de ordens e nas automações de orçamento parado e cobrança pendente.
-                                                Se o envio automático estiver desligado, este intervalo fica apenas configurado para uso futuro.
+                                                Esse valor é usado na listagem de ordens e nas automações de orçamento parado e cobrança pendente. Se
+                                                o envio automático estiver desligado, este intervalo fica apenas configurado para uso futuro.
                                             </p>
                                         </div>
                                     </div>
@@ -401,7 +409,8 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                                 placeholder="7"
                                             />
                                             <p className="text-muted-foreground text-xs leading-relaxed">
-                                                Após esse prazo, a ordem continuará como aguardando avaliação até que o cliente responda pelo painel público.
+                                                Após esse prazo, a ordem continuará como aguardando avaliação até que o cliente responda pelo painel
+                                                público.
                                             </p>
                                         </div>
                                     </div>
@@ -425,10 +434,7 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                                 value={data.budget_conversion_target}
                                                 disabled={!canManageOtherSettings}
                                                 onChange={(e) =>
-                                                    setData(
-                                                        'budget_conversion_target',
-                                                        e.target.value === '' ? '' : Number(e.target.value),
-                                                    )
+                                                    setData('budget_conversion_target', e.target.value === '' ? '' : Number(e.target.value))
                                                 }
                                                 placeholder="60"
                                             />
@@ -448,10 +454,7 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                                 value={data.payment_recovery_target}
                                                 disabled={!canManageOtherSettings}
                                                 onChange={(e) =>
-                                                    setData(
-                                                        'payment_recovery_target',
-                                                        e.target.value === '' ? '' : Number(e.target.value),
-                                                    )
+                                                    setData('payment_recovery_target', e.target.value === '' ? '' : Number(e.target.value))
                                                 }
                                                 placeholder="70"
                                             />

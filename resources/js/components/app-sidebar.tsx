@@ -16,7 +16,7 @@ import AppLogo from './app-logo';
 import NavMainCollapsible from './nav-main-collapsible';
 
 export function AppSidebar() {
-    const collapsibleGroups = ['Relac. clientes', 'Financeiro'];
+    const collapsibleGroups = ['Relacionamento', 'Financeiro'];
 
     return (
         <Sidebar collapsible="icon" variant="inset">
@@ -37,6 +37,7 @@ export function AppSidebar() {
                         <NavMain
                             key={group.title}
                             label={collapsibleGroups.includes(group.title) ? group.title : undefined}
+                            groupIcon={group.icon}
                             items={group.items}
                             collapsible={collapsibleGroups.includes(group.title)}
                         />

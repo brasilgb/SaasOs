@@ -8,12 +8,12 @@ import { Switch } from '@/components/ui/switch';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
-import { Cog, Printer } from 'lucide-react';
+import { Barcode, Printer } from 'lucide-react';
 import { useMemo } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Painel',
         href: route('app.dashboard'),
     },
     {
@@ -76,7 +76,7 @@ export default function LabelPrinting({ nextOrderNumber, labelSettings }: any) {
             <Head title="Impressão de etiquetas" />
             <div className="flex h-16 items-center justify-between px-4">
                 <div className="flex items-center gap-2">
-                    <Icon iconNode={Cog} className="h-8 w-8" />
+                    <Icon iconNode={Barcode} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Impressão de etiquetas</h2>
                 </div>
                 <div>
@@ -90,10 +90,10 @@ export default function LabelPrinting({ nextOrderNumber, labelSettings }: any) {
 
             <div className="p-4">
                 <div className="space-y-6">
-                    <div className="overflow-hidden rounded-xl border bg-card">
-                        <div className="border-b bg-muted/40 px-6 py-5">
-                            <h2 className="text-base font-semibold text-foreground">Imprimir etiquetas em A4</h2>
-                            <p className="mt-1 text-sm text-muted-foreground">
+                    <div className="bg-card overflow-hidden rounded-xl border">
+                        <div className="bg-muted/40 border-b px-6 py-5">
+                            <h2 className="text-foreground text-base font-semibold">Imprimir etiquetas em A4</h2>
+                            <p className="text-muted-foreground mt-1 text-sm">
                                 As etiquetas usam o modelo <strong className="text-foreground">A4048 (6x16)</strong>. Consulte as configurações de
                                 papel{' '}
                                 <a
@@ -119,7 +119,7 @@ export default function LabelPrinting({ nextOrderNumber, labelSettings }: any) {
                                         onChange={(e) => setData('initialorder', e.target.value)}
                                         min={1}
                                     />
-                                    <p className="text-xs text-muted-foreground">Sugestão automática pela próxima order_number do tenant.</p>
+                                    <p className="text-muted-foreground text-xs">Sugestão automática pela próxima order_number do tenant.</p>
                                 </div>
 
                                 <div className="grid gap-2">
@@ -131,13 +131,13 @@ export default function LabelPrinting({ nextOrderNumber, labelSettings }: any) {
                                         onChange={(e: any) => setData('pages', e.target.value)}
                                         min={1}
                                     />
-                                    <p className="text-xs text-muted-foreground">Cada página gera 96 etiquetas.</p>
+                                    <p className="text-muted-foreground text-xs">Cada página gera 96 etiquetas.</p>
                                 </div>
 
                                 <div className="grid gap-2">
                                     <Label htmlFor="finalorder">Ordem final</Label>
                                     <Input readOnly type="number" id="finalorder" value={computedFinalOrder} className="bg-muted/50" />
-                                    <p className="text-xs text-muted-foreground">Faixa total que será enviada para impressão.</p>
+                                    <p className="text-muted-foreground text-xs">Faixa total que será enviada para impressão.</p>
                                 </div>
                             </div>
 
@@ -148,35 +148,35 @@ export default function LabelPrinting({ nextOrderNumber, labelSettings }: any) {
                                 </Button>
                             </div>
 
-                            <div className="grid gap-3 rounded-lg border bg-muted/30 p-4 text-sm text-muted-foreground md:grid-cols-3">
+                            <div className="bg-muted/30 text-muted-foreground grid gap-3 rounded-lg border p-4 text-sm md:grid-cols-3">
                                 <div>
-                                    <span className="font-medium text-foreground">Modelo:</span> A4048
+                                    <span className="text-foreground font-medium">Modelo:</span> A4048
                                 </div>
                                 <div>
-                                    <span className="font-medium text-foreground">Layout:</span> 6 colunas x 16 linhas
+                                    <span className="text-foreground font-medium">Layout:</span> 6 colunas x 16 linhas
                                 </div>
                                 <div>
-                                    <span className="font-medium text-foreground">Total:</span> {Math.max(1, Number(data.pages) || 1) * 96} etiquetas
+                                    <span className="text-foreground font-medium">Total:</span> {Math.max(1, Number(data.pages) || 1) * 96} etiquetas
                                 </div>
                             </div>
                         </form>
                     </div>
 
-                    <div className="overflow-hidden rounded-xl border bg-card">
-                        <div className="border-b bg-muted/40 px-6 py-5">
-                            <h2 className="text-base font-semibold text-foreground">Habilitar impressão em etiquetadeira</h2>
-                            <p className="mt-1 text-sm text-muted-foreground">
-                                Use etiquetadeira com etiqueta <strong className="text-foreground">60 x 40 mm</strong>. Um botão imprimir etiqueta
-                                ira aparecer no cadastro de ordens de serviço.
+                    <div className="bg-card overflow-hidden rounded-xl border">
+                        <div className="bg-muted/40 border-b px-6 py-5">
+                            <h2 className="text-foreground text-base font-semibold">Habilitar impressão em etiquetadeira</h2>
+                            <p className="text-muted-foreground mt-1 text-sm">
+                                Use etiquetadeira com etiqueta <strong className="text-foreground">60 x 40 mm</strong>. Um botão imprimir etiqueta ira
+                                aparecer no cadastro de ordens de serviço.
                             </p>
                         </div>
 
                         <div className="px-6 py-6">
-                            <div className="space-y-4 rounded-lg border bg-muted/25 p-4">
+                            <div className="bg-muted/25 space-y-4 rounded-lg border p-4">
                                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                                     <div className="space-y-1">
-                                        <p className="text-sm font-medium text-foreground">Ativar botão de impressão rápida</p>
-                                        <p className="text-sm text-muted-foreground">
+                                        <p className="text-foreground text-sm font-medium">Ativar botão de impressão rápida</p>
+                                        <p className="text-muted-foreground text-sm">
                                             Quando habilitado, o cadastro da ordem exibirá um botão para imprimir etiqueta.
                                         </p>
                                     </div>
@@ -186,7 +186,7 @@ export default function LabelPrinting({ nextOrderNumber, labelSettings }: any) {
                                             checked={Boolean(labelSettings?.print_label_button_after_order_create)}
                                             onCheckedChange={handleTogglePrintButton}
                                         />
-                                        <span className="text-sm text-muted-foreground">
+                                        <span className="text-muted-foreground text-sm">
                                             {labelSettings?.print_label_button_after_order_create ? 'Habilitado' : 'Desabilitado'}
                                         </span>
                                     </div>
@@ -194,8 +194,8 @@ export default function LabelPrinting({ nextOrderNumber, labelSettings }: any) {
 
                                 <div className="flex flex-col gap-3 border-t pt-4 md:flex-row md:items-center md:justify-between">
                                     <div className="space-y-1">
-                                        <p className="text-sm font-medium text-foreground">Teste de impressão 60 x 40 mm</p>
-                                        <p className="text-sm text-muted-foreground">
+                                        <p className="text-foreground text-sm font-medium">Teste de impressão 60 x 40 mm</p>
+                                        <p className="text-muted-foreground text-sm">
                                             Gera uma etiqueta térmica de teste usando a ordem inicial informada acima.
                                         </p>
                                     </div>

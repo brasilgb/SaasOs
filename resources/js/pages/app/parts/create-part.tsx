@@ -4,16 +4,16 @@ import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, MemoryStick } from 'lucide-react';
+import { ArrowLeft, PackageCheck } from 'lucide-react';
 import PartForm from './part-form';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Painel',
         href: route('app.dashboard'),
     },
     {
-        title: 'Peças/Produtos',
+        title: 'Peças e produtos',
         href: route('app.parts.index'),
     },
     {
@@ -28,8 +28,8 @@ export default function CreatePart({ categories, manufacturers }: any) {
             <Head title="Peças" />
             <div className="flex h-16 items-center justify-between px-4">
                 <div className="flex items-center gap-2">
-                    <Icon iconNode={MemoryStick} className="h-8 w-8" />
-                    <h2 className="text-xl font-semibold tracking-tight">Peças/Produtos</h2>
+                    <Icon iconNode={PackageCheck} className="h-8 w-8" />
+                    <h2 className="text-xl font-semibold tracking-tight">Peças e produtos</h2>
                 </div>
                 <div>
                     <Breadcrumbs breadcrumbs={breadcrumbs} />

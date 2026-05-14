@@ -10,16 +10,16 @@ import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { maskMoney } from '@/Utils/mask';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { Check, Edit, MemoryStick, Plus, Printer, X } from 'lucide-react';
+import { Edit, PackageCheck, Plus, Printer } from 'lucide-react';
 import moment from 'moment';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Painel',
         href: route('app.dashboard'),
     },
     {
-        title: 'Peças/Produtos',
+        title: 'Peças e produtos',
         href: '#',
     },
 ];
@@ -31,25 +31,25 @@ export default function Parts({ parts, search }: any) {
     return (
         <AppLayout>
             <Head title="Peças" />
-            <div className="flex h-16 items-center justify-between px-4">
+            <div className="flex min-h-16 flex-col justify-center gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:py-0">
                 <div className="flex items-center gap-2">
-                    <Icon iconNode={MemoryStick} className="h-8 w-8" />
-                    <h2 className="text-xl font-semibold tracking-tight">Peças/Produtos</h2>
+                    <Icon iconNode={PackageCheck} className="h-8 w-8" />
+                    <h2 className="text-xl font-semibold tracking-tight">Peças e produtos</h2>
                 </div>
-                <div>
+                <div className="min-w-0 self-start sm:self-auto">
                     <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
-            <div className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
-                <div className="w-full">
-                    <InputSearch placeholder="Buscar peça/produto por nome e número" url="app.parts.index" />
+            <div className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="w-full lg:flex-none">
+                    <InputSearch placeholder="Buscar peça/produto por nome e número" url="app.parts.index" className="lg:w-[420px]" />
                 </div>
-                <div className="flex w-full justify-end">
+                <div className="flex w-full justify-end lg:w-auto lg:flex-none">
                     {canManageParts && (
-                        <Button variant={'default'} asChild>
-                            <Link href={route('app.parts.create')} className="w-full md:w-auto">
+                        <Button variant={'default'} asChild className="w-full whitespace-nowrap sm:w-auto">
+                            <Link href={route('app.parts.create')}>
                                 <Plus className="h-4 w-4" />
-                                <span>Nova Peça/Produto</span>
+                                <span>Nova peça ou produto</span>
                             </Link>
                         </Button>
                     )}
@@ -67,7 +67,7 @@ export default function Parts({ parts, search }: any) {
                                 <TableHead>Valores</TableHead>
                                 <TableHead>Estoque</TableHead>
                                 <TableHead>Cadastro</TableHead>
-                                <TableHead></TableHead>
+                                <TableHead className="min-w-[140px]"></TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -104,28 +104,40 @@ export default function Parts({ parts, search }: any) {
                                         </TableCell>
                                         <TableCell>{moment(part.created_at).format('DD/MM/YYYY')}</TableCell>
 
-                                        <TableCell className="flex justify-end gap-2">
-                                            {canManageParts && (
-                                                <Button asChild size="icon" variant="outline">
-                                                    <a
-                                                        href={route('app.parts.print-label', part.id)}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        title="Imprimir etiqueta do produto"
+                                        <TableCell className="min-w-[140px]">
+                                            <div className="flex flex-wrap justify-end gap-2">
+                                                {canManageParts && (
+                                                    <Button asChild size="icon" variant="outline">
+                                                        <a
+                                                            href={route('app.parts.print-label', part.id)}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            title="Imprimir etiqueta do produto"
+                                                            aria-label={`Imprimir etiqueta de ${part.name}`}
+                                                        >
+                                                            <Printer className="h-4 w-4" />
+                                                        </a>
+                                                    </Button>
+                                                )}
+                                                {canManageParts && (
+                                                    <Button
+                                                        asChild
+                                                        size="icon"
+                                                        className="bg-orange-500 text-white hover:bg-orange-600"
+                                                        title="Editar peça ou produto"
                                                     >
-                                                        <Printer className="h-4 w-4" />
-                                                    </a>
-                                                </Button>
-                                            )}
-                                            {canManageParts && (
-                                                <Button asChild size="icon" className="bg-orange-500 text-white hover:bg-orange-600">
-                                                    <Link href={route('app.parts.edit', part.id)} data={{ page: parts.current_page, search: search }}>
-                                                        <Edit />
-                                                    </Link>
-                                                </Button>
-                                            )}
+                                                        <Link
+                                                            href={route('app.parts.edit', part.id)}
+                                                            data={{ page: parts.current_page, search: search }}
+                                                            aria-label={`Editar ${part.name}`}
+                                                        >
+                                                            <Edit className="h-4 w-4" />
+                                                        </Link>
+                                                    </Button>
+                                                )}
 
-                                            {canManageParts && <ActionDelete title={'esta peça'} url={'app.parts.destroy'} param={part.id} />}
+                                                {canManageParts && <ActionDelete title={'esta peça'} url={'app.parts.destroy'} param={part.id} />}
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))

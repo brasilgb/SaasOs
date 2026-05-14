@@ -16,13 +16,13 @@ import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem, OptionType } from '@/types';
 import selectStyles from '@/Utils/selectStyles';
 import { Head, useForm, usePage } from '@inertiajs/react';
-import { Edit, HandCoins, Plus } from 'lucide-react';
+import { BanknoteArrowDownIcon, Edit, Plus } from 'lucide-react';
 import moment from 'moment';
 import { useRef, useState } from 'react';
 import CreatableSelect from 'react-select/creatable';
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: route('app.dashboard') },
+    { title: 'Painel', href: route('app.dashboard') },
     { title: 'Despesas', href: '#' },
 ];
 
@@ -61,7 +61,10 @@ function formatCurrencyMask(value: string) {
 }
 
 function parseCurrencyMask(value: string) {
-    const normalized = value.replace(/\./g, '').replace(',', '.').replace(/[^\d.]/g, '');
+    const normalized = value
+        .replace(/\./g, '')
+        .replace(',', '.')
+        .replace(/[^\d.]/g, '');
     const amount = Number(normalized);
     return Number.isFinite(amount) ? amount.toFixed(2) : '';
 }
@@ -176,22 +179,22 @@ export default function Expenses({ expenses }: any) {
             {flash?.success && <AlertSuccess message={flash.success} />}
             <Head title="Despesas" />
 
-            <div className="flex h-16 items-center justify-between px-4">
+            <div className="flex min-h-16 flex-col justify-center gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:py-0">
                 <div className="flex items-center gap-2">
-                    <Icon iconNode={HandCoins} className="h-8 w-8" />
+                    <Icon iconNode={BanknoteArrowDownIcon} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Despesas</h2>
                 </div>
-                <div>
+                <div className="min-w-0 self-start sm:self-auto">
                     <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
 
-            <div className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
-                <div className="w-full">
-                    <InputSearch placeholder="Buscar despesas por número, descrição e observação" url="app.expenses.index" />
+            <div className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="w-full lg:flex-none">
+                    <InputSearch placeholder="Buscar despesas por número, descrição e observação" url="app.expenses.index" className="lg:w-[420px]" />
                 </div>
-                <div className="flex w-full justify-end">
-                    <Button variant="default" onClick={openCreateModal} className="w-full md:w-auto">
+                <div className="flex w-full justify-end lg:w-auto lg:flex-none">
+                    <Button variant="default" onClick={openCreateModal} className="w-full whitespace-nowrap sm:w-auto">
                         <Plus className="h-4 w-4" />
                         <span>Nova despesa</span>
                     </Button>
@@ -208,7 +211,7 @@ export default function Expenses({ expenses }: any) {
                                 <TableHead>Despesa</TableHead>
                                 <TableHead>Valor</TableHead>
                                 <TableHead>Lançado por</TableHead>
-                                <TableHead className="text-right"></TableHead>
+                                <TableHead className="min-w-[120px] text-right"></TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -225,12 +228,20 @@ export default function Expenses({ expenses }: any) {
                                         </TableCell>
                                         <TableCell>{formatCurrency(expense.amount)}</TableCell>
                                         <TableCell>{expense.created_by?.name ?? expense.createdBy?.name ?? '-'}</TableCell>
-                                        <TableCell className="text-right">
-                                            <div className="flex justify-end gap-2">
-                                                <Button className="bg-orange-500 text-white hover:bg-orange-600" size="icon" onClick={() => openEditModal(expense)}>
-                                                    <Edit className="mr-1 h-4 w-4" />
+                                        <TableCell className="min-w-[120px] text-right">
+                                            <div className="flex flex-wrap justify-end gap-2">
+                                                <Button
+                                                    className="bg-orange-500 text-white hover:bg-orange-600"
+                                                    size="icon"
+                                                    onClick={() => openEditModal(expense)}
+                                                    title="Editar despesa"
+                                                    aria-label={`Editar despesa ${expense.expense_number ?? expense.description}`}
+                                                >
+                                                    <Edit className="h-4 w-4" />
                                                 </Button>
-                                                {canManageOrders && <ActionDelete title={'esta despesa'} url={'app.expenses.destroy'} param={expense.id} />}
+                                                {canManageOrders && (
+                                                    <ActionDelete title={'esta despesa'} url={'app.expenses.destroy'} param={expense.id} />
+                                                )}
                                             </div>
                                         </TableCell>
                                     </TableRow>
@@ -268,69 +279,69 @@ export default function Expenses({ expenses }: any) {
                         <Card>
                             <CardTitle className="border-b px-6 pb-4">Dados da despesa</CardTitle>
                             <CardContent className="space-y-4 pt-6">
-                        <div className="grid gap-2">
-                            <Label htmlFor="expense_date">Data</Label>
-                            <Input
-                                id="expense_date"
-                                type="date"
-                                ref={expenseDateRef}
-                                value={form.data.expense_date}
-                                onChange={(e) => form.setData('expense_date', e.target.value)}
-                            />
-                            <InputError message={form.errors.expense_date} />
-                        </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="expense_date">Data</Label>
+                                    <Input
+                                        id="expense_date"
+                                        type="date"
+                                        ref={expenseDateRef}
+                                        value={form.data.expense_date}
+                                        onChange={(e) => form.setData('expense_date', e.target.value)}
+                                    />
+                                    <InputError message={form.errors.expense_date} />
+                                </div>
 
-                        <div className="grid gap-2">
-                            <Label htmlFor="description">Descrição</Label>
-                            <Input
-                                id="description"
-                                value={form.data.description}
-                                onChange={(e) => form.setData('description', e.target.value)}
-                                placeholder="Ex: Conta de energia"
-                            />
-                            <InputError message={form.errors.description} />
-                        </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="description">Descrição</Label>
+                                    <Input
+                                        id="description"
+                                        value={form.data.description}
+                                        onChange={(e) => form.setData('description', e.target.value)}
+                                        placeholder="Ex: Conta de energia"
+                                    />
+                                    <InputError message={form.errors.description} />
+                                </div>
 
-                        <div className="grid gap-2">
-                            <Label htmlFor="category">Categoria</Label>
-                            <CreatableSelect<OptionType, false>
-                                value={selectedCategory}
-                                options={categoryOptions}
-                                onChange={changeCategory}
-                                onCreateOption={createCategory}
-                                isClearable
-                                styles={selectStyles}
-                                placeholder="Selecione ou digite a nova categoria"
-                                classNamePrefix="creatable-select"
-                                className="min-w-0"
-                                formatCreateLabel={(inputValue) => `Criar "${inputValue}"`}
-                            />
-                            <InputError message={form.errors.category} />
-                        </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="category">Categoria</Label>
+                                    <CreatableSelect<OptionType, false>
+                                        value={selectedCategory}
+                                        options={categoryOptions}
+                                        onChange={changeCategory}
+                                        onCreateOption={createCategory}
+                                        isClearable
+                                        styles={selectStyles}
+                                        placeholder="Selecione ou digite a nova categoria"
+                                        classNamePrefix="creatable-select"
+                                        className="min-w-0"
+                                        formatCreateLabel={(inputValue) => `Criar "${inputValue}"`}
+                                    />
+                                    <InputError message={form.errors.category} />
+                                </div>
 
-                        <div className="grid gap-2">
-                            <Label htmlFor="amount">Valor</Label>
-                            <Input
-                                id="amount"
-                                type="text"
-                                inputMode="decimal"
-                                placeholder="0,00"
-                                value={amountDisplay}
-                                onChange={onAmountChange}
-                            />
-                            <InputError message={form.errors.amount} />
-                        </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="amount">Valor</Label>
+                                    <Input
+                                        id="amount"
+                                        type="text"
+                                        inputMode="decimal"
+                                        placeholder="0,00"
+                                        value={amountDisplay}
+                                        onChange={onAmountChange}
+                                    />
+                                    <InputError message={form.errors.amount} />
+                                </div>
                             </CardContent>
                         </Card>
 
                         <Card>
                             <CardTitle className="border-b px-6 pb-4">Observações</CardTitle>
                             <CardContent className="pt-6">
-                        <div className="grid gap-2">
-                            <Label htmlFor="notes">Observações</Label>
-                            <Textarea id="notes" value={form.data.notes} onChange={(e) => form.setData('notes', e.target.value)} rows={3} />
-                            <InputError message={form.errors.notes} />
-                        </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="notes">Observações</Label>
+                                    <Textarea id="notes" value={form.data.notes} onChange={(e) => form.setData('notes', e.target.value)} rows={3} />
+                                    <InputError message={form.errors.notes} />
+                                </div>
                             </CardContent>
                         </Card>
 

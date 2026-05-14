@@ -21,7 +21,7 @@ import CreatableSelect from 'react-select/creatable';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Painel',
         href: route('app.dashboard'),
     },
     {

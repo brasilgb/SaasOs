@@ -38,7 +38,7 @@ export default function ScheduleCalendarModal({ schedules, iconSize, variant }: 
 
     return (
         <Dialog>
-            <DialogTrigger className="flex h-full cursor-pointer items-center justify-center" title='Agendamentos'>
+            <DialogTrigger className="flex h-full cursor-pointer items-center justify-center" title="Agenda">
                 <Calendar size={iconSize} className="text-primary" />
             </DialogTrigger>
 

@@ -52,6 +52,7 @@ export default function TenantExperienceFeedback({ feedback }: TenantFeedbackPag
     });
 
     const alreadySubmitted = Boolean(feedback.feedback_submitted_at);
+    const feedbackError = (form.errors as Record<string, string | undefined>).feedback;
 
     const submit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -118,7 +119,7 @@ export default function TenantExperienceFeedback({ feedback }: TenantFeedbackPag
                         ) : (
                             <form onSubmit={submit} className="mt-8 space-y-6">
                                 <div>
-                                    <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#ffd6a3]">Sua nota</p>
+                                    <p className="text-sm font-semibold tracking-[0.2em] text-[#ffd6a3] uppercase">Sua nota</p>
                                     <div className="mt-4 flex flex-wrap gap-3">
                                         {[1, 2, 3, 4, 5].map((rating) => {
                                             const selected = form.data.rating === rating;
@@ -140,14 +141,12 @@ export default function TenantExperienceFeedback({ feedback }: TenantFeedbackPag
                                             );
                                         })}
                                     </div>
-                                    {form.data.rating > 0 ? (
-                                        <p className="mt-3 text-sm text-white/60">{feedbackLabel(form.data.rating)}</p>
-                                    ) : null}
+                                    {form.data.rating > 0 ? <p className="mt-3 text-sm text-white/60">{feedbackLabel(form.data.rating)}</p> : null}
                                     {form.errors.rating ? <p className="mt-2 text-sm text-red-300">{form.errors.rating}</p> : null}
                                 </div>
 
                                 <div>
-                                    <label htmlFor="comment" className="text-sm font-semibold uppercase tracking-[0.2em] text-[#ffd6a3]">
+                                    <label htmlFor="comment" className="text-sm font-semibold tracking-[0.2em] text-[#ffd6a3] uppercase">
                                         Deixe sua avaliação
                                     </label>
                                     <textarea
@@ -156,7 +155,7 @@ export default function TenantExperienceFeedback({ feedback }: TenantFeedbackPag
                                         onChange={(event) => form.setData('comment', event.target.value)}
                                         rows={5}
                                         maxLength={2000}
-                                        className="mt-4 w-full rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/35 focus:border-[#f1b555]/40"
+                                        className="mt-4 w-full rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-3 text-sm text-white transition outline-none placeholder:text-white/35 focus:border-[#f1b555]/40"
                                         placeholder="Escreva sua avaliação aqui."
                                     />
                                     {form.errors.comment ? <p className="mt-2 text-sm text-red-300">{form.errors.comment}</p> : null}
@@ -171,7 +170,9 @@ export default function TenantExperienceFeedback({ feedback }: TenantFeedbackPag
                                                 onChange={(event) => form.setData('allow_testimonial', event.target.checked)}
                                                 className="mt-1 h-4 w-4 rounded border-white/20 bg-white/10"
                                             />
-                                            <span>Autorizo que meu comentário seja avaliado para possível uso como depoimento na página do SigmaOS.</span>
+                                            <span>
+                                                Autorizo que meu comentário seja avaliado para possível uso como depoimento na página do SigmaOS.
+                                            </span>
                                         </label>
 
                                         {form.data.allow_testimonial ? (
@@ -206,7 +207,7 @@ export default function TenantExperienceFeedback({ feedback }: TenantFeedbackPag
                                     </div>
                                 ) : null}
 
-                                {form.errors.feedback ? <p className="text-sm text-red-300">{form.errors.feedback}</p> : null}
+                                {feedbackError ? <p className="text-sm text-red-300">{feedbackError}</p> : null}
 
                                 <Button
                                     type="submit"

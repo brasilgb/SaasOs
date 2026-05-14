@@ -3,6 +3,8 @@ import { useInitials } from '@/hooks/use-initials';
 import { SharedData, type BreadcrumbItem as BreadcrumbItemType } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import { MessageSquareMoreIcon } from 'lucide-react';
+import { useEffect } from 'react';
+import { toast } from 'sonner';
 import BudgetsApproved from './budgets-aproved';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Badge } from './ui/badge';
@@ -22,8 +24,35 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
     void breadcrumbs;
     const page = usePage<AppSidebarHeaderPageProps>();
     const { auth, notifications = 0, orderStatus = [] } = page.props;
+    const unreadMessages = Number(notifications || 0);
 
     const getInitials = useInitials();
+
+    useEffect(() => {
+        if (!auth.user?.id || auth.user.tenant_id === null) {
+            return;
+        }
+
+        const storageKey = `sigmaos:internal-messages:${auth.user.id}`;
+        const previousUnread = Number(window.localStorage.getItem(storageKey) ?? 0);
+
+        if (unreadMessages > previousUnread) {
+            toast.message('Nova mensagem interna', {
+                description:
+                    unreadMessages === 1
+                        ? 'Você tem 1 mensagem não lida.'
+                        : `Você tem ${unreadMessages} mensagens não lidas.`,
+                action: {
+                    label: 'Abrir',
+                    onClick: () => {
+                        window.location.href = route('app.messages.index');
+                    },
+                },
+            });
+        }
+
+        window.localStorage.setItem(storageKey, String(unreadMessages));
+    }, [auth.user?.id, auth.user.tenant_id, unreadMessages]);
 
     return (
         <header className="border-sidebar-border/50 flex h-16 min-w-0 shrink-0 items-center justify-between gap-2 border-b px-3 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 sm:px-4">
@@ -36,9 +65,11 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                 {auth.user.tenant_id !== null && (
                     <Button variant="ghost" size="icon" asChild className="relative">
                         <Link href={route('app.messages.index')}>
-                            <Badge variant="default" className="absolute -top-2 -right-2">
-                                {String(notifications)}
-                            </Badge>
+                            {unreadMessages > 0 && (
+                                <Badge variant="default" className="absolute -top-2 -right-2">
+                                    {String(unreadMessages)}
+                                </Badge>
+                            )}
                             <MessageSquareMoreIcon />
                         </Link>
                     </Button>

@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, Table
 import AdminLayout from '@/layouts/admin/admin-layout';
 import type { BreadcrumbItem, PageProps } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
-import { Palette } from 'lucide-react';
+import { CalendarRange } from 'lucide-react';
 import moment from 'moment';
 import CreatePeriod from './create-period';
 import EditPeriod from './edit-period';
@@ -65,7 +65,7 @@ export default function PlansIndex({ periods, plans }: PeriodsIndexProps) {
             {flash?.message && <AlertSuccess message={flash.message} />}
             <div className="flex h-16 items-center justify-between px-4">
                 <div className="flex items-center gap-2">
-                    <Icon iconNode={Palette} className="h-8 w-8" />
+                    <Icon iconNode={CalendarRange} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Períodos</h2>
                 </div>
                 <div>

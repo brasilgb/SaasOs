@@ -7,14 +7,14 @@ import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, Table
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
-import { PackagePlus } from 'lucide-react';
+import { Monitor } from 'lucide-react';
 import moment from 'moment';
 import CreateEquipment from './create-equipment';
 import EditEquipment from './edit-equipment';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Painel',
         href: route('app.dashboard'),
     },
     {
@@ -31,22 +31,20 @@ export default function Equipment({ equipments, search }: any) {
         <AppLayout>
             <Head title="Equipamentos" />
 
-            <div className="flex h-16 items-center justify-between px-4">
+            <div className="flex min-h-16 flex-col justify-center gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:py-0">
                 <div className="flex items-center gap-2">
-                    <Icon iconNode={PackagePlus} className="h-8 w-8" />
+                    <Icon iconNode={Monitor} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Equipamentos</h2>
                 </div>
-                <div>
+                <div className="min-w-0 self-start sm:self-auto">
                     <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
-            <div className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
-                <div className="w-full">
-                    <InputSearch placeholder="Buscar equipamento" url="app.register-equipments.index" />
+            <div className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="w-full lg:flex-none">
+                    <InputSearch placeholder="Buscar equipamento" url="app.register-equipments.index" className="lg:w-[420px]" />
                 </div>
-                <div className="flex w-full justify-end">
-                    {canManageEquipments && <CreateEquipment />}
-                </div>
+                <div className="flex w-full justify-end lg:w-auto lg:flex-none">{canManageEquipments && <CreateEquipment />}</div>
             </div>
 
             <div className="p-4">
@@ -57,7 +55,7 @@ export default function Equipment({ equipments, search }: any) {
                                 <TableHead className="w-[100px]">#</TableHead>
                                 <TableHead>Equipamento</TableHead>
                                 <TableHead>Cadastro</TableHead>
-                                <TableHead></TableHead>
+                                <TableHead className="min-w-[120px]"></TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -67,11 +65,17 @@ export default function Equipment({ equipments, search }: any) {
                                         <TableCell>{equipment.equipment_number}</TableCell>
                                         <TableCell className="font-medium">{equipment.equipment}</TableCell>
                                         <TableCell>{moment(equipment.created_at).format('DD/MM/YYYY')}</TableCell>
-                                        <TableCell className="flex justify-end gap-2">
-                                            {canManageEquipments && <EditEquipment equipment={equipment} />}
-                                            {canManageEquipments && (
-                                                <ActionDelete title={'esta marca'} url={'app.register-equipments.destroy'} param={equipment.id} />
-                                            )}
+                                        <TableCell className="min-w-[120px]">
+                                            <div className="flex flex-wrap justify-end gap-2">
+                                                {canManageEquipments && <EditEquipment equipment={equipment} />}
+                                                {canManageEquipments && (
+                                                    <ActionDelete
+                                                        title={'este equipamento'}
+                                                        url={'app.register-equipments.destroy'}
+                                                        param={equipment.id}
+                                                    />
+                                                )}
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))

@@ -7,13 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
-import { BarChart3 } from 'lucide-react';
+import { FileChartColumn } from 'lucide-react';
 import moment from 'moment';
 import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: route('app.dashboard') },
-    { title: 'Performance comercial', href: route('app.follow-ups.performance') },
+    { title: 'Painel', href: route('app.dashboard') },
+    { title: 'Resultados dos contatos', href: route('app.follow-ups.performance') },
 ];
 
 function formatDateRange(date?: Date | string) {
@@ -47,10 +47,7 @@ export default function FollowUpPerformance({ filters, summary, trends }: any) {
         }
     };
 
-    const metricsPeriodLabel =
-        dateRange?.from && dateRange?.to
-            ? `${formatDateRange(dateRange.from)} até ${formatDateRange(dateRange.to)}`
-            : '';
+    const metricsPeriodLabel = dateRange?.from && dateRange?.to ? `${formatDateRange(dateRange.from)} até ${formatDateRange(dateRange.to)}` : '';
     const previousPeriodLabel =
         summary?.comparison?.period?.from && summary?.comparison?.period?.to
             ? `${moment(summary.comparison.period.from).format('DD/MM/YYYY')} até ${moment(summary.comparison.period.to).format('DD/MM/YYYY')}`
@@ -66,13 +63,13 @@ export default function FollowUpPerformance({ filters, summary, trends }: any) {
 
     return (
         <AppLayout>
-            <Head title="Performance comercial" />
+            <Head title="Resultados dos contatos" />
 
             <div className="flex min-h-20 items-center justify-between gap-4 px-4 py-3">
                 <div className="flex items-center gap-2">
-                    <Icon iconNode={BarChart3} className="h-8 w-8" />
+                    <Icon iconNode={FileChartColumn} className="h-8 w-8" />
                     <div>
-                        <h2 className="text-xl font-semibold tracking-tight">Performance comercial</h2>
+                        <h2 className="text-xl font-semibold tracking-tight">Resultados dos contatos</h2>
                         <p className="text-muted-foreground text-sm">
                             Entenda se os contatos com clientes estão ajudando a aprovar orçamentos e receber pagamentos pendentes.
                         </p>
@@ -95,7 +92,9 @@ export default function FollowUpPerformance({ filters, summary, trends }: any) {
 
                 <div className="mb-4 grid gap-4 xl:grid-cols-2">
                     <Card>
-                        <CardHeader><CardTitle className="text-base">Comparação de aprovação de orçamento</CardTitle></CardHeader>
+                        <CardHeader>
+                            <CardTitle className="text-base">Comparação de aprovação de orçamento</CardTitle>
+                        </CardHeader>
                         <CardContent className="space-y-2">
                             <div className="text-2xl font-bold">{directionLabel(summary?.comparison?.budget?.direction)}</div>
                             <div className="text-muted-foreground text-sm">
@@ -108,7 +107,9 @@ export default function FollowUpPerformance({ filters, summary, trends }: any) {
                     </Card>
 
                     <Card>
-                        <CardHeader><CardTitle className="text-base">Comparação de pagamento após cobrança</CardTitle></CardHeader>
+                        <CardHeader>
+                            <CardTitle className="text-base">Comparação de pagamento após cobrança</CardTitle>
+                        </CardHeader>
                         <CardContent className="space-y-2">
                             <div className="text-2xl font-bold">{directionLabel(summary?.comparison?.payment?.direction)}</div>
                             <div className="text-muted-foreground text-sm">
@@ -123,40 +124,61 @@ export default function FollowUpPerformance({ filters, summary, trends }: any) {
 
                 <div className="grid gap-4 xl:grid-cols-4">
                     <Card>
-                        <CardHeader><CardTitle className="text-base">Aprovação de orçamento</CardTitle></CardHeader>
+                        <CardHeader>
+                            <CardTitle className="text-base">Aprovação de orçamento</CardTitle>
+                        </CardHeader>
                         <CardContent className="space-y-2">
                             <div className="text-3xl font-bold">{summary?.commercial?.budget?.rate ?? 0}%</div>
                             <div className="text-muted-foreground text-sm">
                                 {summary?.commercial?.budget?.approved ?? 0} aprovados de {summary?.commercial?.budget?.contacted ?? 0}
                             </div>
-                            <Badge variant="secondary" className={summary?.targets?.budget?.status === 'saudavel' ? 'bg-emerald-100 text-emerald-900 hover:bg-emerald-100' : 'bg-amber-100 text-amber-900 hover:bg-amber-100'}>
+                            <Badge
+                                variant="secondary"
+                                className={
+                                    summary?.targets?.budget?.status === 'saudavel'
+                                        ? 'bg-emerald-100 text-emerald-900 hover:bg-emerald-100'
+                                        : 'bg-amber-100 text-amber-900 hover:bg-amber-100'
+                                }
+                            >
                                 {targetLabel(summary?.targets?.budget?.status)} | meta {summary?.targets?.budget?.target ?? 0}%
                             </Badge>
                         </CardContent>
                     </Card>
 
                     <Card>
-                        <CardHeader><CardTitle className="text-base">Pagamento após cobrança</CardTitle></CardHeader>
+                        <CardHeader>
+                            <CardTitle className="text-base">Pagamento após cobrança</CardTitle>
+                        </CardHeader>
                         <CardContent className="space-y-2">
                             <div className="text-3xl font-bold">{summary?.commercial?.payment?.rate ?? 0}%</div>
                             <div className="text-muted-foreground text-sm">
                                 {summary?.commercial?.payment?.recovered ?? 0} recuperadas de {summary?.commercial?.payment?.contacted ?? 0}
                             </div>
-                            <Badge variant="secondary" className={summary?.targets?.payment?.status === 'saudavel' ? 'bg-emerald-100 text-emerald-900 hover:bg-emerald-100' : 'bg-amber-100 text-amber-900 hover:bg-amber-100'}>
+                            <Badge
+                                variant="secondary"
+                                className={
+                                    summary?.targets?.payment?.status === 'saudavel'
+                                        ? 'bg-emerald-100 text-emerald-900 hover:bg-emerald-100'
+                                        : 'bg-amber-100 text-amber-900 hover:bg-amber-100'
+                                }
+                            >
                                 {targetLabel(summary?.targets?.payment?.status)} | meta {summary?.targets?.payment?.target ?? 0}%
                             </Badge>
                         </CardContent>
                     </Card>
 
                     <Card>
-                        <CardHeader><CardTitle className="text-base">Orçamento manual x automático</CardTitle></CardHeader>
+                        <CardHeader>
+                            <CardTitle className="text-base">Orçamento manual x automático</CardTitle>
+                        </CardHeader>
                         <CardContent className="space-y-3">
                             {['manual', 'automatic'].map((trigger) => (
                                 <div key={trigger} className="flex items-center justify-between rounded-lg border p-3">
                                     <div className="flex flex-col">
                                         <span className="font-medium">{trigger === 'manual' ? 'Manual' : 'Automático'}</span>
                                         <span className="text-muted-foreground text-xs">
-                                            {summary?.trigger_performance?.budget?.[trigger]?.recovered ?? 0} de {summary?.trigger_performance?.budget?.[trigger]?.contacted ?? 0}
+                                            {summary?.trigger_performance?.budget?.[trigger]?.recovered ?? 0} de{' '}
+                                            {summary?.trigger_performance?.budget?.[trigger]?.contacted ?? 0}
                                         </span>
                                     </div>
                                     <Badge variant="secondary">{summary?.trigger_performance?.budget?.[trigger]?.rate ?? 0}%</Badge>
@@ -166,14 +188,17 @@ export default function FollowUpPerformance({ filters, summary, trends }: any) {
                     </Card>
 
                     <Card>
-                        <CardHeader><CardTitle className="text-base">Cobrança manual x automático</CardTitle></CardHeader>
+                        <CardHeader>
+                            <CardTitle className="text-base">Cobrança manual x automático</CardTitle>
+                        </CardHeader>
                         <CardContent className="space-y-3">
                             {['manual', 'automatic'].map((trigger) => (
                                 <div key={trigger} className="flex items-center justify-between rounded-lg border p-3">
                                     <div className="flex flex-col">
                                         <span className="font-medium">{trigger === 'manual' ? 'Manual' : 'Automático'}</span>
                                         <span className="text-muted-foreground text-xs">
-                                            {summary?.trigger_performance?.payment?.[trigger]?.recovered ?? 0} de {summary?.trigger_performance?.payment?.[trigger]?.contacted ?? 0}
+                                            {summary?.trigger_performance?.payment?.[trigger]?.recovered ?? 0} de{' '}
+                                            {summary?.trigger_performance?.payment?.[trigger]?.contacted ?? 0}
                                         </span>
                                     </div>
                                     <Badge variant="secondary">{summary?.trigger_performance?.payment?.[trigger]?.rate ?? 0}%</Badge>
@@ -185,7 +210,9 @@ export default function FollowUpPerformance({ filters, summary, trends }: any) {
 
                 <div className="mt-4 grid gap-4 xl:grid-cols-2">
                     <Card>
-                        <CardHeader><CardTitle className="text-base">Funil de orçamento</CardTitle></CardHeader>
+                        <CardHeader>
+                            <CardTitle className="text-base">Funil de orçamento</CardTitle>
+                        </CardHeader>
                         <CardContent className="flex flex-wrap gap-2">
                             <Badge variant="secondary" className="bg-emerald-100 text-emerald-900 hover:bg-emerald-100">
                                 Aprovados: {summary?.commercial?.budget?.approved ?? 0}
@@ -200,7 +227,9 @@ export default function FollowUpPerformance({ filters, summary, trends }: any) {
                     </Card>
 
                     <Card>
-                        <CardHeader><CardTitle className="text-base">Pagamentos cobrados no período</CardTitle></CardHeader>
+                        <CardHeader>
+                            <CardTitle className="text-base">Pagamentos cobrados no período</CardTitle>
+                        </CardHeader>
                         <CardContent className="flex flex-wrap gap-2">
                             <Badge variant="secondary" className="bg-emerald-100 text-emerald-900 hover:bg-emerald-100">
                                 Recuperadas: {summary?.commercial?.payment?.recovered ?? 0}
@@ -226,10 +255,13 @@ export default function FollowUpPerformance({ filters, summary, trends }: any) {
                 </div>
 
                 <Card className="mt-4">
-                    <CardHeader><CardTitle className="text-base">O que esta página mede</CardTitle></CardHeader>
+                    <CardHeader>
+                        <CardTitle className="text-base">O que esta página mede</CardTitle>
+                    </CardHeader>
                     <CardContent>
                         <p className="text-muted-foreground text-sm">
-                            Esta página mede o resultado dos contatos feitos pelo atendimento ou financeiro. Ela não mede produtividade ou qualidade técnica.
+                            Esta página mede o resultado dos contatos feitos pelo atendimento ou financeiro. Ela não mede produtividade ou qualidade
+                            técnica.
                         </p>
                     </CardContent>
                 </Card>

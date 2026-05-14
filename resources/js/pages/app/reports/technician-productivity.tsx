@@ -59,7 +59,7 @@ export default function TechnicianProductivity({ dateRange, company }: { dateRan
     }
 
     return (
-        <div className="mt-4 flex w-full justify-center">
+        <div className="flex w-full justify-center">
             <Button onClick={handleGeneratePDF} disabled={loading || !dateRange?.from || !dateRange?.to} className="w-full">
                 {loading ? (
                     <>

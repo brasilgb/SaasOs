@@ -14,17 +14,17 @@ import { BreadcrumbItem } from '@/types';
 import { maskMoney, maskMoneyDot } from '@/Utils/mask';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { pdf } from '@react-pdf/renderer';
-import { FileText, HandCoins, Loader2 } from 'lucide-react';
+import { FileText, Loader2, WalletCards } from 'lucide-react';
 import moment from 'moment';
 import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Painel',
         href: route('app.dashboard'),
     },
     {
-        title: 'Caixa diário',
+        title: 'Caixa',
         href: '#',
     },
 ];
@@ -91,12 +91,12 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
 
     return (
         <AppLayout>
-            <Head title="Caixa diário" />
+            <Head title="Caixa" />
 
             <div className="flex h-16 items-center justify-between px-4">
                 <div className="flex items-center gap-2">
-                    <Icon iconNode={HandCoins} className="h-8 w-8" />
-                    <h2 className="text-xl font-semibold tracking-tight">Caixa diário</h2>
+                    <Icon iconNode={WalletCards} className="h-8 w-8" />
+                    <h2 className="text-xl font-semibold tracking-tight">Caixa</h2>
                 </div>
                 <div>
                     <Breadcrumbs breadcrumbs={breadcrumbs} />
@@ -171,7 +171,7 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
                                     <Textarea id="notes" value={openForm.data.notes} onChange={(e) => openForm.setData('notes', e.target.value)} />
                                     <InputError message={openForm.errors.notes} />
                                 </div>
-                                <div className="md:col-span-2 flex justify-end">
+                                <div className="flex justify-end md:col-span-2">
                                     <Button type="submit" disabled={openForm.processing}>
                                         Abrir caixa
                                     </Button>
@@ -179,7 +179,7 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
                             </form>
                         ) : (
                             <form onSubmit={handleClose} className="grid gap-4 md:grid-cols-2">
-                                <div className="rounded-lg border bg-card p-4 text-sm md:col-span-2">
+                                <div className="bg-card rounded-lg border p-4 text-sm md:col-span-2">
                                     <div className="grid gap-3 md:grid-cols-3">
                                         <div>
                                             <div className="text-muted-foreground">Saldo inicial</div>
@@ -194,7 +194,7 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
                                             <div className="font-medium">{money(expectedClosingBalance)}</div>
                                         </div>
                                     </div>
-                                    <p className="mt-3 text-xs text-muted-foreground">
+                                    <p className="text-muted-foreground mt-3 text-xs">
                                         O saldo esperado considera saldo inicial, vendas, pagamentos de OS, entradas manuais e saídas manuais.
                                     </p>
                                 </div>
@@ -237,7 +237,7 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
                                     />
                                     <InputError message={closeForm.errors.manual_exits} />
                                 </div>
-                                <div className="rounded-lg border bg-card p-4 text-sm md:col-span-2">
+                                <div className="bg-card rounded-lg border p-4 text-sm md:col-span-2">
                                     <div className="grid gap-3 md:grid-cols-4">
                                         <div>
                                             <div className="text-muted-foreground">Entradas manuais</div>
@@ -266,7 +266,7 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
                                     />
                                     <InputError message={closeForm.errors.closing_notes} />
                                 </div>
-                                <div className="md:col-span-2 flex justify-end">
+                                <div className="flex justify-end md:col-span-2">
                                     <Button type="submit" disabled={closeForm.processing}>
                                         Fechar caixa
                                     </Button>
@@ -315,7 +315,11 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
                                                     disabled={loadingPdfId === session.id}
                                                     className="bg-blue-600 text-white hover:bg-blue-700"
                                                 >
-                                                    {loadingPdfId === session.id ? <Loader2 className="size-4 animate-spin" /> : <FileText className="size-4" />}
+                                                    {loadingPdfId === session.id ? (
+                                                        <Loader2 className="size-4 animate-spin" />
+                                                    ) : (
+                                                        <FileText className="size-4" />
+                                                    )}
                                                     Relatório PDF
                                                 </Button>
                                             )}

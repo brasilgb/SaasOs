@@ -66,7 +66,7 @@ const warrantyOptions = [
 const partsType = [
     { value: '1', label: 'Peças' },
     { value: '2', label: 'Produtos' },
-    { value: '3', label: 'Peças/Produtos' },
+    { value: '3', label: 'Peças e produtos' },
 ];
 
 export {

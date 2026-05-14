@@ -9,13 +9,13 @@ import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { maskMoney } from '@/Utils/mask';
 import { Head, Link } from '@inertiajs/react';
-import { Edit, PackagePlus, Plus } from 'lucide-react';
+import { Edit, Plus, ScrollText } from 'lucide-react';
 import moment from 'moment';
 import { PrintBudget } from './print-buget';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Painel',
         href: route('app.dashboard'),
     },
     {
@@ -28,34 +28,35 @@ export default function CheckList({ budgets, company, search }: any) {
     return (
         <AppLayout>
             <Head title="Orçamentos" />
-            <div className="flex h-16 items-center justify-between px-4">
+            <div className="flex min-h-16 flex-col justify-center gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:py-0">
                 <div className="flex items-center gap-2">
-                    <Icon iconNode={PackagePlus} className="h-8 w-8" />
+                    <Icon iconNode={ScrollText} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Orçamentos</h2>
                 </div>
-                <div>
+                <div className="min-w-0 self-start sm:self-auto">
                     <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
 
-            <div className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
-                <div className="w-full">
-                    <InputSearch placeholder="Pesquisar por por serviço" url="app.budgets.index" />
+            <div className="flex flex-col gap-3 p-4">
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="w-full lg:flex-none">
+                        <InputSearch placeholder="Pesquisar por serviço" url="app.budgets.index" className="lg:w-[420px]" />
+                    </div>
+                    <div className="flex w-full justify-end lg:w-auto lg:flex-none">
+                        <Button variant={'default'} asChild className="w-full whitespace-nowrap sm:w-auto">
+                            <Link href={route('app.budgets.create')}>
+                                <Plus className="h-4 w-4" />
+                                <span>Novo orçamento</span>
+                            </Link>
+                        </Button>
+                    </div>
                 </div>
-                <div className="w-full bg-accent text-accent-foreground rounded-md p-2 text-xs font-medium text-center">
-                    Os dados da empresa devem estar preenchidos para exibir corretamente o orçamento
-                </div>
-                <div className="flex w-auto justify-end">
-                    <Button variant={'default'} asChild>
-                        <Link className="w-full md:w-auto" href={route('app.budgets.create')}>
-                            <Plus className="h-4 w-4" />
-                            <span>Novo Orçamento</span>
-                        </Link>
-                    </Button>
+                <div className="bg-accent text-accent-foreground rounded-md p-2 text-center text-xs font-medium">
+                    Os dados da empresa devem estar preenchidos para exibir corretamente o orçamento.
                 </div>
             </div>
             <div className="p-4">
-                
                 <div className="rounded-lg border">
                     <Table>
                         <TableHeader>
@@ -66,7 +67,7 @@ export default function CheckList({ budgets, company, search }: any) {
                                 <TableHead>Condições</TableHead>
                                 <TableHead>Valor</TableHead>
                                 <TableHead>Cadastro</TableHead>
-                                <TableHead></TableHead>
+                                <TableHead className="min-w-[140px]"></TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -89,23 +90,32 @@ export default function CheckList({ budgets, company, search }: any) {
                                             <div className="text-sm">
                                                 <span className="text-muted-foreground">Tempo:</span> {budget.estimated_time || '-'} ·{' '}
                                                 <span className="text-muted-foreground">Garantia:</span> {budget.warranty || '-'} ·{' '}
-                                                <span className="text-muted-foreground">Validade:</span> {budget.validity ? `${budget.validity} dias` : '-'}
+                                                <span className="text-muted-foreground">Validade:</span>{' '}
+                                                {budget.validity ? `${budget.validity} dias` : '-'}
                                             </div>
                                         </TableCell>
                                         <TableCell>R$ {maskMoney(budget.total_value)}</TableCell>
                                         <TableCell>{moment(budget.created_at).format('DD/MM/YYYY')}</TableCell>
-                                        <TableCell className="flex justify-end gap-2">
-                                            <PrintBudget company={company} budget={budget} />
-                                            <Button asChild size="icon" className="bg-orange-500 text-white hover:bg-orange-600">
-                                                <Link
-                                                    href={route('app.budgets.edit', budget.id)}
-                                                    data={{ page: budgets.current_page, search: search }}
+                                        <TableCell className="min-w-[140px]">
+                                            <div className="flex flex-wrap justify-end gap-2">
+                                                <PrintBudget company={company} budget={budget} />
+                                                <Button
+                                                    asChild
+                                                    size="icon"
+                                                    className="bg-orange-500 text-white hover:bg-orange-600"
+                                                    title="Editar orçamento"
                                                 >
-                                                    <Edit />
-                                                </Link>
-                                            </Button>
+                                                    <Link
+                                                        href={route('app.budgets.edit', budget.id)}
+                                                        data={{ page: budgets.current_page, search: search }}
+                                                        aria-label={`Editar orçamento ${budget.budget_number}`}
+                                                    >
+                                                        <Edit className="h-4 w-4" />
+                                                    </Link>
+                                                </Button>
 
-                                            <ActionDelete title={'este orçamento'} url={'app.budgets.destroy'} param={budget.id} />
+                                                <ActionDelete title={'este orçamento'} url={'app.budgets.destroy'} param={budget.id} />
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))

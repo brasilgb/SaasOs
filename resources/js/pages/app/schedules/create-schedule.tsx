@@ -9,11 +9,11 @@ import ScheduleForm from './schedule-form';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Painel',
         href: route('app.dashboard'),
     },
     {
-        title: 'Agendamentos',
+        title: 'Agenda',
         href: route('app.schedules.index'),
     },
     {
@@ -25,11 +25,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function CreateSchedule({ customers, technicals }: any) {
     return (
         <AppLayout>
-            <Head title="Agendamentos" />
+            <Head title="Agenda" />
             <div className="flex h-16 items-center justify-between px-4">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={Calendar} className="h-8 w-8" />
-                    <h2 className="text-xl font-semibold tracking-tight">Agendamentos</h2>
+                    <h2 className="text-xl font-semibold tracking-tight">Agenda</h2>
                 </div>
                 <div>
                     <Breadcrumbs breadcrumbs={breadcrumbs} />

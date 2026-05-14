@@ -39,7 +39,7 @@ const statusMessageByValue = (value: number) => {
         case 0:
             return 'Não lida';
         case 1:
-            return 'lida';
+            return 'Lida';
     }
 };
 
@@ -59,7 +59,7 @@ const typesPartsByValue = (value: number) => {
         case 2:
             return 'Produtos';
         case 3:
-            return 'Peças/Produtos';
+            return 'Peças e produtos';
     }
 };
 

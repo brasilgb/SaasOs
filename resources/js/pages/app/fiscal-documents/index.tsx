@@ -25,7 +25,7 @@ type FiscalDocument = {
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Painel',
         href: route('app.dashboard'),
     },
     {
@@ -54,19 +54,19 @@ export default function FiscalDocuments({ documents = [] }: { documents?: Fiscal
         <AppLayout>
             <Head title="Notas fiscais" />
 
-            <div className="flex h-16 items-center justify-between px-4">
+            <div className="flex min-h-16 flex-col justify-center gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:py-0">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={ReceiptText} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Notas fiscais</h2>
                 </div>
-                <div>
+                <div className="min-w-0 self-start sm:self-auto">
                     <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
 
             <div className="space-y-4 p-4">
                 <div className="flex justify-end">
-                    <Button variant="outline" asChild>
+                    <Button variant="outline" asChild className="w-full whitespace-nowrap sm:w-auto">
                         <Link href={route('app.fiscal-documents.settings')}>
                             <Settings className="h-4 w-4" />
                             Configurações fiscais
@@ -89,7 +89,7 @@ export default function FiscalDocuments({ documents = [] }: { documents?: Fiscal
                                     <TableHead>Número</TableHead>
                                     <TableHead>Status</TableHead>
                                     <TableHead>Emissão</TableHead>
-                                    <TableHead className="text-right">Ações</TableHead>
+                                    <TableHead className="min-w-[140px] text-right">Ações</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -106,32 +106,44 @@ export default function FiscalDocuments({ documents = [] }: { documents?: Fiscal
                                             <TableCell>
                                                 {document.issued_at ? new Date(document.issued_at).toLocaleDateString('pt-BR') : '-'}
                                             </TableCell>
-                                            <TableCell className="flex justify-end gap-2">
-                                                {document.provider === 'focus_nfe' && (
-                                                    <Button
-                                                        size="icon"
-                                                        variant="outline"
-                                                        type="button"
-                                                        onClick={() => handleSync(document)}
-                                                        aria-label="Sincronizar com Focus NFe"
-                                                    >
-                                                        <RefreshCw className="h-4 w-4" />
-                                                    </Button>
-                                                )}
-                                                {document.pdf_url && (
-                                                    <Button size="icon" variant="outline" asChild>
-                                                        <a href={document.pdf_url} target="_blank" rel="noopener noreferrer" aria-label="Abrir PDF">
-                                                            <FileText className="h-4 w-4" />
-                                                        </a>
-                                                    </Button>
-                                                )}
-                                                {document.xml_url && (
-                                                    <Button size="icon" variant="outline" asChild>
-                                                        <a href={document.xml_url} target="_blank" rel="noopener noreferrer" aria-label="Abrir XML">
-                                                            <ExternalLink className="h-4 w-4" />
-                                                        </a>
-                                                    </Button>
-                                                )}
+                                            <TableCell className="min-w-[140px]">
+                                                <div className="flex flex-wrap justify-end gap-2">
+                                                    {document.provider === 'focus_nfe' && (
+                                                        <Button
+                                                            size="icon"
+                                                            variant="outline"
+                                                            type="button"
+                                                            onClick={() => handleSync(document)}
+                                                            aria-label="Sincronizar com Focus NFe"
+                                                        >
+                                                            <RefreshCw className="h-4 w-4" />
+                                                        </Button>
+                                                    )}
+                                                    {document.pdf_url && (
+                                                        <Button size="icon" variant="outline" asChild>
+                                                            <a
+                                                                href={document.pdf_url}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                aria-label="Abrir PDF"
+                                                            >
+                                                                <FileText className="h-4 w-4" />
+                                                            </a>
+                                                        </Button>
+                                                    )}
+                                                    {document.xml_url && (
+                                                        <Button size="icon" variant="outline" asChild>
+                                                            <a
+                                                                href={document.xml_url}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                aria-label="Abrir XML"
+                                                            >
+                                                                <ExternalLink className="h-4 w-4" />
+                                                            </a>
+                                                        </Button>
+                                                    )}
+                                                </div>
                                             </TableCell>
                                         </TableRow>
                                     ))

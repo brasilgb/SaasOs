@@ -15,13 +15,13 @@ import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { maskMoney, maskPhone } from '@/Utils/mask';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { CheckCircle2, Filter, LinkIcon, Mail, MessageSquareWarning, PauseCircle, PlayCircle, Search, Wrench } from 'lucide-react';
+import { CheckCircle2, Filter, LinkIcon, Mail, MessageCircle, PauseCircle, PlayCircle, Search, Wrench } from 'lucide-react';
 import moment from 'moment';
 import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: route('app.dashboard') },
-    { title: 'Acompanhamentos de clientes', href: route('app.follow-ups.index') },
+    { title: 'Painel', href: route('app.dashboard') },
+    { title: 'Retornos ao cliente', href: route('app.follow-ups.index') },
 ];
 
 function formatDateRange(date?: Date | string) {
@@ -111,9 +111,7 @@ function FollowUpTable({
     const responseKey = type === 'budget' ? 'budget_follow_up_response_label' : 'payment_follow_up_response_label';
 
     const handleResponse = (orderId: number) => {
-        const choice = window.prompt(
-            'Informe o retorno do cliente: respondeu, sem_interesse, aguardando_peca ou prometeu_pagar',
-        );
+        const choice = window.prompt('Informe o retorno do cliente: respondeu, sem_interesse, aguardando_peca ou prometeu_pagar');
 
         const map: Record<string, string> = {
             respondeu: 'responded',
@@ -283,48 +281,78 @@ function FollowUpTable({
                                                         <span className="text-muted-foreground text-sm">Sem contato</span>
                                                     )}
                                                 </TableCell>
-                                                <TableCell className="flex justify-end gap-2">
-                                                    {canManageOrders && !order[responseKey] && (
+                                                <TableCell className="min-w-[280px]">
+                                                    <div className="flex flex-wrap justify-end gap-2">
+                                                        {canManageOrders && !order[responseKey] && (
+                                                            <Button
+                                                                type="button"
+                                                                size="icon"
+                                                                variant="outline"
+                                                                title="Registrar retorno do cliente"
+                                                                aria-label={`Registrar retorno da ordem ${order.order_number}`}
+                                                                onClick={() => handleResponse(order.id)}
+                                                            >
+                                                                <CheckCircle2 className="h-4 w-4" />
+                                                            </Button>
+                                                        )}
+                                                        {canManageOrders && !order[pauseKey] && (
+                                                            <Button
+                                                                type="button"
+                                                                size="icon"
+                                                                variant="outline"
+                                                                title="Pausar automação"
+                                                                aria-label={`Pausar automação da ordem ${order.order_number}`}
+                                                                onClick={() => handlePause(order.id)}
+                                                            >
+                                                                <PauseCircle className="h-4 w-4" />
+                                                            </Button>
+                                                        )}
+                                                        {canManageOrders && order[pauseKey] && (
+                                                            <Button
+                                                                type="button"
+                                                                size="icon"
+                                                                variant="outline"
+                                                                title="Retomar automação"
+                                                                aria-label={`Retomar automação da ordem ${order.order_number}`}
+                                                                onClick={() => handleResume(order.id)}
+                                                            >
+                                                                <PlayCircle className="h-4 w-4" />
+                                                            </Button>
+                                                        )}
+                                                        {canManageOrders && !order[pauseKey] && (
+                                                            <Button type="button" size="sm" variant="outline" onClick={() => handleAction(order.id)}>
+                                                                <Mail className="h-4 w-4" />
+                                                                {type === 'budget' ? 'Cobrar orçamento' : 'Cobrar saldo'}
+                                                            </Button>
+                                                        )}
                                                         <Button
-                                                            type="button"
+                                                            asChild
                                                             size="icon"
-                                                            variant="outline"
-                                                            title="Registrar retorno do cliente"
-                                                            onClick={() => handleResponse(order.id)}
+                                                            className="!bg-solar-blue-primary hover:!bg-solar-blue-primary/90 !text-white hover:!text-white"
                                                         >
-                                                            <CheckCircle2 className="h-4 w-4" />
+                                                            <a
+                                                                target="_blank"
+                                                                href={route('os.token', order.tracking_token)}
+                                                                title="Link público da ordem"
+                                                                aria-label={`Abrir link público da ordem ${order.order_number}`}
+                                                            >
+                                                                <LinkIcon className="h-4 w-4" />
+                                                            </a>
                                                         </Button>
-                                                    )}
-                                                    {canManageOrders && !order[pauseKey] && (
-                                                        <Button type="button" size="icon" variant="outline" title="Pausar automação" onClick={() => handlePause(order.id)}>
-                                                            <PauseCircle className="h-4 w-4" />
+                                                        <Button
+                                                            asChild
+                                                            size="icon"
+                                                            className="bg-orange-500 text-white hover:bg-orange-600"
+                                                            title="Abrir ordem"
+                                                        >
+                                                            <Link
+                                                                href={route('app.orders.edit', order.id)}
+                                                                aria-label={`Abrir ordem ${order.order_number}`}
+                                                            >
+                                                                <Wrench className="h-4 w-4" />
+                                                            </Link>
                                                         </Button>
-                                                    )}
-                                                    {canManageOrders && order[pauseKey] && (
-                                                        <Button type="button" size="icon" variant="outline" title="Retomar automação" onClick={() => handleResume(order.id)}>
-                                                            <PlayCircle className="h-4 w-4" />
-                                                        </Button>
-                                                    )}
-                                                    {canManageOrders && !order[pauseKey] && (
-                                                        <Button type="button" size="sm" variant="outline" onClick={() => handleAction(order.id)}>
-                                                            <Mail className="h-4 w-4" />
-                                                            {type === 'budget' ? 'Cobrar orçamento' : 'Cobrar saldo'}
-                                                        </Button>
-                                                    )}
-                                                    <Button
-                                                        asChild
-                                                        size="icon"
-                                                        className="!bg-solar-blue-primary !text-white hover:!bg-solar-blue-primary/90 hover:!text-white"
-                                                    >
-                                                        <a target="_blank" href={route('os.token', order.tracking_token)} title="Link público da ordem">
-                                                            <LinkIcon className="h-4 w-4" />
-                                                        </a>
-                                                    </Button>
-                                                    <Button asChild size="icon" className="bg-orange-500 text-white hover:bg-orange-600">
-                                                        <Link href={route('app.orders.edit', order.id)}>
-                                                            <Wrench className="h-4 w-4" />
-                                                        </Link>
-                                                    </Button>
+                                                    </div>
                                                 </TableCell>
                                             </TableRow>
                                         );
@@ -390,19 +418,17 @@ export default function FollowUps({ filters, summary, budgetOrders, paymentOrder
 
     const activeType = filters?.type ?? 'all';
     const metricsPeriodLabel =
-        metricsDateRange?.from && metricsDateRange?.to
-            ? `${formatDateRange(metricsDateRange.from)} até ${formatDateRange(metricsDateRange.to)}`
-            : '';
+        metricsDateRange?.from && metricsDateRange?.to ? `${formatDateRange(metricsDateRange.from)} até ${formatDateRange(metricsDateRange.to)}` : '';
 
     return (
         <AppLayout>
-            <Head title="Acompanhamentos de clientes" />
+            <Head title="Retornos ao cliente" />
 
             <div className="flex min-h-20 items-center justify-between gap-4 px-4 py-3">
                 <div className="flex items-center gap-2">
-                    <Icon iconNode={MessageSquareWarning} className="h-8 w-8" />
+                    <Icon iconNode={MessageCircle} className="h-8 w-8" />
                     <div>
-                        <h2 className="text-xl font-semibold tracking-tight">Acompanhamentos de clientes</h2>
+                        <h2 className="text-xl font-semibold tracking-tight">Retornos ao cliente</h2>
                         <p className="text-muted-foreground text-sm">
                             Use esta tela para ver quais clientes precisam de retorno sobre orçamento parado ou saldo pendente.
                         </p>
@@ -425,15 +451,21 @@ export default function FollowUps({ filters, summary, budgetOrders, paymentOrder
 
                 <div className="grid gap-4 sm:grid-cols-3">
                     <Card>
-                        <CardHeader><CardTitle className="text-base">Orçamentos parados</CardTitle></CardHeader>
+                        <CardHeader>
+                            <CardTitle className="text-base">Orçamentos parados</CardTitle>
+                        </CardHeader>
                         <CardContent className="text-3xl font-bold">{summary?.budget_follow_ups ?? 0}</CardContent>
                     </Card>
                     <Card>
-                        <CardHeader><CardTitle className="text-base">Cobranças pendentes</CardTitle></CardHeader>
+                        <CardHeader>
+                            <CardTitle className="text-base">Cobranças pendentes</CardTitle>
+                        </CardHeader>
                         <CardContent className="text-3xl font-bold">{summary?.payment_follow_ups ?? 0}</CardContent>
                     </Card>
                     <Card>
-                        <CardHeader><CardTitle className="text-base">Dias para entrar na lista</CardTitle></CardHeader>
+                        <CardHeader>
+                            <CardTitle className="text-base">Dias para entrar na lista</CardTitle>
+                        </CardHeader>
                         <CardContent className="text-3xl font-bold">{summary?.threshold_days ?? 0}d</CardContent>
                     </Card>
                 </div>
@@ -446,7 +478,8 @@ export default function FollowUps({ filters, summary, budgetOrders, paymentOrder
                         <CardContent className="space-y-2">
                             <div className="text-3xl font-bold">{summary?.recovery?.budget?.rate ?? 0}%</div>
                             <div className="text-muted-foreground text-sm">
-                                {summary?.recovery?.budget?.recovered ?? 0} aprovado(s) ou movimentado(s) depois de {summary?.recovery?.budget?.contacted ?? 0} contato(s)
+                                {summary?.recovery?.budget?.recovered ?? 0} aprovado(s) ou movimentado(s) depois de{' '}
+                                {summary?.recovery?.budget?.contacted ?? 0} contato(s)
                             </div>
                         </CardContent>
                     </Card>
@@ -458,7 +491,8 @@ export default function FollowUps({ filters, summary, budgetOrders, paymentOrder
                         <CardContent className="space-y-2">
                             <div className="text-3xl font-bold">{summary?.recovery?.payment?.rate ?? 0}%</div>
                             <div className="text-muted-foreground text-sm">
-                                {summary?.recovery?.payment?.recovered ?? 0} pagamento(s) recebido(s) depois de {summary?.recovery?.payment?.contacted ?? 0} contato(s)
+                                {summary?.recovery?.payment?.recovered ?? 0} pagamento(s) recebido(s) depois de{' '}
+                                {summary?.recovery?.payment?.contacted ?? 0} contato(s)
                             </div>
                         </CardContent>
                     </Card>
@@ -473,7 +507,8 @@ export default function FollowUps({ filters, summary, budgetOrders, paymentOrder
                                     <div className="flex flex-col">
                                         <span className="font-medium">{trigger === 'manual' ? 'Manual' : 'Automático'}</span>
                                         <span className="text-muted-foreground text-xs">
-                                            {summary?.trigger_performance?.budget?.[trigger]?.recovered ?? 0} de {summary?.trigger_performance?.budget?.[trigger]?.contacted ?? 0}
+                                            {summary?.trigger_performance?.budget?.[trigger]?.recovered ?? 0} de{' '}
+                                            {summary?.trigger_performance?.budget?.[trigger]?.contacted ?? 0}
                                         </span>
                                     </div>
                                     <Badge variant="secondary" className="bg-blue-100 text-blue-900 hover:bg-blue-100">
@@ -494,7 +529,8 @@ export default function FollowUps({ filters, summary, budgetOrders, paymentOrder
                                     <div className="flex flex-col">
                                         <span className="font-medium">{trigger === 'manual' ? 'Manual' : 'Automático'}</span>
                                         <span className="text-muted-foreground text-xs">
-                                            {summary?.trigger_performance?.payment?.[trigger]?.recovered ?? 0} de {summary?.trigger_performance?.payment?.[trigger]?.contacted ?? 0}
+                                            {summary?.trigger_performance?.payment?.[trigger]?.recovered ?? 0} de{' '}
+                                            {summary?.trigger_performance?.payment?.[trigger]?.contacted ?? 0}
                                         </span>
                                     </div>
                                     <Badge variant="secondary" className="bg-blue-100 text-blue-900 hover:bg-blue-100">
@@ -511,7 +547,8 @@ export default function FollowUps({ filters, summary, budgetOrders, paymentOrder
                         </CardHeader>
                         <CardContent>
                             <p className="text-muted-foreground text-sm">
-                                Estes contatos são responsabilidade do atendimento ou financeiro. O técnico aparece na ordem apenas como responsável pelo serviço.
+                                Estes contatos são responsabilidade do atendimento ou financeiro. O técnico aparece na ordem apenas como responsável
+                                pelo serviço.
                             </p>
                         </CardContent>
                     </Card>
@@ -548,7 +585,8 @@ export default function FollowUps({ filters, summary, budgetOrders, paymentOrder
                         <CardContent className="space-y-2">
                             <div className="text-3xl font-bold">{summary?.commercial?.payment?.rate ?? 0}%</div>
                             <div className="text-muted-foreground text-sm">
-                                {summary?.commercial?.payment?.recovered ?? 0} recuperadas de {summary?.commercial?.payment?.contacted ?? 0} contato(s)
+                                {summary?.commercial?.payment?.recovered ?? 0} recuperadas de {summary?.commercial?.payment?.contacted ?? 0}{' '}
+                                contato(s)
                             </div>
                             <div className="flex flex-wrap gap-2 pt-1">
                                 <Badge variant="secondary" className="bg-emerald-100 text-emerald-900 hover:bg-emerald-100">
@@ -560,7 +598,6 @@ export default function FollowUps({ filters, summary, budgetOrders, paymentOrder
                             </div>
                         </CardContent>
                     </Card>
-
                 </div>
 
                 <div className="mt-4 grid gap-4 xl:grid-cols-2">
@@ -600,7 +637,12 @@ export default function FollowUps({ filters, summary, budgetOrders, paymentOrder
                                 <Select
                                     value={activeType}
                                     onValueChange={(value) =>
-                                        applyFilters({ type: value, search, technician_id: filters?.technician_id, response_status: filters?.response_status })
+                                        applyFilters({
+                                            type: value,
+                                            search,
+                                            technician_id: filters?.technician_id,
+                                            response_status: filters?.response_status,
+                                        })
                                     }
                                 >
                                     <SelectTrigger>

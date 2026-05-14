@@ -56,7 +56,7 @@ export default function SchedulesReport({ dateRange, company }: { dateRange?: Da
     }
 
     return (
-        <div className="mt-4 flex w-full justify-center">
+        <div className="flex w-full justify-center">
             <Button onClick={handleGeneratePDF} disabled={loading || !dateRange?.from || !dateRange?.to} className="w-full">
                 {loading ? (
                     <>

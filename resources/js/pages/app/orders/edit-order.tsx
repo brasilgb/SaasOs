@@ -58,7 +58,7 @@ function formatRelativeTimePtBr(value?: string | Date | null) {
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Painel',
         href: route('app.dashboard'),
     },
     {

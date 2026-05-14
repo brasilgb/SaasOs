@@ -34,7 +34,7 @@ declare global {
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Painel',
         href: '/',
     },
     {
@@ -44,7 +44,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Orders({ orders, whats, feedback, search, status, filter }: any) {
-    const { auth, othersetting } = usePage<{ auth?: { role?: string; permissions?: string[] }; othersetting?: { print_label_button_after_order_create?: boolean } }>().props;
+    const { auth, othersetting } = usePage<{
+        auth?: { role?: string; permissions?: string[] };
+        othersetting?: { print_label_button_after_order_create?: boolean };
+    }>().props;
     const [openInvoiceModal, setOpenInvoiceModal] = useState(false);
     const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState<any | null>(null);
     const barcodeForm = useForm({
@@ -215,24 +218,24 @@ export default function Orders({ orders, whats, feedback, search, status, filter
         <AppLayout>
             <Head title="Ordens" />
 
-            <div className="flex h-16 items-center justify-between px-4">
+            <div className="flex min-h-16 flex-col justify-center gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:py-0">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={Wrench} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Ordens</h2>
                 </div>
-                <div>
+                <div className="min-w-0 self-start sm:self-auto">
                     <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
 
-            <div className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
+            <div className="flex flex-col gap-3 p-4 xl:flex-row xl:items-center xl:justify-between">
                 {/* Busca */}
-                <div className="flex w-full flex-col gap-2 md:max-w-3xl md:flex-row">
-                    <div className="w-full md:max-w-sm">
-                        <InputSearch placeholder="Buscar por núm. ordem, cliente ou cpf/cnpj" url="app.orders.index" />
+                <div className="flex w-full flex-col gap-2 lg:flex-row lg:flex-wrap xl:max-w-4xl">
+                    <div className="w-full lg:w-auto lg:flex-none">
+                        <InputSearch placeholder="Buscar por núm. ordem, cliente ou cpf/cnpj" url="app.orders.index" className="lg:w-[420px]" />
                     </div>
                     {showBarcodeReader && (
-                        <form onSubmit={handleBarcodeSubmit} className="w-full md:max-w-xl">
+                        <form onSubmit={handleBarcodeSubmit} className="w-full lg:w-[360px] lg:flex-none">
                             <div className="flex gap-2">
                                 {isMobileDevice ? (
                                     <Button
@@ -248,7 +251,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                 ? 'Ler código de barras com a câmera do celular'
                                                 : 'Leitura por câmera indisponível neste navegador'
                                         }
-                                        className="w-full md:w-auto"
+                                        className="w-full lg:w-auto"
                                     >
                                         <Camera className="mr-1 h-4 w-4" />
                                         Ler com celular
@@ -267,6 +270,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                             size="icon"
                                             className="absolute top-0 right-0 h-full rounded-l-none"
                                             title="Buscar pela leitura do leitor de código de barras"
+                                            aria-label="Buscar pela leitura do leitor de código de barras"
                                         >
                                             <Barcode className="h-4 w-4" />
                                         </Button>
@@ -278,7 +282,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                 </div>
 
                 {/* Filtro */}
-                <div className="flex w-full flex-col gap-2 md:w-auto md:flex-row">
+                <div className="flex w-full flex-col gap-2 md:flex-row xl:w-auto">
                     <SelectFilter
                         dataStatus={statusServico}
                         specialFilters={[
@@ -302,8 +306,8 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                 </div>
 
                 {/* Botões */}
-                <div className="flex w-full flex-col gap-2 md:w-auto md:flex-row md:justify-end">
-                    <Button variant="default" asChild className="w-full md:w-auto">
+                <div className="flex w-full flex-col gap-2 md:flex-row md:justify-end xl:w-auto">
+                    <Button variant="default" asChild className="w-full whitespace-nowrap md:w-auto">
                         <a href="/apk/sigmaup-image-upload.apk" download="sigmaup-image-upload.apk">
                             <Plus className="mr-1 h-4 w-4" />
                             <span>App de upload de imagens</span>
@@ -311,7 +315,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                     </Button>
 
                     {canManageOrders && (
-                        <Button variant="default" asChild className="w-full md:w-auto">
+                        <Button variant="default" asChild className="w-full whitespace-nowrap md:w-auto">
                             <Link href={route('app.orders.create')}>
                                 <Plus className="mr-1 h-4 w-4" />
                                 <span>Nova Ordem</span>
@@ -358,7 +362,9 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                     const hasPendingPaymentFollowUp = Boolean(order.pending_payment_follow_up);
                                     const communicationDaysPending = Number(order.communication_days_pending ?? 0);
                                     const feedbackDaysPending =
-                                        !hasCustomerFeedback && order.delivery_date ? Math.max(0, moment().diff(moment(order.delivery_date), 'days')) : 0;
+                                        !hasCustomerFeedback && order.delivery_date
+                                            ? Math.max(0, moment().diff(moment(order.delivery_date), 'days'))
+                                            : 0;
                                     const whatsappContext: 'default' | 'budget_follow_up' | 'pending_payment' = hasPendingPaymentFollowUp
                                         ? 'pending_payment'
                                         : hasBudgetFollowUp
@@ -392,9 +398,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                             <span>{customerName}</span>
                                                         </div>
                                                     )}
-                                                    <div className="text-muted-foreground text-xs">
-                                                        {customerPhone}
-                                                    </div>
+                                                    <div className="text-muted-foreground text-xs">{customerPhone}</div>
                                                     {order.last_communication?.created_at && (
                                                         <div className="text-muted-foreground text-xs">
                                                             Último contato: {communicationLabel(order.last_communication)}{' '}
@@ -426,15 +430,10 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                 <div className="flex flex-wrap items-center gap-2">
                                                     <StatusBadge category="ordem" value={order.service_status} />
                                                     {hasPendingPaymentFollowUp && (
-                                                        <Badge className="bg-rose-100 text-rose-800 hover:bg-rose-100">
-                                                            Cobrança pendente
-                                                        </Badge>
+                                                        <Badge className="bg-rose-100 text-rose-800 hover:bg-rose-100">Cobrança pendente</Badge>
                                                     )}
                                                     {Boolean(order.is_warranty_return) && (
-                                                        <Badge
-                                                            variant="secondary"
-                                                            className="w-fit bg-amber-100 text-amber-900 hover:bg-amber-100"
-                                                        >
+                                                        <Badge variant="secondary" className="w-fit bg-amber-100 text-amber-900 hover:bg-amber-100">
                                                             Retorno garantia
                                                         </Badge>
                                                     )}
@@ -471,101 +470,124 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                     )}
                                                 </TableCell>
                                             )}
-                                            <TableCell className="flex justify-end gap-2">
-                                                {canManageOrders && hasFiscalRegistered && (
-                                                    <Badge variant="secondary" className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">
-                                                        NFSe registrada
-                                                    </Badge>
-                                                )}
+                                            <TableCell className="min-w-[280px]">
+                                                <div className="flex flex-wrap justify-end gap-2">
+                                                    {canManageOrders && hasFiscalRegistered && (
+                                                        <Badge variant="secondary" className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">
+                                                            NFSe registrada
+                                                        </Badge>
+                                                    )}
 
-                                                {canManageOrders && hasBudgetFollowUp && order.can_send_budget_follow_up && (
-                                                    <Button
-                                                        type="button"
-                                                        size="icon"
-                                                        variant="outline"
-                                                        title="Enviar follow-up de orçamento"
-                                                        onClick={() => handleBudgetFollowUp(order.id)}
-                                                    >
-                                                        <Mail className="h-4 w-4" />
-                                                    </Button>
-                                                )}
+                                                    {canManageOrders && hasBudgetFollowUp && order.can_send_budget_follow_up && (
+                                                        <Button
+                                                            type="button"
+                                                            size="icon"
+                                                            variant="outline"
+                                                            title="Enviar follow-up de orçamento"
+                                                            aria-label={`Enviar follow-up de orçamento da ordem ${order.order_number}`}
+                                                            onClick={() => handleBudgetFollowUp(order.id)}
+                                                        >
+                                                            <Mail className="h-4 w-4" />
+                                                        </Button>
+                                                    )}
 
-                                                {canManageOrders && hasFinancialValuesFilled && hasPendingPayment && (
-                                                    <OrderPaymentsModal
-                                                        order={order}
-                                                        orderPayments={[]}
-                                                        paymentSummary={null}
-                                                        compactTrigger
-                                                        compactTriggerClassName="bg-rose-600 text-white hover:bg-rose-700"
-                                                        compactTriggerTitle="Pagamento pendente"
-                                                    />
-                                                )}
+                                                    {canManageOrders && hasFinancialValuesFilled && hasPendingPayment && (
+                                                        <OrderPaymentsModal
+                                                            order={order}
+                                                            orderPayments={[]}
+                                                            paymentSummary={null}
+                                                            compactTrigger
+                                                            compactTriggerClassName="bg-rose-600 text-white hover:bg-rose-700"
+                                                            compactTriggerTitle="Pagamento pendente"
+                                                        />
+                                                    )}
 
-                                                {canManageOrders && (
-                                                    <Button asChild>
-                                                        <a
-                                                            target="_blank"
-                                                            href={route('os.token', order?.tracking_token)}
-                                                            title="Link para o cliente sobre a ordem de serviço"
+                                                    {canManageOrders && (
+                                                        <Button
+                                                            asChild
+                                                            size="icon"
                                                             className="bg-solar-blue-primary hover:bg-solar-blue-primary/90 text-white"
                                                         >
-                                                            <LinkIcon className="h-4 w-4" />
-                                                        </a>
-                                                    </Button>
-                                                )}
-                                                {canManageOrders &&
-                                                    ORDER_STATUSES_READY_FOR_INVOICE.includes(Number(order.service_status)) && (
+                                                            <a
+                                                                target="_blank"
+                                                                href={route('os.token', order?.tracking_token)}
+                                                                title="Link para o cliente sobre a ordem de serviço"
+                                                                aria-label={`Abrir link do cliente da ordem ${order.order_number}`}
+                                                            >
+                                                                <LinkIcon className="h-4 w-4" />
+                                                            </a>
+                                                        </Button>
+                                                    )}
+                                                    {canManageOrders && ORDER_STATUSES_READY_FOR_INVOICE.includes(Number(order.service_status)) && (
                                                         <Button
+                                                            size="icon"
                                                             title="Emitir NFSe"
+                                                            aria-label={`Emitir NFSe da ordem ${order.order_number}`}
                                                             onClick={() => {
                                                                 setSelectedInvoiceOrder(order);
                                                                 setOpenInvoiceModal(true);
                                                             }}
-                                                            className="rounded-lg py-2 text-sm font-medium"
                                                         >
                                                             <FileTextIcon className="h-4 w-4" />
                                                         </Button>
                                                     )}
 
-                                                {canManageOrders && (
-                                                    <WhatsAppButton
-                                                        phone={customer?.whatsapp ?? ''}
-                                                        customerName={customerName}
-                                                        orderNumber={order.order_number}
-                                                        status={order.service_status}
-                                                        feedback={isFeedbackWindowOpen && !hasCustomerFeedback}
-                                                        context={whatsappContext}
-                                                        amountDue={remaining}
-                                                        daysPending={communicationDaysPending}
-                                                        whats={{
-                                                            generatedbudget: whats?.generatedbudget,
-                                                            servicecompleted: whats?.servicecompleted,
-                                                            feedback: whats?.feedback,
-                                                            defaultmessage: whats?.defaultmessage,
-                                                            budgetfollowup: whats?.budgetfollowup,
-                                                            pendingpayment: whats?.pendingpayment,
-                                                            tracking_token: order?.tracking_token,
-                                                        }}
-                                                    />
-                                                )}
+                                                    {canManageOrders && (
+                                                        <WhatsAppButton
+                                                            phone={customer?.whatsapp ?? ''}
+                                                            customerName={customerName}
+                                                            orderNumber={order.order_number}
+                                                            status={order.service_status}
+                                                            feedback={isFeedbackWindowOpen && !hasCustomerFeedback}
+                                                            context={whatsappContext}
+                                                            amountDue={remaining}
+                                                            daysPending={communicationDaysPending}
+                                                            whats={{
+                                                                generatedbudget: whats?.generatedbudget,
+                                                                servicecompleted: whats?.servicecompleted,
+                                                                feedback: whats?.feedback,
+                                                                defaultmessage: whats?.defaultmessage,
+                                                                budgetfollowup: whats?.budgetfollowup,
+                                                                pendingpayment: whats?.pendingpayment,
+                                                                tracking_token: order?.tracking_token,
+                                                            }}
+                                                        />
+                                                    )}
 
-                                                {canManageOrders && <ModalReceipt orderid={order.id} />}
-                                                <Button asChild size="icon" className="bg-fuchsia-700 text-white hover:bg-fuchsia-700">
-                                                    <Link href={route('app.images.index', { or: order.id })}>
-                                                        <ImageUp className="h-4 w-4" />
-                                                    </Link>
-                                                </Button>
-
-                                                <Button asChild size="icon" className="bg-orange-500 text-white hover:bg-orange-600">
-                                                    <Link
-                                                        href={route('app.orders.edit', order.id)}
-                                                        data={{ page: orders.current_page, search: search }}
+                                                    {canManageOrders && <ModalReceipt orderid={order.id} />}
+                                                    <Button
+                                                        asChild
+                                                        size="icon"
+                                                        className="bg-fuchsia-700 text-white hover:bg-fuchsia-700"
+                                                        title="Enviar imagens"
                                                     >
-                                                        <Edit className="h-4 w-4" />
-                                                    </Link>
-                                                </Button>
+                                                        <Link
+                                                            href={route('app.images.index', { or: order.id })}
+                                                            aria-label={`Enviar imagens da ordem ${order.order_number}`}
+                                                        >
+                                                            <ImageUp className="h-4 w-4" />
+                                                        </Link>
+                                                    </Button>
 
-                                                {canManageOrders && <ActionDelete title={'esta ordem'} url={'app.orders.destroy'} param={order.id} />}
+                                                    <Button
+                                                        asChild
+                                                        size="icon"
+                                                        className="bg-orange-500 text-white hover:bg-orange-600"
+                                                        title="Editar ordem"
+                                                    >
+                                                        <Link
+                                                            href={route('app.orders.edit', order.id)}
+                                                            data={{ page: orders.current_page, search: search }}
+                                                            aria-label={`Editar ordem ${order.order_number}`}
+                                                        >
+                                                            <Edit className="h-4 w-4" />
+                                                        </Link>
+                                                    </Button>
+
+                                                    {canManageOrders && (
+                                                        <ActionDelete title={'esta ordem'} url={'app.orders.destroy'} param={order.id} />
+                                                    )}
+                                                </div>
                                             </TableCell>
                                         </TableRow>
                                     );
@@ -600,7 +622,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
             )}
             {cameraOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4">
-                    <div className="w-full max-w-md rounded-xl bg-background p-4 shadow-xl">
+                    <div className="bg-background w-full max-w-md rounded-xl p-4 shadow-xl">
                         <div className="mb-3 flex items-center justify-between">
                             <div>
                                 <h3 className="font-semibold">Ler código de barras</h3>
@@ -610,6 +632,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                 type="button"
                                 variant="ghost"
                                 size="icon"
+                                aria-label="Fechar leitor de código de barras"
                                 onClick={() => {
                                     setCameraOpen(false);
                                     stopCamera();

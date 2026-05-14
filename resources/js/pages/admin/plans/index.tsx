@@ -8,7 +8,7 @@ import AdminLayout from '@/layouts/admin/admin-layout';
 import { BreadcrumbItem } from '@/types';
 import { maskMoney } from '@/Utils/mask';
 import { Head } from '@inertiajs/react';
-import { HandCoins } from 'lucide-react';
+import { Copyright } from 'lucide-react';
 import moment from 'moment';
 import CreatePlan from './create-plan';
 import EditPlan from './edit-plan';
@@ -30,7 +30,7 @@ export default function PlansIndex({ plans }: any) {
             <Head title="Planos" />
             <div className="flex h-16 items-center justify-between px-4">
                 <div className="flex items-center gap-2">
-                    <Icon iconNode={HandCoins} className="h-8 w-8" />
+                    <Icon iconNode={Copyright} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Planos</h2>
                 </div>
                 <div>
@@ -70,7 +70,9 @@ export default function PlansIndex({ plans }: any) {
                                         <TableCell>{plan.slug}</TableCell>
                                         <TableCell>{plan.description}</TableCell>
                                         <TableCell>R$ {maskMoney(plan.value)}</TableCell>
-                                        <TableCell>{Number(plan.billing_months || 1)} {Number(plan.billing_months || 1) === 1 ? 'mês' : 'meses'}</TableCell>
+                                        <TableCell>
+                                            {Number(plan.billing_months || 1)} {Number(plan.billing_months || 1) === 1 ? 'mês' : 'meses'}
+                                        </TableCell>
                                         <TableCell>{moment(plan.created_at).format('DD/MM/YYYY')}</TableCell>
                                         <TableCell className="flex justify-end gap-2">
                                             <EditPlan plan={plan} />

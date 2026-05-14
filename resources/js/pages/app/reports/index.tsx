@@ -1,7 +1,7 @@
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { DatePicker } from '@/components/date-picker';
 import { Icon } from '@/components/icon';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head, usePage, useRemember } from '@inertiajs/react';
@@ -20,7 +20,7 @@ import TechnicianProductivity from './technician-productivity';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Painel',
         href: route('app.dashboard'),
     },
     {
@@ -44,6 +44,10 @@ export default function Parts() {
     const canViewCashier = Boolean(permissions.includes('sales') && othersetting?.enablesales);
     const canViewParts = permissions.includes('parts');
     const canViewQuality = permissions.includes('reports');
+    const hasOperationalReports = canViewOrders || canViewCustomers || canViewSchedules || canViewParts;
+    const hasFinancialReports = canViewSales || canViewExpenses || canViewCashier;
+    const hasManagementReports = canViewQuality;
+    const hasAnyReport = hasOperationalReports || hasFinancialReports || hasManagementReports;
 
     return (
         <AppLayout>
@@ -61,78 +65,63 @@ export default function Parts() {
             <div className="p-4">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Selecione um intervalo de datas e um módulo para gerar o relatório.</CardTitle>
+                        <CardTitle>Relatórios por período</CardTitle>
+                        <CardDescription>Escolha o intervalo e gere relatórios por área da operação.</CardDescription>
                     </CardHeader>
                     <CardContent className="flex justify-start">
                         <div className="w-full max-w-md">
                             <DatePicker mode={'range'} setDate={setDateRange} date={dateRange} />
                         </div>
                     </CardContent>
-                    <CardContent className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5">
-                        {canViewOrders && (
-                            <div className="w-full">
-                                <TechnicianProductivity dateRange={dateRange} company={company} />
+                    <CardContent className="space-y-8">
+                        {!hasAnyReport && (
+                            <div className="text-muted-foreground rounded-md border border-dashed p-4 text-sm">
+                                Nenhum relatório disponível para o seu perfil.
                             </div>
                         )}
 
-                        {canViewOrders && (
-                            <div className="w-full">
-                                <OrdersReport dateRange={dateRange} company={company} />
-                            </div>
+                        {hasOperationalReports && (
+                            <section className="space-y-3">
+                                <div>
+                                    <h3 className="text-sm font-semibold">Operação</h3>
+                                    <p className="text-muted-foreground text-sm">Ordens, agenda, clientes, técnicos e estoque.</p>
+                                </div>
+                                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                                    {canViewOrders && <TechnicianProductivity dateRange={dateRange} company={company} />}
+                                    {canViewOrders && <OrdersReport dateRange={dateRange} company={company} />}
+                                    {canViewOrders && <OrdersStatistics dateRange={dateRange} company={company} />}
+                                    {canViewOrders && <OrdersDaily dateRange={dateRange} company={company} />}
+                                    {canViewCustomers && <CustomersReport dateRange={dateRange} company={company} />}
+                                    {canViewSchedules && <SchedulesReport dateRange={dateRange} company={company} />}
+                                    {canViewParts && <PartsReport dateRange={dateRange} company={company} />}
+                                </div>
+                            </section>
                         )}
 
-                        {canViewOrders && (
-                            <div className="w-full">
-                                <OrdersStatistics dateRange={dateRange} company={company} />
-                            </div>
+                        {hasFinancialReports && (
+                            <section className="space-y-3">
+                                <div>
+                                    <h3 className="text-sm font-semibold">Financeiro</h3>
+                                    <p className="text-muted-foreground text-sm">Vendas, despesas e conferência de caixa.</p>
+                                </div>
+                                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                                    {canViewSales && <SalesReport dateRange={dateRange} company={company} />}
+                                    {canViewExpenses && <ExpensesReport dateRange={dateRange} company={company} />}
+                                    {canViewCashier && <CashierReport dateRange={dateRange} company={company} />}
+                                </div>
+                            </section>
                         )}
 
-                        {canViewOrders && (
-                            <div className="w-full">
-                                <OrdersDaily dateRange={dateRange} company={company} />
-                            </div>
-                        )}
-
-                        {canViewCustomers && (
-                            <div className="w-full">
-                                <CustomersReport dateRange={dateRange} company={company} />
-                            </div>
-                        )}
-
-                        {canViewSchedules && (
-                            <div className="w-full">
-                                <SchedulesReport dateRange={dateRange} company={company} />
-                            </div>
-                        )}
-
-                        {canViewSales && (
-                            <div className="w-full">
-                                <SalesReport dateRange={dateRange} company={company} />
-                            </div>
-                        )}
-
-                        {canViewParts && (
-                            <div className="w-full">
-                                <PartsReport dateRange={dateRange} company={company} />
-                            </div>
-                        )}
-
-                        {canViewExpenses && (
-                            <div className="w-full">
-                                <ExpensesReport dateRange={dateRange} company={company} />
-                            </div>
-                        )}
-
-                        {canViewCashier && (
-                            <div className="w-full">
-                                <CashierReport dateRange={dateRange} company={company} />
-                            </div>
-                        )}
-
-                        {canViewQuality && (
-                            <div className="w-full">
-                                <QualityReport dateRange={dateRange} company={company} />
-                            </div>
+                        {hasManagementReports && (
+                            <section className="space-y-3">
+                                <div>
+                                    <h3 className="text-sm font-semibold">Gestão</h3>
+                                    <p className="text-muted-foreground text-sm">Qualidade percebida pelo cliente e retornos em garantia.</p>
+                                </div>
+                                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                                    {canViewQuality && <QualityReport dateRange={dateRange} company={company} />}
+                                </div>
+                            </section>
                         )}
                     </CardContent>
                 </Card>

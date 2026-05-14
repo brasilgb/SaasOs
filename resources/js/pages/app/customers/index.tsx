@@ -11,14 +11,14 @@ import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { maskCpfCnpj, maskPhone, unMask } from '@/Utils/mask';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { Calendar, Edit, Plus, Upload, Users, Wrench } from 'lucide-react';
+import { Calendar, Edit, Plus, Upload, Users2, Wrench } from 'lucide-react';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
 import ImportCustomersModal from './import-customers-modal';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Painel',
         href: route('app.dashboard'),
     },
     {
@@ -62,39 +62,37 @@ export default function Customers({ customers, search, pending }: any) {
     return (
         <AppLayout>
             <Head title="Clientes" />
-            <div className="flex h-16 items-center justify-between px-4">
+            <div className="flex min-h-16 flex-col justify-center gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:py-0">
                 <div className="flex items-center gap-2">
-                    <Icon iconNode={Users} className="h-8 w-8" />
+                    <Icon iconNode={Users2} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Clientes</h2>
                 </div>
-                <div>
+                <div className="min-w-0 self-start sm:self-auto">
                     <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
 
-            <div className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
-                <div className="w-full">
-                    <InputSearch placeholder="Pesquisar cliente por nome ou cpf/cnpj" url="app.customers.index" />
+            <div className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="w-full lg:flex-none">
+                    <InputSearch placeholder="Pesquisar cliente por nome ou cpf/cnpj" url="app.customers.index" className="lg:w-[420px]" />
                 </div>
-                <div className='w-full flex items-center justify-end'>
-                    <Button variant={pending === '1' ? 'default' : 'outline'} asChild>
+                <div className="flex w-full flex-col gap-2 sm:flex-row sm:justify-end lg:w-auto lg:flex-none">
+                    <Button variant={pending === '1' ? 'default' : 'outline'} asChild className="w-full whitespace-nowrap sm:w-auto">
                         <Link href={route('app.customers.index', { search, pending: pending === '1' ? undefined : 1 })}>
                             {pending === '1' ? 'Mostrar todos' : 'Com saldo pendente'}
                         </Link>
                     </Button>
-                </div>
-                <div className="flex justify-between gap-2 md:justify-end">
                     {canManageCustomers && (
-                        <Button onClick={() => setModalAberto(true)} className="bg-green-600 text-white hover:bg-green-700">
+                        <Button onClick={() => setModalAberto(true)} className="w-full bg-green-600 text-white hover:bg-green-700 sm:w-auto">
                             <Upload className="h-4 w-4" />
                             <span>CSV</span>
                         </Button>
                     )}
                     {canManageCustomers && (
-                        <Button variant={'default'} asChild>
+                        <Button variant={'default'} asChild className="w-full whitespace-nowrap sm:w-auto">
                             <Link href={route('app.customers.create')}>
                                 <Plus className="h-4 w-4" />
-                                <span>Novo Cliente</span>
+                                <span>Novo cliente</span>
                             </Link>
                         </Button>
                     )}
@@ -112,7 +110,7 @@ export default function Customers({ customers, search, pending }: any) {
                                 <TableHead>Contato</TableHead>
                                 <TableHead>Saldo pendente</TableHead>
                                 <TableHead>Cadastro</TableHead>
-                                <TableHead></TableHead>
+                                <TableHead className="min-w-[220px]"></TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -146,51 +144,76 @@ export default function Customers({ customers, search, pending }: any) {
                                             )}
                                         </TableCell>
                                         <TableCell>{moment(customer.created_at).format('DD/MM/YYYY')}</TableCell>
-                                        <TableCell className="flex justify-end gap-2">
-                                            <Button asChild size="icon" className="bg-green-500 text-white hover:bg-green-500">
-                                                <a
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    href={`https://wa.me/${unMask(customer.whatsapp ?? '')}?text=${encodeURIComponent(getWhatsappGreeting(customer.name))}`}
+                                        <TableCell className="min-w-[220px]">
+                                            <div className="flex flex-wrap justify-end gap-2">
+                                                <Button
+                                                    asChild
+                                                    size="icon"
+                                                    className="bg-green-500 text-white hover:bg-green-500"
+                                                    title="Enviar WhatsApp"
                                                 >
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="16"
-                                                        height="16"
-                                                        fill="currentColor"
-                                                        className="bi bi-whatsapp"
-                                                        viewBox="0 0 16 16"
+                                                    <a
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        href={`https://wa.me/${unMask(customer.whatsapp ?? '')}?text=${encodeURIComponent(getWhatsappGreeting(customer.name))}`}
+                                                        aria-label={`Enviar WhatsApp para ${customer.name}`}
                                                     >
-                                                        <path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.71 1.916.81 2.049c.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232" />
-                                                    </svg>
-                                                </a>
-                                            </Button>
-                                            <Button asChild size="icon" className="bg-sky-500 text-white hover:bg-sky-600">
-                                                <Link href={route('app.schedules.index', { search: customer.name })}>
-                                                    <Calendar className="h-4 w-4" />
-                                                </Link>
-                                            </Button>
-
-                                            <Button asChild size="icon" className="bg-sky-500 text-white hover:bg-sky-600">
-                                                <Link href={route('app.orders.index', { search: customer.name })}>
-                                                    <Wrench className="h-4 w-4" />
-                                                </Link>
-                                            </Button>
-
-                                            {canManageCustomers && (
-                                                <Button asChild size="icon" className="bg-orange-500 text-white hover:bg-orange-600">
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            width="16"
+                                                            height="16"
+                                                            fill="currentColor"
+                                                            className="bi bi-whatsapp"
+                                                            viewBox="0 0 16 16"
+                                                        >
+                                                            <path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.71 1.916.81 2.049c.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232" />
+                                                        </svg>
+                                                    </a>
+                                                </Button>
+                                                <Button
+                                                    asChild
+                                                    size="icon"
+                                                    className="bg-sky-500 text-white hover:bg-sky-600"
+                                                    title="Ver agendamentos"
+                                                >
                                                     <Link
-                                                        href={route('app.customers.edit', customer.id)}
-                                                        data={{ page: customers.current_page, search: search }}
+                                                        href={route('app.schedules.index', { search: customer.name })}
+                                                        aria-label={`Ver agendamentos de ${customer.name}`}
                                                     >
-                                                        <Edit />
+                                                        <Calendar className="h-4 w-4" />
                                                     </Link>
                                                 </Button>
-                                            )}
 
-                                            {canManageCustomers && (
-                                                <ActionDelete title={'este cliente'} url={'app.customers.destroy'} param={customer.id} />
-                                            )}
+                                                <Button asChild size="icon" className="bg-sky-500 text-white hover:bg-sky-600" title="Ver ordens">
+                                                    <Link
+                                                        href={route('app.orders.index', { search: customer.name })}
+                                                        aria-label={`Ver ordens de ${customer.name}`}
+                                                    >
+                                                        <Wrench className="h-4 w-4" />
+                                                    </Link>
+                                                </Button>
+
+                                                {canManageCustomers && (
+                                                    <Button
+                                                        asChild
+                                                        size="icon"
+                                                        className="bg-orange-500 text-white hover:bg-orange-600"
+                                                        title="Editar cliente"
+                                                    >
+                                                        <Link
+                                                            href={route('app.customers.edit', customer.id)}
+                                                            data={{ page: customers.current_page, search: search }}
+                                                            aria-label={`Editar cliente ${customer.name}`}
+                                                        >
+                                                            <Edit className="h-4 w-4" />
+                                                        </Link>
+                                                    </Button>
+                                                )}
+
+                                                {canManageCustomers && (
+                                                    <ActionDelete title={'este cliente'} url={'app.customers.destroy'} param={customer.id} />
+                                                )}
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))

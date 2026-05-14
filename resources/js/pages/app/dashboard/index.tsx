@@ -9,7 +9,7 @@ import { usePersistedPeriodFilter } from '@/hooks/use-persisted-period-filter';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-import { LayoutGridIcon, MessageSquareHeart } from 'lucide-react';
+import { LayoutGrid, MessageSquareHeart } from 'lucide-react';
 import moment from 'moment';
 import FinanceiroOrders from './fin-order/ordens';
 import FinanceiroSales from './fin-order/sales';
@@ -17,7 +17,7 @@ import OrderDashboard from './ope-order';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Painel',
         href: route('app.dashboard'),
     },
 ];
@@ -46,14 +46,17 @@ export default function Dashboard({
     const isTechnician = auth?.role === 'technician';
     const canUseSales = Boolean(auth?.permissions?.includes('sales') && others?.enablesales && !isTechnician);
 
-    const hasCustomRange = dateRange?.from && dateRange?.to;
+    const customRangeFrom = dateRange.from;
+    const customRangeTo = dateRange.to;
+    const hasCustomRange = Boolean(customRangeFrom && customRangeTo);
 
-    const timerangeForRequests = hasCustomRange
-        ? Math.max(1, Math.ceil((new Date(dateRange.to).getTime() - new Date(dateRange.from).getTime()) / (1000 * 60 * 60 * 24)) + 1)
-        : Number(timeRange);
+    const timerangeForRequests =
+        customRangeFrom && customRangeTo
+            ? Math.max(1, Math.ceil((new Date(customRangeTo).getTime() - new Date(customRangeFrom).getTime()) / (1000 * 60 * 60 * 24)) + 1)
+            : Number(timeRange);
 
     const timerangeLabel = hasCustomRange
-        ? `${formatDateRange(dateRange.from)} até ${formatDateRange(dateRange.to)}`
+        ? `${formatDateRange(customRangeFrom)} até ${formatDateRange(customRangeTo)}`
         : timeRange === '1'
           ? 'Hoje'
           : `${timeRange} dias`;
@@ -80,12 +83,12 @@ export default function Dashboard({
     return (
         <AppLayout>
             {flash?.message && <AlertSuccess message={flash?.message} />}
-            <Head title="Dashboard" />
+            <Head title="Painel" />
             <div key={reloadKey}>
                 <div className="flex min-h-16 flex-col justify-center gap-3 px-4 py-3 sm:h-16 sm:flex-row sm:items-center sm:justify-between sm:py-0">
                     <div className="flex items-center gap-2">
-                        <Icon iconNode={LayoutGridIcon} className="h-8 w-8" />
-                        <h2 className="text-xl font-semibold tracking-tight">Dashboard</h2>
+                        <Icon iconNode={LayoutGrid} className="h-8 w-8" />
+                        <h2 className="text-xl font-semibold tracking-tight">Painel</h2>
                     </div>
                     <div className="min-w-0 self-start sm:self-auto">
                         <Breadcrumbs breadcrumbs={breadcrumbs} />
@@ -141,10 +144,7 @@ export default function Dashboard({
                                     </Badge>
                                 </div>
                             </div>
-                            <a
-                                href={tenantFeedbackRequest.url}
-                                className="text-sm font-medium text-amber-900 underline underline-offset-4"
-                            >
+                            <a href={tenantFeedbackRequest.url} className="text-sm font-medium text-amber-900 underline underline-offset-4">
                                 Enviar feedback
                             </a>
                         </div>

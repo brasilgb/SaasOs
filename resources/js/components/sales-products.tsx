@@ -10,7 +10,7 @@ import Receipt from '@/pages/app/sales/receipt';
 import type { OptionType, PageProps, User } from '@/types';
 import { useForm, usePage } from '@inertiajs/react';
 import { pdf } from '@react-pdf/renderer';
-import { FileText, FileTextIcon, Loader2, Printer, ShoppingCartIcon, Trash2 } from 'lucide-react'; // Adicionado Trash2 para remover item
+import { Barcode, FileText, FileTextIcon, Loader2, Printer, ShoppingCartIcon, Trash2 } from 'lucide-react'; // Adicionado Trash2 para remover item
 import React, { useEffect, useRef, useState } from 'react';
 import Select, { type SingleValue } from 'react-select';
 import { useReactToPrint } from 'react-to-print';
@@ -41,6 +41,8 @@ interface Part {
     quantity: number; // This is the stock quantity
     sale_price: number;
     customer_id: number | null;
+    part_number?: string | number;
+    reference_number?: string | number;
 }
 
 interface CartItem extends Part {
@@ -94,6 +96,7 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
     const [cartItems, setCartItems] = useState<CartItem[]>([]); // New state for cart items
     const [saleCompleted, setSaleCompleted] = useState(false);
     const [saleData, setSaleData] = useState<SaleRecord | null>(null);
+    const [barcode, setBarcode] = useState('');
 
     const [isPrintingThermal, setIsPrintingThermal] = useState(false);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
@@ -111,9 +114,11 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
         total_amount: 0,
     });
 
+    const normalizeCode = (value: string | number | null | undefined) => String(value ?? '').trim().toLowerCase();
+
     const optionsParts: OptionType[] = parts.map((part) => ({
         value: part.id,
-        label: part.name,
+        label: part.reference_number ? `${part.name} - ${part.reference_number}` : part.name,
     }));
     const optionsCustomers: OptionType[] = customers.map((customer) => ({
         value: customer.id,
@@ -130,33 +135,33 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
         }));
     }, [cartItems, setData]);
 
-    const addToCart = () => {
-        if (selectedPart && data.quantity > 0) {
+    const addPartToCart = (part: Part, quantity: number) => {
+        if (quantity > 0) {
             // 1. Verifica se o item já está no carrinho
-            const existingItemIndex = cartItems.findIndex((item) => item.id === selectedPart.id);
+            const existingItemIndex = cartItems.findIndex((item) => item.id === part.id);
             // 2. Calcula quanto já tem no carrinho desse item
             const quantityInCart = existingItemIndex > -1 ? cartItems[existingItemIndex].selected_quantity : 0;
             // 3. Validação REAL de estoque (Carrinho + O que está tentando adicionar agora)
-            if (quantityInCart + data.quantity > selectedPart.quantity) {
-                alert(`Estoque insuficiente. Você já tem ${quantityInCart} no carrinho e o estoque total é ${selectedPart.quantity}.`);
+            if (quantityInCart + quantity > part.quantity) {
+                alert(`Estoque insuficiente. Você já tem ${quantityInCart} no carrinho e o estoque total é ${part.quantity}.`);
                 return;
             }
 
             if (existingItemIndex > -1) {
                 // ATUALIZAR ITEM EXISTENTE
                 const updatedCart = cartItems.map((item, index) =>
-                    index === existingItemIndex ? { ...item, selected_quantity: item.selected_quantity + data.quantity } : item,
+                    index === existingItemIndex ? { ...item, selected_quantity: item.selected_quantity + quantity } : item,
                 );
                 setCartItems(updatedCart);
             } else {
-                const { quantity: stockQuantity, ...partDetails } = selectedPart;
+                const { quantity: stockQuantity, ...partDetails } = part;
 
                 const newItem: CartItem = {
                     ...partDetails, // Copia id, name, price... (SEM o quantity do estoque)
                     cartItemId: Date.now().toString(),
-                    selected_quantity: data.quantity, // Esta é a quantidade vendida
+                    selected_quantity: quantity, // Esta é a quantidade vendida
                     quantity: stockQuantity,
-                    stock_quantity: selectedPart.quantity,
+                    stock_quantity: part.quantity,
                 };
                 setCartItems((prevItems) => [...prevItems, newItem]);
             }
@@ -164,9 +169,33 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
             // Reset inputs
             setSelectedPart(null);
             setData((prevData) => ({ ...prevData, part_id: '', quantity: 1 }));
+        }
+    };
+
+    const addToCart = () => {
+        if (selectedPart && data.quantity > 0) {
+            addPartToCart(selectedPart, data.quantity);
         } else if (selectedPart && data.quantity > selectedPart.quantity) {
             alert('Quantidade maior que o estoque disponível.');
         }
+    };
+
+    const addByBarcode = () => {
+        const code = normalizeCode(barcode);
+
+        if (!code) return;
+
+        const part = parts.find((item) =>
+            [item.reference_number, item.part_number, item.id].some((value) => normalizeCode(value) === code),
+        );
+
+        if (!part) {
+            toastWarning('Produto não encontrado', 'Confira o código de barras informado.');
+            return;
+        }
+
+        addPartToCart(part, data.quantity || 1);
+        setBarcode('');
     };
 
     const removeFromCart = (cartItemId: string) => {
@@ -224,6 +253,7 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
         setSuccessMessage('');
         reset();
         setSelectedPart(null);
+        setBarcode('');
         setCartItems([]); // Clear cart on dialog close
         setSaleCompleted(false); // Reseta o estado da venda // Limpa o nome do cliente para a próxima venda
     };
@@ -232,6 +262,7 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
         setSuccessMessage('');
         reset();
         setSelectedPart(null);
+        setBarcode('');
         setCartItems([]);
         setSaleCompleted(false);
     };
@@ -334,7 +365,7 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
                                 options={optionsCustomers}
                                 onChange={changeCustomers}
                                 placeholder="Selecione o cliente"
-                                className="h-9 w-full rounded-md border border-gray-300 p-0 text-gray-700 shadow-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                className="w-full"
                                 styles={selectStyles}
                             />
                             {errors.customer_id && <p className="col-span-4 text-right text-xs text-red-500">{errors.customer_id}</p>}
@@ -357,8 +388,8 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
                             </select>
                             {errors.payment_method && <p className="col-span-4 text-right text-xs text-red-500">{errors.payment_method}</p>}
                         </div>
-                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-5 sm:gap-4">
-                            <div className="col-span-2 items-center gap-4">
+                        <div className="grid grid-cols-1 gap-2 lg:grid-cols-6 lg:gap-4">
+                            <div className="items-center gap-4 lg:col-span-2">
                                 <Label htmlFor="part_id" className="mb-1 text-right">
                                     Selecione o Produto
                                 </Label>
@@ -366,14 +397,44 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
                                     isSearchable
                                     value={selectedOptionParts}
                                     options={optionsParts}
-                                    onChange={changeParts}
-                                    placeholder="Selecione a peça/produto"
-                                    className="h-9 w-full rounded-md border border-gray-300 p-0 text-gray-700 shadow-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                    styles={selectStyles}
+                                onChange={changeParts}
+                                placeholder="Selecione a peça/produto"
+                                className="w-full"
+                                styles={selectStyles}
                                 />
                                 {errors.part_id && <p className="col-span-4 text-right text-xs text-red-500">{errors.part_id}</p>}
                             </div>
-                            <div className="col-span-2 items-center gap-4">
+                            <div className="items-center gap-4 lg:col-span-2">
+                                <Label htmlFor="sale_barcode" className="mb-1 text-right">
+                                    Código de barras
+                                </Label>
+                                <div className="relative">
+                                    <Input
+                                        id="sale_barcode"
+                                        value={barcode}
+                                        onChange={(event) => setBarcode(event.target.value)}
+                                        onKeyDown={(event) => {
+                                            if (event.key === 'Enter') {
+                                                event.preventDefault();
+                                                addByBarcode();
+                                            }
+                                        }}
+                                        placeholder="Digite ou leia o código"
+                                        autoComplete="off"
+                                        className="pr-12"
+                                    />
+                                    <Button
+                                        type="button"
+                                        size="icon"
+                                        className="absolute top-0 right-0 h-full rounded-l-none"
+                                        title="Adicionar produto pelo código de barras"
+                                        onClick={addByBarcode}
+                                    >
+                                        <Barcode className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </div>
+                            <div className="items-center gap-4 lg:col-span-1">
                                 <div>
                                     <Label htmlFor="quantity" className="mb-1 text-right">
                                         Quantidade
@@ -394,11 +455,12 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
                                         ))}
                                 </div>
                             </div>
-                            <div className="md:mt-4.5">
+                            <div className="lg:mt-6">
                                 <Button
                                     type="button"
                                     onClick={addToCart}
                                     disabled={!selectedPart || data.quantity <= 0 || data.quantity > selectedPart.quantity}
+                                    className="w-full"
                                 >
                                     <ShoppingCartIcon /> Adicionar
                                 </Button>

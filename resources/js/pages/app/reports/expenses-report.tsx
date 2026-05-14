@@ -55,7 +55,7 @@ export default function ExpensesReport({ dateRange, company }: { dateRange?: Dat
     }
 
     return (
-        <div className="mt-4 flex w-full justify-center">
+        <div className="flex w-full justify-center">
             <Button onClick={handleGeneratePDF} disabled={loading || !dateRange?.from || !dateRange?.to} className="w-full">
                 {loading ? (
                     <>

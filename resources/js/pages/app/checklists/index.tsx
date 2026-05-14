@@ -7,18 +7,18 @@ import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, Table
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
-import { PackagePlus } from 'lucide-react';
+import { ClipboardCheck } from 'lucide-react';
 import moment from 'moment';
 import CreateChecklist from './create-checklist';
 import EditChecklist from './edit-checklist';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Painel',
         href: route('app.dashboard'),
     },
     {
-        title: 'Checllist',
+        title: 'Checklists',
         href: '#',
     },
 ];
@@ -31,20 +31,20 @@ export default function CheckList({ equipments, checklists }: any) {
         <AppLayout>
             <Head title="Checklists" />
 
-            <div className="flex h-16 items-center justify-between px-4">
+            <div className="flex min-h-16 flex-col justify-center gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:py-0">
                 <div className="flex items-center gap-2">
-                    <Icon iconNode={PackagePlus} className="h-8 w-8" />
+                    <Icon iconNode={ClipboardCheck} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Checklists</h2>
                 </div>
-                <div>
+                <div className="min-w-0 self-start sm:self-auto">
                     <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
-            <div className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
-                <div className="w-full">
-                    <InputSearch placeholder="Buscar checklist ou equipamento" url="app.register-checklists.index" />
+            <div className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="w-full lg:flex-none">
+                    <InputSearch placeholder="Buscar checklist ou equipamento" url="app.register-checklists.index" className="lg:w-[420px]" />
                 </div>
-                <div className="flex w-full justify-end">
+                <div className="flex w-full justify-end lg:w-auto lg:flex-none">
                     {canManageChecklists && <CreateChecklist equipments={equipments} />}
                 </div>
             </div>
@@ -58,7 +58,7 @@ export default function CheckList({ equipments, checklists }: any) {
                                 <TableHead>Equipamento</TableHead>
                                 <TableHead>Checklist</TableHead>
                                 <TableHead>Cadastro</TableHead>
-                                <TableHead></TableHead>
+                                <TableHead className="min-w-[120px]"></TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -69,11 +69,17 @@ export default function CheckList({ equipments, checklists }: any) {
                                         <TableCell className="font-medium">{checklist.equipment.equipment}</TableCell>
                                         <TableCell className="font-medium">{checklist.checklist}</TableCell>
                                         <TableCell>{moment(checklist.created_at).format('DD/MM/YYYY')}</TableCell>
-                                        <TableCell className="flex justify-end gap-2">
-                                            {canManageChecklists && <EditChecklist checklist={checklist} equipments={equipments} />}
-                                            {canManageChecklists && (
-                                                <ActionDelete title={'este checklist'} url={'app.register-checklists.destroy'} param={checklist.id} />
-                                            )}
+                                        <TableCell className="min-w-[120px]">
+                                            <div className="flex flex-wrap justify-end gap-2">
+                                                {canManageChecklists && <EditChecklist checklist={checklist} equipments={equipments} />}
+                                                {canManageChecklists && (
+                                                    <ActionDelete
+                                                        title={'este checklist'}
+                                                        url={'app.register-checklists.destroy'}
+                                                        param={checklist.id}
+                                                    />
+                                                )}
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))

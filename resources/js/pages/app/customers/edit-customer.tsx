@@ -4,12 +4,12 @@ import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, Users } from 'lucide-react';
+import { ArrowLeft, Users2 } from 'lucide-react';
 import CustomerForm from './customer-form';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Painel',
         href: route('app.dashboard'),
     },
     {
@@ -28,7 +28,7 @@ export default function EditCustomer({ customer, page, search }: any) {
             <Head title="Clientes" />
             <div className="flex h-16 items-center justify-between px-4">
                 <div className="flex items-center gap-2">
-                    <Icon iconNode={Users} className="h-8 w-8" />
+                    <Icon iconNode={Users2} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Clientes</h2>
                 </div>
                 <div>

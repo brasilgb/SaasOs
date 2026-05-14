@@ -17,7 +17,7 @@ import moment from 'moment';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Painel',
         href: route('app.dashboard'),
     },
     {
@@ -25,6 +25,12 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '#',
     },
 ];
+
+function messageStatusBadgeClass(status: number | string) {
+    return Number(status) === 0
+        ? 'border-amber-300 bg-amber-100 text-amber-900 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200'
+        : 'border-emerald-200 bg-emerald-100 text-emerald-900 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200';
+}
 
 export default function Messages({ messages, search }: any) {
     const { auth } = usePage().props as any;
@@ -40,30 +46,30 @@ export default function Messages({ messages, search }: any) {
     return (
         <AppLayout>
             <Head title="Mensagens" />
-            <div className="flex h-16 items-center justify-between px-4">
+            <div className="flex min-h-16 flex-col justify-center gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:py-0">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={MessageSquareMore} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Mensagens</h2>
                 </div>
-                <div>
+                <div className="min-w-0 self-start sm:self-auto">
                     <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
 
-            <div className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
-                <div className="w-full md:max-w-sm">
-                    <InputSearch placeholder="Buscar por núm. da mensagem ou destinatário" url="app.messages.index" />
+            <div className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="w-full lg:flex-none">
+                    <InputSearch placeholder="Buscar por núm. da mensagem ou destinatário" url="app.messages.index" className="lg:w-[420px]" />
                 </div>
-                <div className="flex w-full flex-col gap-2 md:w-auto md:flex-row">
-                    <div className="w-full md:w-44">
+                <div className="flex w-full flex-col gap-2 md:flex-row lg:w-auto lg:flex-none">
+                    <div className="w-full md:w-56">
                         <SelectFilter dataStatus={messageStatusFilter} specialFilters={messageOperationFilter} url="app.messages.index" noOrder />
                     </div>
                 </div>
-                <div className="flex w-full flex-col gap-2 md:w-auto md:flex-row md:justify-end">
-                    <Button variant={'default'} asChild className="w-full md:w-auto">
-                        <Link href={route('app.messages.create')} className="w-full md:w-auto">
+                <div className="flex w-full flex-col gap-2 md:flex-row md:justify-end lg:w-auto lg:flex-none">
+                    <Button variant={'default'} asChild className="w-full whitespace-nowrap md:w-auto">
+                        <Link href={route('app.messages.create')}>
                             <Plus className="h-4 w-4" />
-                            <span>Nova Mensagem</span>
+                            <span>Nova mensagem</span>
                         </Link>
                     </Button>
                 </div>
@@ -79,7 +85,7 @@ export default function Messages({ messages, search }: any) {
                                 <TableHead>Operação</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead>Data</TableHead>
-                                <TableHead></TableHead>
+                                <TableHead className="min-w-[120px]"></TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -106,22 +112,36 @@ export default function Messages({ messages, search }: any) {
                                                 <Badge variant={'destructive'}>Recebida</Badge>
                                             )}
                                         </TableCell>
-                                        <TableCell>{<Badge variant={'default'}>{statusMessageByValue(message.status)}</Badge>}</TableCell>
+                                        <TableCell>
+                                            <Badge variant="outline" className={messageStatusBadgeClass(message.status)}>
+                                                {statusMessageByValue(Number(message.status))}
+                                            </Badge>
+                                        </TableCell>
                                         <TableCell>{moment(message.created_at).format('DD/MM/YYYY')}</TableCell>
-                                        <TableCell className="flex justify-end gap-2">
+                                        <TableCell className="min-w-[120px]">
                                             {message.sender_id == auth.user.id ? (
-                                                <>
-                                                    <Button asChild size="icon" className="bg-orange-500 text-white hover:bg-orange-600">
+                                                <div className="flex flex-wrap justify-end gap-2">
+                                                    <Button
+                                                        asChild
+                                                        size="icon"
+                                                        className="bg-orange-500 text-white hover:bg-orange-600"
+                                                        title="Abrir mensagem"
+                                                    >
                                                         <Link
                                                             href={route('app.messages.edit', message.id)}
                                                             data={{ page: messages.current_page, search: search }}
+                                                            aria-label={`Abrir mensagem ${message.message_number}`}
                                                         >
-                                                            {(message.sender_id === auth.user.id) === message.status ? <Eye /> : <Edit />}
+                                                            {(message.sender_id === auth.user.id) === message.status ? (
+                                                                <Eye className="h-4 w-4" />
+                                                            ) : (
+                                                                <Edit className="h-4 w-4" />
+                                                            )}
                                                         </Link>
                                                     </Button>
 
                                                     <ActionDelete title={'esta mensagem'} url={'app.messages.destroy'} param={message.id} />
-                                                </>
+                                                </div>
                                             ) : (
                                                 <AppLoadMessage message={message} />
                                             )}

@@ -8,11 +8,11 @@ import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { maskCep, maskCnpj, maskPhone, unMask } from '@/Utils/mask';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
-import { Cog, Save } from 'lucide-react';
+import { Building, Save } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Painel',
         href: route('app.dashboard'),
     },
     {
@@ -97,7 +97,7 @@ export default function Company({ company }: any) {
             <Head title="Dados da empresa" />
             <div className="flex h-16 items-center justify-between px-4">
                 <div className="flex items-center gap-2">
-                    <Icon iconNode={Cog} className="h-8 w-8" />
+                    <Icon iconNode={Building} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Dados da empresa</h2>
                 </div>
                 <div>
@@ -175,13 +175,25 @@ export default function Company({ company }: any) {
 
                             <div className="grid gap-2">
                                 <Label htmlFor="state">UF</Label>
-                                <Input type="text" id="state" value={data.state} disabled={!canManageCompany} onChange={(e) => setData('state', e.target.value)} />
+                                <Input
+                                    type="text"
+                                    id="state"
+                                    value={data.state}
+                                    disabled={!canManageCompany}
+                                    onChange={(e) => setData('state', e.target.value)}
+                                />
                                 {errors.state && <div>{errors.state}</div>}
                             </div>
 
                             <div className="grid gap-2 md:col-span-2">
                                 <Label htmlFor="city">Cidade</Label>
-                                <Input type="text" id="city" value={data.city} disabled={!canManageCompany} onChange={(e) => setData('city', e.target.value)} />
+                                <Input
+                                    type="text"
+                                    id="city"
+                                    value={data.city}
+                                    disabled={!canManageCompany}
+                                    onChange={(e) => setData('city', e.target.value)}
+                                />
                             </div>
 
                             <div className="grid gap-2 md:col-span-2">
@@ -199,12 +211,24 @@ export default function Company({ company }: any) {
                         <div className="mt-4 grid gap-4 md:grid-cols-4">
                             <div className="grid gap-2 md:col-span-2">
                                 <Label htmlFor="street">Logradouro</Label>
-                                <Input type="text" id="street" value={data.street} disabled={!canManageCompany} onChange={(e) => setData('street', e.target.value)} />
+                                <Input
+                                    type="text"
+                                    id="street"
+                                    value={data.street}
+                                    disabled={!canManageCompany}
+                                    onChange={(e) => setData('street', e.target.value)}
+                                />
                             </div>
 
                             <div className="grid gap-2">
                                 <Label htmlFor="number">Número</Label>
-                                <Input type="text" id="number" value={data.number} disabled={!canManageCompany} onChange={(e) => setData('number', e.target.value)} />
+                                <Input
+                                    type="text"
+                                    id="number"
+                                    value={data.number}
+                                    disabled={!canManageCompany}
+                                    onChange={(e) => setData('number', e.target.value)}
+                                />
                             </div>
 
                             <div className="grid gap-2">
@@ -247,12 +271,24 @@ export default function Company({ company }: any) {
 
                             <div className="grid gap-2 md:col-span-2">
                                 <Label htmlFor="site">Site</Label>
-                                <Input type="text" id="site" value={data.site} disabled={!canManageCompany} onChange={(e) => setData('site', e.target.value)} />
+                                <Input
+                                    type="text"
+                                    id="site"
+                                    value={data.site}
+                                    disabled={!canManageCompany}
+                                    onChange={(e) => setData('site', e.target.value)}
+                                />
                             </div>
 
                             <div className="grid gap-2 md:col-span-2">
                                 <Label htmlFor="email">E-mail</Label>
-                                <Input type="text" id="email" value={data.email} disabled={!canManageCompany} onChange={(e) => setData('email', e.target.value)} />
+                                <Input
+                                    type="text"
+                                    id="email"
+                                    value={data.email}
+                                    disabled={!canManageCompany}
+                                    onChange={(e) => setData('email', e.target.value)}
+                                />
                             </div>
                         </div>
 
