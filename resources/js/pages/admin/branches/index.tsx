@@ -36,14 +36,14 @@ export default function BranchesIndex({ branches }: any) {
                     <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
-            <div className="flex items-center justify-between p-4">
-                <div>
+            <div className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="w-full min-w-0 lg:max-w-[360px] lg:flex-1">
                     <InputSearch placeholder="Buscar filial" url="admin.branches.index" />
                 </div>
-                <div>
-                    <Button variant="default" asChild>
+                <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:shrink-0 lg:justify-end">
+                    <Button variant="default" asChild className="w-full whitespace-nowrap sm:w-auto">
                         <Link href={route('admin.branches.create')}>
-                            <Plus />
+                            <Plus className="h-4 w-4" />
                             Empresa
                         </Link>
                     </Button>

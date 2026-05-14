@@ -179,7 +179,7 @@ export default function Expenses({ expenses }: any) {
             {flash?.success && <AlertSuccess message={flash.success} />}
             <Head title="Despesas" />
 
-            <div className="flex min-h-16 flex-col justify-center gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:py-0">
+            <div className="flex min-h-16 flex-col justify-center gap-3 px-4 py-3 sm:py-0">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={BanknoteArrowDownIcon} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Despesas</h2>
@@ -190,10 +190,10 @@ export default function Expenses({ expenses }: any) {
             </div>
 
             <div className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:justify-between">
-                <div className="w-full lg:flex-none">
-                    <InputSearch placeholder="Buscar despesas por número, descrição e observação" url="app.expenses.index" className="lg:w-[420px]" />
+                <div className="w-full min-w-0 lg:max-w-[420px] lg:flex-1">
+                    <InputSearch placeholder="Buscar despesas por número, descrição e observação" url="app.expenses.index" />
                 </div>
-                <div className="flex w-full justify-end lg:w-auto lg:flex-none">
+                <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:shrink-0 lg:justify-end">
                     <Button variant="default" onClick={openCreateModal} className="w-full whitespace-nowrap sm:w-auto">
                         <Plus className="h-4 w-4" />
                         <span>Nova despesa</span>

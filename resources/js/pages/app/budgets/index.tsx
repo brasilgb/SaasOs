@@ -28,7 +28,7 @@ export default function CheckList({ budgets, company, search }: any) {
     return (
         <AppLayout>
             <Head title="Orçamentos" />
-            <div className="flex min-h-16 flex-col justify-center gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:py-0">
+            <div className="flex min-h-16 flex-col justify-center gap-3 px-4 py-3 sm:py-0">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={ScrollText} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Orçamentos</h2>
@@ -38,22 +38,20 @@ export default function CheckList({ budgets, company, search }: any) {
                 </div>
             </div>
 
-            <div className="flex flex-col gap-3 p-4">
-                <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                    <div className="w-full lg:flex-none">
-                        <InputSearch placeholder="Pesquisar por serviço" url="app.budgets.index" className="lg:w-[420px]" />
-                    </div>
-                    <div className="flex w-full justify-end lg:w-auto lg:flex-none">
-                        <Button variant={'default'} asChild className="w-full whitespace-nowrap sm:w-auto">
-                            <Link href={route('app.budgets.create')}>
-                                <Plus className="h-4 w-4" />
-                                <span>Novo orçamento</span>
-                            </Link>
-                        </Button>
-                    </div>
+            <div className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="w-full min-w-0 lg:max-w-[420px] lg:flex-1">
+                    <InputSearch placeholder="Pesquisar por serviço" url="app.budgets.index" />
                 </div>
-                <div className="bg-accent text-accent-foreground rounded-md p-2 text-center text-xs font-medium">
+                <div className="bg-accent text-accent-foreground min-w-0 rounded-md p-2 text-center text-xs font-medium lg:flex-1">
                     Os dados da empresa devem estar preenchidos para exibir corretamente o orçamento.
+                </div>
+                <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:shrink-0 lg:justify-end">
+                    <Button variant={'default'} asChild className="w-full whitespace-nowrap sm:w-auto">
+                        <Link href={route('app.budgets.create')}>
+                            <Plus className="h-4 w-4" />
+                            <span>Novo orçamento</span>
+                        </Link>
+                    </Button>
                 </div>
             </div>
             <div className="p-4">

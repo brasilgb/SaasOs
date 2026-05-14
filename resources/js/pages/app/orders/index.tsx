@@ -218,7 +218,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
         <AppLayout>
             <Head title="Ordens" />
 
-            <div className="flex min-h-16 flex-col justify-center gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:py-0">
+            <div className="flex min-h-16 flex-col justify-center gap-3 px-4 py-3 sm:py-0">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={Wrench} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Ordens</h2>
@@ -228,14 +228,14 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                 </div>
             </div>
 
-            <div className="flex flex-col gap-3 p-4 xl:flex-row xl:items-center xl:justify-between">
+            <div className="flex flex-col gap-3 p-4 lg:flex-row lg:flex-wrap lg:items-center lg:justify-between">
                 {/* Busca */}
-                <div className="flex w-full flex-col gap-2 lg:flex-row lg:flex-wrap xl:max-w-4xl">
-                    <div className="w-full lg:w-auto lg:flex-none">
-                        <InputSearch placeholder="Buscar por núm. ordem, cliente ou cpf/cnpj" url="app.orders.index" className="lg:w-[420px]" />
+                <div className="flex w-full min-w-0 flex-col gap-2 lg:max-w-[790px] lg:flex-1 lg:flex-row">
+                    <div className="w-full min-w-0 lg:max-w-[420px] lg:flex-1">
+                        <InputSearch placeholder="Buscar por núm. ordem, cliente ou cpf/cnpj" url="app.orders.index" />
                     </div>
                     {showBarcodeReader && (
-                        <form onSubmit={handleBarcodeSubmit} className="w-full lg:w-[360px] lg:flex-none">
+                        <form onSubmit={handleBarcodeSubmit} className="w-full min-w-0 lg:max-w-[360px] lg:flex-1">
                             <div className="flex gap-2">
                                 {isMobileDevice ? (
                                     <Button
@@ -251,7 +251,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                 ? 'Ler código de barras com a câmera do celular'
                                                 : 'Leitura por câmera indisponível neste navegador'
                                         }
-                                        className="w-full lg:w-auto"
+                                        className="w-full"
                                     >
                                         <Camera className="mr-1 h-4 w-4" />
                                         Ler com celular
@@ -282,7 +282,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                 </div>
 
                 {/* Filtro */}
-                <div className="flex w-full flex-col gap-2 md:flex-row xl:w-auto">
+                <div className="flex w-full flex-col gap-2 md:flex-row lg:w-auto lg:shrink-0">
                     <SelectFilter
                         dataStatus={statusServico}
                         specialFilters={[
@@ -306,7 +306,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                 </div>
 
                 {/* Botões */}
-                <div className="flex w-full flex-col gap-2 md:flex-row md:justify-end xl:w-auto">
+                <div className="flex w-full flex-col gap-2 md:flex-row lg:w-auto lg:shrink-0 lg:justify-end">
                     <Button variant="default" asChild className="w-full whitespace-nowrap md:w-auto">
                         <a href="/apk/sigmaup-image-upload.apk" download="sigmaup-image-upload.apk">
                             <Plus className="mr-1 h-4 w-4" />

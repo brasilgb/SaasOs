@@ -2,8 +2,8 @@ import ActionDelete from '@/components/action-delete';
 import AppPagination from '@/components/app-pagination';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
-import { Badge } from '@/components/ui/badge';
 import InputSearch from '@/components/inputSearch';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AdminLayout from '@/layouts/admin/admin-layout';
@@ -73,12 +73,10 @@ export default function TenantsIndex({ tenants, filters }: any) {
                     <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
-            <div className="flex items-center justify-between p-4">
-                <div className="space-y-3">
+            <div className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="w-full min-w-0 space-y-3 lg:max-w-[520px] lg:flex-1">
                     <InputSearch placeholder="Buscar empresa" url="admin.tenants.index" />
-                    <div className="text-sm text-muted-foreground">
-                        {filters?.result_count ?? tenants?.total ?? 0} empresa(s) encontrada(s)
-                    </div>
+                    <div className="text-muted-foreground text-sm">{filters?.result_count ?? tenants?.total ?? 0} empresa(s) encontrada(s)</div>
                     <div className="flex flex-wrap gap-2">
                         {filterLinks.map((filter) => {
                             const isActive = (filters?.subscription_filter ?? '') === filter.value;
@@ -106,10 +104,10 @@ export default function TenantsIndex({ tenants, filters }: any) {
                         })}
                     </div>
                 </div>
-                <div>
-                    <Button variant="default" asChild>
+                <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:shrink-0 lg:justify-end">
+                    <Button variant="default" asChild className="w-full whitespace-nowrap sm:w-auto">
                         <Link href={route('admin.tenants.create')}>
-                            <Plus />
+                            <Plus className="h-4 w-4" />
                             Empresa
                         </Link>
                     </Button>

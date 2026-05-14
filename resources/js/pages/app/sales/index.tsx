@@ -162,7 +162,7 @@ export default function Sales({ sales, search, financial_status, financial_count
                 />
             </div>
             <Head title="Vendas" />
-            <div className="flex min-h-16 flex-col justify-center gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:py-0">
+            <div className="flex min-h-16 flex-col justify-center gap-3 px-4 py-3 sm:py-0">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={ShoppingCartIcon} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Vendas</h2>
@@ -172,11 +172,11 @@ export default function Sales({ sales, search, financial_status, financial_count
                 </div>
             </div>
 
-            <div className="flex flex-col gap-3 p-4 xl:flex-row xl:items-center xl:justify-between">
-                <div className="w-full xl:flex-none">
-                    <InputSearch placeholder="Buscar vendas por número e cliente" url="app.sales.index" className="lg:w-[420px]" />
+            <div className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="w-full min-w-0 lg:max-w-[420px] lg:flex-1">
+                    <InputSearch placeholder="Buscar vendas por número e cliente" url="app.sales.index" />
                 </div>
-                <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end xl:w-auto xl:flex-none">
+                <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap lg:w-auto lg:shrink-0 lg:justify-end">
                     <Button variant={financial_status === 'paid' ? 'default' : 'outline'} asChild className="w-full whitespace-nowrap sm:w-auto">
                         <Link href={route('app.sales.index', { search, financial_status: 'paid' })}>Pago ({financial_counts?.paid ?? 0})</Link>
                     </Button>

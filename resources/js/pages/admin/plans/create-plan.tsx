@@ -44,7 +44,7 @@ export default function CreatePlan() {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button className="gap-2">
+                <Button className="w-full gap-2 whitespace-nowrap sm:w-auto">
                     <Plus className="h-4 w-4" />
                     Plano
                 </Button>
@@ -84,7 +84,7 @@ export default function CreatePlan() {
                             id="billing_months"
                             value={data.billing_months}
                             onChange={(e) => setData('billing_months', e.target.value)}
-                            className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                            className="border-input bg-background h-10 rounded-md border px-3 text-sm"
                         >
                             <option value="1">Mensal</option>
                             <option value="3">Trimestral</option>

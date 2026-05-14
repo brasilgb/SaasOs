@@ -34,7 +34,7 @@ export default function Users({ users, firstAdminId, search }: any) {
     return (
         <AppLayout>
             <Head title="Usuários" />
-            <div className="flex min-h-16 flex-col justify-center gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:py-0">
+            <div className="flex min-h-16 flex-col justify-center gap-3 px-4 py-3 sm:py-0">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={UserCog} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Usuários</h2>
@@ -45,10 +45,10 @@ export default function Users({ users, firstAdminId, search }: any) {
             </div>
 
             <div className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:justify-between">
-                <div className="w-full lg:flex-none">
-                    <InputSearch placeholder="Buscar usuário por nome" url="app.users.index" className="lg:w-[420px]" />
+                <div className="w-full min-w-0 lg:max-w-[420px] lg:flex-1">
+                    <InputSearch placeholder="Buscar usuário por nome" url="app.users.index" />
                 </div>
-                <div className="flex w-full justify-end lg:w-auto lg:flex-none">
+                <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:shrink-0 lg:justify-end">
                     {canCreateUsers && (
                         <Button variant={'default'} asChild className="w-full whitespace-nowrap sm:w-auto">
                             <Link href={route('app.users.create')}>

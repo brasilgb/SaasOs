@@ -54,7 +54,7 @@ export default function InputSearch({ placeholder, url, date, className }: Searc
     }
 
     return (
-        <form onSubmit={handleSubmit} className={cn('w-full sm:w-[360px] lg:w-[420px]', className)}>
+        <form onSubmit={handleSubmit} className={cn('w-full min-w-0', className)}>
             <div className="relative w-full">
                 <Input
                     className="pr-16"

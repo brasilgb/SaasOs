@@ -31,7 +31,7 @@ export default function CheckList({ equipments, checklists }: any) {
         <AppLayout>
             <Head title="Checklists" />
 
-            <div className="flex min-h-16 flex-col justify-center gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:py-0">
+            <div className="flex min-h-16 flex-col justify-center gap-3 px-4 py-3 sm:py-0">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={ClipboardCheck} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Checklists</h2>
@@ -41,10 +41,10 @@ export default function CheckList({ equipments, checklists }: any) {
                 </div>
             </div>
             <div className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:justify-between">
-                <div className="w-full lg:flex-none">
-                    <InputSearch placeholder="Buscar checklist ou equipamento" url="app.register-checklists.index" className="lg:w-[420px]" />
+                <div className="w-full min-w-0 lg:max-w-[420px] lg:flex-1">
+                    <InputSearch placeholder="Buscar checklist ou equipamento" url="app.register-checklists.index" />
                 </div>
-                <div className="flex w-full justify-end lg:w-auto lg:flex-none">
+                <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:shrink-0 lg:justify-end">
                     {canManageChecklists && <CreateChecklist equipments={equipments} />}
                 </div>
             </div>

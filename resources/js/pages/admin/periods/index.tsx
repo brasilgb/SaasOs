@@ -72,11 +72,11 @@ export default function PlansIndex({ periods, plans }: PeriodsIndexProps) {
                     <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
-            <div className="flex items-center justify-between p-4">
-                <div>
+            <div className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="w-full min-w-0 lg:max-w-[360px] lg:flex-1">
                     <InputSearch placeholder="Buscar período" url="admin.periodo.index" />
                 </div>
-                <div>
+                <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:shrink-0 lg:justify-end">
                     <CreatePeriod plans={plans} />
                 </div>
             </div>
