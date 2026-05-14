@@ -14,7 +14,7 @@ import { BreadcrumbItem } from '@/types';
 import { maskMoney, maskMoneyDot } from '@/Utils/mask';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { pdf } from '@react-pdf/renderer';
-import { FileText, Loader2, WalletCards } from 'lucide-react';
+import { BanknoteArrowDown, FileText, Loader2, WalletCards } from 'lucide-react';
 import moment from 'moment';
 import { useState } from 'react';
 
@@ -39,9 +39,15 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
     const cancelledSales = Number(openTotals?.cancelled_sales || 0);
     const orderPayments = Number(openTotals?.order_payments || 0);
     const totalReceived = Number(openTotals?.total_received || 0);
+    const withdrawalsTotal = Number(openTotals?.withdrawals || 0);
+    const currentExpectedBalance = Number(openTotals?.current_expected_balance ?? openingBalance + totalReceived - withdrawalsTotal);
     const openForm = useForm({
         opening_balance: '',
         notes: '',
+    });
+    const withdrawalForm = useForm({
+        amount: '',
+        description: '',
     });
 
     const closeForm = useForm({
@@ -54,7 +60,7 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
     const manualEntries = Number(closeForm.data.manual_entries || 0);
     const manualExits = Number(closeForm.data.manual_exits || 0);
     const countedBalance = Number(closeForm.data.closing_balance || 0);
-    const expectedClosingBalance = openingBalance + totalReceived + manualEntries - manualExits;
+    const expectedClosingBalance = openingBalance + totalReceived + manualEntries - manualExits - withdrawalsTotal;
     const closingDifference = countedBalance - expectedClosingBalance;
 
     const handleOpen = (e: any) => {
@@ -71,6 +77,15 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
         }
 
         closeForm.post(route('app.cashier.close', currentSession.id));
+    };
+
+    const handleWithdrawal = (e: any) => {
+        e.preventDefault();
+
+        withdrawalForm.post(route('app.cashier.withdrawal', currentSession.id), {
+            preserveScroll: true,
+            onSuccess: () => withdrawalForm.reset(),
+        });
     };
 
     const handleGeneratePDF = async (session: any) => {
@@ -134,9 +149,13 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
                                 </div>
                                 <div>
                                     <div className="text-muted-foreground">Saldo esperado atual</div>
-                                    <div className="font-medium">{money(openingBalance + totalReceived)}</div>
+                                    <div className="font-medium">{money(currentExpectedBalance)}</div>
                                 </div>
-                                <div className="sm:col-span-2">
+                                <div>
+                                    <div className="text-muted-foreground">Sangrias registradas</div>
+                                    <div>{money(withdrawalsTotal)}</div>
+                                </div>
+                                <div>
                                     <div className="text-muted-foreground">Total recebido</div>
                                     <div className="font-medium">{money(totalReceived)}</div>
                                 </div>
@@ -180,7 +199,7 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
                         ) : (
                             <form onSubmit={handleClose} className="grid gap-4 md:grid-cols-2">
                                 <div className="bg-card rounded-lg border p-4 text-sm md:col-span-2">
-                                    <div className="grid gap-3 md:grid-cols-3">
+                                    <div className="grid gap-3 md:grid-cols-4">
                                         <div>
                                             <div className="text-muted-foreground">Saldo inicial</div>
                                             <div className="font-medium">{money(openingBalance)}</div>
@@ -190,12 +209,16 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
                                             <div className="font-medium">{money(totalReceived)}</div>
                                         </div>
                                         <div>
+                                            <div className="text-muted-foreground">Sangrias registradas</div>
+                                            <div className="font-medium">{money(withdrawalsTotal)}</div>
+                                        </div>
+                                        <div>
                                             <div className="text-muted-foreground">Saldo esperado</div>
                                             <div className="font-medium">{money(expectedClosingBalance)}</div>
                                         </div>
                                     </div>
                                     <p className="text-muted-foreground mt-3 text-xs">
-                                        O saldo esperado considera saldo inicial, vendas, pagamentos de OS, entradas manuais e saídas manuais.
+                                        O saldo esperado considera saldo inicial, vendas, pagamentos de OS, entradas manuais, saídas manuais e sangrias registradas.
                                     </p>
                                 </div>
                                 <div className="space-y-2">
@@ -238,7 +261,7 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
                                     <InputError message={closeForm.errors.manual_exits} />
                                 </div>
                                 <div className="bg-card rounded-lg border p-4 text-sm md:col-span-2">
-                                    <div className="grid gap-3 md:grid-cols-4">
+                                    <div className="grid gap-3 md:grid-cols-5">
                                         <div>
                                             <div className="text-muted-foreground">Entradas manuais</div>
                                             <div>{money(manualEntries)}</div>
@@ -246,6 +269,10 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
                                         <div>
                                             <div className="text-muted-foreground">Saídas manuais</div>
                                             <div>{money(manualExits)}</div>
+                                        </div>
+                                        <div>
+                                            <div className="text-muted-foreground">Sangrias</div>
+                                            <div>{money(withdrawalsTotal)}</div>
                                         </div>
                                         <div>
                                             <div className="text-muted-foreground">Saldo contado</div>
@@ -275,6 +302,80 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
                         )}
                     </CardContent>
                 </Card>
+
+                {currentSession && (
+                    <Card className="lg:col-span-3">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <BanknoteArrowDown className="size-5" />
+                                Registrar sangria
+                            </CardTitle>
+                            <CardDescription>Use quando retirar dinheiro do caixa durante o expediente.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="grid gap-4 lg:grid-cols-2">
+                            <form onSubmit={handleWithdrawal} className="grid gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="withdrawal_amount">Valor da sangria</Label>
+                                    <Input
+                                        id="withdrawal_amount"
+                                        type="text"
+                                        inputMode="numeric"
+                                        placeholder="0,00"
+                                        value={maskMoney(withdrawalForm.data.amount)}
+                                        onChange={(e) => withdrawalForm.setData('amount', maskMoneyDot(e.target.value))}
+                                    />
+                                    <InputError message={withdrawalForm.errors.amount} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="withdrawal_description">Motivo</Label>
+                                    <Textarea
+                                        id="withdrawal_description"
+                                        value={withdrawalForm.data.description}
+                                        onChange={(e) => withdrawalForm.setData('description', e.target.value)}
+                                        placeholder="Ex.: retirada para cofre, depósito bancário ou redução de numerário."
+                                    />
+                                    <InputError message={withdrawalForm.errors.description} />
+                                </div>
+                                <div className="flex justify-end">
+                                    <Button type="submit" disabled={withdrawalForm.processing}>
+                                        Registrar sangria
+                                    </Button>
+                                </div>
+                            </form>
+                            <div className="rounded-lg border">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Data</TableHead>
+                                            <TableHead>Motivo</TableHead>
+                                            <TableHead className="text-right">Valor</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {currentSession.withdrawals?.length ? (
+                                            currentSession.withdrawals.map((withdrawal: any) => (
+                                                <TableRow key={withdrawal.id}>
+                                                    <TableCell>{moment(withdrawal.created_at).format('DD/MM/YYYY HH:mm')}</TableCell>
+                                                    <TableCell>
+                                                        <div className="font-medium">{withdrawal.description}</div>
+                                                        <div className="text-muted-foreground text-xs">{withdrawal.user?.name || '-'}</div>
+                                                    </TableCell>
+                                                    <TableCell className="text-right font-medium">{money(withdrawal.amount)}</TableCell>
+                                                </TableRow>
+                                            ))
+                                        ) : (
+                                            <TableRow>
+                                                <TableCell colSpan={3} className="text-center">
+                                                    Nenhuma sangria registrada neste caixa.
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
             </div>
 
             <div className="p-4">
@@ -287,6 +388,7 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
                                 <TableHead>Abertura</TableHead>
                                 <TableHead>Fechamento</TableHead>
                                 <TableHead>Saldo inicial</TableHead>
+                                <TableHead>Sangrias</TableHead>
                                 <TableHead>Saldo esperado</TableHead>
                                 <TableHead>Saldo contado</TableHead>
                                 <TableHead>Diferença</TableHead>
@@ -304,6 +406,7 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
                                         <TableCell>{moment(session.opened_at).format('DD/MM/YYYY HH:mm')}</TableCell>
                                         <TableCell>{session.closed_at ? moment(session.closed_at).format('DD/MM/YYYY HH:mm') : '-'}</TableCell>
                                         <TableCell>{money(session.opening_balance)}</TableCell>
+                                        <TableCell>{money((session.withdrawals || []).reduce((sum: number, withdrawal: any) => sum + Number(withdrawal.amount || 0), 0))}</TableCell>
                                         <TableCell>{money(session.expected_balance)}</TableCell>
                                         <TableCell>{money(session.closing_balance)}</TableCell>
                                         <TableCell>{money(session.difference)}</TableCell>
@@ -328,7 +431,7 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={9} className="text-center">
+                                    <TableCell colSpan={10} className="text-center">
                                         Nenhum fechamento registrado.
                                     </TableCell>
                                 </TableRow>

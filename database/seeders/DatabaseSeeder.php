@@ -891,6 +891,7 @@ class DatabaseSeeder extends Seeder
             'payments',
             'expenses',
             'sales',
+            'cash_session_movements',
             'cash_sessions',
             'messages',
             'schedules',

@@ -71,4 +71,16 @@ class CashSession extends Model
     {
         return $this->hasMany(CashSessionLog::class)->latest();
     }
+
+    public function movements(): HasMany
+    {
+        return $this->hasMany(CashSessionMovement::class)->latest();
+    }
+
+    public function withdrawals(): HasMany
+    {
+        return $this->hasMany(CashSessionMovement::class)
+            ->where('type', CashSessionMovement::TYPE_WITHDRAWAL)
+            ->latest();
+    }
 }

@@ -33,19 +33,22 @@ export function AppSidebar() {
             </SidebarHeader>
             <SidebarContent>
                 <SidebarGroup>
-                    {mainNavGroups.map((group) => (
-                        <NavMain
-                            key={group.title}
-                            label={collapsibleGroups.includes(group.title) ? group.title : undefined}
-                            groupIcon={group.icon}
-                            items={group.items}
-                            collapsible={collapsibleGroups.includes(group.title)}
-                        />
+                    {mainNavGroups.map((group, index) => (
+                        <div key={group.title} className={index === 0 ? undefined : 'mt-1'}>
+                            <NavMain
+                                label={collapsibleGroups.includes(group.title) ? group.title : undefined}
+                                groupIcon={group.icon}
+                                items={group.items}
+                                collapsible={collapsibleGroups.includes(group.title)}
+                            />
+                        </div>
                     ))}
-                    <div className="my-1">
+                    <div className="mt-1">
                         <NavMainCollapsible items={mainConfItems} />
                     </div>
-                    <NavMain items={mainUserItems} />
+                    <div className="mt-1">
+                        <NavMain items={mainUserItems} />
+                    </div>
                 </SidebarGroup>
             </SidebarContent>
 

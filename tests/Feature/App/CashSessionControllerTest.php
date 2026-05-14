@@ -3,6 +3,7 @@
 namespace Tests\Feature\App;
 
 use App\Models\App\CashSession;
+use App\Models\App\CashSessionMovement;
 use App\Models\App\Order;
 use App\Models\App\OrderPayment;
 use App\Models\App\Sale;
@@ -173,5 +174,91 @@ class CashSessionControllerTest extends TestCase
         $this->assertEquals(200.0, (float) $cashSession->total_completed_sales);
         $this->assertEquals(80.0, (float) $cashSession->total_cancelled_sales);
         $this->assertEquals(50.0, (float) $cashSession->total_order_payments);
+    }
+
+    public function test_it_registers_cash_session_withdrawal(): void
+    {
+        $cashSession = CashSession::create([
+            'tenant_id' => $this->tenant->id,
+            'opened_by' => $this->user->id,
+            'opened_at' => now()->subHour(),
+            'opening_balance' => 100,
+            'status' => 'open',
+        ]);
+
+        $response = $this->post(route('app.cashier.withdrawal', $cashSession), [
+            'amount' => '40,00',
+            'description' => 'Retirada para cofre',
+        ]);
+
+        $response->assertSessionHas('success', 'Sangria registrada com sucesso.');
+
+        $this->assertDatabaseHas('cash_session_movements', [
+            'tenant_id' => $this->tenant->id,
+            'cash_session_id' => $cashSession->id,
+            'user_id' => $this->user->id,
+            'type' => CashSessionMovement::TYPE_WITHDRAWAL,
+            'amount' => 40,
+            'description' => 'Retirada para cofre',
+        ]);
+        $this->assertDatabaseHas('cash_session_logs', [
+            'cash_session_id' => $cashSession->id,
+            'user_id' => $this->user->id,
+            'action' => 'withdrawal_registered',
+        ]);
+    }
+
+    public function test_it_subtracts_withdrawals_when_closing_cash_session(): void
+    {
+        $cashSession = CashSession::create([
+            'tenant_id' => $this->tenant->id,
+            'opened_by' => $this->user->id,
+            'opened_at' => now()->subHour(),
+            'opening_balance' => 100,
+            'status' => 'open',
+        ]);
+
+        CashSessionMovement::create([
+            'tenant_id' => $this->tenant->id,
+            'cash_session_id' => $cashSession->id,
+            'user_id' => $this->user->id,
+            'type' => CashSessionMovement::TYPE_WITHDRAWAL,
+            'amount' => 30,
+            'description' => 'Retirada para depósito',
+        ]);
+
+        $response = $this->post(route('app.cashier.close', $cashSession), [
+            'closing_balance' => '90,00',
+            'manual_entries' => '25,00',
+            'manual_exits' => '5,00',
+            'closing_notes' => 'Fechamento conferido',
+        ]);
+
+        $response->assertSessionHas('success', 'Fechamento diário realizado com sucesso.');
+
+        $cashSession->refresh();
+
+        $this->assertEquals(90.0, (float) $cashSession->expected_balance);
+        $this->assertEquals(0.0, (float) $cashSession->difference);
+    }
+
+    public function test_it_blocks_withdrawal_greater_than_current_expected_balance(): void
+    {
+        $cashSession = CashSession::create([
+            'tenant_id' => $this->tenant->id,
+            'opened_by' => $this->user->id,
+            'opened_at' => now()->subHour(),
+            'opening_balance' => 100,
+            'status' => 'open',
+        ]);
+
+        $response = $this->post(route('app.cashier.withdrawal', $cashSession), [
+            'amount' => '150,00',
+            'description' => 'Retirada acima do saldo',
+        ]);
+
+        $response->assertSessionHas('error', 'O valor da sangria não pode ser maior que o saldo esperado atual.');
+
+        $this->assertDatabaseCount('cash_session_movements', 0);
     }
 }

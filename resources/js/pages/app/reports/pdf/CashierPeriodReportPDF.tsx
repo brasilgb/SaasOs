@@ -12,7 +12,7 @@ const styles = StyleSheet.create({
     headerInfo: { fontSize: 9, textAlign: 'center', marginBottom: 10, color: '#666' },
     summaryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 10 },
     summaryCard: {
-        width: '24%',
+        width: '19%',
         border: '1px solid #d9d9d9',
         borderRadius: 4,
         paddingVertical: 6,
@@ -35,12 +35,12 @@ const styles = StyleSheet.create({
         paddingVertical: 5,
         paddingHorizontal: 8,
     },
-    colId: { width: '8%', textAlign: 'center' },
+    colId: { width: '6%', textAlign: 'center' },
     colName: { width: '52%', textAlign: 'left' },
-    colDate: { width: '18%', textAlign: 'left' },
-    colMoney: { width: '12%', textAlign: 'right' },
-    colDiff: { width: '12%', textAlign: 'right' },
-    colUser: { width: '19%', textAlign: 'left' },
+    colDate: { width: '15%', textAlign: 'left' },
+    colMoney: { width: '10%', textAlign: 'right' },
+    colDiff: { width: '10%', textAlign: 'right' },
+    colUser: { width: '14%', textAlign: 'left' },
     emptyState: { paddingVertical: 10, textAlign: 'center', color: '#666' },
 });
 
@@ -91,6 +91,10 @@ export default function CashierPeriodReportPDF({ data, dateRange, company, repor
                         <Text style={styles.summaryValue}>{currencyFormatter(reportMeta?.order_payments_total || 0)}</Text>
                     </View>
                     <View style={styles.summaryCard}>
+                        <Text style={styles.summaryLabel}>Sangrias</Text>
+                        <Text style={styles.summaryValue}>{currencyFormatter(reportMeta?.withdrawals_total || 0)}</Text>
+                    </View>
+                    <View style={styles.summaryCard}>
                         <Text style={styles.summaryLabel}>Diferença total</Text>
                         <Text style={styles.summaryValue}>{currencyFormatter(reportMeta?.difference_total || 0)}</Text>
                     </View>
@@ -125,6 +129,7 @@ export default function CashierPeriodReportPDF({ data, dateRange, company, repor
                         <Text style={styles.colDate}>Abertura</Text>
                         <Text style={styles.colDate}>Fechamento</Text>
                         <Text style={styles.colMoney}>Saldo Inicial</Text>
+                        <Text style={styles.colMoney}>Sangrias</Text>
                         <Text style={styles.colMoney}>Saldo Esperado</Text>
                         <Text style={styles.colMoney}>Saldo Contado</Text>
                         <Text style={styles.colDiff}>Diferença</Text>
@@ -138,6 +143,9 @@ export default function CashierPeriodReportPDF({ data, dateRange, company, repor
                                 <Text style={styles.colDate}>{session.opened_at ? moment(session.opened_at).format('DD/MM/YYYY HH:mm') : '-'}</Text>
                                 <Text style={styles.colDate}>{session.closed_at ? moment(session.closed_at).format('DD/MM/YYYY HH:mm') : '-'}</Text>
                                 <Text style={styles.colMoney}>{currencyFormatter(session.opening_balance || 0)}</Text>
+                                <Text style={styles.colMoney}>
+                                    {currencyFormatter((session.withdrawals || []).reduce((sum: number, withdrawal: any) => sum + Number(withdrawal.amount || 0), 0))}
+                                </Text>
                                 <Text style={styles.colMoney}>{currencyFormatter(session.expected_balance || 0)}</Text>
                                 <Text style={styles.colMoney}>{currencyFormatter(session.closing_balance || 0)}</Text>
                                 <Text style={styles.colDiff}>{currencyFormatter(session.difference || 0)}</Text>

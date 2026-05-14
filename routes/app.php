@@ -105,5 +105,6 @@ Route::post('/sales/{sale}/fiscal', [SaleController::class, 'registerFiscal'])->
 Route::resource('/expenses', ExpenseController::class)->except(['show', 'create', 'edit']);
 Route::get('/cashier', [CashSessionController::class, 'index'])->name('cashier.index');
 Route::post('/cashier/open', [CashSessionController::class, 'open'])->name('cashier.open');
+Route::post('/cashier/{cashSession}/withdrawal', [CashSessionController::class, 'withdrawal'])->name('cashier.withdrawal');
 Route::post('/cashier/{cashSession}/close', [CashSessionController::class, 'close'])->name('cashier.close');
 Route::resource('/reports', ReportController::class);

@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\App\CashSession;
+use App\Models\App\CashSessionLog;
+use App\Models\App\CashSessionMovement;
 use App\Models\App\OrderPayment;
 use App\Models\App\Sale;
 use Illuminate\Support\Facades\DB;
@@ -51,7 +53,8 @@ class CashSessionService
 
         $manualEntries = (float) ($data['manual_entries'] ?? 0);
         $manualExits = (float) ($data['manual_exits'] ?? 0);
-        $expectedBalance = (float) $cashSession->opening_balance + $totalCompletedSales + $totalOrderPayments + $manualEntries - $manualExits;
+        $withdrawals = $this->totalWithdrawals($cashSession);
+        $expectedBalance = (float) $cashSession->opening_balance + $totalCompletedSales + $totalOrderPayments + $manualEntries - $manualExits - $withdrawals;
         $closingBalance = (float) $data['closing_balance'];
         $difference = $closingBalance - $expectedBalance;
 
@@ -71,5 +74,63 @@ class CashSessionService
         ]);
 
         return $cashSession->fresh();
+    }
+
+    public function registerWithdrawal(CashSession $cashSession, array $data, int $userId): CashSessionMovement
+    {
+        if ($cashSession->status !== 'open') {
+            throw new RuntimeException('Este caixa já está fechado.');
+        }
+
+        $amount = (float) $data['amount'];
+        $availableBalance = $this->currentExpectedBalance($cashSession);
+
+        if ($amount > $availableBalance) {
+            throw new RuntimeException('O valor da sangria não pode ser maior que o saldo esperado atual.');
+        }
+
+        return DB::transaction(function () use ($cashSession, $data, $userId, $amount): CashSessionMovement {
+            $movement = CashSessionMovement::create([
+                'cash_session_id' => $cashSession->id,
+                'user_id' => $userId,
+                'type' => CashSessionMovement::TYPE_WITHDRAWAL,
+                'amount' => $amount,
+                'description' => $data['description'] ?? null,
+            ]);
+
+            CashSessionLog::create([
+                'cash_session_id' => $cashSession->id,
+                'user_id' => $userId,
+                'action' => 'withdrawal_registered',
+                'data' => [
+                    'amount' => $amount,
+                    'description' => $data['description'] ?? null,
+                ],
+            ]);
+
+            return $movement;
+        });
+    }
+
+    public function currentExpectedBalance(CashSession $cashSession): float
+    {
+        $totalCompletedSales = (float) Sale::query()
+            ->where('cash_session_id', $cashSession->id)
+            ->where('status', 'completed')
+            ->sum('total_amount');
+
+        $totalOrderPayments = (float) OrderPayment::query()
+            ->where('cash_session_id', $cashSession->id)
+            ->sum('amount');
+
+        return (float) $cashSession->opening_balance + $totalCompletedSales + $totalOrderPayments - $this->totalWithdrawals($cashSession);
+    }
+
+    public function totalWithdrawals(CashSession $cashSession): float
+    {
+        return (float) CashSessionMovement::query()
+            ->where('cash_session_id', $cashSession->id)
+            ->where('type', CashSessionMovement::TYPE_WITHDRAWAL)
+            ->sum('amount');
     }
 }

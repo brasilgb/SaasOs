@@ -69,7 +69,8 @@ class CashSessionController extends Controller
                 'openedBy:id,name',
                 'closedBy:id,name',
                 'orderPayments:id,cash_session_id,amount,payment_method',
-                'sales:id,cash_session_id,total_amount,payment_method,status'
+                'sales:id,cash_session_id,total_amount,payment_method,status',
+                'withdrawals.user:id,name'
             )
             ->where('status', 'open')
             ->latest('opened_at')
@@ -80,7 +81,8 @@ class CashSessionController extends Controller
                 'openedBy:id,name',
                 'closedBy:id,name',
                 'orderPayments:id,cash_session_id,amount,payment_method',
-                'sales:id,cash_session_id,total_amount,payment_method,status'
+                'sales:id,cash_session_id,total_amount,payment_method,status',
+                'withdrawals.user:id,name'
             )
             ->latest('id')
             ->paginate(11)
@@ -91,6 +93,8 @@ class CashSessionController extends Controller
             'cancelled_sales' => 0,
             'order_payments' => 0,
             'total_received' => 0,
+            'withdrawals' => 0,
+            'current_expected_balance' => 0,
         ];
 
         if ($currentSession) {
@@ -109,6 +113,8 @@ class CashSessionController extends Controller
                 ->sum('amount');
 
             $openTotals['total_received'] = $openTotals['completed_sales'] + $openTotals['order_payments'];
+            $openTotals['withdrawals'] = $this->cashSessionService->totalWithdrawals($currentSession);
+            $openTotals['current_expected_balance'] = $this->cashSessionService->currentExpectedBalance($currentSession);
         }
 
         return Inertia::render('app/cashier/index', [
@@ -179,6 +185,7 @@ class CashSessionController extends Controller
         $totalCancelledSales = (float) $cashSession->total_cancelled_sales;
         $manualEntries = (float) $cashSession->manual_entries;
         $manualExits = (float) $cashSession->manual_exits;
+        $withdrawals = $this->cashSessionService->totalWithdrawals($cashSession);
 
         $eventData = [
             'closing_balance' => $closingBalance,
@@ -189,10 +196,37 @@ class CashSessionController extends Controller
             'total_cancelled_sales' => (float) $totalCancelledSales,
             'manual_entries' => $manualEntries,
             'manual_exits' => $manualExits,
+            'withdrawals' => $withdrawals,
             'closing_notes' => $validated['closing_notes'] ?? null,
         ];
         event(new CashSessionClosed($cashSession->id, Auth::id(), $eventData));
 
         return back()->with('success', 'Fechamento diário realizado com sucesso.');
+    }
+
+    public function withdrawal(Request $request, CashSession $cashSession): RedirectResponse
+    {
+        if ($response = $this->authorizeCashSessionAccess($cashSession, 'update')) {
+            return $response;
+        }
+
+        $request->merge([
+            'amount' => $this->normalizeMoneyInput($request->input('amount')),
+        ]);
+
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:0.01',
+            'description' => 'required|string|max:1000',
+        ], [
+            'description.required' => 'Informe o motivo da sangria.',
+        ]);
+
+        try {
+            $this->cashSessionService->registerWithdrawal($cashSession, $validated, (int) Auth::id());
+        } catch (\RuntimeException $exception) {
+            return back()->with('error', $exception->getMessage());
+        }
+
+        return back()->with('success', 'Sangria registrada com sucesso.');
     }
 }

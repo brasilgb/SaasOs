@@ -59,6 +59,8 @@ export default function CashierDailyReportPDF({ session, company }: any) {
     const transparentRowStyle = { borderBottom: '0px solid transparent' } as const;
     const openingNotes = String(session?.notes || '').trim();
     const closingNotes = String(session?.closing_notes || '').trim();
+    const withdrawals = session?.withdrawals || [];
+    const withdrawalsTotal = withdrawals.reduce((sum: number, withdrawal: any) => sum + Number(withdrawal?.amount || 0), 0);
 
     return (
         <Document>
@@ -102,6 +104,10 @@ export default function CashierDailyReportPDF({ session, company }: any) {
                             <Text style={styles.value}>{currencyFormatter(session?.manual_exits || 0)}</Text>
                         </View>
                         <View style={styles.row}>
+                            <Text style={styles.label}>Sangrias registradas</Text>
+                            <Text style={styles.value}>{currencyFormatter(withdrawalsTotal)}</Text>
+                        </View>
+                        <View style={styles.row}>
                             <Text style={styles.label}>Saldo esperado</Text>
                             <Text style={styles.value}>{currencyFormatter(session?.expected_balance || 0)}</Text>
                         </View>
@@ -133,6 +139,25 @@ export default function CashierDailyReportPDF({ session, company }: any) {
                         </View>
                     </View>
                 </View>
+
+                {withdrawals.length ? (
+                    <View style={styles.section}>
+                        <Text style={styles.sectionTitle}>Sangrias</Text>
+                        <View style={styles.table}>
+                            {withdrawals.map((withdrawal: any, index: number) => (
+                                <View key={withdrawal.id || index} style={[styles.row, ...(index === withdrawals.length - 1 ? [transparentRowStyle] : [])]}>
+                                    <View style={styles.label}>
+                                        <Text>{withdrawal.description || 'Sangria'}</Text>
+                                        <Text style={styles.helper}>
+                                            {withdrawal.created_at ? moment(withdrawal.created_at).format('DD/MM/YYYY HH:mm') : '-'} | {withdrawal.user?.name || '-'}
+                                        </Text>
+                                    </View>
+                                    <Text style={styles.value}>{currencyFormatter(withdrawal.amount || 0)}</Text>
+                                </View>
+                            ))}
+                        </View>
+                    </View>
+                ) : null}
 
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Recebimentos por forma de pagamento</Text>

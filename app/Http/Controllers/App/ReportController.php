@@ -128,6 +128,7 @@ class ReportController extends Controller
                         'closedBy:id,name',
                         'sales:id,cash_session_id,total_amount,payment_method,status',
                         'orderPayments:id,cash_session_id,amount,payment_method',
+                        'withdrawals.user:id,name',
                     ])
                     ->where('status', 'closed')
                     ->whereBetween('closed_at', [$from, $to])
@@ -140,6 +141,9 @@ class ReportController extends Controller
                 $reportMeta['order_payments_total'] = (float) $data->sum('total_order_payments');
                 $reportMeta['manual_entries_total'] = (float) $data->sum('manual_entries');
                 $reportMeta['manual_exits_total'] = (float) $data->sum('manual_exits');
+                $reportMeta['withdrawals_total'] = (float) $data->sum(
+                    fn (CashSession $session): float => (float) $session->withdrawals->sum('amount')
+                );
                 $reportMeta['expected_total'] = (float) $data->sum('expected_balance');
                 $reportMeta['closing_total'] = (float) $data->sum('closing_balance');
                 $reportMeta['difference_total'] = (float) $data->sum('difference');
