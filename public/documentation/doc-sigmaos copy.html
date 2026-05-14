@@ -529,10 +529,11 @@
                 <a href="#usuarios">20. Gestão de usuários</a>
                 <a href="#imagens">21. Upload de imagens</a>
                 <a href="#importacao">22. Importação de clientes por CSV</a>
-                <a href="#emissao-fiscal">23. Emissão fiscal</a>
-                <a href="#botoes">24. Guia rápido dos botões</a>
-                <a href="#boas-praticas">25. Boas práticas</a>
-                <a href="#suporte">26. Suporte</a>
+                <a href="#assinaturas">23. Assinaturas, planos e cobrança SaaS</a>
+                <a href="#emissao-fiscal">24. Emissão fiscal</a>
+                <a href="#botoes">25. Guia rápido dos botões</a>
+                <a href="#boas-praticas">26. Boas práticas</a>
+                <a href="#suporte">27. Suporte</a>
             </nav>
         </aside>
 
@@ -544,8 +545,8 @@
                     <p>
                         Este manual foi organizado para orientar o uso prático do SigmaOS no dia a dia da assistência
                         técnica. O conteúdo cobre os módulos principais, o que cada botão faz, o que o sistema executa
-                        em segundo plano e como funcionam os fluxos de e-mail, acompanhamento, garantia, avaliações
-                        e cobranças.
+                        em segundo plano e como funcionam os fluxos de e-mail, acompanhamento, garantia, avaliações,
+                        cobranças e assinatura da plataforma.
                     </p>
                 </header>
 
@@ -590,7 +591,7 @@
                         </div>
                         <div class="card">
                             <strong>Comunicação</strong>
-                            WhatsApp, e-mails automáticos por status, lembretes de cobrança e teste SMTP.
+                            WhatsApp, e-mails automáticos por status, lembretes de cobrança, assinatura SaaS e teste SMTP.
                         </div>
                     </div>
                 </section>
@@ -619,7 +620,7 @@
                         endereço remetente e nome do remetente. O sistema também possui envio de e-mail de teste para
                         validação.</p>
                     <p>Quando o SMTP está configurado corretamente, o sistema pode enviar e-mails de criação de ordem,
-                        atualização de status, acompanhamento de orçamento e cobrança pendente.</p>
+                        atualização de status, acompanhamento de orçamento, cobrança pendente e avisos de assinatura.</p>
                     <h4>3.8 Configurações fiscais</h4>
                     <p>Se a sua empresa for emitir documentos fiscais pelo SigmaOS, será necessário contratar o serviço
                         de emissão fiscal compatível e possuir as credenciais da Focus NFe. Depois disso, acesse
@@ -1399,8 +1400,39 @@
                     </ul>
                 </section>
 
+                <section id="assinaturas">
+                    <h3>23. Assinaturas, Planos E Cobrança SaaS</h3>
+                    <p>Como o SigmaOS também é uma plataforma SaaS, existe um fluxo administrativo de assinatura para
+                        controle das empresas clientes.</p>
+                    <ul>
+                        <li>Cada empresa possui plano, período, status de assinatura e vencimento.</li>
+                        <li>O sistema pode enviar avisos por e-mail antes do vencimento, na carência e após bloqueio.</li>
+                        <li>O pagamento da assinatura pode ser gerado por PIX.</li>
+                        <li>Quando o webhook do pagamento retorna como aprovado, a assinatura da empresa é renovada automaticamente.</li>
+                    </ul>
+                    <h4>23.1 O que acontece por trás</h4>
+                    <ul>
+                        <li>O sistema grava o pagamento recebido do gateway.</li>
+                        <li>Atualiza o plano e o período da empresa.</li>
+                        <li>Recalcula o vencimento da assinatura.</li>
+                        <li>Marca a assinatura como ativa após confirmação do pagamento.</li>
+                        <li>Bloqueia ou alerta acesso conforme o vencimento e a carência.</li>
+                    </ul>
+                    <h4>23.2 Quando o sistema envia avisos</h4>
+                    <ul>
+                        <li><strong>Antes do vencimento:</strong> para lembrar a renovação do plano.</li>
+                        <li><strong>Na carência:</strong> para alertar que o acesso pode ser bloqueado.</li>
+                        <li><strong>Após pagamento aprovado:</strong> para confirmar regularização quando o fluxo estiver configurado.</li>
+                    </ul>
+                    <h4>23.3 Quem usa esta área</h4>
+                    <ul>
+                        <li><strong>Administrador da plataforma:</strong> acompanha planos, vencimentos e status de assinatura.</li>
+                        <li><strong>Financeiro/comercial:</strong> usa para cobrança, renovação e apoio ao cliente assinante.</li>
+                    </ul>
+                </section>
+
                 <section id="emissao-fiscal">
-                    <h3>23. Emissão Fiscal</h3>
+                    <h3>24. Emissão Fiscal</h3>
                     <p>O SigmaOS possui módulo fiscal opcional com integração Focus NFe para a sua empresa. Para usar a
                         emissão pelo sistema, a empresa precisa contratar o serviço de notas fiscais compatível e
                         informar as credenciais fornecidas pela Focus NFe. Quando ativado, é possível emitir NF-e de
@@ -1408,7 +1440,7 @@
                         permissões, credenciais e dados fiscais configurados.</p>
                     <p>Quando a integração não estiver ativa, vendas e ordens continuam permitindo o registro manual do
                         comprovante ou documento fiscal, mantendo número, link, data, observações e vínculo com a operação.</p>
-                    <h4>23.1 Configurações fiscais</h4>
+                    <h4>24.1 Configurações fiscais</h4>
                     <ul>
                         <li><strong>Ativar documentos fiscais:</strong> libera o módulo fiscal integrado para a sua empresa.</li>
                         <li><strong>Ambiente:</strong> define se a emissão usa homologação ou produção.</li>
@@ -1417,7 +1449,7 @@
                         <li><strong>NF-e de produtos:</strong> habilita emissão fiscal para vendas de peças e produtos.</li>
                         <li><strong>NFS-e de serviços:</strong> habilita emissão fiscal para ordens de serviço.</li>
                     </ul>
-                    <h4>23.2 Dados fiscais padrão</h4>
+                    <h4>24.2 Dados fiscais padrão</h4>
                     <p>Os dados fiscais padrão reduzem retrabalho na emissão e servem de base para os payloads enviados à
                         Focus NFe. Revise com a contabilidade antes de operar em produção.</p>
                     <ul>
@@ -1427,14 +1459,14 @@
                         <li>NCM, CFOP, unidade comercial e unidade tributável padrão.</li>
                         <li>Origem e situação de ICMS, situação de PIS e situação de COFINS.</li>
                     </ul>
-                    <h4>23.3 Como usar na prática</h4>
+                    <h4>24.3 Como usar na prática</h4>
                     <ul>
                         <li><strong>Na OS:</strong> emita NFS-e quando documentos fiscais e NFS-e estiverem ativos.</li>
                         <li><strong>Na venda:</strong> emita NF-e quando documentos fiscais e NF-e estiverem ativos.</li>
                         <li><strong>Na listagem de notas fiscais:</strong> acompanhe tipo, origem, vínculo, número, status, emissão e links de PDF/XML quando disponíveis.</li>
                         <li><strong>Registro manual:</strong> use quando a nota foi emitida fora do SigmaOS ou quando a integração não estiver habilitada.</li>
                     </ul>
-                    <h4>23.4 Permissões e responsabilidade fiscal</h4>
+                    <h4>24.4 Permissões e responsabilidade fiscal</h4>
                     <ul>
                         <li>O menu Notas fiscais aparece apenas para usuários com permissão fiscal e quando documentos fiscais estão ativos.</li>
                         <li>A emissão depende de dados fiscais corretos, token válido e configuração adequada do ambiente.</li>
@@ -1443,7 +1475,7 @@
                 </section>
 
                 <section id="botoes">
-                    <h3>24. Guia Rápido Dos Botões Mais Comuns</h3>
+                    <h3>25. Guia Rápido Dos Botões Mais Comuns</h3>
                     <table class="status-table">
                         <thead>
                             <tr>
@@ -1519,7 +1551,7 @@
                 </section>
 
                 <section id="boas-praticas">
-                    <h3>25. Boas Práticas De Uso</h3>
+                    <h3>26. Boas Práticas De Uso</h3>
                     <ul>
                         <li>Manter clientes e equipamentos sempre atualizados.</li>
                         <li>Preencher corretamente defeito, acessórios e observações.</li>
@@ -1537,7 +1569,7 @@
                 </section>
 
                 <section id="suporte">
-                    <h3>26. Suporte</h3>
+                    <h3>27. Suporte</h3>
                     <p>Em caso de dúvidas de uso, configuração ou melhoria, mantenha este manual atualizado junto da
                         versão instalada do sistema e utilize o canal de suporte definido pela empresa.</p>
                     <div class="footer-note">
