@@ -190,12 +190,17 @@ class HandleInertiaRequests extends Middleware
         $budgetTarget = Other::budgetConversionTarget($user->tenant_id);
         $paymentTarget = Other::paymentRecoveryTarget($user->tenant_id);
 
+        $hasBudgetData = $budgetLogs->count() > 0;
+        $hasPaymentData = $paymentLogs->count() > 0;
+
         return [
-            'hasAlert' => $budgetRate < $budgetTarget || $paymentRate < $paymentTarget,
+            'hasAlert' => ($hasBudgetData && $budgetRate < $budgetTarget) || ($hasPaymentData && $paymentRate < $paymentTarget),
             'budgetBelowTarget' => $budgetRate < $budgetTarget,
             'paymentBelowTarget' => $paymentRate < $paymentTarget,
             'budgetRate' => $budgetRate,
             'paymentRate' => $paymentRate,
+            'budgetTotal' => $budgetLogs->count(),
+            'paymentTotal' => $paymentLogs->count(),
         ];
     }
 
@@ -209,23 +214,25 @@ class HandleInertiaRequests extends Middleware
             ->whereNotNull('customer_feedback_submitted_at')
             ->where('customer_feedback_rating', '<=', 3);
 
+        $openQuery = (clone $baseQuery)
+            ->where(function ($query) {
+                $query
+                    ->whereNull('customer_feedback_recovery_status')
+                    ->orWhere('customer_feedback_recovery_status', '!=', 'resolved');
+            });
+
         return [
-            'hasAlert' => (clone $baseQuery)->exists(),
-            'total' => (clone $baseQuery)->count(),
-            'unassigned' => (clone $baseQuery)->whereNull('customer_feedback_recovery_assigned_to')->count(),
-            'pending' => (clone $baseQuery)
+            'hasAlert' => (clone $openQuery)->exists(),
+            'total' => (clone $openQuery)->count(),
+            'unassigned' => (clone $openQuery)->whereNull('customer_feedback_recovery_assigned_to')->count(),
+            'pending' => (clone $openQuery)
                 ->where(function ($query) {
                     $query
                     ->whereNull('customer_feedback_recovery_status')
                     ->orWhere('customer_feedback_recovery_status', 'pending');
                 })
                 ->count(),
-            'overdue' => (clone $baseQuery)
-                ->where(function ($query) {
-                    $query
-                        ->whereNull('customer_feedback_recovery_status')
-                        ->orWhere('customer_feedback_recovery_status', '!=', 'resolved');
-                })
+            'overdue' => (clone $openQuery)
                 ->where('customer_feedback_submitted_at', '<=', now()->subDays(self::FEEDBACK_RECOVERY_SLA_DAYS))
                 ->count(),
             'slaDays' => self::FEEDBACK_RECOVERY_SLA_DAYS,

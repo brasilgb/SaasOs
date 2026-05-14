@@ -29,13 +29,8 @@ type NavMainPageProps = {
     };
     performanceAlert?: {
         hasAlert?: boolean;
-    } | null;
-    customerFeedbackAlert?: {
-        hasAlert?: boolean;
-    } | null;
-    taskIndicator?: {
-        total?: number;
-        hasTasks?: boolean;
+        budgetTotal?: number;
+        paymentTotal?: number;
     } | null;
     fiscalSetting?: {
         enabled?: boolean;
@@ -45,7 +40,7 @@ type NavMainPageProps = {
 };
 
 export function NavMain({ items = [], label, collapsible = false }: { items: NavItem[]; label?: string; collapsible?: boolean }) {
-    const { othersetting, auth, performanceAlert, customerFeedbackAlert, taskIndicator, fiscalSetting } = usePage<NavMainPageProps>().props;
+    const { othersetting, auth, performanceAlert, fiscalSetting } = usePage<NavMainPageProps>().props;
     const { state } = useSidebar();
     const isCollapsed = state === 'collapsed';
     const disableSales = !othersetting?.enablesales ? 'sales' : '';
@@ -67,21 +62,13 @@ export function NavMain({ items = [], label, collapsible = false }: { items: Nav
         return null;
     }
 
+    const hasPerformanceAlert =
+        Boolean(performanceAlert?.hasAlert) && (Number(performanceAlert?.budgetTotal ?? 0) > 0 || Number(performanceAlert?.paymentTotal ?? 0) > 0);
     const renderItemBadge = (item: NavItem) => (
         <>
-            {item.active === 'app.follow-ups.performance' && performanceAlert?.hasAlert && (
+            {item.active === 'app.follow-ups.performance' && hasPerformanceAlert && (
                 <Badge variant="destructive" className="ml-auto h-5 px-1.5 text-[10px]">
                     Alerta
-                </Badge>
-            )}
-            {item.active === 'app.quality.*' && customerFeedbackAlert?.hasAlert && (
-                <Badge variant="destructive" className="ml-auto h-5 px-1.5 text-[10px]">
-                    Alerta
-                </Badge>
-            )}
-            {item.active === 'app.follow-ups.tasks' && taskIndicator?.hasTasks && Number(taskIndicator?.total ?? 0) > 0 && (
-                <Badge variant="secondary" className="ml-auto h-5 min-w-5 px-1.5 text-[10px]">
-                    {taskIndicator.total}
                 </Badge>
             )}
         </>
@@ -106,7 +93,7 @@ export function NavMain({ items = [], label, collapsible = false }: { items: Nav
                                 {visibleItems.map((item) => (
                                     <DropdownMenuItem key={item.title} asChild>
                                         <Link href={item.href} className={route().current(item.active ?? '') ? 'bg-accent text-accent-foreground' : ''}>
-                                            {item.title}
+                                            <span className="truncate">{item.title}</span>
                                         </Link>
                                     </DropdownMenuItem>
                                 ))}
@@ -134,7 +121,7 @@ export function NavMain({ items = [], label, collapsible = false }: { items: Nav
                                     <SidebarMenuSubItem key={item.title}>
                                         <SidebarMenuSubButton asChild isActive={route().current(item.active ?? '')}>
                                             <Link href={item.href}>
-                                                <span>{item.title}</span>
+                                                <span className="min-w-0 flex-1 truncate">{item.title}</span>
                                                 {renderItemBadge(item)}
                                             </Link>
                                         </SidebarMenuSubButton>
@@ -157,7 +144,7 @@ export function NavMain({ items = [], label, collapsible = false }: { items: Nav
                         <SidebarMenuButton asChild isActive={route().current(item.active ?? '')} tooltip={{ children: item.title }}>
                             <Link href={item.href} prefetch>
                                 {item.icon && <item.icon />}
-                                <span>{item.title}</span>
+                                <span className="min-w-0 flex-1 truncate">{item.title}</span>
                                 {renderItemBadge(item)}
                             </Link>
                         </SidebarMenuButton>

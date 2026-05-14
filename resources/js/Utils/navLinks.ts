@@ -97,10 +97,10 @@ const mainNavGroups: NavGroup[] = [
         ],
     },
     {
-        title: 'Relacionamento com cliente',
+        title: 'Relac. clientes',
         items: [
             {
-                title: 'Acompanhamentos de clientes',
+                title: 'Acompanhamentos',
                 href: route('app.follow-ups.index'),
                 icon: Mail,
                 active: 'app.follow-ups.index',
@@ -109,7 +109,7 @@ const mainNavGroups: NavGroup[] = [
                 visibilitySetting: 'show_follow_ups_menu',
             },
             {
-                title: 'Tarefas de atendimento',
+                title: 'Tarefas',
                 href: route('app.follow-ups.tasks'),
                 icon: ClipboardList,
                 active: 'app.follow-ups.tasks',
@@ -118,7 +118,7 @@ const mainNavGroups: NavGroup[] = [
                 visibilitySetting: 'show_tasks_menu',
             },
             {
-                title: 'Performance comercial',
+                title: 'Performance',
                 href: route('app.follow-ups.performance'),
                 icon: Sparkles,
                 active: 'app.follow-ups.performance',
@@ -174,24 +174,19 @@ const mainNavGroups: NavGroup[] = [
             },
         ],
     },
-    {
-        title: 'Indicadores',
-        items: [
-            {
-                title: 'Relatórios',
-                href: route('app.reports.index'),
-                icon: FileTextIcon,
-                active: 'app.reports.*',
-                enabled: 'reports',
-                permission: 'reports',
-            },
-        ],
-    },
 ];
 
 const mainNavItems: NavItem[] = mainNavGroups.flatMap((group) => group.items);
 
 const mainUserItems: NavItem[] = [
+    {
+        title: 'Relatórios',
+        href: route('app.reports.index'),
+        icon: FileTextIcon,
+        active: 'app.reports.*',
+        enabled: 'reports',
+        permission: 'reports',
+    },
     {
         title: 'Usuários',
         href: route('app.users.index'),
