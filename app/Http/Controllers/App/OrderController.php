@@ -20,6 +20,7 @@ use App\Models\App\OrderLog;
 use App\Models\App\OrderPayment;
 use App\Models\App\OrderStatusHistory;
 use App\Models\App\Part;
+use App\Models\App\PartMovement;
 use App\Models\App\WhatsappMessage;
 use App\Services\OrderStatusService;
 use App\Services\OrderPaymentService;
@@ -32,6 +33,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
@@ -253,6 +255,85 @@ class OrderController extends Controller
     private function logOperationalAudit(string $action, Order $order, array $data = []): void
     {
         $this->operationalAuditService->record($action, 'order', $order, $this->currentUser()?->id, $data);
+    }
+
+    private function syncOrderPartsStock(Order $order, array $partsToSync, array $currentPartsSnapshot): array
+    {
+        $nextPartsSnapshot = collect($partsToSync)
+            ->mapWithKeys(fn ($part, $partId) => [(int) $partId => max(0, (int) ($part['quantity'] ?? 0))])
+            ->filter(fn (int $quantity): bool => $quantity > 0)
+            ->toArray();
+
+        $partIds = array_values(array_unique(array_merge(array_keys($currentPartsSnapshot), array_keys($nextPartsSnapshot))));
+        $parts = Part::query()
+            ->whereIn('id', $partIds)
+            ->lockForUpdate()
+            ->get()
+            ->keyBy('id');
+        $movements = [];
+
+        foreach ($partIds as $partId) {
+            $previousQuantity = (int) ($currentPartsSnapshot[$partId] ?? 0);
+            $nextQuantity = (int) ($nextPartsSnapshot[$partId] ?? 0);
+            $quantityDiff = $nextQuantity - $previousQuantity;
+
+            if ($quantityDiff === 0) {
+                continue;
+            }
+
+            $part = $parts->get($partId);
+
+            if (! $part) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'allparts' => 'Uma das peças informadas não foi encontrada.',
+                ]);
+            }
+
+            if ($quantityDiff > 0) {
+                if ((int) $part->quantity < $quantityDiff) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'allparts' => "Estoque insuficiente para {$part->name}.",
+                    ]);
+                }
+
+                $part->decrement('quantity', $quantityDiff);
+                $movementType = 'saida';
+                $movementReason = 'Uso na OS '.$order->order_number;
+                $movementQuantity = $quantityDiff;
+            } else {
+                $movementQuantity = abs($quantityDiff);
+                $part->increment('quantity', $movementQuantity);
+                $movementType = 'entrada';
+                $movementReason = 'Devolução de peça da OS '.$order->order_number;
+            }
+
+            PartMovement::create([
+                'part_id' => $part->id,
+                'order_id' => $order->id,
+                'user_id' => $this->currentUser()?->id,
+                'movement_type' => $movementType,
+                'quantity' => $movementQuantity,
+                'reason' => $movementReason,
+            ]);
+
+            $movements[] = [
+                'part_id' => (int) $part->id,
+                'part_name' => $part->name,
+                'movement_type' => $movementType,
+                'quantity' => $movementQuantity,
+            ];
+        }
+
+        $order->orderParts()->sync(
+            collect($nextPartsSnapshot)
+                ->mapWithKeys(fn (int $quantity, int $partId) => [$partId => ['quantity' => $quantity]])
+                ->toArray()
+        );
+
+        return [
+            'snapshot' => $nextPartsSnapshot,
+            'movements' => $movements,
+        ];
     }
 
     private function buildPaymentSummary(Order $order): array
@@ -653,52 +734,54 @@ class OrderController extends Controller
             ->toArray();
         $successMessage = 'Ordem atualizada com sucesso';
 
-        $order->update([
-            'customer_id' => $data['customer_id'],
-            'equipment_id' => $data['equipment_id'], // equipamento
-            'user_id' => $data['user_id'], // equipamento
-            'model' => $data['model'],
-            'password' => $data['password'],
-            'defect' => $data['defect'],
-            'state_conservation' => $data['state_conservation'], // estado de conservação
-            'accessories' => $data['accessories'],
-            'budget_description' => $data['budget_description'] ?? null,
-            'budget_value' => $data['budget_value'] ?? 0,
-            'services_performed' => $data['services_performed'], // servicos executados
-            'parts_value' => $data['parts_value'] ?? 0,
-            'service_value' => $data['service_value'] ?? 0,
-            'service_cost' => $data['service_cost'] ?? 0, // custo
-            'delivery_date' => $data['delivery_date'], // $data de entrega
-            'warranty_days' => $warrantyDays,
-            'warranty_expires_at' => $warrantyExpiresAt,
-            'is_warranty_return' => (bool) $warrantySourceOrder,
-            'warranty_source_order_id' => $warrantySourceOrder?->id,
-            'service_status' => $oldStatus,
-            'delivery_forecast' => $data['delivery_forecast'], // previsao de entrega
-            'observations' => $data['observations'],
-        ]);
-        $changes = collect($order->getChanges())
-            ->except(['updated_at'])
-            ->toArray();
+        $partsSyncResult = null;
+        $changes = [];
 
-        if (isset($data['allparts'])) {
-            $partsToSync = [];
-            foreach ($data['allparts'] as $part) {
-                $partsToSync[$part['part_id']] = ['quantity' => $part['quantity']];
-            }
-            // 2. Sincroniza as peças à Ordem de Serviço usando a tabela pivô
-            $order->orderParts()->sync($partsToSync);
-
-            $nextPartsSnapshot = collect($partsToSync)
-                ->mapWithKeys(fn ($part, $partId) => [(int) $partId => (int) ($part['quantity'] ?? 0)])
+        DB::transaction(function () use ($order, $data, $warrantyDays, $warrantyExpiresAt, $warrantySourceOrder, $oldStatus, $currentPartsSnapshot, &$partsSyncResult, &$changes): void {
+            $order->update([
+                'customer_id' => $data['customer_id'],
+                'equipment_id' => $data['equipment_id'], // equipamento
+                'user_id' => $data['user_id'], // equipamento
+                'model' => $data['model'],
+                'password' => $data['password'],
+                'defect' => $data['defect'],
+                'state_conservation' => $data['state_conservation'], // estado de conservação
+                'accessories' => $data['accessories'],
+                'budget_description' => $data['budget_description'] ?? null,
+                'budget_value' => $data['budget_value'] ?? 0,
+                'services_performed' => $data['services_performed'], // servicos executados
+                'parts_value' => $data['parts_value'] ?? 0,
+                'service_value' => $data['service_value'] ?? 0,
+                'service_cost' => $data['service_cost'] ?? 0, // custo
+                'delivery_date' => $data['delivery_date'], // $data de entrega
+                'warranty_days' => $warrantyDays,
+                'warranty_expires_at' => $warrantyExpiresAt,
+                'is_warranty_return' => (bool) $warrantySourceOrder,
+                'warranty_source_order_id' => $warrantySourceOrder?->id,
+                'service_status' => $oldStatus,
+                'delivery_forecast' => $data['delivery_forecast'], // previsao de entrega
+                'observations' => $data['observations'],
+            ]);
+            $changes = collect($order->getChanges())
+                ->except(['updated_at'])
                 ->toArray();
 
-            if ($currentPartsSnapshot !== $nextPartsSnapshot) {
-                $this->logOrderAction($order, 'parts_synced', [
-                    'items_count' => count($nextPartsSnapshot),
-                    'total_quantity' => array_sum($nextPartsSnapshot),
-                ]);
+            if (isset($data['allparts'])) {
+                $partsToSync = [];
+                foreach ($data['allparts'] as $part) {
+                    $partsToSync[(int) $part['part_id']] = ['quantity' => (int) $part['quantity']];
+                }
+
+                $partsSyncResult = $this->syncOrderPartsStock($order, $partsToSync, $currentPartsSnapshot);
             }
+        });
+
+        if ($partsSyncResult && $currentPartsSnapshot !== $partsSyncResult['snapshot']) {
+            $this->logOrderAction($order, 'parts_synced', [
+                'items_count' => count($partsSyncResult['snapshot']),
+                'total_quantity' => array_sum($partsSyncResult['snapshot']),
+                'movements' => $partsSyncResult['movements'],
+            ]);
         }
 
         if ($data['service_status'] != $oldStatus) {
@@ -778,11 +861,27 @@ class OrderController extends Controller
         $nextServiceValue = $this->roundMoney((float) ($order->service_value ?? 0));
         $nextServiceCost = $this->roundMoney($nextPartsValue + $nextServiceValue);
 
-        $order->orderParts()->detach($validatedData['part_id']);
-        $order->update([
-            'parts_value' => $nextPartsValue,
-            'service_cost' => $nextServiceCost,
-        ]);
+        DB::transaction(function () use ($order, $validatedData, $part, $removedQuantity, $nextPartsValue, $nextServiceCost): void {
+            $stockPart = Part::query()->lockForUpdate()->find($part->id);
+
+            if ($stockPart) {
+                $stockPart->increment('quantity', (int) $removedQuantity);
+                PartMovement::create([
+                    'part_id' => $stockPart->id,
+                    'order_id' => $order->id,
+                    'user_id' => $this->currentUser()?->id,
+                    'movement_type' => 'entrada',
+                    'quantity' => (int) $removedQuantity,
+                    'reason' => 'Devolução de peça removida da OS '.$order->order_number,
+                ]);
+            }
+
+            $order->orderParts()->detach($validatedData['part_id']);
+            $order->update([
+                'parts_value' => $nextPartsValue,
+                'service_cost' => $nextServiceCost,
+            ]);
+        });
         $this->logOrderAction($order, 'part_removed', [
             'part_id' => (int) $part->id,
             'part_name' => $part->name,

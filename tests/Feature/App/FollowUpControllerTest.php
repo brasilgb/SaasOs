@@ -309,6 +309,24 @@ class FollowUpControllerTest extends TestCase
         ]);
     }
 
+    public function test_it_includes_root_app_user_in_task_assignee_filter(): void
+    {
+        $rootApp = User::factory()->forTenant($this->tenant->id)->create([
+            'roles' => User::ROLE_ROOT_APP,
+            'status' => 1,
+        ]);
+
+        $this->actingAs($rootApp);
+
+        $response = $this->get(route('app.follow-ups.tasks'));
+
+        $response
+            ->assertOk()
+            ->assertViewHas('page.props.technicians', function ($users) use ($rootApp) {
+                return collect($users)->contains(fn ($user) => (int) $user['id'] === $rootApp->id);
+            });
+    }
+
     public function test_it_exposes_recovery_and_technician_summary(): void
     {
         $customer = Customer::factory()->forTenant($this->tenant->id)->create([

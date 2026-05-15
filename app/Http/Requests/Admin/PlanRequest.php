@@ -27,7 +27,7 @@ class PlanRequest extends FormRequest
             'slug' => 'required',
             'description' => 'required',
             'value' => 'required|numeric|min:0',
-            'billing_months' => 'required|integer|in:1,3,6,12',
+            'billing_months' => 'required|integer|in:1,3,6,12,14',
         ];
     }
 

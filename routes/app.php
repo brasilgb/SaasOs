@@ -31,7 +31,6 @@ Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 Route::get('/chartEquipments/{timerange}', [DashboardController::class, 'chartEquipments'])->name('chartEquipments');
 Route::get('/fluxsOrders/{timerange}', [DashboardController::class, 'fluxsOrders'])->name('fluxsOrders');
 Route::get('/budgetsStatusChart/{timerange}', [DashboardController::class, 'budgetsStatusChart'])->name('budgetsStatusChart');
-Route::get('/dashboardData/{timerange}', [DashboardController::class, 'dashboardData'])->name('dashboardData');
 Route::get('/metricsSystem/{timerange}', [DashboardController::class, 'metricsSystem'])->name('metricsSystem');
 Route::get('/kpisFinancialOrder/{timerange}', [DashboardController::class, 'kpisFinancialOrder'])->name('kpisFinancialOrder');
 Route::get('/financialRevenueChart/{timerange}', [DashboardController::class, 'financialRevenueChart'])->name('financialRevenueChart');
@@ -106,5 +105,6 @@ Route::resource('/expenses', ExpenseController::class)->except(['show', 'create'
 Route::get('/cashier', [CashSessionController::class, 'index'])->name('cashier.index');
 Route::post('/cashier/open', [CashSessionController::class, 'open'])->name('cashier.open');
 Route::post('/cashier/{cashSession}/withdrawal', [CashSessionController::class, 'withdrawal'])->name('cashier.withdrawal');
+Route::post('/cashier/{cashSession}/withdrawal/{movement}/cancel', [CashSessionController::class, 'cancelWithdrawal'])->name('cashier.withdrawal.cancel');
 Route::post('/cashier/{cashSession}/close', [CashSessionController::class, 'close'])->name('cashier.close');
 Route::resource('/reports', ReportController::class);

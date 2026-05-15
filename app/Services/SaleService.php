@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\App\CashSession;
 use App\Models\App\FiscalDocument;
 use App\Models\App\Part;
+use App\Models\App\PartMovement;
 use App\Models\App\Sale;
 use App\Models\App\SaleItem;
 use App\Models\User;
@@ -60,6 +61,13 @@ class SaleService
                 ]);
 
                 $part->decrement('quantity', $item['quantity']);
+                PartMovement::create([
+                    'part_id' => $part->id,
+                    'user_id' => auth()->id(),
+                    'movement_type' => 'saida',
+                    'quantity' => $item['quantity'],
+                    'reason' => 'Venda '.$sale->sales_number,
+                ]);
             }
 
             return $sale;
@@ -87,6 +95,13 @@ class SaleService
                 if ($part) {
                     $part->quantity += $item->quantity;
                     $part->save();
+                    PartMovement::create([
+                        'part_id' => $part->id,
+                        'user_id' => $user?->id,
+                        'movement_type' => 'entrada',
+                        'quantity' => $item->quantity,
+                        'reason' => 'Cancelamento da venda '.$sale->sales_number,
+                    ]);
                 }
             }
 

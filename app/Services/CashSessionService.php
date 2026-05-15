@@ -2,8 +2,9 @@
 
 namespace App\Services;
 
+use App\Events\CashSessionWithdrawalRegistered;
+use App\Events\CashSessionWithdrawalCancelled;
 use App\Models\App\CashSession;
-use App\Models\App\CashSessionLog;
 use App\Models\App\CashSessionMovement;
 use App\Models\App\OrderPayment;
 use App\Models\App\Sale;
@@ -89,7 +90,7 @@ class CashSessionService
             throw new RuntimeException('O valor da sangria não pode ser maior que o saldo esperado atual.');
         }
 
-        return DB::transaction(function () use ($cashSession, $data, $userId, $amount): CashSessionMovement {
+        $movement = DB::transaction(function () use ($cashSession, $data, $userId, $amount): CashSessionMovement {
             $movement = CashSessionMovement::create([
                 'cash_session_id' => $cashSession->id,
                 'user_id' => $userId,
@@ -98,18 +99,50 @@ class CashSessionService
                 'description' => $data['description'] ?? null,
             ]);
 
-            CashSessionLog::create([
-                'cash_session_id' => $cashSession->id,
-                'user_id' => $userId,
-                'action' => 'withdrawal_registered',
-                'data' => [
-                    'amount' => $amount,
-                    'description' => $data['description'] ?? null,
-                ],
-            ]);
-
             return $movement;
         });
+
+        event(new CashSessionWithdrawalRegistered($cashSession->id, $userId, [
+            'movement_id' => $movement->id,
+            'amount' => $amount,
+            'description' => $data['description'] ?? null,
+        ]));
+
+        return $movement;
+    }
+
+    public function cancelWithdrawal(CashSession $cashSession, CashSessionMovement $movement, array $data, int $userId): CashSessionMovement
+    {
+        if ($cashSession->status !== 'open') {
+            throw new RuntimeException('Este caixa já está fechado.');
+        }
+
+        if ((int) $movement->cash_session_id !== (int) $cashSession->id || $movement->type !== CashSessionMovement::TYPE_WITHDRAWAL) {
+            throw new RuntimeException('Sangria não encontrada para este caixa.');
+        }
+
+        if ($movement->cancelled_at) {
+            throw new RuntimeException('Esta sangria já está cancelada.');
+        }
+
+        $movement = DB::transaction(function () use ($movement, $data, $userId): CashSessionMovement {
+            $movement->update([
+                'cancelled_at' => now(),
+                'cancelled_by' => $userId,
+                'cancellation_reason' => $data['cancellation_reason'] ?? null,
+            ]);
+
+            return $movement->fresh();
+        });
+
+        event(new CashSessionWithdrawalCancelled($cashSession->id, $userId, [
+            'movement_id' => $movement->id,
+            'amount' => (float) $movement->amount,
+            'description' => $movement->description,
+            'cancellation_reason' => $movement->cancellation_reason,
+        ]));
+
+        return $movement;
     }
 
     public function currentExpectedBalance(CashSession $cashSession): float
@@ -131,6 +164,7 @@ class CashSessionService
         return (float) CashSessionMovement::query()
             ->where('cash_session_id', $cashSession->id)
             ->where('type', CashSessionMovement::TYPE_WITHDRAWAL)
+            ->whereNull('cancelled_at')
             ->sum('amount');
     }
 }

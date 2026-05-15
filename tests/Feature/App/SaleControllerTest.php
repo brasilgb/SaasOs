@@ -97,6 +97,20 @@ class SaleControllerTest extends TestCase
             'user_id' => $this->user->id,
             'action' => 'created',
         ]);
+        $this->assertDatabaseHas('part_movements', [
+            'part_id' => $part1->id,
+            'user_id' => $this->user->id,
+            'movement_type' => 'saida',
+            'quantity' => 2,
+            'reason' => 'Venda '.$sale->sales_number,
+        ]);
+        $this->assertDatabaseHas('part_movements', [
+            'part_id' => $part2->id,
+            'user_id' => $this->user->id,
+            'movement_type' => 'saida',
+            'quantity' => 1,
+            'reason' => 'Venda '.$sale->sales_number,
+        ]);
     }
 
     public function test_it_blocks_sale_cancellation_when_cash_session_is_closed(): void
@@ -205,6 +219,13 @@ class SaleControllerTest extends TestCase
         ]);
 
         $this->assertSame(4, $part->fresh()->quantity);
+        $this->assertDatabaseHas('part_movements', [
+            'part_id' => $part->id,
+            'user_id' => $this->user->id,
+            'movement_type' => 'entrada',
+            'quantity' => 2,
+            'reason' => 'Cancelamento da venda '.$sale->sales_number,
+        ]);
 
         $this->assertDatabaseHas('sale_logs', [
             'sale_id' => $sale->id,

@@ -907,6 +907,13 @@ class FollowUpController extends Controller
             ->orderBy('name')
             ->get(['id', 'name']);
 
+        if ($user && $user->status && ! $technicians->contains('id', $user->id)) {
+            $technicians = $technicians
+                ->push($user->only(['id', 'name']))
+                ->sortBy('name')
+                ->values();
+        }
+
         $dailyAgenda = collect($this->dailyAgenda($budgetOrders, $paymentOrders, $feedbackOrders, null));
         $type = (string) $request->get('type', 'all');
         $priority = (string) $request->get('priority', 'all');

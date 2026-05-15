@@ -34,6 +34,7 @@ export default function OrderDashboard({
     others,
     cashier,
     orders,
+    feedbackDelay,
     acount,
     listSchedules,
     auth,
@@ -72,6 +73,7 @@ export default function OrderDashboard({
               : `${timerange} dias`;
 
     const defaultKpiDescription = 'Acessar dados';
+    const feedbackDelayLabel = `${Number(feedbackDelay || 7)} ${Number(feedbackDelay || 7) === 1 ? 'dia' : 'dias'}`;
 
     return (
         <div className="min-w-0">
@@ -219,7 +221,7 @@ export default function OrderDashboard({
                                         </TabsTrigger>
 
                                         <TabsTrigger className="px-2 whitespace-nowrap" value="fb">
-                                            Equip. Entregue há 7 dias
+                                            Equip. entregue há {feedbackDelayLabel}
                                             <Badge className="ml-1 text-xs">{orders?.feedback.length}</Badge>
                                         </TabsTrigger>
 
@@ -233,7 +235,9 @@ export default function OrderDashboard({
                                         <div className="flex flex-wrap gap-2 border-t py-2">
                                             {orders?.agendados.map((age: any, index: number) => (
                                                 <Button key={`ag-${age.schedules_number ?? index}`} variant={'secondary'} asChild>
-                                                    <Link href={route('app.schedules.index', { q: age.id, init: true })}>{age.schedules_number}</Link>
+                                                    <Link href={route('app.schedules.index', { search: age.schedules_number, init: true })}>
+                                                        {age.schedules_number}
+                                                    </Link>
                                                 </Button>
                                             ))}
                                         </div>
@@ -243,7 +247,9 @@ export default function OrderDashboard({
                                         <div className="flex flex-wrap gap-2 border-t py-2">
                                             {orders?.gerados.map((ger: any, index: number) => (
                                                 <Button key={`og-${ger.order_number ?? index}`} variant={'secondary'} asChild>
-                                                    <Link href={route('app.orders.index', { q: ger.id, init: true })}>{ger.order_number}</Link>
+                                                    <Link href={route('app.orders.index', { search: ger.order_number, init: true })}>
+                                                        {ger.order_number}
+                                                    </Link>
                                                 </Button>
                                             ))}
                                         </div>
@@ -253,7 +259,9 @@ export default function OrderDashboard({
                                         <div className="flex flex-wrap gap-2 border-t py-2">
                                             {orders?.aprovados.map((apro: any, index: number) => (
                                                 <Button key={`oa-${apro.order_number ?? index}`} variant={'secondary'} asChild>
-                                                    <Link href={route('app.orders.index', { q: apro.id, init: true })}>{apro.order_number}</Link>
+                                                    <Link href={route('app.orders.index', { search: apro.order_number, init: true })}>
+                                                        {apro.order_number}
+                                                    </Link>
                                                 </Button>
                                             ))}
                                         </div>
@@ -263,7 +271,9 @@ export default function OrderDashboard({
                                         <div className="flex flex-wrap gap-2 border-t py-2">
                                             {orders?.concluidosca.map((conca: any, index: number) => (
                                                 <Button key={`ca-${conca.order_number ?? index}`} variant={'secondary'} asChild>
-                                                    <Link href={route('app.orders.index', { q: conca.id, init: true })}>{conca.order_number}</Link>
+                                                    <Link href={route('app.orders.index', { search: conca.order_number, init: true })}>
+                                                        {conca.order_number}
+                                                    </Link>
                                                 </Button>
                                             ))}
                                         </div>
@@ -275,17 +285,24 @@ export default function OrderDashboard({
                                         <div className="flex flex-wrap gap-2 border-t py-2">
                                             {orders?.concluidoscn.map((concn: any, index: number) => (
                                                 <Button key={`cn-${concn.order_number ?? index}`} variant={'secondary'} asChild>
-                                                    <Link href={route('app.orders.index', { q: concn.id, init: true })}>{concn.order_number}</Link>
+                                                    <Link href={route('app.orders.index', { search: concn.order_number, init: true })}>
+                                                        {concn.order_number}
+                                                    </Link>
                                                 </Button>
                                             ))}
                                         </div>
                                     </TabsContent>
                                     <TabsContent value="fb" className="max-h-48 overflow-y-auto">
-                                        <div className="py-1 text-xs font-semibold">Serviços a sete dias para provável feedback</div>
+                                        <div className="py-1 text-xs font-semibold">
+                                            Serviços no prazo de {feedbackDelayLabel} para provável feedback
+                                        </div>
                                         <div className="flex flex-wrap gap-2 border-t py-2">
                                             {orders?.feedback.map((ger: any, index: number) => (
                                                 <Button key={`fb-${ger.order_number ?? index}`} variant={'secondary'} asChild>
-                                                    <Link href={route('app.orders.index', { q: ger.id, init: true, fd: 1 })} className="relative">
+                                                    <Link
+                                                        href={route('app.orders.index', { search: ger.order_number, init: true, fd: 1 })}
+                                                        className="relative"
+                                                    >
                                                         {ger.feedback && <Check className="absolute -top-1 -right-1 h-4 w-4" />}
                                                         {ger.order_number}
                                                     </Link>

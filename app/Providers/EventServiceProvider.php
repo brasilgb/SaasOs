@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Events\CashSessionClosed;
 use App\Events\CashSessionOpened;
+use App\Events\CashSessionWithdrawalCancelled;
+use App\Events\CashSessionWithdrawalRegistered;
 use App\Events\ExpenseCreated;
 use App\Events\ExpenseDeleted;
 use App\Events\ExpenseUpdated;
@@ -29,6 +31,8 @@ use App\Events\SaleDeleted;
 use App\Events\WhatsappMessageSettingsUpdated;
 use App\Listeners\RecordCashSessionClosedLifecycle;
 use App\Listeners\RecordCashSessionOpenedLifecycle;
+use App\Listeners\RecordCashSessionWithdrawalCancellationLifecycle;
+use App\Listeners\RecordCashSessionWithdrawalLifecycle;
 use App\Listeners\RecordExpenseCreatedLifecycle;
 use App\Listeners\RecordExpenseDeletedLifecycle;
 use App\Listeners\RecordExpenseUpdatedLifecycle;
@@ -95,6 +99,12 @@ class EventServiceProvider extends ServiceProvider
         ],
         CashSessionClosed::class => [
             RecordCashSessionClosedLifecycle::class,
+        ],
+        CashSessionWithdrawalRegistered::class => [
+            RecordCashSessionWithdrawalLifecycle::class,
+        ],
+        CashSessionWithdrawalCancelled::class => [
+            RecordCashSessionWithdrawalCancellationLifecycle::class,
         ],
         ExpenseCreated::class => [
             RecordExpenseCreatedLifecycle::class,

@@ -18,8 +18,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function FollowUpTasks({ filters, summary, dailyAgenda, technicians }: any) {
-    const { auth } = usePage<{ auth?: { id?: number; role?: string; permissions?: string[] } }>().props;
+    const { auth } = usePage<{ auth?: { user?: { id?: number }; role?: string; permissions?: string[] } }>().props;
     const canManageOrders = Boolean(auth?.role !== 'technician' && auth?.permissions?.includes('orders'));
+    const currentUserId = auth?.user?.id;
     const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
     const selectedCount = selectedTasks.length;
 
@@ -92,20 +93,17 @@ export default function FollowUpTasks({ filters, summary, dailyAgenda, technicia
     };
 
     const handleClaimTask = (orderId: number, scope: 'budget' | 'payment' | 'feedback') => {
-        if (!auth?.id) {
+        if (!currentUserId) {
             return;
         }
 
-        handleAssignTask(orderId, scope, String(auth.id));
+        handleAssignTask(orderId, scope, String(currentUserId));
     };
 
     const taskKey = (item: any) => `${item.id}:${item.scope}`;
 
     const selectedTaskPayload = useMemo(
-        () =>
-            dailyAgenda
-                .filter((item: any) => selectedTasks.includes(taskKey(item)))
-                .map((item: any) => ({ order_id: item.id, scope: item.scope })),
+        () => dailyAgenda.filter((item: any) => selectedTasks.includes(taskKey(item))).map((item: any) => ({ order_id: item.id, scope: item.scope })),
         [dailyAgenda, selectedTasks],
     );
 
@@ -119,14 +117,14 @@ export default function FollowUpTasks({ filters, summary, dailyAgenda, technicia
     };
 
     const handleBulkAssignToMe = () => {
-        if (!auth?.id || selectedTaskPayload.length === 0) {
+        if (!currentUserId || selectedTaskPayload.length === 0) {
             return;
         }
 
         router.post(
             route('app.follow-ups.assign-selected'),
             {
-                user_id: auth.id,
+                user_id: currentUserId,
                 tasks: selectedTaskPayload,
             },
             {
@@ -146,9 +144,7 @@ export default function FollowUpTasks({ filters, summary, dailyAgenda, technicia
                     <Icon iconNode={ClipboardList} className="h-8 w-8" />
                     <div>
                         <h2 className="text-xl font-semibold tracking-tight">Central de pendências</h2>
-                        <p className="text-muted-foreground text-sm">
-                            Veja contatos, cobranças e tratativas que precisam de ação ou responsável.
-                        </p>
+                        <p className="text-muted-foreground text-sm">Veja contatos, cobranças e tratativas que precisam de ação ou responsável.</p>
                     </div>
                 </div>
                 <div>
@@ -157,7 +153,6 @@ export default function FollowUpTasks({ filters, summary, dailyAgenda, technicia
             </div>
 
             <div className="space-y-4 p-4">
-
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-base">Filtros operacionais</CardTitle>
@@ -225,27 +220,39 @@ export default function FollowUpTasks({ filters, summary, dailyAgenda, technicia
 
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
                     <Card>
-                        <CardHeader><CardTitle className="text-base">Pendências abertas</CardTitle></CardHeader>
+                        <CardHeader>
+                            <CardTitle className="text-base">Pendências abertas</CardTitle>
+                        </CardHeader>
                         <CardContent className="text-3xl font-bold">{summary?.today_tasks ?? 0}</CardContent>
                     </Card>
                     <Card>
-                        <CardHeader><CardTitle className="text-base">Orçamento</CardTitle></CardHeader>
+                        <CardHeader>
+                            <CardTitle className="text-base">Orçamento</CardTitle>
+                        </CardHeader>
                         <CardContent className="text-3xl font-bold">{summary?.budget_tasks ?? 0}</CardContent>
                     </Card>
                     <Card>
-                        <CardHeader><CardTitle className="text-base">Cobrança</CardTitle></CardHeader>
+                        <CardHeader>
+                            <CardTitle className="text-base">Cobrança</CardTitle>
+                        </CardHeader>
                         <CardContent className="text-3xl font-bold">{summary?.payment_tasks ?? 0}</CardContent>
                     </Card>
                     <Card>
-                        <CardHeader><CardTitle className="text-base">Clientes insatisfeitos</CardTitle></CardHeader>
+                        <CardHeader>
+                            <CardTitle className="text-base">Clientes insatisfeitos</CardTitle>
+                        </CardHeader>
                         <CardContent className="text-3xl font-bold">{summary?.feedback_tasks ?? 0}</CardContent>
                     </Card>
                     <Card>
-                        <CardHeader><CardTitle className="text-base">Sem responsável</CardTitle></CardHeader>
+                        <CardHeader>
+                            <CardTitle className="text-base">Sem responsável</CardTitle>
+                        </CardHeader>
                         <CardContent className="text-3xl font-bold">{summary?.unassigned_tasks ?? 0}</CardContent>
                     </Card>
                     <Card>
-                        <CardHeader><CardTitle className="text-base">Críticas</CardTitle></CardHeader>
+                        <CardHeader>
+                            <CardTitle className="text-base">Críticas</CardTitle>
+                        </CardHeader>
                         <CardContent className="text-3xl font-bold">{summary?.critical_tasks ?? 0}</CardContent>
                     </Card>
                 </div>
@@ -255,7 +262,12 @@ export default function FollowUpTasks({ filters, summary, dailyAgenda, technicia
                         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                             <CardTitle className="text-base">Lista do que precisa ser feito</CardTitle>
                             {canManageOrders && (
-                                <Button type="button" variant="outline" onClick={handleBulkAssignToMe} disabled={selectedCount === 0 || !auth?.id}>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={handleBulkAssignToMe}
+                                    disabled={selectedCount === 0 || !currentUserId}
+                                >
                                     <UserPlus className="h-4 w-4" />
                                     Assumir selecionadas{selectedCount > 0 ? ` (${selectedCount})` : ''}
                                 </Button>
@@ -333,7 +345,9 @@ export default function FollowUpTasks({ filters, summary, dailyAgenda, technicia
                                                     <div className="flex items-center gap-2">
                                                         {item.scope === 'feedback' ? <Star className="h-4 w-4 text-rose-500" /> : null}
                                                         <span>{item.type}</span>
-                                                        {item.scope === 'feedback' && item.rating ? <Badge variant="destructive">Nota {item.rating}</Badge> : null}
+                                                        {item.scope === 'feedback' && item.rating ? (
+                                                            <Badge variant="destructive">Nota {item.rating}</Badge>
+                                                        ) : null}
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>{item.days_pending}</TableCell>
@@ -362,7 +376,7 @@ export default function FollowUpTasks({ filters, summary, dailyAgenda, technicia
                                                     <div className="flex justify-end gap-2">
                                                         {canManageOrders && (
                                                             <>
-                                                                {!item.assigned_to_id && auth?.id && (
+                                                                {!item.assigned_to_id && currentUserId && (
                                                                     <Button
                                                                         type="button"
                                                                         size="icon"

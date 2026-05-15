@@ -8,6 +8,7 @@ use App\Models\App\Other;
 use App\Models\App\Equipment;
 use App\Models\App\Order;
 use App\Models\App\OrderPayment;
+use App\Models\App\Part;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Support\OrderStatus;
@@ -510,6 +511,165 @@ class OrderControllerTest extends TestCase
         );
     }
 
+    public function test_it_decrements_stock_when_parts_are_added_to_order(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+        $part = Part::factory()->forTenant($this->tenant->id)->create([
+            'quantity' => 5,
+            'sale_price' => 80,
+            'name' => 'Conector USB-C',
+        ]);
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'user_id' => $this->user->id,
+            'service_status' => OrderStatus::OPEN,
+        ]);
+
+        $response = $this->put(route('app.orders.update', $order), $this->orderUpdatePayload($order, $customer, $equipment, [
+            'parts_value' => '160,00',
+            'service_cost' => '160,00',
+            'allparts' => [
+                ['part_id' => $part->id, 'quantity' => 2],
+            ],
+        ]));
+
+        $response->assertRedirect(route('app.orders.show', ['order' => $order->id]));
+
+        $this->assertSame(3, (int) $part->fresh()->quantity);
+        $this->assertDatabaseHas('order_parts', [
+            'order_id' => $order->id,
+            'part_id' => $part->id,
+            'quantity' => 2,
+        ]);
+        $this->assertDatabaseHas('part_movements', [
+            'part_id' => $part->id,
+            'order_id' => $order->id,
+            'user_id' => $this->user->id,
+            'movement_type' => 'saida',
+            'quantity' => 2,
+            'reason' => 'Uso na OS '.$order->order_number,
+        ]);
+    }
+
+    public function test_it_returns_stock_when_order_part_quantity_is_reduced(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+        $part = Part::factory()->forTenant($this->tenant->id)->create([
+            'quantity' => 2,
+            'sale_price' => 80,
+            'name' => 'Conector USB-C',
+        ]);
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'user_id' => $this->user->id,
+            'service_status' => OrderStatus::OPEN,
+            'parts_value' => 240,
+            'service_cost' => 240,
+        ]);
+        $order->orderParts()->attach($part->id, ['quantity' => 3]);
+
+        $response = $this->put(route('app.orders.update', $order), $this->orderUpdatePayload($order, $customer, $equipment, [
+            'parts_value' => '80,00',
+            'service_cost' => '80,00',
+            'allparts' => [
+                ['part_id' => $part->id, 'quantity' => 1],
+            ],
+        ]));
+
+        $response->assertRedirect(route('app.orders.show', ['order' => $order->id]));
+
+        $this->assertSame(4, (int) $part->fresh()->quantity);
+        $this->assertDatabaseHas('order_parts', [
+            'order_id' => $order->id,
+            'part_id' => $part->id,
+            'quantity' => 1,
+        ]);
+        $this->assertDatabaseHas('part_movements', [
+            'part_id' => $part->id,
+            'order_id' => $order->id,
+            'user_id' => $this->user->id,
+            'movement_type' => 'entrada',
+            'quantity' => 2,
+            'reason' => 'Devolução de peça da OS '.$order->order_number,
+        ]);
+    }
+
+    public function test_it_blocks_adding_order_part_when_stock_is_insufficient(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+        $part = Part::factory()->forTenant($this->tenant->id)->create([
+            'quantity' => 1,
+            'sale_price' => 80,
+            'name' => 'Conector USB-C',
+        ]);
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'user_id' => $this->user->id,
+            'service_status' => OrderStatus::OPEN,
+        ]);
+
+        $response = $this->from(route('app.orders.show', $order))
+            ->put(route('app.orders.update', $order), $this->orderUpdatePayload($order, $customer, $equipment, [
+                'parts_value' => '160,00',
+                'service_cost' => '160,00',
+                'allparts' => [
+                    ['part_id' => $part->id, 'quantity' => 2],
+                ],
+            ]));
+
+        $response
+            ->assertRedirect(route('app.orders.show', $order))
+            ->assertSessionHasErrors('allparts');
+
+        $this->assertSame(1, (int) $part->fresh()->quantity);
+        $this->assertDatabaseMissing('order_parts', [
+            'order_id' => $order->id,
+            'part_id' => $part->id,
+        ]);
+    }
+
+    public function test_it_returns_stock_when_order_part_is_removed(): void
+    {
+        $part = Part::factory()->forTenant($this->tenant->id)->create([
+            'quantity' => 3,
+            'sale_price' => 80,
+        ]);
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'user_id' => $this->user->id,
+            'parts_value' => 160,
+            'service_value' => 40,
+            'service_cost' => 200,
+        ]);
+        $order->orderParts()->attach($part->id, ['quantity' => 2]);
+
+        $response = $this->post(route('app.orders.removePart'), [
+            'order_id' => $order->id,
+            'part_id' => $part->id,
+        ]);
+
+        $response->assertRedirect(route('app.orders.show', $order));
+
+        $this->assertSame(5, (int) $part->fresh()->quantity);
+        $this->assertDatabaseMissing('order_parts', [
+            'order_id' => $order->id,
+            'part_id' => $part->id,
+        ]);
+        $this->assertDatabaseHas('part_movements', [
+            'part_id' => $part->id,
+            'order_id' => $order->id,
+            'user_id' => $this->user->id,
+            'movement_type' => 'entrada',
+            'quantity' => 2,
+            'reason' => 'Devolução de peça removida da OS '.$order->order_number,
+        ]);
+    }
+
     public function test_it_marks_new_order_as_warranty_return_when_previous_covered_order_exists(): void
     {
         $customer = Customer::factory()->forTenant($this->tenant->id)->create();
@@ -773,5 +933,29 @@ class OrderControllerTest extends TestCase
                     && ($matched['last_communication']['trigger'] ?? null) === 'manual'
                     && ($matched['last_communication']['channel'] ?? null) === 'email';
             });
+    }
+
+    private function orderUpdatePayload(Order $order, Customer $customer, Equipment $equipment, array $overrides = []): array
+    {
+        return array_merge([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'user_id' => $this->user->id,
+            'model' => $order->model ?? 'Modelo teste',
+            'password' => $order->password,
+            'defect' => $order->defect ?? 'Defeito teste',
+            'state_conservation' => $order->state_conservation ?? 'Usado',
+            'accessories' => $order->accessories ?? 'Sem acessórios',
+            'budget_description' => $order->budget_description,
+            'budget_value' => '0,00',
+            'services_performed' => $order->services_performed,
+            'parts_value' => '0,00',
+            'service_value' => '0,00',
+            'service_cost' => '0,00',
+            'delivery_date' => null,
+            'service_status' => $order->service_status ?? OrderStatus::OPEN,
+            'delivery_forecast' => null,
+            'observations' => $order->observations,
+        ], $overrides);
     }
 }

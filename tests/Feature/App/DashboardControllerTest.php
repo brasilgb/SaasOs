@@ -4,6 +4,7 @@ namespace Tests\Feature\App;
 
 use App\Models\App\OrderLog;
 use App\Models\App\Order;
+use App\Models\App\Schedule;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Support\OrderStatus;
@@ -47,6 +48,59 @@ class DashboardControllerTest extends TestCase
             ->assertViewHas('page.props.warrantyIndicator.warranty_return_threshold', 10.0)
             ->assertViewHas('page.props.orders.garantia', function (array $orders) use ($warrantyReturnOrder) {
                 return collect($orders)->pluck('id')->contains($warrantyReturnOrder->id);
+            });
+    }
+
+    public function test_dashboard_index_exposes_operation_status_items_with_searchable_identifiers(): void
+    {
+        $schedule = Schedule::factory()->forTenant($this->tenant->id)->create([
+            'status' => 1,
+        ]);
+        $budgetOrder = Order::factory()->forTenant($this->tenant->id)->create([
+            'service_status' => OrderStatus::BUDGET_GENERATED,
+        ]);
+        $deliveredOrder = Order::factory()->forTenant($this->tenant->id)->create([
+            'service_status' => OrderStatus::DELIVERED,
+            'delivery_date' => now()->subDays(8),
+            'customer_feedback_submitted_at' => null,
+        ]);
+
+        $response = $this->get(route('app.dashboard'));
+
+        $response
+            ->assertOk()
+            ->assertViewHas('page.props.feedbackDelay', 7)
+            ->assertViewHas('page.props.orders.agendados', function ($items) use ($schedule) {
+                return collect($items)->contains(fn ($item) => (int) $item['id'] === $schedule->id
+                    && (int) $item['schedules_number'] === (int) $schedule->schedules_number);
+            })
+            ->assertViewHas('page.props.orders.gerados', function ($items) use ($budgetOrder) {
+                return collect($items)->contains(fn ($item) => (int) $item['id'] === $budgetOrder->id
+                    && (int) $item['order_number'] === (int) $budgetOrder->order_number);
+            })
+            ->assertViewHas('page.props.orders.feedback', function ($items) use ($deliveredOrder) {
+                return collect($items)->contains(fn ($item) => (int) $item['id'] === $deliveredOrder->id
+                    && (int) $item['order_number'] === (int) $deliveredOrder->order_number);
+            });
+    }
+
+    public function test_schedules_index_filters_by_schedule_number(): void
+    {
+        $matchingSchedule = Schedule::factory()->forTenant($this->tenant->id)->create([
+            'schedules_number' => 1234,
+            'service' => 'Manutencao preventiva',
+        ]);
+        Schedule::factory()->forTenant($this->tenant->id)->create([
+            'schedules_number' => 4321,
+            'service' => 'Instalacao',
+        ]);
+
+        $response = $this->get(route('app.schedules.index', ['search' => $matchingSchedule->schedules_number]));
+
+        $response
+            ->assertOk()
+            ->assertViewHas('page.props.schedules.data', function ($items) use ($matchingSchedule) {
+                return collect($items)->pluck('id')->all() === [$matchingSchedule->id];
             });
     }
 

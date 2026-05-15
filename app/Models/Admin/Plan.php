@@ -36,11 +36,20 @@ class Plan extends Model
         return str_contains($text, 'cortesia') || str_contains($text, 'courtesy');
     }
 
+    public function isTrialCycle(): bool
+    {
+        return $this->isTrial() || (int) ($this->billing_months ?? 0) === 14;
+    }
+
     public function billingMonths(): int
     {
         $periodMonths = $this->preferredPeriodBillingMonths();
         if ($periodMonths > 0) {
             return $periodMonths;
+        }
+
+        if ((int) ($this->billing_months ?? 0) === 14) {
+            return 0;
         }
 
         if ((int) ($this->billing_months ?? 0) > 0) {

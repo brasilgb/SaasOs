@@ -185,53 +185,53 @@ html {
 }
 
 @media print {
-  @page {
-    size: A4;
-    margin: 0;
-  }
+    @page {
+        size: A4;
+        margin: 0;
+    }
 
-  body {
-    margin: 0;
-  }
+    body {
+        margin: 0;
+    }
 }
 
 .page {
-  width: 210mm;
-  height: 297mm;
+    width: 210mm;
+    height: 297mm;
 
-  padding-top: 12.5mm;
-  padding-left: 5.7mm;
-  padding-right: 5.7mm;
+    padding-top: 12.5mm;
+    padding-left: 5.7mm;
+    padding-right: 5.7mm;
 
-  box-sizing: border-box;
-  page-break-after: always;
+    box-sizing: border-box;
+    page-break-after: always;
 }
 
 .row {
-  display: flex;
-  height: 17mm;
+    display: flex;
+    height: 17mm;
 }
 
 .etiqueta {
-  width: 33mm;
-  height: 17mm;
+    width: 33mm;
+    height: 17mm;
 
-  display: flex;
-  justify-content: center;
-  align-items: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .conteudo {
-  width: 31mm;
-  height: 17mm;
+    width: 31mm;
+    height: 17mm;
 
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 
-  padding: 1mm;
-  box-sizing: border-box;
+    padding: 1mm;
+    box-sizing: border-box;
 }
 
 .order-model-select__menu,
@@ -253,7 +253,7 @@ html {
 .order-model-select__control {
     border-color: var(--input) !important;
     background-color: var(--background) !important;
-    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05) !important;
+    box-shadow: none !important;
 }
 
 .creatable-select__control--is-focused,
@@ -273,18 +273,18 @@ html {
 
 /* Tipografia otimizada */
 .empresa {
-  font-size: 9px;
-  text-align: center;
-  line-height: 1;
+    font-size: 9px;
+    text-align: center;
+    line-height: 1;
 }
 
 .pedido {
-  font-size: 16px;
-  font-weight: bold;
-  line-height: 1;
+    font-size: 16px;
+    font-weight: bold;
+    line-height: 1;
 }
 
 .telefone {
-  font-size: 10px;
-  line-height: 1;
+    font-size: 10px;
+    line-height: 1;
 }

@@ -45,6 +45,10 @@ class TenantController extends Controller
             return $preferredPeriod->name;
         }
 
+        if ($plan->isTrialCycle()) {
+            return '14 dias';
+        }
+
         $billingMonths = $plan->billingMonths();
         if ($billingMonths > 0) {
             return $this->formatPlanDurationLabel($billingMonths);
@@ -111,7 +115,7 @@ class TenantController extends Controller
             }
         }
 
-        if ($plan->isTrial()) {
+        if ($plan->isTrialCycle()) {
             return Carbon::now()->addDays(14);
         }
 

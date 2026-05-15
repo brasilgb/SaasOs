@@ -38,6 +38,7 @@ export default function Dashboard({
     others,
     listSchedules,
     cashier,
+    feedbackDelay,
     flash,
     auth,
     tenantFeedbackRequest,
@@ -168,6 +169,7 @@ export default function Dashboard({
                                 others={others}
                                 cashier={cashier}
                                 orders={orders}
+                                feedbackDelay={feedbackDelay}
                                 acount={acount}
                                 listSchedules={listSchedules}
                                 auth={auth}

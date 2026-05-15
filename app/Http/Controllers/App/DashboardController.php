@@ -58,19 +58,19 @@ class DashboardController extends Controller
             'numproducts' => Part::where('type', 'product')->count(),
         ];
         $orders = [
-            'agendados' => Schedule::where('status', 1)->get('schedules_number'),
-            'gerados' => Order::where('service_status', OrderStatus::BUDGET_GENERATED)->get('order_number'),
-            'aprovados' => Order::where('service_status', OrderStatus::BUDGET_APPROVED)->get('order_number'),
-            'concluidosca' => Order::where('service_status', OrderStatus::CUSTOMER_NOTIFIED)->get('order_number'),
-            'concluidoscn' => Order::where('service_status', OrderStatus::SERVICE_COMPLETED)->get('order_number'),
+            'agendados' => Schedule::where('status', 1)->get(['id', 'schedules_number']),
+            'gerados' => Order::where('service_status', OrderStatus::BUDGET_GENERATED)->get(['id', 'order_number']),
+            'aprovados' => Order::where('service_status', OrderStatus::BUDGET_APPROVED)->get(['id', 'order_number']),
+            'concluidosca' => Order::where('service_status', OrderStatus::CUSTOMER_NOTIFIED)->get(['id', 'order_number']),
+            'concluidoscn' => Order::where('service_status', OrderStatus::SERVICE_COMPLETED)->get(['id', 'order_number']),
             'garantia' => Order::where('is_warranty_return', true)->get(['id', 'order_number']),
             'feedback' => Order::where('service_status', OrderStatus::DELIVERED)
                 ->whereNotNull('delivery_date')
                 ->where('delivery_date', '<=', $feedbackThreshold)
                 ->whereNull('customer_feedback_submitted_at')
-                ->get('order_number'),
+                ->get(['id', 'order_number']),
         ];
-        $listSchedules= Schedule::with('user', 'customer')->get();
+        $listSchedules = Schedule::with('user', 'customer')->get();
         $parts = Part::where('is_sellable', true)->get();
         $customers = Customer::get();
         $others = Other::query()
@@ -85,6 +85,7 @@ class DashboardController extends Controller
             'listSchedules' => $listSchedules,
             'reloadKey' => now()->timestamp,
             'orders' => $orders,
+            'feedbackDelay' => $feedbackDelay,
             'acount' => $acount,
             'parts' => $parts,
             'customers' => $customers,

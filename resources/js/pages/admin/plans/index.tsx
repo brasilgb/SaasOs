@@ -24,6 +24,16 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+function formatBillingCycle(months?: number | string) {
+    const value = Number(months || 1);
+
+    if (value === 14) {
+        return 'Trial 14 dias';
+    }
+
+    return `${value} ${value === 1 ? 'mês' : 'meses'}`;
+}
+
 export default function PlansIndex({ plans }: any) {
     return (
         <AdminLayout>
@@ -70,9 +80,7 @@ export default function PlansIndex({ plans }: any) {
                                         <TableCell>{plan.slug}</TableCell>
                                         <TableCell>{plan.description}</TableCell>
                                         <TableCell>R$ {maskMoney(plan.value)}</TableCell>
-                                        <TableCell>
-                                            {Number(plan.billing_months || 1)} {Number(plan.billing_months || 1) === 1 ? 'mês' : 'meses'}
-                                        </TableCell>
+                                        <TableCell>{formatBillingCycle(plan.billing_months)}</TableCell>
                                         <TableCell>{moment(plan.created_at).format('DD/MM/YYYY')}</TableCell>
                                         <TableCell className="flex justify-end gap-2">
                                             <EditPlan plan={plan} />

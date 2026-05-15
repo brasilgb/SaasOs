@@ -144,7 +144,12 @@ export default function CashierPeriodReportPDF({ data, dateRange, company, repor
                                 <Text style={styles.colDate}>{session.closed_at ? moment(session.closed_at).format('DD/MM/YYYY HH:mm') : '-'}</Text>
                                 <Text style={styles.colMoney}>{currencyFormatter(session.opening_balance || 0)}</Text>
                                 <Text style={styles.colMoney}>
-                                    {currencyFormatter((session.withdrawals || []).reduce((sum: number, withdrawal: any) => sum + Number(withdrawal.amount || 0), 0))}
+                                    {currencyFormatter(
+                                        (session.withdrawals || []).reduce(
+                                            (sum: number, withdrawal: any) => (withdrawal.cancelled_at ? sum : sum + Number(withdrawal.amount || 0)),
+                                            0,
+                                        ),
+                                    )}
                                 </Text>
                                 <Text style={styles.colMoney}>{currencyFormatter(session.expected_balance || 0)}</Text>
                                 <Text style={styles.colMoney}>{currencyFormatter(session.closing_balance || 0)}</Text>

@@ -90,6 +90,7 @@ export default function CreatePlan() {
                             <option value="3">Trimestral</option>
                             <option value="6">Semestral</option>
                             <option value="12">Anual</option>
+                            <option value="14">Trial 14 dias</option>
                         </select>
                         {errors.billing_months && <div className="text-sm text-red-500">{errors.billing_months}</div>}
                     </div>

@@ -1,12 +1,12 @@
 import { toastSuccess } from '@/components/app-toast-messages';
 import { Breadcrumbs } from '@/components/breadcrumbs';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { DatePicker } from '@/components/date-picker';
 import FormFieldHelp from '@/components/form-field-help';
 import { Icon } from '@/components/icon';
 import InputError from '@/components/input-error';
 import InvoiceModal from '@/components/Modals/InvoiceModal';
 import { OrderTimeline } from '@/components/order-timeline';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
@@ -411,375 +411,396 @@ export default function EditOrder({
                             </TabsList>
 
                             <TabsContent value="details" className="space-y-6">
-                        <Card>
-                            <CardTitle className="border-b px-6 pb-4">Cliente e equipamento</CardTitle>
-                            <CardContent className="space-y-4 pt-6">
-                        <div className="grid gap-4 md:grid-cols-8">
-                            <div className="grid gap-2 md:col-span-2">
-                                <Label htmlFor="customer_id">Cliente</Label>
-                                <Select<OptionType, false>
-                                    menuPosition="fixed"
-                                    defaultValue={defaultCustomer}
-                                    options={optionsCustomer}
-                                    onChange={changeCustomer}
-                                    placeholder="Selecione o cliente"
-                                    className="h-9 rounded-md border border-gray-300 p-0 text-gray-700 shadow-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                    styles={selectStyles}
-                                />
-                                <InputError className="mt-2" message={errors.customer_id} />
-                            </div>
+                                <Card>
+                                    <CardTitle className="border-b px-6 pb-4">Cliente e equipamento</CardTitle>
+                                    <CardContent className="space-y-4 pt-6">
+                                        <div className="grid gap-4 md:grid-cols-8">
+                                            <div className="grid gap-2 md:col-span-2">
+                                                <Label htmlFor="customer_id">Cliente</Label>
+                                                <Select<OptionType, false>
+                                                    menuPosition="fixed"
+                                                    defaultValue={defaultCustomer}
+                                                    options={optionsCustomer}
+                                                    onChange={changeCustomer}
+                                                    placeholder="Selecione o cliente"
+                                                    className="min-w-0"
+                                                    styles={selectStyles}
+                                                />
+                                                <InputError className="mt-2" message={errors.customer_id} />
+                                            </div>
 
-                            <div className="grid gap-2 md:col-span-2">
-                                <Label htmlFor="equipment">Equipamento</Label>
-                                <Select
-                                    menuPosition="fixed"
-                                    defaultValue={defaultEquipament}
-                                    options={optionsEquipment}
-                                    onChange={changeEquipment}
-                                    placeholder="Selecione o status"
-                                    className="h-9 rounded-md border border-gray-300 p-0 text-gray-700 shadow-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                    styles={selectStyles}
-                                />
-                                {errors.equipment_id && <div className="text-sm text-red-500">{errors.equipment_id}</div>}
-                            </div>
+                                            <div className="grid gap-2 md:col-span-2">
+                                                <Label htmlFor="equipment">Equipamento</Label>
+                                                <Select
+                                                    menuPosition="fixed"
+                                                    defaultValue={defaultEquipament}
+                                                    options={optionsEquipment}
+                                                    onChange={changeEquipment}
+                                                    placeholder="Selecione o status"
+                                                    className="min-w-0"
+                                                    styles={selectStyles}
+                                                />
+                                                {errors.equipment_id && <div className="text-sm text-red-500">{errors.equipment_id}</div>}
+                                            </div>
 
-                            <div className="grid gap-2 md:col-span-2">
-                                <FormFieldHelp label="Marca e Modelo" content={`Selecione ou clique em Criar "marca/modelo digitado".`} />
-                                <CreatableSelect<OptionType, false>
-                                    value={selectedModel}
-                                    options={modelOptions}
-                                    onChange={changeModel}
-                                    onCreateOption={createModel}
-                                    isClearable
-                                    styles={selectStyles}
-                                    placeholder="Selecione ou digite a nova marca/modelo"
-                                    classNamePrefix="creatable-select"
-                                    className="min-w-0"
-                                    formatCreateLabel={(inputValue) => `Criar "${inputValue}"`}
-                                />
-                                <InputError message={errors.model} />
-                            </div>
+                                            <div className="grid gap-2 md:col-span-2">
+                                                <FormFieldHelp
+                                                    label="Marca e Modelo"
+                                                    content={`Selecione ou clique em Criar "marca/modelo digitado".`}
+                                                />
+                                                <CreatableSelect<OptionType, false>
+                                                    value={selectedModel}
+                                                    options={modelOptions}
+                                                    onChange={changeModel}
+                                                    onCreateOption={createModel}
+                                                    isClearable
+                                                    styles={selectStyles}
+                                                    placeholder="Selecione ou digite a nova marca/modelo"
+                                                    classNamePrefix="creatable-select"
+                                                    className="min-w-0"
+                                                    formatCreateLabel={(inputValue) => `Criar "${inputValue}"`}
+                                                />
+                                                <InputError message={errors.model} />
+                                            </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="password">Senha</Label>
-                                <Input type="text" id="password" value={data.password} onChange={(e) => setData('password', e.target.value)} />
-                                {errors.password && <div className="text-sm text-red-500">{errors.password}</div>}
-                            </div>
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="password">Senha</Label>
+                                                <Input
+                                                    type="text"
+                                                    id="password"
+                                                    value={data.password}
+                                                    onChange={(e) => setData('password', e.target.value)}
+                                                />
+                                                {errors.password && <div className="text-sm text-red-500">{errors.password}</div>}
+                                            </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="delivery_forecast">Previsão de entrega</Label>
-                                <DatePicker
-                                    mode="single"
-                                    date={data.delivery_forecast}
-                                    setDate={(value) => {
-                                        if (!value) {
-                                            setData('delivery_forecast', '');
-                                            return;
-                                        }
-                                        const d = value as Date;
-                                        const formatted = [
-                                            d.getFullYear(),
-                                            String(d.getMonth() + 1).padStart(2, '0'),
-                                            String(d.getDate()).padStart(2, '0'),
-                                        ].join('-');
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="delivery_forecast">Previsão de entrega</Label>
+                                                <DatePicker
+                                                    mode="single"
+                                                    date={data.delivery_forecast}
+                                                    setDate={(value) => {
+                                                        if (!value) {
+                                                            setData('delivery_forecast', '');
+                                                            return;
+                                                        }
+                                                        const d = value as Date;
+                                                        const formatted = [
+                                                            d.getFullYear(),
+                                                            String(d.getMonth() + 1).padStart(2, '0'),
+                                                            String(d.getDate()).padStart(2, '0'),
+                                                        ].join('-');
 
-                                        setData('delivery_forecast', formatted);
-                                    }}
-                                />
-                            </div>
-                        </div>
+                                                        setData('delivery_forecast', formatted);
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
 
-                        <div className="mt-4 grid gap-4 md:grid-cols-3">
-                            <div className="grid gap-2">
-                                <Label htmlFor="defect">Defeito relatado</Label>
-                                <Textarea id="defect" value={data.defect} onChange={(e) => setData('defect', e.target.value)} />
-                                {errors.defect && <div className="text-sm text-red-500">{errors.defect}</div>}
-                            </div>
+                                        <div className="mt-4 grid gap-4 md:grid-cols-3">
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="defect">Defeito relatado</Label>
+                                                <Textarea id="defect" value={data.defect} onChange={(e) => setData('defect', e.target.value)} />
+                                                {errors.defect && <div className="text-sm text-red-500">{errors.defect}</div>}
+                                            </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="state_conservation">Estado de conservação</Label>
-                                <Textarea
-                                    id="state_conservation"
-                                    value={data.state_conservation}
-                                    onChange={(e) => setData('state_conservation', e.target.value)}
-                                />
-                                {errors.state_conservation && <div>{errors.state_conservation}</div>}
-                            </div>
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="state_conservation">Estado de conservação</Label>
+                                                <Textarea
+                                                    id="state_conservation"
+                                                    value={data.state_conservation}
+                                                    onChange={(e) => setData('state_conservation', e.target.value)}
+                                                />
+                                                {errors.state_conservation && <div>{errors.state_conservation}</div>}
+                                            </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="accessories">Acessórios</Label>
-                                <Textarea id="accessories" value={data.accessories} onChange={(e) => setData('accessories', e.target.value)} />
-                            </div>
-                        </div>
-                            </CardContent>
-                        </Card>
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="accessories">Acessórios</Label>
+                                                <Textarea
+                                                    id="accessories"
+                                                    value={data.accessories}
+                                                    onChange={(e) => setData('accessories', e.target.value)}
+                                                />
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
 
-                        <Card>
-                            <CardTitle className="border-b px-6 pb-4">Orçamento</CardTitle>
-                            <CardContent className="space-y-4 pt-6">
-                        <div className="grid gap-4 md:grid-cols-3">
-                            <div className="grid gap-2 md:col-span-2">
-                                <Label htmlFor="budget_description">Descrição do orcamento</Label>
-                                <Textarea
-                                    id="budget_description"
-                                    value={data.budget_description}
-                                    onChange={(e) => setData('budget_description', e.target.value)}
-                                />
-                                {errors.budget_description && <div className="text-sm text-red-500">{errors.budget_description}</div>}
-                            </div>
+                                <Card>
+                                    <CardTitle className="border-b px-6 pb-4">Orçamento</CardTitle>
+                                    <CardContent className="space-y-4 pt-6">
+                                        <div className="grid gap-4 md:grid-cols-3">
+                                            <div className="grid gap-2 md:col-span-2">
+                                                <Label htmlFor="budget_description">Descrição do orcamento</Label>
+                                                <Textarea
+                                                    id="budget_description"
+                                                    value={data.budget_description}
+                                                    onChange={(e) => setData('budget_description', e.target.value)}
+                                                />
+                                                {errors.budget_description && <div className="text-sm text-red-500">{errors.budget_description}</div>}
+                                            </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="budget_value">Valor orçamento</Label>
-                                <Input
-                                    type="text"
-                                    id="budget_value"
-                                    value={maskMoney(String(data.budget_value ?? '0'))}
-                                    onChange={(e) => setData('budget_value', maskMoneyDot(e.target.value))}
-                                />
-                                {errors.budget_value && <div className="text-sm text-red-500">{errors.budget_value}</div>}
-                            </div>
-                        </div>
-                            </CardContent>
-                        </Card>
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="budget_value">Valor orçamento</Label>
+                                                <Input
+                                                    type="text"
+                                                    id="budget_value"
+                                                    value={maskMoney(String(data.budget_value ?? '0'))}
+                                                    onChange={(e) => setData('budget_value', maskMoneyDot(e.target.value))}
+                                                />
+                                                {errors.budget_value && <div className="text-sm text-red-500">{errors.budget_value}</div>}
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
 
-                        {combinedParts.length > 0 && (
-                            <Card className="mb-4">
-                                <CardContent className="p-0">
-                                    <Accordion type="single" collapsible className="w-full">
-                                        <AccordionItem value="parts" className="border-b-0">
-                                            <AccordionTrigger className="px-4 py-4 hover:no-underline">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="font-semibold">Peças adicionadas</span>
-                                                    <Badge variant="outline">{combinedParts.length}</Badge>
-                                                </div>
-                                            </AccordionTrigger>
-                                            <AccordionContent className="px-0 pb-0">
-                                                <div className="divide-y border-t">
-                                                    {combinedParts.map((part: any, index: number) => {
-                                                        const unitPrice = toMoneyNumber(part.sale_price);
-                                                        const total = unitPrice * Number(part.quantity || 0);
+                                {combinedParts.length > 0 && (
+                                    <Card className="mb-4">
+                                        <CardContent className="p-0">
+                                            <Accordion type="single" collapsible className="w-full">
+                                                <AccordionItem value="parts" className="border-b-0">
+                                                    <AccordionTrigger className="px-4 py-4 hover:no-underline">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="font-semibold">Peças adicionadas</span>
+                                                            <Badge variant="outline">{combinedParts.length}</Badge>
+                                                        </div>
+                                                    </AccordionTrigger>
+                                                    <AccordionContent className="px-0 pb-0">
+                                                        <div className="divide-y border-t">
+                                                            {combinedParts.map((part: any, index: number) => {
+                                                                const unitPrice = toMoneyNumber(part.sale_price);
+                                                                const total = unitPrice * Number(part.quantity || 0);
 
-                                                        return (
-                                                            <div
-                                                                key={`${part.source}-${part.id}-${index}`}
-                                                                className="hover:bg-muted/50 flex flex-col gap-3 p-3 transition sm:flex-row sm:items-center sm:justify-between"
-                                                            >
-                                                                <div className="flex flex-col">
-                                                                    <span className="text-sm font-medium">{part.name}</span>
-
-                                                                    <span className="text-muted-foreground text-xs">
-                                                                        {maskMoney(String(unitPrice))} × {part.quantity}
-                                                                    </span>
-                                                                </div>
-
-                                                                <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-                                                                    <span className="text-sm font-semibold">{maskMoney(String(total))}</span>
-
-                                                                    <Badge variant={part.source === 'database' ? 'outline' : 'default'}>
-                                                                        {part.source === 'database' ? 'Salvo' : 'Novo'}
-                                                                    </Badge>
-
-                                                                    <Button
-                                                                        type="button"
-                                                                        size="icon"
-                                                                        variant="ghost"
-                                                                        onClick={(e) =>
-                                                                            part.source === 'database'
-                                                                                ? handleRemovePartsOrder(e, part.id)
-                                                                                : handleRemovePart(part.id)
-                                                                        }
+                                                                return (
+                                                                    <div
+                                                                        key={`${part.source}-${part.id}-${index}`}
+                                                                        className="hover:bg-muted/50 flex flex-col gap-3 p-3 transition sm:flex-row sm:items-center sm:justify-between"
                                                                     >
-                                                                        <X className="h-4 w-4" />
-                                                                    </Button>
-                                                                </div>
-                                                            </div>
-                                                        );
-                                                    })}
-                                                </div>
-                                            </AccordionContent>
-                                        </AccordionItem>
-                                    </Accordion>
-                                </CardContent>
-                            </Card>
-                        )}
+                                                                        <div className="flex flex-col">
+                                                                            <span className="text-sm font-medium">{part.name}</span>
 
-                        <Card>
-                            <CardTitle className="border-b px-6 pb-4">Financeiro e execução</CardTitle>
-                            <CardContent className="space-y-4 pt-6">
-                        <div className="grid gap-4 md:grid-cols-3">
-                            <div className="grid gap-2">
-                                <Label htmlFor="parts_value">Valor das peças</Label>
-                                <Input
-                                    type="text"
-                                    id="parts_value"
-                                    name="parts_value"
-                                    value={maskMoney(data.parts_value ?? 0)}
-                                    onChange={(e) => setData('parts_value', maskMoneyDot(e.target.value))}
-                                />
-                            </div>
+                                                                            <span className="text-muted-foreground text-xs">
+                                                                                {maskMoney(String(unitPrice))} × {part.quantity}
+                                                                            </span>
+                                                                        </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="service_value">Valor do serviço</Label>
-                                <Input
-                                    type="text"
-                                    id="service_value"
-                                    name="service_value"
-                                    value={maskMoney(data.service_value ?? '0')}
-                                    onChange={(e) => setData('service_value', maskMoneyDot(e.target.value))}
-                                />
-                            </div>
+                                                                        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                                                                            <span className="text-sm font-semibold">{maskMoney(String(total))}</span>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="service_cost">Valor total</Label>
-                                <Input
-                                    type="text"
-                                    id="service_cost"
-                                    value={maskMoney(data.service_cost)}
-                                    onChange={(e) => setData('service_cost', e.target.value)}
-                                />
-                            </div>
-                        </div>
+                                                                            <Badge variant={part.source === 'database' ? 'outline' : 'default'}>
+                                                                                {part.source === 'database' ? 'Salvo' : 'Novo'}
+                                                                            </Badge>
 
-                        <div className="mt-4 grid gap-4 md:grid-cols-3">
-                            <div className="grid gap-2">
-                                <Label htmlFor="service_status">Técnico responsável</Label>
-                                <Select
-                                    menuPosition="fixed"
-                                    defaultValue={defaultTechnical}
-                                    options={optionsTechnical}
-                                    onChange={changeResponsibleTechnician}
-                                    placeholder="Selecione o técnico"
-                                    className="h-9 rounded-md border border-gray-300 p-0 text-gray-700 shadow-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                    styles={selectStyles}
-                                />
-                                {errors.user_id && <div className="text-sm text-red-500">{errors.user_id}</div>}
-                            </div>
+                                                                            <Button
+                                                                                type="button"
+                                                                                size="icon"
+                                                                                variant="ghost"
+                                                                                onClick={(e) =>
+                                                                                    part.source === 'database'
+                                                                                        ? handleRemovePartsOrder(e, part.id)
+                                                                                        : handleRemovePart(part.id)
+                                                                                }
+                                                                            >
+                                                                                <X className="h-4 w-4" />
+                                                                            </Button>
+                                                                        </div>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </AccordionContent>
+                                                </AccordionItem>
+                                            </Accordion>
+                                        </CardContent>
+                                    </Card>
+                                )}
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="service_status">Status orçamento</Label>
-                                <Select
-                                    menuPosition="fixed"
-                                    defaultValue={statusDefault}
-                                    options={statusServico}
-                                    onChange={changeServiceStatus}
-                                    placeholder="Selecione o status"
-                                    className="h-9 rounded-md border border-gray-300 p-0 text-gray-700 shadow-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                    styles={selectStyles}
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <FormFieldHelp
-                                    label="Garantia em dias"
-                                    content="Se houver data de entrega, o sistema calcula automaticamente o vencimento da garantia."
-                                />
-                                <Input
-                                    id="warranty_days"
-                                    type="number"
-                                    min="0"
-                                    value={data.warranty_days}
-                                    onChange={(e) => setData('warranty_days', e.target.value)}
-                                    placeholder="Ex.: 90"
-                                />
-                                {errors.warranty_days && <div className="text-sm text-red-500">{errors.warranty_days}</div>}
-                            </div>
-                        </div>
+                                <Card>
+                                    <CardTitle className="border-b px-6 pb-4">Financeiro e execução</CardTitle>
+                                    <CardContent className="space-y-4 pt-6">
+                                        <div className="grid gap-4 md:grid-cols-3">
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="parts_value">Valor das peças</Label>
+                                                <Input
+                                                    type="text"
+                                                    id="parts_value"
+                                                    name="parts_value"
+                                                    value={maskMoney(data.parts_value ?? 0)}
+                                                    onChange={(e) => setData('parts_value', maskMoneyDot(e.target.value))}
+                                                />
+                                            </div>
 
-                        <div className="mt-4 grid gap-4 md:grid-cols-2">
-                            <div className="grid gap-2">
-                                <Label htmlFor="services_performed">Serviços executados</Label>
-                                <Textarea
-                                    id="services_performed"
-                                    value={data.services_performed}
-                                    onChange={(e) => setData('services_performed', e.target.value)}
-                                />
-                                {errors.services_performed && <div className="text-sm text-red-500">{errors.services_performed}</div>}
-                            </div>
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="service_value">Valor do serviço</Label>
+                                                <Input
+                                                    type="text"
+                                                    id="service_value"
+                                                    name="service_value"
+                                                    value={maskMoney(data.service_value ?? '0')}
+                                                    onChange={(e) => setData('service_value', maskMoneyDot(e.target.value))}
+                                                />
+                                            </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="observations">Observações</Label>
-                                <Textarea id="observations" value={data.observations} onChange={(e) => setData('observations', e.target.value)} />
-                                {errors.observations && <div className="text-sm text-red-500">{errors.observations}</div>}
-                            </div>
-                        </div>
-                            </CardContent>
-                        </Card>
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="service_cost">Valor total</Label>
+                                                <Input
+                                                    type="text"
+                                                    id="service_cost"
+                                                    value={maskMoney(data.service_cost)}
+                                                    onChange={(e) => setData('service_cost', e.target.value)}
+                                                />
+                                            </div>
+                                        </div>
 
-                        <div className="flex justify-end">
-                            <Button type="submit" disabled={processing}>
-                                <Save />
-                                Salvar
-                            </Button>
-                        </div>
+                                        <div className="mt-4 grid gap-4 md:grid-cols-3">
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="service_status">Técnico responsável</Label>
+                                                <Select
+                                                    menuPosition="fixed"
+                                                    defaultValue={defaultTechnical}
+                                                    options={optionsTechnical}
+                                                    onChange={changeResponsibleTechnician}
+                                                    placeholder="Selecione o técnico"
+                                                    className="min-w-0"
+                                                    styles={selectStyles}
+                                                />
+                                                {errors.user_id && <div className="text-sm text-red-500">{errors.user_id}</div>}
+                                            </div>
+
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="service_status">Status orçamento</Label>
+                                                <Select
+                                                    menuPosition="fixed"
+                                                    defaultValue={statusDefault}
+                                                    options={statusServico}
+                                                    onChange={changeServiceStatus}
+                                                    placeholder="Selecione o status"
+                                                    className="min-w-0"
+                                                    styles={selectStyles}
+                                                />
+                                            </div>
+                                            <div className="grid gap-2">
+                                                <FormFieldHelp
+                                                    label="Garantia em dias"
+                                                    content="Se houver data de entrega, o sistema calcula automaticamente o vencimento da garantia."
+                                                />
+                                                <Input
+                                                    id="warranty_days"
+                                                    type="number"
+                                                    min="0"
+                                                    value={data.warranty_days}
+                                                    onChange={(e) => setData('warranty_days', e.target.value)}
+                                                    placeholder="Ex.: 90"
+                                                />
+                                                {errors.warranty_days && <div className="text-sm text-red-500">{errors.warranty_days}</div>}
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-4 grid gap-4 md:grid-cols-2">
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="services_performed">Serviços executados</Label>
+                                                <Textarea
+                                                    id="services_performed"
+                                                    value={data.services_performed}
+                                                    onChange={(e) => setData('services_performed', e.target.value)}
+                                                />
+                                                {errors.services_performed && <div className="text-sm text-red-500">{errors.services_performed}</div>}
+                                            </div>
+
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="observations">Observações</Label>
+                                                <Textarea
+                                                    id="observations"
+                                                    value={data.observations}
+                                                    onChange={(e) => setData('observations', e.target.value)}
+                                                />
+                                                {errors.observations && <div className="text-sm text-red-500">{errors.observations}</div>}
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                <div className="flex justify-end">
+                                    <Button type="submit" disabled={processing}>
+                                        <Save />
+                                        Salvar
+                                    </Button>
+                                </div>
                             </TabsContent>
 
                             <TabsContent value="history">
                                 <div className="space-y-4">
-                                <Card>
-                                    <CardTitle className="border-b px-4 py-3">Histórico do equipamento</CardTitle>
-                                    <CardContent className="space-y-3 pt-4">
-                                        <div className="flex flex-wrap gap-2">
-                                            <Badge variant={equipmentHistory?.has_recurrence ? 'default' : 'outline'}>
-                                                {equipmentHistory?.has_recurrence ? 'Com reincidência' : 'Sem reincidência'}
-                                            </Badge>
-                                            {equipmentHistory?.is_warranty_return && equipmentHistory?.warranty_source_order && (
-                                                <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">
-                                                    Retorno em garantia da OS #{equipmentHistory.warranty_source_order.order_number}
+                                    <Card>
+                                        <CardTitle className="border-b px-4 py-3">Histórico do equipamento</CardTitle>
+                                        <CardContent className="space-y-3 pt-4">
+                                            <div className="flex flex-wrap gap-2">
+                                                <Badge variant={equipmentHistory?.has_recurrence ? 'default' : 'outline'}>
+                                                    {equipmentHistory?.has_recurrence ? 'Com reincidência' : 'Sem reincidência'}
                                                 </Badge>
-                                            )}
-                                            {equipmentHistory?.active_warranty && (
-                                                <Badge variant="outline">
-                                                    Garantia ativa até {moment(equipmentHistory.active_warranty.warranty_expires_at).format('DD/MM/YYYY')}
-                                                </Badge>
-                                            )}
-                                        </div>
+                                                {equipmentHistory?.is_warranty_return && equipmentHistory?.warranty_source_order && (
+                                                    <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">
+                                                        Retorno em garantia da OS #{equipmentHistory.warranty_source_order.order_number}
+                                                    </Badge>
+                                                )}
+                                                {equipmentHistory?.active_warranty && (
+                                                    <Badge variant="outline">
+                                                        Garantia ativa até{' '}
+                                                        {moment(equipmentHistory.active_warranty.warranty_expires_at).format('DD/MM/YYYY')}
+                                                    </Badge>
+                                                )}
+                                            </div>
 
-                                        <div className="grid gap-2 text-sm md:grid-cols-3">
-                                            <div>
-                                                <span className="text-muted-foreground">Atendimentos anteriores</span>
-                                                <p className="font-medium">{equipmentHistory?.total_previous_orders ?? 0}</p>
+                                            <div className="grid gap-2 text-sm md:grid-cols-3">
+                                                <div>
+                                                    <span className="text-muted-foreground">Atendimentos anteriores</span>
+                                                    <p className="font-medium">{equipmentHistory?.total_previous_orders ?? 0}</p>
+                                                </div>
+                                                <div>
+                                                    <span className="text-muted-foreground">Mesmo defeito</span>
+                                                    <p className="font-medium">{equipmentHistory?.same_defect_count ?? 0}</p>
+                                                </div>
+                                                <div>
+                                                    <span className="text-muted-foreground">Garantia</span>
+                                                    <p className="font-medium">
+                                                        {equipmentHistory?.active_warranty ? 'Em vigor' : 'Sem cobertura ativa'}
+                                                    </p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <span className="text-muted-foreground">Mesmo defeito</span>
-                                                <p className="font-medium">{equipmentHistory?.same_defect_count ?? 0}</p>
-                                            </div>
-                                            <div>
-                                                <span className="text-muted-foreground">Garantia</span>
-                                                <p className="font-medium">{equipmentHistory?.active_warranty ? 'Em vigor' : 'Sem cobertura ativa'}</p>
-                                            </div>
-                                        </div>
 
-                                        {equipmentHistory?.history?.length ? (
-                                            <div className="space-y-2">
-                                                {equipmentHistory.history.map((item: any) => (
-                                                    <div key={item.id} className="rounded-lg border p-3 text-sm">
-                                                        <div className="flex flex-wrap items-center justify-between gap-2">
-                                                            <span className="font-medium">OS #{item.order_number}</span>
-                                                            <Badge variant="outline">{moment(item.delivery_date).format('DD/MM/YYYY')}</Badge>
+                                            {equipmentHistory?.history?.length ? (
+                                                <div className="space-y-2">
+                                                    {equipmentHistory.history.map((item: any) => (
+                                                        <div key={item.id} className="rounded-lg border p-3 text-sm">
+                                                            <div className="flex flex-wrap items-center justify-between gap-2">
+                                                                <span className="font-medium">OS #{item.order_number}</span>
+                                                                <Badge variant="outline">{moment(item.delivery_date).format('DD/MM/YYYY')}</Badge>
+                                                            </div>
+                                                            <p className="text-muted-foreground mt-2 line-clamp-2">{item.defect}</p>
+                                                            <div className="mt-2 flex flex-wrap items-center gap-2">
+                                                                <Badge variant="secondary">{maskMoney(String(item.service_cost ?? 0))}</Badge>
+                                                                {item.warranty_expires_at && (
+                                                                    <Badge variant="outline">
+                                                                        Garantia até {moment(item.warranty_expires_at).format('DD/MM/YYYY')}
+                                                                    </Badge>
+                                                                )}
+                                                            </div>
                                                         </div>
-                                                        <p className="text-muted-foreground mt-2 line-clamp-2">{item.defect}</p>
-                                                        <div className="mt-2 flex flex-wrap items-center gap-2">
-                                                            <Badge variant="secondary">{maskMoney(String(item.service_cost ?? 0))}</Badge>
-                                                            {item.warranty_expires_at && (
-                                                                <Badge variant="outline">
-                                                                    Garantia até {moment(item.warranty_expires_at).format('DD/MM/YYYY')}
-                                                                </Badge>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <p className="text-muted-foreground text-sm">Nenhum atendimento anterior encontrado para este equipamento/modelo.</p>
-                                        )}
-                                    </CardContent>
-                                </Card>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <p className="text-muted-foreground text-sm">
+                                                    Nenhum atendimento anterior encontrado para este equipamento/modelo.
+                                                </p>
+                                            )}
+                                        </CardContent>
+                                    </Card>
 
-                                <Card>
-                                    <CardTitle className="border-b px-4 py-3">Linha do tempo da ordem</CardTitle>
-                                    <CardContent className="pt-6">
-                                        <OrderTimeline statusHistory={order.status_history} logs={order.logs} />
-                                    </CardContent>
-                                </Card>
+                                    <Card>
+                                        <CardTitle className="border-b px-4 py-3">Linha do tempo da ordem</CardTitle>
+                                        <CardContent className="pt-6">
+                                            <OrderTimeline statusHistory={order.status_history} logs={order.logs} />
+                                        </CardContent>
+                                    </Card>
                                 </div>
                             </TabsContent>
                         </Tabs>

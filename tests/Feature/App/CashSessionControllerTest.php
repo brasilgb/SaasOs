@@ -206,6 +206,13 @@ class CashSessionControllerTest extends TestCase
             'user_id' => $this->user->id,
             'action' => 'withdrawal_registered',
         ]);
+        $this->assertDatabaseHas('operational_audits', [
+            'tenant_id' => $this->tenant->id,
+            'user_id' => $this->user->id,
+            'entity_type' => 'cash_session',
+            'entity_id' => $cashSession->id,
+            'action' => 'cash_session_withdrawal_registered',
+        ]);
     }
 
     public function test_it_subtracts_withdrawals_when_closing_cash_session(): void
@@ -240,6 +247,114 @@ class CashSessionControllerTest extends TestCase
 
         $this->assertEquals(90.0, (float) $cashSession->expected_balance);
         $this->assertEquals(0.0, (float) $cashSession->difference);
+    }
+
+    public function test_it_cancels_cash_session_withdrawal(): void
+    {
+        $cashSession = CashSession::create([
+            'tenant_id' => $this->tenant->id,
+            'opened_by' => $this->user->id,
+            'opened_at' => now()->subHour(),
+            'opening_balance' => 100,
+            'status' => 'open',
+        ]);
+
+        $movement = CashSessionMovement::create([
+            'tenant_id' => $this->tenant->id,
+            'cash_session_id' => $cashSession->id,
+            'user_id' => $this->user->id,
+            'type' => CashSessionMovement::TYPE_WITHDRAWAL,
+            'amount' => 40,
+            'description' => 'Retirada com valor errado',
+        ]);
+
+        $response = $this->post(route('app.cashier.withdrawal.cancel', [$cashSession, $movement]), [
+            'cancellation_reason' => 'Valor digitado incorretamente',
+        ]);
+
+        $response->assertSessionHas('success', 'Sangria cancelada com sucesso.');
+
+        $movement->refresh();
+
+        $this->assertNotNull($movement->cancelled_at);
+        $this->assertSame($this->user->id, (int) $movement->cancelled_by);
+        $this->assertSame('Valor digitado incorretamente', $movement->cancellation_reason);
+        $this->assertDatabaseHas('cash_session_logs', [
+            'cash_session_id' => $cashSession->id,
+            'user_id' => $this->user->id,
+            'action' => 'withdrawal_cancelled',
+        ]);
+        $this->assertDatabaseHas('operational_audits', [
+            'tenant_id' => $this->tenant->id,
+            'user_id' => $this->user->id,
+            'entity_type' => 'cash_session',
+            'entity_id' => $cashSession->id,
+            'action' => 'cash_session_withdrawal_cancelled',
+        ]);
+    }
+
+    public function test_it_ignores_cancelled_withdrawals_when_closing_cash_session(): void
+    {
+        $cashSession = CashSession::create([
+            'tenant_id' => $this->tenant->id,
+            'opened_by' => $this->user->id,
+            'opened_at' => now()->subHour(),
+            'opening_balance' => 100,
+            'status' => 'open',
+        ]);
+
+        CashSessionMovement::create([
+            'tenant_id' => $this->tenant->id,
+            'cash_session_id' => $cashSession->id,
+            'user_id' => $this->user->id,
+            'type' => CashSessionMovement::TYPE_WITHDRAWAL,
+            'amount' => 30,
+            'description' => 'Retirada cancelada',
+            'cancelled_at' => now(),
+            'cancelled_by' => $this->user->id,
+            'cancellation_reason' => 'Valor errado',
+        ]);
+
+        $response = $this->post(route('app.cashier.close', $cashSession), [
+            'closing_balance' => '100,00',
+            'manual_entries' => '0,00',
+            'manual_exits' => '0,00',
+        ]);
+
+        $response->assertSessionHas('success', 'Fechamento diário realizado com sucesso.');
+
+        $cashSession->refresh();
+
+        $this->assertEquals(100.0, (float) $cashSession->expected_balance);
+        $this->assertEquals(0.0, (float) $cashSession->difference);
+    }
+
+    public function test_it_blocks_withdrawal_cancellation_when_cash_session_is_closed(): void
+    {
+        $cashSession = CashSession::create([
+            'tenant_id' => $this->tenant->id,
+            'opened_by' => $this->user->id,
+            'opened_at' => now()->subHour(),
+            'opening_balance' => 100,
+            'status' => 'closed',
+        ]);
+
+        $movement = CashSessionMovement::create([
+            'tenant_id' => $this->tenant->id,
+            'cash_session_id' => $cashSession->id,
+            'user_id' => $this->user->id,
+            'type' => CashSessionMovement::TYPE_WITHDRAWAL,
+            'amount' => 40,
+            'description' => 'Retirada para cofre',
+        ]);
+
+        $response = $this->post(route('app.cashier.withdrawal.cancel', [$cashSession, $movement]), [
+            'cancellation_reason' => 'Valor errado',
+        ]);
+
+        $response->assertSessionHas('error', 'Este caixa já está fechado.');
+
+        $this->assertNull($movement->fresh()->cancelled_at);
     }
 
     public function test_it_blocks_withdrawal_greater_than_current_expected_balance(): void

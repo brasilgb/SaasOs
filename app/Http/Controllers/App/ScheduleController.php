@@ -44,7 +44,8 @@ class ScheduleController extends Controller
 
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('service', 'like', '%'.$search.'%')
+                $q->where('schedules_number', $search)
+                    ->orWhere('service', 'like', '%'.$search.'%')
                     ->orWhereHas('customer', function ($subQuery) use ($search) {
                         $subQuery->where('name', 'like', "%$search%")
                             ->orWhere('cpfcnpj', 'like', '%'.$search.'%');

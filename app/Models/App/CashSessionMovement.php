@@ -21,10 +21,14 @@ class CashSessionMovement extends Model
         'type',
         'amount',
         'description',
+        'cancelled_at',
+        'cancelled_by',
+        'cancellation_reason',
     ];
 
     protected $casts = [
         'amount' => 'decimal:2',
+        'cancelled_at' => 'datetime',
     ];
 
     public function cashSession(): BelongsTo
@@ -35,5 +39,10 @@ class CashSessionMovement extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function cancelledBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'cancelled_by');
     }
 }

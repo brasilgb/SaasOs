@@ -95,12 +95,13 @@ export default function EditPlan({ plan }: EditPlanProps) {
                             id="billing_months"
                             value={data.billing_months}
                             onChange={(e) => setData('billing_months', e.target.value)}
-                            className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                            className="border-input bg-background h-10 rounded-md border px-3 text-sm"
                         >
                             <option value="1">Mensal</option>
                             <option value="3">Trimestral</option>
                             <option value="6">Semestral</option>
                             <option value="12">Anual</option>
+                            <option value="14">Trial 14 dias</option>
                         </select>
                         {errors.billing_months && <div className="text-sm text-red-500">{errors.billing_months}</div>}
                     </div>

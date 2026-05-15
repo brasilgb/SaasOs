@@ -4,6 +4,7 @@ import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -32,6 +33,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 const money = (value: number | string | null | undefined) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value || 0));
 
+const activeWithdrawalsTotal = (withdrawals: any[] = []) =>
+    withdrawals.reduce((sum: number, withdrawal: any) => (withdrawal.cancelled_at ? sum : sum + Number(withdrawal.amount || 0)), 0);
+
 export default function CashierIndex({ currentSession, sessions, openTotals }: any) {
     const { company } = usePage().props as any;
     const openingBalance = Number(currentSession?.opening_balance || 0);
@@ -49,6 +53,9 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
         amount: '',
         description: '',
     });
+    const cancelWithdrawalForm = useForm({
+        cancellation_reason: '',
+    });
 
     const closeForm = useForm({
         closing_balance: '',
@@ -57,6 +64,8 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
         closing_notes: '',
     });
     const [loadingPdfId, setLoadingPdfId] = useState<number | null>(null);
+    const [withdrawalModalOpen, setWithdrawalModalOpen] = useState(false);
+    const [selectedWithdrawal, setSelectedWithdrawal] = useState<any | null>(null);
     const manualEntries = Number(closeForm.data.manual_entries || 0);
     const manualExits = Number(closeForm.data.manual_exits || 0);
     const countedBalance = Number(closeForm.data.closing_balance || 0);
@@ -84,7 +93,23 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
 
         withdrawalForm.post(route('app.cashier.withdrawal', currentSession.id), {
             preserveScroll: true,
-            onSuccess: () => withdrawalForm.reset(),
+            onSuccess: () => {
+                withdrawalForm.reset();
+            },
+        });
+    };
+
+    const handleCancelWithdrawal = (e: any) => {
+        e.preventDefault();
+
+        if (!currentSession || !selectedWithdrawal) return;
+
+        cancelWithdrawalForm.post(route('app.cashier.withdrawal.cancel', [currentSession.id, selectedWithdrawal.id]), {
+            preserveScroll: true,
+            onSuccess: () => {
+                cancelWithdrawalForm.reset();
+                setSelectedWithdrawal(null);
+            },
         });
     };
 
@@ -121,8 +146,18 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
             <div className="grid gap-4 p-4 lg:grid-cols-3">
                 <Card>
                     <CardHeader>
-                        <CardDescription>Status atual</CardDescription>
-                        <CardTitle>{currentSession ? 'Caixa aberto' : 'Caixa fechado'}</CardTitle>
+                        <div className="flex items-start justify-between gap-3">
+                            <div>
+                                <CardDescription>Status atual</CardDescription>
+                                <CardTitle>{currentSession ? 'Caixa aberto' : 'Caixa fechado'}</CardTitle>
+                            </div>
+                            {currentSession && (
+                                <Button type="button" size="sm" onClick={() => setWithdrawalModalOpen(true)}>
+                                    <BanknoteArrowDown className="size-4" />
+                                    Registrar sangria
+                                </Button>
+                            )}
+                        </div>
                     </CardHeader>
                     <CardContent className="text-sm">
                         {currentSession ? (
@@ -302,81 +337,151 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
                         )}
                     </CardContent>
                 </Card>
+            </div>
 
-                {currentSession && (
-                    <Card className="lg:col-span-3">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
+            {currentSession && (
+                <Dialog open={withdrawalModalOpen} onOpenChange={setWithdrawalModalOpen}>
+                    <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
                                 <BanknoteArrowDown className="size-5" />
                                 Registrar sangria
-                            </CardTitle>
-                            <CardDescription>Use quando retirar dinheiro do caixa durante o expediente.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="grid gap-4 lg:grid-cols-2">
-                            <form onSubmit={handleWithdrawal} className="grid gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="withdrawal_amount">Valor da sangria</Label>
-                                    <Input
-                                        id="withdrawal_amount"
-                                        type="text"
-                                        inputMode="numeric"
-                                        placeholder="0,00"
-                                        value={maskMoney(withdrawalForm.data.amount)}
-                                        onChange={(e) => withdrawalForm.setData('amount', maskMoneyDot(e.target.value))}
-                                    />
-                                    <InputError message={withdrawalForm.errors.amount} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="withdrawal_description">Motivo</Label>
-                                    <Textarea
-                                        id="withdrawal_description"
-                                        value={withdrawalForm.data.description}
-                                        onChange={(e) => withdrawalForm.setData('description', e.target.value)}
-                                        placeholder="Ex.: retirada para cofre, depósito bancário ou redução de numerário."
-                                    />
-                                    <InputError message={withdrawalForm.errors.description} />
-                                </div>
-                                <div className="flex justify-end">
-                                    <Button type="submit" disabled={withdrawalForm.processing}>
-                                        Registrar sangria
-                                    </Button>
-                                </div>
-                            </form>
-                            <div className="rounded-lg border">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Data</TableHead>
-                                            <TableHead>Motivo</TableHead>
-                                            <TableHead className="text-right">Valor</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {currentSession.withdrawals?.length ? (
-                                            currentSession.withdrawals.map((withdrawal: any) => (
-                                                <TableRow key={withdrawal.id}>
-                                                    <TableCell>{moment(withdrawal.created_at).format('DD/MM/YYYY HH:mm')}</TableCell>
-                                                    <TableCell>
-                                                        <div className="font-medium">{withdrawal.description}</div>
-                                                        <div className="text-muted-foreground text-xs">{withdrawal.user?.name || '-'}</div>
-                                                    </TableCell>
-                                                    <TableCell className="text-right font-medium">{money(withdrawal.amount)}</TableCell>
-                                                </TableRow>
-                                            ))
-                                        ) : (
-                                            <TableRow>
-                                                <TableCell colSpan={3} className="text-center">
-                                                    Nenhuma sangria registrada neste caixa.
+                            </DialogTitle>
+                            <DialogDescription>Use quando retirar dinheiro do caixa durante o expediente.</DialogDescription>
+                        </DialogHeader>
+
+                        <form onSubmit={handleWithdrawal} className="grid gap-4 md:grid-cols-2">
+                            <div className="space-y-2">
+                                <Label htmlFor="withdrawal_amount">Valor da sangria</Label>
+                                <Input
+                                    id="withdrawal_amount"
+                                    type="text"
+                                    inputMode="numeric"
+                                    placeholder="0,00"
+                                    value={maskMoney(withdrawalForm.data.amount)}
+                                    onChange={(e) => withdrawalForm.setData('amount', maskMoneyDot(e.target.value))}
+                                />
+                                <InputError message={withdrawalForm.errors.amount} />
+                            </div>
+                            <div className="space-y-2 md:col-span-2">
+                                <Label htmlFor="withdrawal_description">Motivo</Label>
+                                <Textarea
+                                    id="withdrawal_description"
+                                    value={withdrawalForm.data.description}
+                                    onChange={(e) => withdrawalForm.setData('description', e.target.value)}
+                                    placeholder="Ex.: retirada para cofre, depósito bancário ou redução de numerário."
+                                />
+                                <InputError message={withdrawalForm.errors.description} />
+                            </div>
+                            <DialogFooter className="gap-2 md:col-span-2">
+                                <Button type="button" variant="outline" onClick={() => setWithdrawalModalOpen(false)}>
+                                    Fechar
+                                </Button>
+                                <Button type="submit" disabled={withdrawalForm.processing}>
+                                    Registrar sangria
+                                </Button>
+                            </DialogFooter>
+                        </form>
+
+                        <div className="rounded-lg border">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Data</TableHead>
+                                        <TableHead>Motivo</TableHead>
+                                        <TableHead className="text-right">Valor</TableHead>
+                                        <TableHead className="text-right">Ações</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {currentSession.withdrawals?.length ? (
+                                        currentSession.withdrawals.map((withdrawal: any) => (
+                                            <TableRow key={withdrawal.id} className={withdrawal.cancelled_at ? 'bg-muted/40 text-muted-foreground' : undefined}>
+                                                <TableCell>{moment(withdrawal.created_at).format('DD/MM/YYYY HH:mm')}</TableCell>
+                                                <TableCell>
+                                                    <div className="flex flex-wrap items-center gap-2">
+                                                        <span className="font-medium">{withdrawal.description}</span>
+                                                        {withdrawal.cancelled_at && <Badge variant="secondary">Cancelada</Badge>}
+                                                    </div>
+                                                    <div className="text-muted-foreground text-xs">{withdrawal.user?.name || '-'}</div>
+                                                    {withdrawal.cancelled_at && (
+                                                        <div className="text-muted-foreground mt-1 text-xs">
+                                                            Cancelada por {withdrawal.cancelled_by?.name || '-'} em {moment(withdrawal.cancelled_at).format('DD/MM/YYYY HH:mm')}
+                                                            {withdrawal.cancellation_reason ? ` - ${withdrawal.cancellation_reason}` : ''}
+                                                        </div>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell className={withdrawal.cancelled_at ? 'text-right line-through' : 'text-right font-medium'}>
+                                                    {money(withdrawal.amount)}
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    {!withdrawal.cancelled_at && (
+                                                        <Button type="button" variant="outline" size="sm" onClick={() => setSelectedWithdrawal(withdrawal)}>
+                                                            Cancelar
+                                                        </Button>
+                                                    )}
                                                 </TableCell>
                                             </TableRow>
-                                        )}
-                                    </TableBody>
-                                </Table>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={4} className="text-center">
+                                                Nenhuma sangria registrada neste caixa.
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            )}
+
+            {currentSession && (
+                <Dialog
+                    open={!!selectedWithdrawal}
+                    onOpenChange={(open) => {
+                        if (!open) {
+                            cancelWithdrawalForm.reset();
+                            setSelectedWithdrawal(null);
+                        }
+                    }}
+                >
+                    <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                            <DialogTitle>Cancelar sangria</DialogTitle>
+                            <DialogDescription>
+                                A sangria continuará no histórico, mas deixará de contar no saldo esperado do caixa.
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <form onSubmit={handleCancelWithdrawal} className="grid gap-4">
+                            <div className="rounded-lg border p-3 text-sm">
+                                <div className="text-muted-foreground">Valor registrado</div>
+                                <div className="font-medium">{money(selectedWithdrawal?.amount)}</div>
                             </div>
-                        </CardContent>
-                    </Card>
-                )}
-            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="cancellation_reason">Motivo do cancelamento</Label>
+                                <Textarea
+                                    id="cancellation_reason"
+                                    value={cancelWithdrawalForm.data.cancellation_reason}
+                                    onChange={(e) => cancelWithdrawalForm.setData('cancellation_reason', e.target.value)}
+                                    placeholder="Ex.: valor digitado incorretamente."
+                                />
+                                <InputError message={cancelWithdrawalForm.errors.cancellation_reason} />
+                            </div>
+                            <DialogFooter>
+                                <Button type="button" variant="outline" onClick={() => setSelectedWithdrawal(null)}>
+                                    Voltar
+                                </Button>
+                                <Button type="submit" variant="destructive" disabled={cancelWithdrawalForm.processing}>
+                                    Cancelar sangria
+                                </Button>
+                            </DialogFooter>
+                        </form>
+                    </DialogContent>
+                </Dialog>
+            )}
 
             <div className="p-4">
                 <div className="rounded-lg border">
@@ -406,7 +511,7 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
                                         <TableCell>{moment(session.opened_at).format('DD/MM/YYYY HH:mm')}</TableCell>
                                         <TableCell>{session.closed_at ? moment(session.closed_at).format('DD/MM/YYYY HH:mm') : '-'}</TableCell>
                                         <TableCell>{money(session.opening_balance)}</TableCell>
-                                        <TableCell>{money((session.withdrawals || []).reduce((sum: number, withdrawal: any) => sum + Number(withdrawal.amount || 0), 0))}</TableCell>
+                                        <TableCell>{money(activeWithdrawalsTotal(session.withdrawals || []))}</TableCell>
                                         <TableCell>{money(session.expected_balance)}</TableCell>
                                         <TableCell>{money(session.closing_balance)}</TableCell>
                                         <TableCell>{money(session.difference)}</TableCell>

@@ -14,7 +14,7 @@ const selectStyles: StylesConfig<any, false> = {
         backgroundColor: 'var(--background)',
         color: 'var(--foreground)',
         outline: 'none',
-        boxShadow: state.isFocused ? '0 0 0 3px color-mix(in oklab, var(--ring) 50%, transparent)' : '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+        boxShadow: state.isFocused ? '0 0 0 3px color-mix(in oklab, var(--ring) 50%, transparent)' : 'none',
         transition: 'color 150ms, border-color 150ms, box-shadow 150ms',
         ':hover': {
             borderColor: state.isFocused ? 'var(--ring)' : 'var(--input)',

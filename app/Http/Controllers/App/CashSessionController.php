@@ -6,6 +6,7 @@ use App\Events\CashSessionClosed;
 use App\Events\CashSessionOpened;
 use App\Http\Controllers\Controller;
 use App\Models\App\CashSession;
+use App\Models\App\CashSessionMovement;
 use App\Models\App\OrderPayment;
 use App\Models\App\Sale;
 use App\Services\CashSessionService;
@@ -70,7 +71,8 @@ class CashSessionController extends Controller
                 'closedBy:id,name',
                 'orderPayments:id,cash_session_id,amount,payment_method',
                 'sales:id,cash_session_id,total_amount,payment_method,status',
-                'withdrawals.user:id,name'
+                'withdrawals.user:id,name',
+                'withdrawals.cancelledBy:id,name'
             )
             ->where('status', 'open')
             ->latest('opened_at')
@@ -82,7 +84,8 @@ class CashSessionController extends Controller
                 'closedBy:id,name',
                 'orderPayments:id,cash_session_id,amount,payment_method',
                 'sales:id,cash_session_id,total_amount,payment_method,status',
-                'withdrawals.user:id,name'
+                'withdrawals.user:id,name',
+                'withdrawals.cancelledBy:id,name'
             )
             ->latest('id')
             ->paginate(11)
@@ -228,5 +231,26 @@ class CashSessionController extends Controller
         }
 
         return back()->with('success', 'Sangria registrada com sucesso.');
+    }
+
+    public function cancelWithdrawal(Request $request, CashSession $cashSession, CashSessionMovement $movement): RedirectResponse
+    {
+        if ($response = $this->authorizeCashSessionAccess($cashSession, 'update')) {
+            return $response;
+        }
+
+        $validated = $request->validate([
+            'cancellation_reason' => 'required|string|max:1000',
+        ], [
+            'cancellation_reason.required' => 'Informe o motivo do cancelamento.',
+        ]);
+
+        try {
+            $this->cashSessionService->cancelWithdrawal($cashSession, $movement, $validated, (int) Auth::id());
+        } catch (\RuntimeException $exception) {
+            return back()->with('error', $exception->getMessage());
+        }
+
+        return back()->with('success', 'Sangria cancelada com sucesso.');
     }
 }

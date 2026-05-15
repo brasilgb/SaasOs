@@ -60,7 +60,8 @@ export default function CashierDailyReportPDF({ session, company }: any) {
     const openingNotes = String(session?.notes || '').trim();
     const closingNotes = String(session?.closing_notes || '').trim();
     const withdrawals = session?.withdrawals || [];
-    const withdrawalsTotal = withdrawals.reduce((sum: number, withdrawal: any) => sum + Number(withdrawal?.amount || 0), 0);
+    const activeWithdrawals = withdrawals.filter((withdrawal: any) => !withdrawal?.cancelled_at);
+    const withdrawalsTotal = activeWithdrawals.reduce((sum: number, withdrawal: any) => sum + Number(withdrawal?.amount || 0), 0);
 
     return (
         <Document>
@@ -140,12 +141,12 @@ export default function CashierDailyReportPDF({ session, company }: any) {
                     </View>
                 </View>
 
-                {withdrawals.length ? (
+                {activeWithdrawals.length ? (
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Sangrias</Text>
                         <View style={styles.table}>
-                            {withdrawals.map((withdrawal: any, index: number) => (
-                                <View key={withdrawal.id || index} style={[styles.row, ...(index === withdrawals.length - 1 ? [transparentRowStyle] : [])]}>
+                            {activeWithdrawals.map((withdrawal: any, index: number) => (
+                                <View key={withdrawal.id || index} style={[styles.row, ...(index === activeWithdrawals.length - 1 ? [transparentRowStyle] : [])]}>
                                     <View style={styles.label}>
                                         <Text>{withdrawal.description || 'Sangria'}</Text>
                                         <Text style={styles.helper}>

@@ -1,9 +1,9 @@
 import * as React from 'react';
-import { Pie, PieChart } from 'recharts';
+import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from 'recharts';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import moment from 'moment';
-import { ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 
 import { connectBackend } from '@/Utils/connectApi';
 import { useEffect, useState } from 'react';
@@ -50,7 +50,7 @@ export function ChartAreaDashboard({ timerange, dateRange, customRange }: { time
         getChartData();
     }, [timerange, customRange, dateRange]);
 
-    const pieData = React.useMemo(() => {
+    const barData = React.useMemo(() => {
         const grouped = new Map<string, { key: string; label: string; value: number; fill: string }>();
 
         lines.forEach((line, index) => {
@@ -79,17 +79,17 @@ export function ChartAreaDashboard({ timerange, dateRange, customRange }: { time
     }, [chartData, lines]);
 
     const chartConfig = React.useMemo(() => {
-        const config: ChartConfig = {};
+        return {
+            value: {
+                label: 'Equipamentos',
+                color: 'var(--chart-1)',
+            },
+        } satisfies ChartConfig;
+    }, []);
 
-        pieData.forEach((item) => {
-            config[item.key] = {
-                label: item.label,
-                color: item.fill,
-            };
-        });
-
-        return config;
-    }, [pieData]);
+    function formatAxisLabel(label: string) {
+        return label.length > 10 ? `${label.slice(0, 9)}...` : label;
+    }
 
     return (
         <Card className="@container/card">
@@ -107,11 +107,30 @@ export function ChartAreaDashboard({ timerange, dateRange, customRange }: { time
 
             <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
                 <ChartContainer config={chartConfig} className="aspect-auto h-[200px] w-full">
-                    <PieChart>
-                        <ChartTooltip cursor={false} content={<ChartTooltipContent nameKey="key" hideLabel />} />
-                        <Pie data={pieData} dataKey="value" nameKey="label" innerRadius={45} outerRadius={80} strokeWidth={2} />
-                        <ChartLegend align="left" verticalAlign="middle" layout="vertical" content={<ChartLegendContent nameKey="key" className="flex-col items-start justify-start pl-2 pt-0" />} />
-                    </PieChart>
+                    <BarChart data={barData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+                        <CartesianGrid vertical={false} />
+                        <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} minTickGap={12} tickFormatter={formatAxisLabel} />
+                        <YAxis tickLine={false} axisLine={false} width={28} allowDecimals={false} />
+                        <ChartTooltip
+                            cursor={false}
+                            content={
+                                <ChartTooltipContent
+                                    hideLabel
+                                    formatter={(value, _, item) => (
+                                        <div className="flex w-full items-center justify-between gap-3">
+                                            <span>{String(item.payload.label)}</span>
+                                            <span className="font-mono font-medium tabular-nums">{Number(value || 0)}</span>
+                                        </div>
+                                    )}
+                                />
+                            }
+                        />
+                        <Bar dataKey="value" name="value" radius={[4, 4, 0, 0]} maxBarSize={32}>
+                            {barData.map((item) => (
+                                <Cell key={item.key} fill={item.fill} />
+                            ))}
+                        </Bar>
+                    </BarChart>
                 </ChartContainer>
             </CardContent>
         </Card>
