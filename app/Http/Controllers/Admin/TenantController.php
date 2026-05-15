@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\TenantRequest;
+use App\Mail\SubscriptionInvoicePaidMail;
 use App\Mail\SubscriptionStatusMail;
 use App\Models\Admin\Plan;
 use App\Models\Admin\Period;
+use App\Models\App\Payment;
 use App\Models\Tenant;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -137,7 +139,12 @@ class TenantController extends Controller
         $today = Carbon::today();
         $nextWeek = Carbon::today()->addDays(7)->endOfDay();
 
-        $tenantsCollection = Tenant::with('user', 'plan', 'period')
+        $tenantsCollection = Tenant::with([
+            'user',
+            'plan',
+            'period',
+            'latestAdminFiscalDocument',
+        ])
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($subQuery) use ($search) {
                     $subQuery
@@ -285,6 +292,41 @@ class TenantController extends Controller
         abort_unless($notice, 422, 'Nao foi possivel gerar a previa para este tenant.');
 
         return new SubscriptionStatusMail($tenant, $notice);
+    }
+
+    public function previewSubscriptionInvoiceEmail(Tenant $tenant)
+    {
+        $tenant->load('plan', 'latestAdminFiscalDocument');
+        $plan = $tenant->plan ?? Plan::query()->where('value', '>', 0)->first();
+
+        abort_unless($plan, 422, 'Nao foi possivel gerar a previa sem um plano pago.');
+
+        $payment = Payment::query()
+            ->where('tenant_id', $tenant->id)
+            ->where('status', 'approved')
+            ->latest()
+            ->first();
+
+        if (! $payment) {
+            $payment = new Payment([
+                'tenant_id' => $tenant->id,
+                'gateway' => 'mercadopago',
+                'payment_id' => 'preview-'.$tenant->id,
+                'amount' => (float) ($plan->value ?? 0),
+                'status' => 'approved',
+                'idempotency_key' => 'preview-'.$tenant->id,
+                'raw_response' => ['preview' => true],
+            ]);
+            $payment->created_at = now();
+            $payment->updated_at = now();
+        }
+
+        return new SubscriptionInvoicePaidMail(
+            $tenant,
+            $plan,
+            $payment,
+            $tenant->latestAdminFiscalDocument
+        );
     }
 
     public function sendSubscriptionEmail(Tenant $tenant, string $scenario): RedirectResponse

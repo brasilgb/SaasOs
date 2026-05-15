@@ -7,13 +7,17 @@ use App\Models\Admin\Plan;
 use App\Models\App\Payment;
 use App\Models\Tenant;
 use App\Services\MercadoPagoService;
+use App\Services\SubscriptionInvoiceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class WebhookController extends Controller
 {
-    public function __construct(private readonly MercadoPagoService $mercadoPagoService) {}
+    public function __construct(
+        private readonly MercadoPagoService $mercadoPagoService,
+        private readonly SubscriptionInvoiceService $subscriptionInvoiceService
+    ) {}
 
     public function handle(Request $request, $token)
     {
@@ -80,14 +84,17 @@ class WebhookController extends Controller
             return response()->json(['error' => 'Plan period not configured'], 422);
         }
 
-        $updated = DB::transaction(function () use ($metadata, $payment, $plan, $months) {
+        $result = DB::transaction(function () use ($metadata, $payment, $plan, $months) {
             $tenant = Tenant::query()->lockForUpdate()->find($metadata['tenant_id']);
             if (! $tenant) {
-                return false;
+                return null;
             }
 
             if ((string) $tenant->last_payment_id === (string) $payment->id) {
-                return true;
+                return [
+                    'tenant_id' => $tenant->id,
+                    'payment_id' => (string) $payment->id,
+                ];
             }
 
             $startBase = ($tenant->expires_at && $tenant->expires_at->isFuture())
@@ -112,11 +119,21 @@ class WebhookController extends Controller
 
             Log::info("Tenant {$tenant->name} renovado via PIX. Plano: {$plan->name}");
 
-            return true;
+            return [
+                'tenant_id' => $tenant->id,
+                'payment_id' => (string) $payment->id,
+            ];
         });
 
-        if (! $updated) {
+        if (! $result) {
             return response()->json(['error' => 'Tenant not found'], 404);
+        }
+
+        $tenant = Tenant::query()->find($result['tenant_id']);
+        $paymentRecord = Payment::query()->where('payment_id', $result['payment_id'])->first();
+
+        if ($tenant && $paymentRecord) {
+            $this->subscriptionInvoiceService->sendPaidInvoice($paymentRecord, $tenant, $plan);
         }
 
         return response()->json(['status' => 'success']);

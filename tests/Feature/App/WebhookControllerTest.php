@@ -6,9 +6,11 @@ use App\Models\Admin\Plan;
 use App\Models\Admin\Period;
 use App\Models\App\Payment;
 use App\Models\Tenant;
+use App\Mail\SubscriptionInvoicePaidMail;
 use App\Services\MercadoPagoService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Mockery;
 use Tests\TestCase;
 
@@ -41,6 +43,8 @@ class WebhookControllerTest extends TestCase
 
     public function test_it_renews_tenant_and_stores_payment_when_webhook_payment_is_approved(): void
     {
+        Mail::fake();
+
         config()->set('services.mercadopago.token', 'mp-test-token');
         config()->set('services.mercadopago.webhook_token', 'expected-token');
 
@@ -112,11 +116,24 @@ class WebhookControllerTest extends TestCase
             'payment_id' => 'mp-approved-1',
             'gateway' => 'mercadopago',
             'status' => 'approved',
+            'invoice_email' => $tenant->email,
         ]);
+
+        $paymentRecord = Payment::query()->where('payment_id', 'mp-approved-1')->firstOrFail();
+        $this->assertNotNull($paymentRecord->invoice_email_sent_at);
+
+        Mail::assertSent(SubscriptionInvoicePaidMail::class, function (SubscriptionInvoicePaidMail $mail) use ($tenant, $plan, $paymentRecord) {
+            return $mail->hasTo($tenant->email)
+                && $mail->tenant->is($tenant)
+                && $mail->plan->is($plan)
+                && $mail->payment->is($paymentRecord);
+        });
     }
 
     public function test_it_syncs_pending_payment_without_renewing_tenant(): void
     {
+        Mail::fake();
+
         config()->set('services.mercadopago.token', 'mp-test-token');
         config()->set('services.mercadopago.webhook_token', 'expected-token');
 
@@ -174,10 +191,14 @@ class WebhookControllerTest extends TestCase
             'payment_id' => 'mp-pending-1',
             'status' => 'pending',
         ]);
+
+        Mail::assertNothingSent();
     }
 
     public function test_it_does_not_extend_twice_when_same_payment_is_received_again(): void
     {
+        Mail::fake();
+
         config()->set('services.mercadopago.token', 'mp-test-token');
         config()->set('services.mercadopago.webhook_token', 'expected-token');
 
@@ -237,5 +258,6 @@ class WebhookControllerTest extends TestCase
         $this->assertTrue($tenant->expires_at->equalTo($firstExpiration));
         $this->assertSame('mp-repeat-1', $tenant->last_payment_id);
         $this->assertDatabaseCount('payments', 1);
+        Mail::assertSent(SubscriptionInvoicePaidMail::class, 1);
     }
 }

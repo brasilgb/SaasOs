@@ -19,15 +19,25 @@ class Payment extends Model
         'idempotency_key',
         'expires_at',
         'raw_response',
+        'admin_fiscal_document_id',
+        'invoice_email',
+        'invoice_email_sent_at',
+        'invoice_email_error',
     ];
 
     protected $casts = [
         'raw_response' => 'array',
         'expires_at' => 'datetime',
+        'invoice_email_sent_at' => 'datetime',
     ];
 
     public function tenant()
     {
         return $this->belongsTo(Tenant::class);
+    }
+
+    public function adminFiscalDocument()
+    {
+        return $this->belongsTo(\App\Models\Admin\AdminFiscalDocument::class);
     }
 }

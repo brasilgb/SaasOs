@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\FeatureController;
+use App\Http\Controllers\Admin\FiscalDocumentController;
 use App\Http\Controllers\Admin\PeriodController;
 use App\Http\Controllers\Admin\PlanController;
 use App\Http\Controllers\Admin\SettingController;
@@ -15,6 +16,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 Route::get('/tenants/{tenant}/subscription-email-preview/{scenario}', [TenantController::class, 'previewSubscriptionEmail'])
     ->name('tenants.subscription-email-preview');
+Route::get('/tenants/{tenant}/subscription-invoice-email-preview', [TenantController::class, 'previewSubscriptionInvoiceEmail'])
+    ->name('tenants.subscription-invoice-email-preview');
 Route::post('/tenants/{tenant}/subscription-email-send/{scenario}', [TenantController::class, 'sendSubscriptionEmail'])
     ->name('tenants.subscription-email-send');
 Route::get('/tenant-feedbacks', [TenantFeedbackController::class, 'index'])->name('tenant-feedbacks.index');
@@ -25,6 +28,11 @@ Route::get('/tenant-improvement-requests/{tenantImprovementRequest}/preview/admi
 Route::get('/tenant-improvement-requests/{tenantImprovementRequest}/preview/customer-email', [TenantImprovementRequestController::class, 'previewCustomerEmail'])
     ->name('tenant-improvement-requests.preview-customer-email');
 Route::patch('/tenant-improvement-requests/{tenantImprovementRequest}', [TenantImprovementRequestController::class, 'update'])->name('tenant-improvement-requests.update');
+Route::get('/fiscal-documents', [FiscalDocumentController::class, 'index'])->name('fiscal-documents.index');
+Route::get('/fiscal-documents/settings', [FiscalDocumentController::class, 'settings'])->name('fiscal-documents.settings');
+Route::put('/fiscal-documents/settings/{adminFiscalSetting}', [FiscalDocumentController::class, 'update'])->name('fiscal-documents.settings.update');
+Route::post('/fiscal-documents/tenants/{tenant}/issue', [FiscalDocumentController::class, 'issueTenant'])->name('fiscal-documents.tenants.issue');
+Route::post('/fiscal-documents/{adminFiscalDocument}/sync', [FiscalDocumentController::class, 'sync'])->name('fiscal-documents.sync');
 Route::resource('/tenants', TenantController::class);
 Route::resource('/branches', BranchController::class);
 Route::resource('/plans', PlanController::class);

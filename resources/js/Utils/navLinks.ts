@@ -284,6 +284,12 @@ const mainAdminItems = [
         active: 'admin.tenants.*',
     },
     {
+        title: 'Notas SaaS',
+        href: route('admin.fiscal-documents.index'),
+        icon: ReceiptText,
+        active: 'admin.fiscal-documents.*',
+    },
+    {
         title: 'Feedback SaaS',
         href: route('admin.tenant-feedbacks.index'),
         icon: MessageSquareMore,

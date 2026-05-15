@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Admin\AdminFiscalDocument;
 use App\Models\Admin\Branch;
 use App\Models\Admin\Plan;
 use App\Models\Admin\Period;
@@ -50,6 +51,16 @@ class Tenant extends Model
     public function improvementRequests(): HasMany
     {
         return $this->hasMany(TenantImprovementRequest::class);
+    }
+
+    public function adminFiscalDocuments(): HasMany
+    {
+        return $this->hasMany(AdminFiscalDocument::class);
+    }
+
+    public function latestAdminFiscalDocument(): HasOne
+    {
+        return $this->hasOne(AdminFiscalDocument::class)->latestOfMany();
     }
 
     public function user(): HasOne

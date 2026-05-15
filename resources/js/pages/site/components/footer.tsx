@@ -1,4 +1,3 @@
-import { SigmaOSHorizontalLogo } from '@/components/sigma-os-logo';
 import { Link } from '@inertiajs/react';
 import { MessageCircle } from 'lucide-react';
 
@@ -10,7 +9,13 @@ export function Footer() {
                     {/* Logo + descrição */}
                     <div className="space-y-4">
                         <div className="flex items-center gap-2">
-                            <SigmaOSHorizontalLogo />
+                            <img
+                                src="/logos/sigmaos-horizontal-dark.png"
+                                alt="SigmaOS - Sistema de Ordens de Serviço"
+                                width={150}
+                                height={38}
+                                className="transition-all duration-300"
+                            />
                         </div>
 
                         <p className="text-sm leading-relaxed text-white/58">
