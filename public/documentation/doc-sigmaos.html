@@ -461,8 +461,8 @@
             <p>Manual do cliente com foco operacional, financeiro e de configuração do sistema.</p>
 
             <div class="meta">
-                <div><strong>Versão do manual</strong>1.4</div>
-                <div><strong>Atualizado em</strong>Abril de 2026</div>
+                <div><strong>Versão do manual</strong>1.5</div>
+                <div><strong>Atualizado em</strong>Maio de 2026</div>
                 <div><strong>Formato</strong>HTML navegável</div>
             </div>
 
@@ -1188,7 +1188,32 @@
                         <li><strong>Informar saídas:</strong> permite refletir retiradas e despesas do expediente.</li>
                         <li><strong>Fechar caixa:</strong> compara o saldo do sistema com o saldo contado.</li>
                     </ul>
-                    <h4>17.2 Quem deve usar com mais cuidado</h4>
+                    <h4>17.2 Sangria de caixa</h4>
+                    <p>A sangria deve ser usada quando parte do dinheiro físico é retirada do caixa aberto antes do
+                        fechamento, por exemplo para envio ao cofre, depósito bancário ou redução de numerário no
+                        balcão.</p>
+                    <ul>
+                        <li><strong>Quando registrar:</strong> no momento exato da retirada, enquanto o caixa ainda está aberto.</li>
+                        <li><strong>Dados obrigatórios:</strong> valor da sangria e motivo da retirada.</li>
+                        <li><strong>Regra de saldo:</strong> o sistema não permite sangria maior que o saldo esperado atual do caixa.</li>
+                        <li><strong>Impacto no caixa:</strong> sangrias ativas reduzem o saldo esperado e entram no resumo do fechamento.</li>
+                        <li><strong>Histórico:</strong> cada sangria guarda data, usuário, valor e motivo para conferência posterior.</li>
+                    </ul>
+                    <p>Se uma sangria for lançada incorretamente, use a ação <strong>Cancelar</strong> na lista de
+                        sangrias do caixa aberto. O sistema exige o motivo do cancelamento, mantém o lançamento no
+                        histórico com identificação de quem cancelou e deixa de considerar o valor no saldo esperado.
+                        Sangrias de caixas já fechados não podem ser canceladas.</p>
+                    <h4>17.3 Fechamento e conferência</h4>
+                    <p>No fechamento, informe o saldo contado em dinheiro e, se necessário, entradas ou saídas manuais
+                        que não vieram de vendas, pagamentos de ordens ou sangrias. O saldo esperado considera saldo
+                        inicial, vendas concluídas, pagamentos de ordens, entradas manuais, saídas manuais e sangrias
+                        não canceladas.</p>
+                    <ul>
+                        <li>Use observações do fechamento para explicar diferença entre saldo esperado e saldo contado.</li>
+                        <li>Revise sangrias canceladas antes de fechar, pois elas permanecem visíveis no histórico.</li>
+                        <li>Após o fechamento, o caixa fica bloqueado para novas sangrias e cancelamentos.</li>
+                    </ul>
+                    <h4>17.4 Quem deve usar com mais cuidado</h4>
                     <ul>
                         <li><strong>Atendente/caixa:</strong> precisa registrar tudo no momento correto.</li>
                         <li><strong>Administrador/gestor:</strong> conferem diferenças e auditam inconsistências.</li>
@@ -1205,7 +1230,7 @@
                         <li>Agendamentos.</li>
                         <li>Vendas.</li>
                         <li>Peças e produtos.</li>
-                        <li>Caixa diário.</li>
+                        <li>Caixa diário, incluindo saldos, sangrias e diferenças de fechamento.</li>
                         <li>Despesas.</li>
                     </ul>
                     <p>Dependendo do relatório, o sistema também monta totais consolidados para impressão e exportação

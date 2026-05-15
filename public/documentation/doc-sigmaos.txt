@@ -1,7 +1,7 @@
 MANUAL DO CLIENTE
 SigmaOS - Sistema de Gestão de Ordens de Serviço
-Versão 1.2
-Abril de 2026
+Versão 1.5
+Maio de 2026
 
 Aviso importante
 Este manual descreve o uso prático do SigmaOS na rotina da assistência técnica.
@@ -297,9 +297,39 @@ Ele precisa estar aberto para registrar vendas e pagamentos de ordens.
 Fluxo recomendado:
 1. Abrir o caixa com saldo inicial.
 2. Registrar vendas e recebimentos ao longo do dia.
-3. Informar entradas e saídas manuais no fechamento.
-4. Fechar o caixa com saldo contado.
-5. Conferir diferença entre saldo esperado e informado.
+3. Registrar sangrias quando houver retirada de dinheiro do caixa aberto.
+4. Informar entradas e saídas manuais no fechamento.
+5. Fechar o caixa com saldo contado.
+6. Conferir diferença entre saldo esperado e informado.
+
+Sangria de caixa:
+A sangria deve ser usada quando parte do dinheiro físico é retirada do caixa aberto antes do fechamento, por exemplo para envio ao cofre, depósito bancário ou redução de numerário no balcão.
+
+Como registrar:
+- acessar Caixa diário com o caixa aberto
+- clicar em Registrar sangria
+- informar valor da sangria
+- informar o motivo da retirada
+- confirmar o lançamento
+
+Regras importantes:
+- a sangria só pode ser registrada com caixa aberto
+- o motivo é obrigatório
+- o valor precisa ser maior que zero
+- o sistema não permite sangria maior que o saldo esperado atual
+- sangrias ativas reduzem o saldo esperado do caixa
+- cada lançamento guarda data, usuário, valor e motivo
+
+Cancelamento de sangria:
+Se uma sangria for lançada incorretamente, use Cancelar na lista de sangrias do caixa aberto.
+O sistema exige motivo do cancelamento.
+A sangria permanece no histórico, mostra quem cancelou e quando foi cancelada, mas deixa de contar no saldo esperado.
+Sangrias de caixas já fechados não podem ser canceladas.
+
+Fechamento e conferência:
+No fechamento, informe o saldo contado em dinheiro e, se necessário, entradas ou saídas manuais que não vieram de vendas, pagamentos de ordens ou sangrias.
+O saldo esperado considera saldo inicial, vendas concluídas, pagamentos de ordens, entradas manuais, saídas manuais e sangrias não canceladas.
+Use observações do fechamento para explicar diferenças entre saldo esperado e saldo contado.
 
 16. RELATÓRIOS, ACOMPANHAMENTOS E INDICADORES
 Os relatórios podem ser filtrados por período e ajudam no acompanhamento operacional e gerencial.
@@ -310,7 +340,7 @@ Relatórios mais comuns:
 - agendamentos
 - vendas
 - peças e produtos
-- caixa diário
+- caixa diário, incluindo saldos, sangrias e diferenças de fechamento
 - despesas
 
 Indicadores de qualidade:

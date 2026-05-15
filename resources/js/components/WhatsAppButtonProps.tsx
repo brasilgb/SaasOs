@@ -25,6 +25,7 @@ type WhatsAppButtonProps = {
 
 const STATUS_BUDGET = 3;
 const STATUS_COMPLETED = 7;
+const STATUS_OPEN = 1;
 
 const getGreeting = () => {
     const hour = new Date().getHours();
@@ -69,6 +70,27 @@ const hasPlaceholder = (template: string, key: string) => {
 };
 
 const withGreeting = (greeting: string, customerName: string, content: string) => `${greeting}, ${customerName}!\n\n${content}`;
+
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const capitalizeFirstLetter = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
+
+const applyOpenOrderGreeting = (message: string, greeting: string, customerName: string) => {
+    const customerPattern = escapeRegExp(customerName.trim());
+    const openingPattern = new RegExp(`^\\s*(ol[aá]|oi)\\s*,?\\s*${customerPattern}\\s*[,!.:-]?\\s*`, 'i');
+
+    if (!openingPattern.test(message)) {
+        return message;
+    }
+
+    const content = message.replace(openingPattern, '').trim();
+
+    if (!content) {
+        return `${greeting}, ${customerName}!`;
+    }
+
+    return `${greeting}, ${customerName}!\n\n${capitalizeFirstLetter(content)}`;
+};
 
 const normalizePhone = (phone: string) => {
     let cleanPhone = phone.replace(/\D/g, '');
@@ -120,16 +142,22 @@ const formatTemplateMessage = ({
     greeting,
     customerName,
     values,
+    status,
 }: {
     template: string;
     greeting: string;
     customerName: string;
     values: Record<string, string>;
+    status?: string | number;
 }) => {
     const parsed = applyTemplate(template, values).trim();
     if (!parsed) return '';
 
-    if (hasPlaceholder(template, 'saudacao')) {
+    if (hasPlaceholder(template, 'saudacao') || hasPlaceholder(template, 'cliente')) {
+        if (normalizeStatus(status) === STATUS_OPEN && !hasPlaceholder(template, 'saudacao')) {
+            return applyOpenOrderGreeting(parsed, greeting, customerName);
+        }
+
         return parsed;
     }
 
@@ -145,7 +173,16 @@ const formatCurrency = (value?: number) => {
     }).format(Number(value));
 };
 
-const buildMessage = ({ customerName, orderNumber, status, feedback, context, amountDue, daysPending, whats }: Omit<WhatsAppButtonProps, 'phone' | 'className'>) => {
+const buildMessage = ({
+    customerName,
+    orderNumber,
+    status,
+    feedback,
+    context,
+    amountDue,
+    daysPending,
+    whats,
+}: Omit<WhatsAppButtonProps, 'phone' | 'className'>) => {
     const currentStatus = normalizeStatus(status);
     const greeting = getGreeting();
     const trackingUrl = buildTrackingUrl(whats?.tracking_token);
@@ -168,6 +205,7 @@ const buildMessage = ({ customerName, orderNumber, status, feedback, context, am
         greeting,
         customerName,
         values: templateValues,
+        status,
     });
 };
 
@@ -175,7 +213,13 @@ const canSendWhatsAppMessage = ({ status, feedback, context, whats }: Pick<Whats
     return Boolean(getTemplateForContext({ status, feedback, context, whats }));
 };
 
-const getWhatsAppDisabledReason = ({ phone, status, feedback, context, whats }: Pick<WhatsAppButtonProps, 'phone' | 'status' | 'feedback' | 'context' | 'whats'>) => {
+const getWhatsAppDisabledReason = ({
+    phone,
+    status,
+    feedback,
+    context,
+    whats,
+}: Pick<WhatsAppButtonProps, 'phone' | 'status' | 'feedback' | 'context' | 'whats'>) => {
     if (!phone || !phone.replace(/\D/g, '')) {
         return 'Cliente sem WhatsApp cadastrado.';
     }

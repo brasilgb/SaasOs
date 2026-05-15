@@ -470,7 +470,19 @@ export default function FollowUps({ filters, summary, budgetOrders, paymentOrder
                     </Card>
                 </div>
 
-                <div className="mt-4 grid gap-4 xl:grid-cols-[1.1fr_1.1fr_1.2fr_1.2fr_1.4fr_1.4fr]">
+                <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base">Quem deve cuidar destes contatos?</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-muted-foreground text-sm">
+                                Estes contatos são responsabilidade do atendimento ou financeiro. O técnico aparece na ordem apenas como responsável
+                                pelo serviço.
+                            </p>
+                        </CardContent>
+                    </Card>
+
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-base">Orçamentos retomados</CardTitle>
@@ -538,18 +550,6 @@ export default function FollowUps({ filters, summary, budgetOrders, paymentOrder
                                     </Badge>
                                 </div>
                             ))}
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base">Quem deve cuidar destes contatos?</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-muted-foreground text-sm">
-                                Estes contatos são responsabilidade do atendimento ou financeiro. O técnico aparece na ordem apenas como responsável
-                                pelo serviço.
-                            </p>
                         </CardContent>
                     </Card>
                 </div>
