@@ -128,6 +128,28 @@ class DashboardController extends Controller
         return [$start, $end];
     }
 
+    private function getPreviousRange(Carbon $startDate, Carbon $endDate): array
+    {
+        $rangeDays = max(1, $startDate->copy()->startOfDay()->diffInDays($endDate->copy()->startOfDay()) + 1);
+        $previousEnd = $startDate->copy()->subDay()->endOfDay();
+        $previousStart = $previousEnd->copy()->subDays($rangeDays - 1)->startOfDay();
+
+        return [$previousStart, $previousEnd];
+    }
+
+    private function comparison(float|int $current, float|int $previous): array
+    {
+        $current = (float) $current;
+        $previous = (float) $previous;
+
+        return [
+            'current' => $current,
+            'previous' => $previous,
+            'change' => $current - $previous,
+            'percent' => abs($previous) > 0.00001 ? round((($current - $previous) / abs($previous)) * 100, 1) : null,
+        ];
+    }
+
     public function chartEquipments($timerange)
     {
         [$start, $end] = $this->getRange($timerange);
@@ -323,6 +345,7 @@ class DashboardController extends Controller
     public function kpisFinancialOrder($timeRange)
     {
         [$startDate, $endDate] = $this->getRange($timeRange);
+        [$previousStartDate, $previousEndDate] = $this->getPreviousRange($startDate, $endDate);
         $today = now()->startOfDay();
         $monthStart = now()->startOfMonth()->startOfDay();
         $elapsedMonthDays = max(1, $monthStart->diffInDays($today) + 1);
@@ -342,6 +365,18 @@ class DashboardController extends Controller
             ->sum('parts_value');
 
         $rangeTotal = $rangeService + $rangeParts;
+
+        $previousRangeService = Order::where('service_status', OrderStatus::DELIVERED)
+            ->whereNotNull('delivery_date')
+            ->whereBetween('delivery_date', [$previousStartDate, $previousEndDate])
+            ->sum('service_value');
+
+        $previousRangeParts = Order::where('service_status', OrderStatus::DELIVERED)
+            ->whereNotNull('delivery_date')
+            ->whereBetween('delivery_date', [$previousStartDate, $previousEndDate])
+            ->sum('parts_value');
+
+        $previousRangeTotal = $previousRangeService + $previousRangeParts;
 
         // ===== TODAY =====
         $todayService = Order::where('service_status', OrderStatus::DELIVERED)
@@ -382,6 +417,10 @@ class DashboardController extends Controller
             ->whereNotNull('delivery_date')
             ->whereBetween('delivery_date', [$startDate, $endDate])
             ->count();
+        $previousOrdersCount = Order::where('service_status', OrderStatus::DELIVERED)
+            ->whereNotNull('delivery_date')
+            ->whereBetween('delivery_date', [$previousStartDate, $previousEndDate])
+            ->count();
         $ordersTodayCount = Order::where('service_status', OrderStatus::DELIVERED)
             ->whereNotNull('delivery_date')
             ->whereDate('delivery_date', $today)
@@ -391,11 +430,13 @@ class DashboardController extends Controller
         $dailyAverageService = $rangeDays > 0 ? $rangeService / $rangeDays : 0;
         $dailyAverageParts = $rangeDays > 0 ? $rangeParts / $rangeDays : 0;
         $dailyAverageTotal = $dailyAverageService + $dailyAverageParts;
+        $previousDailyAverageTotal = $rangeDays > 0 ? $previousRangeTotal / $rangeDays : 0;
 
         // ===== TICKET MÉDIO =====
         $averageTicketService = $ordersCount > 0 ? $rangeService / $ordersCount : 0;
         $averageTicketParts = $ordersCount > 0 ? $rangeParts / $ordersCount : 0;
         $averageTicketTotal = $averageTicketService + $averageTicketParts;
+        $previousAverageTicketTotal = $previousOrdersCount > 0 ? $previousRangeTotal / $previousOrdersCount : 0;
 
         return response()->json([
             'range' => $timeRange,
@@ -438,6 +479,11 @@ class DashboardController extends Controller
                     'services' => $monthService,
                     'parts' => $monthParts,
                     'total' => $monthTotal,
+                ],
+                'comparison' => [
+                    'range_revenue' => $this->comparison($rangeTotal, $previousRangeTotal),
+                    'daily_average' => $this->comparison($dailyAverageTotal, $previousDailyAverageTotal),
+                    'average_ticket' => $this->comparison($averageTicketTotal, $previousAverageTicketTotal),
                 ],
             ],
         ]);
@@ -504,6 +550,7 @@ class DashboardController extends Controller
     public function kpisFinancialSales($timeRange)
     {
         [$startDate, $endDate] = $this->getRange($timeRange);
+        [$previousStartDate, $previousEndDate] = $this->getPreviousRange($startDate, $endDate);
         $today = now()->startOfDay();
         $monthStart = now()->startOfMonth()->startOfDay();
         $elapsedMonthDays = max(1, $monthStart->diffInDays($today) + 1);
@@ -525,6 +572,21 @@ class DashboardController extends Controller
             ->sum('amount');
 
         $rangeExpenses = $rangeCashExits + $rangeRegisteredExpenses;
+
+        $previousRangeRevenue = Sale::where('status', 'completed')
+            ->whereBetween('created_at', [$previousStartDate, $previousEndDate])
+            ->sum('total_amount');
+
+        $previousRangeCashExits = CashSession::query()
+            ->whereNotNull('closed_at')
+            ->whereBetween('closed_at', [$previousStartDate, $previousEndDate])
+            ->sum('manual_exits');
+
+        $previousRangeRegisteredExpenses = Expense::query()
+            ->whereBetween('expense_date', [$previousStartDate->toDateString(), $previousEndDate->toDateString()])
+            ->sum('amount');
+
+        $previousRangeExpenses = $previousRangeCashExits + $previousRangeRegisteredExpenses;
 
         $todayRevenue = Sale::where('status', 'completed')
             ->whereDate('created_at', $today)
@@ -552,6 +614,9 @@ class DashboardController extends Controller
         $salesCount = Sale::where('status', 'completed')
             ->whereBetween('created_at', [$startDate, $endDate])
             ->count();
+        $previousSalesCount = Sale::where('status', 'completed')
+            ->whereBetween('created_at', [$previousStartDate, $previousEndDate])
+            ->count();
 
         $salesTodayCount = Sale::where('status', 'completed')
             ->whereDate('created_at', $today)
@@ -561,9 +626,12 @@ class DashboardController extends Controller
         $dailyExpenseAverage = $rangeDays > 0 ? $rangeExpenses / $rangeDays : 0;
         $averageTicket = $salesCount > 0 ? $rangeRevenue / $salesCount : 0;
         $rangeProfit = $rangeRevenue - $rangeExpenses;
+        $previousRangeProfit = $previousRangeRevenue - $previousRangeExpenses;
         $todayProfit = $todayRevenue - $todayExpenses;
         $monthProjectionRevenue = ($monthRevenue / $elapsedMonthDays) * $daysInMonth;
         $dailyProfitAverage = $rangeDays > 0 ? $rangeProfit / $rangeDays : 0;
+        $previousDailyProfitAverage = $rangeDays > 0 ? $previousRangeProfit / $rangeDays : 0;
+        $previousAverageTicket = $previousSalesCount > 0 ? $previousRangeRevenue / $previousSalesCount : 0;
         $paymentMethodsRaw = Sale::query()
             ->select('payment_method', DB::raw('SUM(total_amount) as total'))
             ->where('status', 'completed')
@@ -600,6 +668,13 @@ class DashboardController extends Controller
                 'sales_today_count' => $salesTodayCount,
                 'sales_month_count' => $monthSalesCount,
                 'payment_methods' => $paymentMethods,
+                'comparison' => [
+                    'range_revenue' => $this->comparison($rangeRevenue, $previousRangeRevenue),
+                    'range_profit' => $this->comparison($rangeProfit, $previousRangeProfit),
+                    'range_expenses' => $this->comparison($rangeExpenses, $previousRangeExpenses),
+                    'daily_profit_average' => $this->comparison($dailyProfitAverage, $previousDailyProfitAverage),
+                    'average_ticket' => $this->comparison($averageTicket, $previousAverageTicket),
+                ],
             ],
         ]);
     }

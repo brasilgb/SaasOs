@@ -4,6 +4,7 @@ namespace Tests\Feature\App;
 
 use App\Models\App\OrderLog;
 use App\Models\App\Order;
+use App\Models\App\Sale;
 use App\Models\App\Schedule;
 use App\Models\Tenant;
 use App\Models\User;
@@ -235,6 +236,56 @@ class DashboardControllerTest extends TestCase
             ->assertJsonPath('feedback_response_rate', 50)
             ->assertJsonPath('low_feedbacks', 1)
             ->assertJsonPath('feedback_alert', true);
+    }
+
+    public function test_financial_order_kpis_include_previous_period_comparison(): void
+    {
+        Order::factory()->forTenant($this->tenant->id)->create([
+            'service_status' => OrderStatus::DELIVERED,
+            'delivery_date' => now()->subDay(),
+            'service_value' => 150,
+            'parts_value' => 50,
+        ]);
+
+        Order::factory()->forTenant($this->tenant->id)->create([
+            'service_status' => OrderStatus::DELIVERED,
+            'delivery_date' => now()->subDays(8),
+            'service_value' => 75,
+            'parts_value' => 25,
+        ]);
+
+        $response = $this->get(route('app.kpisFinancialOrder', ['timerange' => 7]));
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('kpis.comparison.range_revenue.current', 200)
+            ->assertJsonPath('kpis.comparison.range_revenue.previous', 100)
+            ->assertJsonPath('kpis.comparison.range_revenue.change', 100)
+            ->assertJsonPath('kpis.comparison.range_revenue.percent', 100);
+    }
+
+    public function test_financial_sales_kpis_include_previous_period_comparison(): void
+    {
+        Sale::factory()->forTenant($this->tenant->id)->create([
+            'status' => 'completed',
+            'total_amount' => 300,
+            'created_at' => now()->subDay(),
+        ]);
+
+        Sale::factory()->forTenant($this->tenant->id)->create([
+            'status' => 'completed',
+            'total_amount' => 100,
+            'created_at' => now()->subDays(8),
+        ]);
+
+        $response = $this->get(route('app.kpisFinancialSales', ['timerange' => 7]));
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('kpis.comparison.range_revenue.current', 300)
+            ->assertJsonPath('kpis.comparison.range_revenue.previous', 100)
+            ->assertJsonPath('kpis.comparison.range_revenue.change', 200)
+            ->assertJsonPath('kpis.comparison.range_revenue.percent', 200);
     }
 
     public function test_dashboard_index_exposes_customer_feedback_alert(): void

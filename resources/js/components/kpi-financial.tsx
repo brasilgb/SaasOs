@@ -8,19 +8,28 @@ interface KpiFinancialProps {
     parts?: number;
     orders?: number;
     ordersLabel?: string;
+    comparison?: {
+        change?: number;
+        percent?: number | null;
+        previous?: number;
+    };
     icon?: ReactNode;
 }
 
-export function KpiFinancial({ title, total = 0, services = 0, parts = 0, orders = 0, ordersLabel, icon }: KpiFinancialProps) {
+export function KpiFinancial({ title, total = 0, services = 0, parts = 0, orders = 0, ordersLabel, comparison, icon }: KpiFinancialProps) {
     const format = (v: number) =>
         v.toLocaleString('pt-BR', {
             style: 'currency',
             currency: 'BRL',
         });
 
+    const formatPercent = (value?: number | null) =>
+        value === null || value === undefined ? 'Sem base anterior' : `${value > 0 ? '+' : ''}${value.toFixed(1)}%`;
+
     const percentServices = total > 0 ? Math.round((services / total) * 100) : 0;
 
     const percentParts = total > 0 ? Math.round((parts / total) * 100) : 0;
+    const comparisonClass = Number(comparison?.change || 0) >= 0 ? 'text-emerald-600' : 'text-rose-600';
 
     return (
         <Card className="h-full min-w-0">
@@ -32,7 +41,11 @@ export function KpiFinancial({ title, total = 0, services = 0, parts = 0, orders
 
             <CardContent className="space-y-4">
                 {/* VALOR PRINCIPAL */}
-                <CardTitle className="text-xl font-bold leading-tight break-words tabular-nums sm:text-2xl 2xl:text-3xl">{format(total)}</CardTitle>
+                <CardTitle className="text-xl leading-tight font-bold break-words tabular-nums sm:text-2xl 2xl:text-3xl">{format(total)}</CardTitle>
+
+                {comparison && (
+                    <div className={`text-xs font-medium ${comparisonClass}`}>{formatPercent(comparison.percent)} vs período anterior</div>
+                )}
 
                 {/* ORIGEM DO FATURAMENTO */}
                 <div className="bg-muted flex h-2 w-full overflow-hidden rounded-full">

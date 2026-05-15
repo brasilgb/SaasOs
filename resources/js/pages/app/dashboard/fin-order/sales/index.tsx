@@ -34,6 +34,13 @@ type SalesRevenuePoint = {
     profit: number;
 };
 
+type KpiComparison = {
+    current: number;
+    previous: number;
+    change: number;
+    percent: number | null;
+};
+
 type DateRangeValue = {
     from?: Date | string;
     to?: Date | string;
@@ -55,6 +62,13 @@ type SalesKpis = {
     sales_count: number;
     sales_today_count: number;
     sales_month_count: number;
+    comparison?: {
+        range_revenue?: KpiComparison;
+        range_profit?: KpiComparison;
+        range_expenses?: KpiComparison;
+        daily_profit_average?: KpiComparison;
+        average_ticket?: KpiComparison;
+    };
     payment_methods?: {
         pix?: number;
         cartao?: number;
@@ -114,17 +128,13 @@ function SalesRevenueChart({ data }: { data: SalesRevenuePoint[] }) {
                     cursor={false}
                     content={
                         <ChartTooltipContent
-                            labelFormatter={(_, payload) =>
-                                payload?.[0]?.payload?.date ? moment(payload[0].payload.date).format('DD/MM/YYYY') : ''
-                            }
+                            labelFormatter={(_, payload) => (payload?.[0]?.payload?.date ? moment(payload[0].payload.date).format('DD/MM/YYYY') : '')}
                             formatter={(value, name) => {
                                 const label = name === 'total' ? 'Vendas' : 'Lucro';
                                 return (
                                     <div className="flex w-full items-center justify-between gap-3">
                                         <span>{label}</span>
-                                        <span className="font-mono font-medium tabular-nums">
-                                            {formatCurrency(Number(value || 0))}
-                                        </span>
+                                        <span className="font-mono font-medium tabular-nums">{formatCurrency(Number(value || 0))}</span>
                                     </div>
                                 );
                             }}
@@ -210,6 +220,7 @@ function KpiCard({
     description,
     count,
     countLabel,
+    comparison,
     icon,
 }: {
     title: string;
@@ -217,8 +228,13 @@ function KpiCard({
     description: string;
     count?: number;
     countLabel?: string;
+    comparison?: KpiComparison;
     icon: ReactNode;
 }) {
+    const formatPercent = (value?: number | null) =>
+        value === null || value === undefined ? 'Sem base anterior' : `${value > 0 ? '+' : ''}${value.toFixed(1)}%`;
+    const comparisonClass = Number(comparison?.change || 0) >= 0 ? 'text-emerald-600' : 'text-rose-600';
+
     return (
         <Card className="h-full min-w-0">
             <CardHeader className="flex flex-row items-center justify-between gap-3 pb-2">
@@ -227,7 +243,12 @@ function KpiCard({
             </CardHeader>
 
             <CardContent className="space-y-3">
-                <CardTitle className="text-xl font-bold leading-tight break-words tabular-nums sm:text-2xl 2xl:text-3xl">{formatCurrency(value)}</CardTitle>
+                <CardTitle className="text-xl leading-tight font-bold break-words tabular-nums sm:text-2xl 2xl:text-3xl">
+                    {formatCurrency(value)}
+                </CardTitle>
+                {comparison && (
+                    <div className={`text-xs font-medium ${comparisonClass}`}>{formatPercent(comparison.percent)} vs período anterior</div>
+                )}
                 <div className="text-muted-foreground text-xs">{description}</div>
                 <div className="text-muted-foreground border-t pt-2 text-xs">
                     {countLabel ?? `${Number(count || 0)} ${Number(count || 0) === 1 ? 'venda analisada' : 'vendas analisadas'}`}
@@ -306,6 +327,7 @@ export default function FinanceiroSales({
                     value={kpisSales?.range_profit}
                     description="Receita de vendas menos despesas lançadas"
                     count={kpisSales?.sales_count}
+                    comparison={kpisSales?.comparison?.range_profit}
                     icon={<WalletCards size={18} />}
                 />
 
@@ -314,6 +336,7 @@ export default function FinanceiroSales({
                     value={kpisSales?.range_expenses}
                     description="Somatório de saídas de caixa e despesas lançadas"
                     count={kpisSales?.sales_count}
+                    comparison={kpisSales?.comparison?.range_expenses}
                     icon={<ShoppingCart size={18} />}
                 />
 
@@ -322,6 +345,7 @@ export default function FinanceiroSales({
                     value={kpisSales?.daily_profit_average}
                     description="Média diária do lucro líquido no período"
                     count={kpisSales?.sales_count}
+                    comparison={kpisSales?.comparison?.daily_profit_average}
                     icon={<TrendingUp size={18} />}
                 />
 
@@ -330,6 +354,7 @@ export default function FinanceiroSales({
                     value={kpisSales?.average_ticket}
                     description="Média por venda concluída no período"
                     count={kpisSales?.sales_count}
+                    comparison={kpisSales?.comparison?.average_ticket}
                     icon={<BadgeDollarSign size={18} />}
                 />
             </div>

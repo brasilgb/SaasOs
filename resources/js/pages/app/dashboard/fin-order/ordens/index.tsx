@@ -24,6 +24,13 @@ type RevenueBreakdown = {
     parts: number;
 };
 
+type KpiComparison = {
+    current: number;
+    previous: number;
+    change: number;
+    percent: number | null;
+};
+
 type OrdersKpis = {
     today_revenue: RevenueBreakdown;
     month_projection: RevenueBreakdown;
@@ -34,6 +41,11 @@ type OrdersKpis = {
     orders_count: number;
     orders_today_count: number;
     orders_month_count: number;
+    comparison?: {
+        range_revenue?: KpiComparison;
+        daily_average?: KpiComparison;
+        average_ticket?: KpiComparison;
+    };
 };
 
 function formatIsoDate(date: Date | string) {
@@ -136,6 +148,7 @@ export default function FinanceiroOrders({
                     parts={kpiOrders?.range_revenue?.parts}
                     icon={<DollarSign size={18} />}
                     orders={kpiOrders?.orders_count}
+                    comparison={kpiOrders?.comparison?.range_revenue}
                 />
 
                 <KpiFinancial
@@ -145,6 +158,7 @@ export default function FinanceiroOrders({
                     parts={kpiOrders?.daily_average?.parts}
                     icon={<TrendingUp size={18} />}
                     orders={kpiOrders?.orders_count}
+                    comparison={kpiOrders?.comparison?.daily_average}
                 />
 
                 <KpiFinancial
@@ -154,6 +168,7 @@ export default function FinanceiroOrders({
                     parts={kpiOrders?.average_ticket?.parts}
                     icon={<Receipt size={18} />}
                     orders={kpiOrders?.orders_count}
+                    comparison={kpiOrders?.comparison?.average_ticket}
                 />
             </div>
 
