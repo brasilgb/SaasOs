@@ -112,12 +112,12 @@ export default function EditOrder({
     const canManageOrders = auth?.role !== 'technician' && auth?.permissions?.includes('orders');
     const [partsData, setPartsData] = useState<any>([]);
 
-    const initialModelOptions = models.map((model: any) => ({
-        value: model,
-        label: model,
+    const initialModelOptions = Array.from(new Set([...(models ?? []), order?.model].filter(Boolean))).map((model: any) => ({
+        value: String(model),
+        label: String(model),
     }));
 
-    const defaultModel = initialModelOptions.find((o: any) => o.value === order?.model) || null;
+    const defaultModel = initialModelOptions.find((o: any) => o.value === String(order?.model ?? '')) || null;
 
     const [modelOptions, setModelOptions] = useState<OptionType[]>(initialModelOptions);
     const [selectedModel, setSelectedModel] = useState<OptionType | null>(defaultModel);
@@ -238,12 +238,8 @@ export default function EditOrder({
         setData('user_id', selected?.value);
     };
 
-    const defaultCustomer = optionsCustomer
-        ?.filter((o: any) => o.value == order?.customer_id)
-        .map((opt: any) => ({ value: opt.value, label: opt.label }));
-    const defaultEquipament = optionsEquipment
-        ?.filter((o: any) => o.value == order?.equipment_id)
-        .map((opt: any) => ({ value: opt.value, label: opt.label }));
+    const defaultCustomer = optionsCustomer?.find((o: any) => o.value == order?.customer_id) ?? null;
+    const defaultEquipament = optionsEquipment?.find((o: any) => o.value == order?.equipment_id) ?? null;
     const statusDefault = statusServico
         ?.filter((o: any) => o.value == order?.service_status)
         .map((opt: any) => ({ value: opt.value, label: opt.label }));
