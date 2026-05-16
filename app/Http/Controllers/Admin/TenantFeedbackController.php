@@ -7,6 +7,7 @@ use App\Models\TenantFeedback;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
 class TenantFeedbackController extends Controller
@@ -120,6 +121,26 @@ class TenantFeedbackController extends Controller
         ]);
 
         $testimonialStatus = $validated['testimonial_status'] ?? null;
+        $testimonialExcerpt = trim((string) ($validated['testimonial_excerpt'] ?? ''));
+
+        if ($testimonialStatus === 'published') {
+            if (! $tenantFeedback->testimonial_consent_at) {
+                throw ValidationException::withMessages([
+                    'testimonial_status' => 'O depoimento só pode ser publicado após autorização do cliente.',
+                ]);
+            }
+
+            if ($testimonialExcerpt === '') {
+                throw ValidationException::withMessages([
+                    'testimonial_excerpt' => 'Informe o trecho aprovado antes de publicar o depoimento.',
+                ]);
+            }
+        }
+
+        $publishedAt = $tenantFeedback->testimonial_published_at;
+        if ($testimonialStatus === 'published' && ! $publishedAt) {
+            $publishedAt = now();
+        }
 
         $tenantFeedback->update([
             'feedback_recovery_assigned_to' => $validated['feedback_recovery_assigned_to'] ?? null,
@@ -129,8 +150,8 @@ class TenantFeedbackController extends Controller
             'testimonial_status' => $testimonialStatus,
             'testimonial_public_name' => $validated['testimonial_public_name'] ?? null,
             'testimonial_public_role' => $validated['testimonial_public_role'] ?? null,
-            'testimonial_excerpt' => $validated['testimonial_excerpt'] ?? null,
-            'testimonial_published_at' => $testimonialStatus === 'published' ? now() : null,
+            'testimonial_excerpt' => $testimonialExcerpt !== '' ? $testimonialExcerpt : null,
+            'testimonial_published_at' => $testimonialStatus === 'published' ? $publishedAt : null,
         ]);
 
         return back()->with('success', 'Tratativa do feedback atualizada com sucesso.');

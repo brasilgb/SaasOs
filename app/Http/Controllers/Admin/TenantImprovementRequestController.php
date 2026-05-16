@@ -93,9 +93,9 @@ class TenantImprovementRequestController extends Controller
             'reviewed_at' => now(),
         ]);
 
-        $updatedNotes = (string) ($tenantImprovementRequest->admin_notes ?? '');
         $statusChanged = $originalStatus !== $tenantImprovementRequest->status;
-        $notesChanged = $originalNotes !== $updatedNotes;
+        $notesAddedToCustomerVisibleUpdate = $originalNotes === ''
+            && trim((string) ($tenantImprovementRequest->admin_notes ?? '')) !== '';
 
         $customerRecipients = collect([
             $tenantImprovementRequest->tenant?->email,
@@ -106,7 +106,7 @@ class TenantImprovementRequestController extends Controller
             ->values()
             ->all();
 
-        if (($statusChanged || $notesChanged) && ! empty($customerRecipients)) {
+        if (($statusChanged || $notesAddedToCustomerVisibleUpdate) && ! empty($customerRecipients)) {
             Mail::to($customerRecipients)->send(new TenantImprovementRequestUpdatedMail($tenantImprovementRequest));
         }
 
