@@ -121,6 +121,7 @@ export default function EditOrder({
 
     const [modelOptions, setModelOptions] = useState<OptionType[]>(initialModelOptions);
     const [selectedModel, setSelectedModel] = useState<OptionType | null>(defaultModel);
+    const [modelInputValue, setModelInputValue] = useState('');
 
     const optionsCustomer = customers.map((customer: any) => ({
         value: customer.id,
@@ -174,6 +175,7 @@ export default function EditOrder({
 
     const handleSubmit = async (e: any) => {
         e.preventDefault();
+        commitModelInput();
 
         patch(route('app.orders.update', order.id), {
             onSuccess: () => {
@@ -281,14 +283,26 @@ export default function EditOrder({
 
     const changeModel = (option: OptionType | null) => {
         setSelectedModel(option);
+        setModelInputValue('');
         setData('model', option?.value ?? '');
     };
 
     const createModel = (value: string) => {
-        const option = { label: value, value };
+        const model = value.trim();
+        if (!model) return;
+
+        const option = { label: model, value: model };
         setModelOptions((prev) => [...prev, option]);
         setSelectedModel(option);
-        setData('model', value);
+        setModelInputValue('');
+        setData('model', model);
+    };
+
+    const commitModelInput = () => {
+        const model = modelInputValue.trim();
+        if (model && model !== data.model) {
+            createModel(model);
+        }
     };
 
     const currentStatusLabel = statusServico.find((item: any) => Number(item.value) === Number(data.service_status))?.label ?? 'Status';
@@ -449,6 +463,13 @@ export default function EditOrder({
                                                     options={modelOptions}
                                                     onChange={changeModel}
                                                     onCreateOption={createModel}
+                                                    onBlur={commitModelInput}
+                                                    onInputChange={(value, meta) => {
+                                                        if (meta.action === 'input-change') {
+                                                            setModelInputValue(value);
+                                                            setData('model', value);
+                                                        }
+                                                    }}
                                                     isClearable
                                                     styles={selectStyles}
                                                     placeholder="Selecione ou digite a nova marca/modelo"

@@ -27,7 +27,11 @@ class OrderRequest extends FormRequest
         return [
             'customer_id' => 'required',
             'equipment_id' => 'required',
+            'model' => 'nullable|string|max:50',
+            'password' => 'nullable|string|max:50',
             'defect' => 'required',
+            'state_conservation' => 'nullable|string',
+            'accessories' => 'nullable|string',
             'service_status' => ['required', 'integer', Rule::in(OrderStatus::values())],
             'warranty_days' => 'nullable|integer|min:0|max:3650',
 
@@ -47,6 +51,8 @@ class OrderRequest extends FormRequest
             ],
 
             'user_id' => $this->isMethod('post') ? 'nullable' : 'required',
+            'delivery_forecast' => 'nullable|date',
+            'observations' => 'nullable|string',
         ];
     }
 
@@ -57,9 +63,15 @@ class OrderRequest extends FormRequest
             'budget_description' => 'descrição do orçamento',
             'budget_value' => 'valor do orçamento',
             'equipment_id' => 'equipamento',
+            'model' => 'marca e modelo',
+            'password' => 'senha',
             'defect' => 'defeito',
+            'state_conservation' => 'estado de conservação',
+            'accessories' => 'acessórios',
             'user_id' => 'técnico',
             'warranty_days' => 'garantia em dias',
+            'delivery_forecast' => 'previsão de entrega',
+            'observations' => 'observações',
         ];
     }
 }

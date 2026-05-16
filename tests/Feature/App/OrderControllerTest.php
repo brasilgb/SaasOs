@@ -2,12 +2,14 @@
 
 namespace Tests\Feature\App;
 
+use App\Jobs\SendOrderBudgetFollowUpNotification;
+use App\Jobs\SendOrderPaymentReminderNotification;
 use App\Models\App\CashSession;
 use App\Models\App\Customer;
-use App\Models\App\Other;
 use App\Models\App\Equipment;
 use App\Models\App\Order;
 use App\Models\App\OrderPayment;
+use App\Models\App\Other;
 use App\Models\App\Part;
 use App\Models\Tenant;
 use App\Models\User;
@@ -15,8 +17,6 @@ use App\Support\OrderStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Queue;
-use App\Jobs\SendOrderBudgetFollowUpNotification;
-use App\Jobs\SendOrderPaymentReminderNotification;
 use Tests\TestCase;
 
 class OrderControllerTest extends TestCase
@@ -46,6 +46,7 @@ class OrderControllerTest extends TestCase
         $response = $this->post(route('app.orders.store'), [
             'customer_id' => $customer->id,
             'equipment_id' => $equipment->id,
+            'model' => 'Notebook Dell Inspiron',
             'defect' => 'Não liga',
             'service_status' => OrderStatus::OPEN,
             'user_id' => null,
@@ -54,6 +55,8 @@ class OrderControllerTest extends TestCase
         $response->assertRedirect(route('app.orders.index'));
 
         $order = Order::query()->firstOrFail();
+
+        $this->assertSame('Notebook Dell Inspiron', $order->model);
 
         $this->assertDatabaseHas('order_status_history', [
             'order_id' => $order->id,
@@ -132,6 +135,27 @@ class OrderControllerTest extends TestCase
             'entity_id' => $order->id,
             'action' => 'order_status_changed',
         ]);
+    }
+
+    public function test_it_updates_order_model(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'user_id' => $this->user->id,
+            'model' => 'Modelo antigo',
+            'service_status' => OrderStatus::OPEN,
+        ]);
+
+        $response = $this->put(route('app.orders.update', $order), $this->orderUpdatePayload($order, $customer, $equipment, [
+            'model' => 'Modelo novo',
+        ]));
+
+        $response->assertRedirect(route('app.orders.show', ['order' => $order->id]));
+
+        $this->assertSame('Modelo novo', $order->fresh()->model);
     }
 
     public function test_it_logs_order_payment_registration(): void

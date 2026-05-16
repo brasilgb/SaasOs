@@ -51,6 +51,7 @@ export default function CreateOrder({
 
     const [modelOptions, setModelOptions] = useState<OptionType[]>(initialModelOptions);
     const [selectedModel, setSelectedModel] = useState<OptionType | null>(null);
+    const [modelInputValue, setModelInputValue] = useState('');
 
     const optionsCustomer: OptionType[] = customers.map((customer) => ({
         value: customer.id,
@@ -80,6 +81,7 @@ export default function CreateOrder({
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        commitModelInput();
         post(route('app.orders.store'));
     };
 
@@ -92,6 +94,7 @@ export default function CreateOrder({
             toastSuccess('Sucesso', flash.success);
             reset();
             setSelectedModel(null);
+            setModelInputValue('');
             setModelOptions(initialModelOptions);
         }
     }, [flash?.success]);
@@ -110,14 +113,26 @@ export default function CreateOrder({
 
     const changeModel = (option: OptionType | null) => {
         setSelectedModel(option);
+        setModelInputValue('');
         setData('model', String(option?.value ?? ''));
     };
 
     const createModel = (value: string) => {
-        const option = { label: value, value };
+        const model = value.trim();
+        if (!model) return;
+
+        const option = { label: model, value: model };
         setModelOptions((prev) => [...prev, option]);
         setSelectedModel(option);
-        setData('model', value);
+        setModelInputValue('');
+        setData('model', model);
+    };
+
+    const commitModelInput = () => {
+        const model = modelInputValue.trim();
+        if (model && model !== data.model) {
+            createModel(model);
+        }
     };
 
     return (
@@ -197,6 +212,13 @@ export default function CreateOrder({
                                     options={modelOptions}
                                     onChange={changeModel}
                                     onCreateOption={createModel}
+                                    onBlur={commitModelInput}
+                                    onInputChange={(value, meta) => {
+                                        if (meta.action === 'input-change') {
+                                            setModelInputValue(value);
+                                            setData('model', value);
+                                        }
+                                    }}
                                     isClearable
                                     classNamePrefix="creatable-select"
                                     className="min-w-0"
