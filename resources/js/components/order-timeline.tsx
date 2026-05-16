@@ -290,6 +290,8 @@ const publicAllowedActions = new Set([
     'fiscal_registered',
 ]);
 
+const internalHiddenActions = new Set(['updated']);
+
 export function OrderTimeline({ statusHistory = [], logs = [], mode = 'internal' }: OrderTimelineProps) {
     const statusEvents: TimelineEvent[] = statusHistory.map((item) => ({
         id: `status-${item.id}`,
@@ -304,7 +306,7 @@ export function OrderTimeline({ statusHistory = [], logs = [], mode = 'internal'
     const filteredLogs =
         mode === 'public'
             ? logs.filter((item) => publicAllowedActions.has(item.action))
-            : logs;
+            : logs.filter((item) => !internalHiddenActions.has(item.action));
 
     const logEvents: TimelineEvent[] = filteredLogs.map((item) => {
         const described = describeLog(item);
