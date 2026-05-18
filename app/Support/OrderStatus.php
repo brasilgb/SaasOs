@@ -51,25 +51,6 @@ final class OrderStatus
         return self::labels()[(int) $status] ?? $fallback;
     }
 
-    /**
-     * @return array<int, list<int>>
-     */
-    public static function transitions(): array
-    {
-        return [
-            self::OPEN => [self::CANCELLED, self::BUDGET_GENERATED, self::REPAIR_IN_PROGRESS],
-            self::CANCELLED => [],
-            self::BUDGET_GENERATED => [self::BUDGET_APPROVED, self::BUDGET_REJECTED, self::CANCELLED],
-            self::BUDGET_APPROVED => [self::REPAIR_IN_PROGRESS, self::SERVICE_COMPLETED, self::SERVICE_NOT_EXECUTED, self::CANCELLED],
-            self::BUDGET_REJECTED => [self::BUDGET_GENERATED, self::CANCELLED],
-            self::REPAIR_IN_PROGRESS => [self::SERVICE_COMPLETED, self::SERVICE_NOT_EXECUTED, self::CANCELLED],
-            self::SERVICE_COMPLETED => [self::CUSTOMER_NOTIFIED, self::DELIVERED],
-            self::SERVICE_NOT_EXECUTED => [self::CUSTOMER_NOTIFIED, self::DELIVERED],
-            self::CUSTOMER_NOTIFIED => [self::DELIVERED],
-            self::DELIVERED => [],
-        ];
-    }
-
     public static function canTransition(int|string|null $from, int|string|null $to): bool
     {
         if ($from === null || $to === null || $from === '' || $to === '') {
@@ -83,6 +64,7 @@ final class OrderStatus
             return true;
         }
 
-        return in_array($toStatus, self::transitions()[$fromStatus] ?? [], true);
+        return in_array($fromStatus, self::values(), true)
+            && in_array($toStatus, self::values(), true);
     }
 }

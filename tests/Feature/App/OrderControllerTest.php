@@ -238,7 +238,7 @@ class OrderControllerTest extends TestCase
         ]);
     }
 
-    public function test_it_blocks_invalid_order_status_transition(): void
+    public function test_it_allows_flexible_order_status_transition(): void
     {
         $customer = Customer::factory()->forTenant($this->tenant->id)->create();
         $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
@@ -246,7 +246,7 @@ class OrderControllerTest extends TestCase
             'customer_id' => $customer->id,
             'equipment_id' => $equipment->id,
             'user_id' => $this->user->id,
-            'service_status' => OrderStatus::OPEN,
+            'service_status' => OrderStatus::BUDGET_APPROVED,
         ]);
 
         $response = $this->from(route('app.orders.show', $order))->put(route('app.orders.update', $order), [
@@ -265,17 +265,18 @@ class OrderControllerTest extends TestCase
             'service_value' => '0,00',
             'service_cost' => '0,00',
             'delivery_date' => null,
-            'service_status' => OrderStatus::DELIVERED,
+            'service_status' => OrderStatus::OPEN,
             'delivery_forecast' => null,
             'observations' => null,
         ]);
 
         $response->assertRedirect(route('app.orders.show', $order));
-        $response->assertSessionHasErrors('service_status');
+        $response->assertSessionHasNoErrors();
 
-        $this->assertDatabaseMissing('order_status_history', [
+        $this->assertDatabaseHas('order_status_history', [
             'order_id' => $order->id,
-            'status' => OrderStatus::DELIVERED,
+            'status' => OrderStatus::OPEN,
+            'changed_by' => $this->user->id,
         ]);
     }
 
