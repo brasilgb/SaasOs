@@ -282,7 +282,6 @@ function describeLog(log: OrderLogItem): Omit<TimelineEvent, 'id' | 'createdAt' 
 
 const publicAllowedActions = new Set([
     'created',
-    'status_changed',
     'payment_registered',
     'payment_removed',
     'image_uploaded',
@@ -293,7 +292,16 @@ const publicAllowedActions = new Set([
 const internalHiddenActions = new Set(['updated']);
 
 export function OrderTimeline({ statusHistory = [], logs = [], mode = 'internal' }: OrderTimelineProps) {
-    const statusEvents: TimelineEvent[] = statusHistory.map((item) => ({
+    const visibleStatusHistory =
+        mode === 'public'
+            ? statusHistory.filter((item, index, items) => {
+                  const previousItem = items[index - 1];
+
+                  return !previousItem || previousItem.status !== item.status;
+              })
+            : statusHistory;
+
+    const statusEvents: TimelineEvent[] = visibleStatusHistory.map((item) => ({
         id: `status-${item.id}`,
         createdAt: item.created_at,
         title: 'Status registrado',
