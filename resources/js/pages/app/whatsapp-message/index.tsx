@@ -1,5 +1,4 @@
 import { toastSuccess } from '@/components/app-toast-messages';
-import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -108,15 +107,12 @@ export default function WhatsappMessage({ whatsappmessage }: { whatsappmessage: 
     };
 
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Mensagens WhatsApp" />
-            <div className="flex h-16 items-center justify-between px-4">
+            <div className="flex min-h-16 flex-col justify-center gap-1 px-4 py-3">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={MessageCircleCode} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Mensagens WhatsApp</h2>
-                </div>
-                <div>
-                    <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
 

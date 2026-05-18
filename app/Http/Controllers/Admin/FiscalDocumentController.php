@@ -44,6 +44,11 @@ class FiscalDocumentController extends Controller
 
     public function update(Request $request, AdminFiscalSetting $adminFiscalSetting): RedirectResponse
     {
+        $request->merge([
+            'environment' => $this->normalizeEnvironment($request->input('environment')),
+            'default_iss_rate' => $this->normalizeNullableDecimal($request->input('default_iss_rate')),
+        ]);
+
         $data = $request->validate([
             'enabled' => ['required', 'boolean'],
             'environment' => ['required', 'in:sandbox,production'],
@@ -80,6 +85,27 @@ class FiscalDocumentController extends Controller
         $adminFiscalSetting->update($data);
 
         return redirect()->route('admin.fiscal-documents.settings')->with('success', 'Configurações fiscais do SaaS salvas com sucesso.');
+    }
+
+    private function normalizeNullableDecimal(mixed $value): mixed
+    {
+        if (blank($value)) {
+            return null;
+        }
+
+        if (is_string($value)) {
+            return str_replace(',', '.', trim($value));
+        }
+
+        return $value;
+    }
+
+    private function normalizeEnvironment(mixed $value): string
+    {
+        return match ($value) {
+            'production', 'producao', 'produção' => 'production',
+            default => 'sandbox',
+        };
     }
 
     public function issueTenant(Request $request, Tenant $tenant): RedirectResponse
@@ -122,7 +148,6 @@ class FiscalDocumentController extends Controller
                 'id',
                 'enabled',
                 'provider',
-                'environment',
                 'legal_name',
                 'trade_name',
                 'cnpj',
@@ -140,6 +165,7 @@ class FiscalDocumentController extends Controller
                 'complement',
                 'default_service_description',
             ]),
+            'environment' => $this->normalizeEnvironment($setting->environment),
             'has_api_token' => ! empty($setting->api_token),
             'has_webhook_secret' => ! empty($setting->webhook_secret),
         ];

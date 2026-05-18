@@ -1,6 +1,5 @@
 import AlertSuccess from '@/components/app-alert-success';
 import AppPagination from '@/components/app-pagination';
-import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -165,17 +164,14 @@ export default function TenantFeedbacksIndex({ feedbacks, filters, summary, user
     ];
 
     return (
-        <AdminLayout>
+        <AdminLayout breadcrumbs={breadcrumbs}>
             <Head title="Feedback SaaS" />
             {flash?.success && <AlertSuccess message={flash.success} />}
 
-            <div className="flex min-h-16 w-full flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-h-16 w-full flex-col justify-center gap-1 px-4 py-3">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={MessageSquareMore} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Feedback SaaS</h2>
-                </div>
-                <div className="sm:ml-auto sm:text-right">
-                    <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
 

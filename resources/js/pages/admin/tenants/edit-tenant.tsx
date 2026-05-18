@@ -1,7 +1,6 @@
 import { statusSaas } from '@/Utils/dataSelect';
 import { maskCep, maskCpfCnpj, maskPhone, unMask } from '@/Utils/mask';
 import { toastSuccess } from '@/components/app-toast-messages';
-import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
@@ -116,15 +115,12 @@ export default function EditTenant({ plans, tenant }: any) {
               : 'border-amber-200 bg-amber-50 text-amber-700';
 
     return (
-        <AdminLayout>
-            <div className="flex h-16 items-center justify-between px-4">
-                <Head title="Empresas" />
+        <AdminLayout breadcrumbs={breadcrumbs}>
+            <Head title="Empresas" />
+            <div className="flex min-h-16 flex-col justify-center gap-1 px-4 py-3">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={Building} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Empresas</h2>
-                </div>
-                <div>
-                    <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
 

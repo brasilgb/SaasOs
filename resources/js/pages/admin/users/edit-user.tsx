@@ -1,5 +1,4 @@
 import { toastSuccess } from '@/components/app-toast-messages';
-import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -72,16 +71,13 @@ export default function CreateUser({ user, tenants }: any) {
     };
 
     return (
-        <AdminLayout>
+        <AdminLayout breadcrumbs={breadcrumbs}>
             <Head title="Usuários" />
 
-            <div className="flex h-16 items-center justify-between px-4">
+            <div className="flex min-h-16 flex-col justify-center gap-1 px-4 py-3">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={UserCog} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Usuários</h2>
-                </div>
-                <div>
-                    <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
 

@@ -60,6 +60,11 @@ class FiscalDocumentController extends Controller
     {
         Gate::authorize('fiscal-documents.access');
 
+        $request->merge([
+            'environment' => $this->normalizeEnvironment($request->input('environment')),
+            'default_iss_rate' => $this->normalizeNullableDecimal($request->input('default_iss_rate')),
+        ]);
+
         $data = $request->validate([
             'enabled' => ['required', 'boolean'],
             'environment' => ['required', 'in:sandbox,production'],
@@ -98,6 +103,27 @@ class FiscalDocumentController extends Controller
         $fiscalSetting->update($data);
 
         return redirect()->route('app.fiscal-documents.settings')->with('success', 'Configurações fiscais salvas com sucesso.');
+    }
+
+    private function normalizeNullableDecimal(mixed $value): mixed
+    {
+        if (blank($value)) {
+            return null;
+        }
+
+        if (is_string($value)) {
+            return str_replace(',', '.', trim($value));
+        }
+
+        return $value;
+    }
+
+    private function normalizeEnvironment(mixed $value): string
+    {
+        return match ($value) {
+            'production', 'producao', 'produção' => 'production',
+            default => 'sandbox',
+        };
     }
 
     public function issueOrder(Order $order): RedirectResponse
@@ -148,7 +174,6 @@ class FiscalDocumentController extends Controller
                 'id',
                 'enabled',
                 'provider',
-                'environment',
                 'nfe_enabled',
                 'nfse_enabled',
                 'company_tax_regime',
@@ -168,6 +193,7 @@ class FiscalDocumentController extends Controller
                 'default_pis_situation',
                 'default_cofins_situation',
             ]),
+            'environment' => $this->normalizeEnvironment($setting->environment),
             'has_api_token' => ! empty($setting->api_token),
             'has_webhook_secret' => ! empty($setting->webhook_secret),
         ];

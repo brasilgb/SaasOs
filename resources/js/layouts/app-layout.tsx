@@ -1,17 +1,19 @@
 import { useAppearance } from '@/hooks/use-appearance';
 import AppLayoutTemplate from '@/layouts/app/app-sidebar-layout';
+import { type BreadcrumbItem } from '@/types';
 import { type ReactNode } from 'react';
 import { Toaster } from 'sonner';
 
 interface AppLayoutProps {
+    breadcrumbs?: BreadcrumbItem[];
     children: ReactNode;
 }
 
-export default ({ children }: AppLayoutProps) => {
+export default ({ breadcrumbs = [], children }: AppLayoutProps) => {
     const { appearance } = useAppearance();
 
     return (
-        <AppLayoutTemplate>
+        <AppLayoutTemplate breadcrumbs={breadcrumbs}>
             {children}
             <Toaster theme={appearance} />
         </AppLayoutTemplate>

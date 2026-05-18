@@ -1,6 +1,5 @@
 import { toastSuccess } from '@/components/app-toast-messages';
 import AppearanceTabs from '@/components/appearance-tabs';
-import { Breadcrumbs } from '@/components/breadcrumbs';
 import HeadingSmall from '@/components/heading-small';
 import { Icon } from '@/components/icon';
 import { Button } from '@/components/ui/button';
@@ -53,15 +52,12 @@ export default function SettingsIndex({ settings }: { settings: Settings }) {
     };
 
     return (
-        <AdminLayout>
+        <AdminLayout breadcrumbs={breadcrumbs}>
             <Head title="Configurações" />
-            <div className="flex min-h-16 w-full flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-h-16 w-full flex-col justify-center gap-1 px-4 py-3">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={Cog} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Configurações</h2>
-                </div>
-                <div className="sm:ml-auto sm:text-right">
-                    <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
 

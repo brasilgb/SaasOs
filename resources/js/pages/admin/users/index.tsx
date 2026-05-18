@@ -1,6 +1,5 @@
 import ActionDelete from '@/components/action-delete';
 import AppPagination from '@/components/app-pagination';
-import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
 import InputSearch from '@/components/inputSearch';
 import { StatusBadge } from '@/components/StatusBadge';
@@ -25,15 +24,12 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function Users({ users }: any) {
     return (
-        <AdminLayout>
+        <AdminLayout breadcrumbs={breadcrumbs}>
             <Head title="Usuários" />
             <div className="mb-4 flex h-16 items-center justify-between px-4">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={UserCog} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Usuários</h2>
-                </div>
-                <div>
-                    <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
 

@@ -57,7 +57,7 @@ final class OrderStatus
     public static function transitions(): array
     {
         return [
-            self::OPEN => [self::CANCELLED, self::BUDGET_GENERATED],
+            self::OPEN => [self::CANCELLED, self::BUDGET_GENERATED, self::REPAIR_IN_PROGRESS],
             self::CANCELLED => [],
             self::BUDGET_GENERATED => [self::BUDGET_APPROVED, self::BUDGET_REJECTED, self::CANCELLED],
             self::BUDGET_APPROVED => [self::REPAIR_IN_PROGRESS, self::SERVICE_COMPLETED, self::SERVICE_NOT_EXECUTED, self::CANCELLED],

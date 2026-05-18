@@ -1,4 +1,3 @@
-import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
@@ -130,16 +129,13 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
     };
 
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Caixa" />
 
-            <div className="flex h-16 items-center justify-between px-4">
+            <div className="flex min-h-16 flex-col justify-center gap-1 px-4 py-3">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={WalletCards} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Caixa</h2>
-                </div>
-                <div>
-                    <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
 

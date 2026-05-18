@@ -1,6 +1,5 @@
 import ActionCancelSale from '@/components/action-cancel-sale';
 import AppPagination from '@/components/app-pagination';
-import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
 import InputSearch from '@/components/inputSearch';
 import SaleInvoiceModal from '@/components/Modals/SaleInvoiceModal';
@@ -146,7 +145,7 @@ export default function Sales({ sales, search, financial_status, financial_count
     };
 
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <SaleDetailsModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} sale={selectedSale} />
             <SaleInvoiceModal open={invoiceModalOpen} onClose={() => setInvoiceModalOpen(false)} sale={saleForInvoice ?? {}} />
             <div style={{ display: 'none' }}>
@@ -162,13 +161,10 @@ export default function Sales({ sales, search, financial_status, financial_count
                 />
             </div>
             <Head title="Vendas" />
-            <div className="flex min-h-16 flex-col justify-center gap-3 px-4 py-3 sm:py-0">
+            <div className="flex min-h-16 flex-col justify-center gap-1 px-4 py-3">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={ShoppingCartIcon} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Vendas</h2>
-                </div>
-                <div className="min-w-0 self-start sm:self-auto">
-                    <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
 

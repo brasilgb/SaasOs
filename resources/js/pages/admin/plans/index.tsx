@@ -1,6 +1,5 @@
 import ActionDelete from '@/components/action-delete';
 import AppPagination from '@/components/app-pagination';
-import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
 import InputSearch from '@/components/inputSearch';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -36,15 +35,12 @@ function formatBillingCycle(months?: number | string) {
 
 export default function PlansIndex({ plans }: any) {
     return (
-        <AdminLayout>
+        <AdminLayout breadcrumbs={breadcrumbs}>
             <Head title="Planos" />
-            <div className="flex h-16 items-center justify-between px-4">
+            <div className="flex min-h-16 flex-col justify-center gap-1 px-4 py-3">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={Copyright} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Planos</h2>
-                </div>
-                <div>
-                    <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
             <div className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:justify-between">

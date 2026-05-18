@@ -1,7 +1,6 @@
 import ActionDelete from '@/components/action-delete';
 import AlertSuccess from '@/components/app-alert-success';
 import AppPagination from '@/components/app-pagination';
-import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
 import InputError from '@/components/input-error';
 import InputSearch from '@/components/inputSearch';
@@ -175,17 +174,14 @@ export default function Expenses({ expenses }: any) {
     };
 
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             {flash?.success && <AlertSuccess message={flash.success} />}
             <Head title="Despesas" />
 
-            <div className="flex min-h-16 flex-col justify-center gap-3 px-4 py-3 sm:py-0">
+            <div className="flex min-h-16 flex-col justify-center gap-1 px-4 py-3">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={BanknoteArrowDownIcon} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Despesas</h2>
-                </div>
-                <div className="min-w-0 self-start sm:self-auto">
-                    <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
 

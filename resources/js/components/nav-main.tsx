@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
     SidebarGroupLabel,
     SidebarMenu,
@@ -38,6 +39,19 @@ type NavMainPageProps = {
         nfse_enabled?: boolean;
     } | null;
 };
+
+function TruncatedNavText({ children, className = 'min-w-0 flex-1 truncate' }: { children: string; className?: string }) {
+    return (
+        <Tooltip>
+            <TooltipTrigger asChild>
+                <span className={className}>{children}</span>
+            </TooltipTrigger>
+            <TooltipContent side="right" align="center">
+                {children}
+            </TooltipContent>
+        </Tooltip>
+    );
+}
 
 export function NavMain({
     items = [],
@@ -107,7 +121,7 @@ export function NavMain({
                                             className={route().current(item.active ?? '') ? 'bg-accent text-accent-foreground' : ''}
                                         >
                                             {item.icon && <item.icon className="h-4 w-4 shrink-0" />}
-                                            <span className="truncate">{item.title}</span>
+                                            <TruncatedNavText className="min-w-0 flex-1 truncate">{item.title}</TruncatedNavText>
                                             {renderItemBadge(item)}
                                         </Link>
                                     </DropdownMenuItem>
@@ -137,7 +151,7 @@ export function NavMain({
                                         <SidebarMenuSubButton asChild isActive={route().current(item.active ?? '')}>
                                             <Link href={item.href}>
                                                 {item.icon && <item.icon className="h-4 w-4 shrink-0" />}
-                                                <span className="min-w-0 flex-1 truncate">{item.title}</span>
+                                                <TruncatedNavText>{item.title}</TruncatedNavText>
                                                 {renderItemBadge(item)}
                                             </Link>
                                         </SidebarMenuSubButton>
@@ -160,7 +174,7 @@ export function NavMain({
                         <SidebarMenuButton asChild isActive={route().current(item.active ?? '')} tooltip={{ children: item.title }}>
                             <Link href={item.href} prefetch>
                                 {item.icon && <item.icon />}
-                                <span className="min-w-0 flex-1 truncate">{item.title}</span>
+                                <TruncatedNavText>{item.title}</TruncatedNavText>
                                 {renderItemBadge(item)}
                             </Link>
                         </SidebarMenuButton>

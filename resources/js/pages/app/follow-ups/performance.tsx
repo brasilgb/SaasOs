@@ -1,4 +1,3 @@
-import { Breadcrumbs } from '@/components/breadcrumbs';
 import { ChartFollowUpTrend } from '@/components/Charts/chart-follow-up-trend';
 import { DatePicker } from '@/components/date-picker';
 import { Icon } from '@/components/icon';
@@ -62,7 +61,7 @@ export default function FollowUpPerformance({ filters, summary, trends }: any) {
     const targetLabel = (status?: string) => (status === 'saudavel' ? 'Meta atingida' : 'Abaixo da meta');
 
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Resultados dos contatos" />
 
             <div className="flex min-h-20 items-center justify-between gap-4 px-4 py-3">
@@ -74,9 +73,6 @@ export default function FollowUpPerformance({ filters, summary, trends }: any) {
                             Entenda se os contatos com clientes estão ajudando a aprovar orçamentos e receber pagamentos pendentes.
                         </p>
                     </div>
-                </div>
-                <div>
-                    <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
 

@@ -1,6 +1,5 @@
 import ActionDelete from '@/components/action-delete';
 import AppPagination from '@/components/app-pagination';
-import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
 import InputSearch from '@/components/inputSearch';
 import { Button } from '@/components/ui/button';
@@ -26,15 +25,12 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function CheckList({ budgets, company, search }: any) {
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Orçamentos" />
-            <div className="flex min-h-16 flex-col justify-center gap-3 px-4 py-3 sm:py-0">
+            <div className="flex min-h-16 flex-col justify-center gap-1 px-4 py-3">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={ScrollText} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Orçamentos</h2>
-                </div>
-                <div className="min-w-0 self-start sm:self-auto">
-                    <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
 

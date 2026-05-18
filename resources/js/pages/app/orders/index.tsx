@@ -1,6 +1,5 @@
 import ActionDelete from '@/components/action-delete';
 import AppPagination from '@/components/app-pagination';
-import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
 import InputSearch from '@/components/inputSearch';
 import InvoiceModal from '@/components/Modals/InvoiceModal';
@@ -46,7 +45,13 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Orders({ orders, whats, feedback, search, status, filter }: any) {
     const { auth, othersetting } = usePage<{
         auth?: { role?: string; permissions?: string[] };
-        othersetting?: { print_label_button_after_order_create?: boolean };
+        othersetting?: {
+            automatic_follow_ups_enabled?: boolean;
+            enablesales?: boolean;
+            print_label_button_after_order_create?: boolean;
+            show_follow_ups_menu?: boolean;
+            show_tasks_menu?: boolean;
+        };
     }>().props;
     const [openInvoiceModal, setOpenInvoiceModal] = useState(false);
     const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState<any | null>(null);
@@ -62,6 +67,13 @@ export default function Orders({ orders, whats, feedback, search, status, filter
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const streamRef = useRef<MediaStream | null>(null);
     const canManageOrders = auth?.role !== 'technician' && auth?.permissions?.includes('orders');
+    const canAccessSalesModules =
+        auth?.role === 'administrator' || auth?.role === 'operator' || auth?.role === 'root_app' || auth?.role === 'root_system';
+    const isFinancialActive = canAccessSalesModules && Boolean(othersetting?.enablesales) && Boolean(auth?.permissions?.includes('sales'));
+    const isBillingActive = Boolean(
+        othersetting?.show_follow_ups_menu || othersetting?.show_tasks_menu || othersetting?.automatic_follow_ups_enabled,
+    );
+    const canShowPendingPaymentButton = canManageOrders && (isFinancialActive || isBillingActive);
     const feedbackWindowIds = new Set((feedback || []).map((feed: any) => feed.id));
 
     const handleBudgetFollowUp = (id: number) => {
@@ -215,16 +227,13 @@ export default function Orders({ orders, whats, feedback, search, status, filter
     }, [cameraOpen, cameraSupported, filter, status]);
 
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Ordens" />
 
-            <div className="flex min-h-16 flex-col justify-center gap-3 px-4 py-3 sm:py-0">
+            <div className="flex min-h-16 flex-col justify-center gap-1 px-4 py-3">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={Wrench} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Ordens</h2>
-                </div>
-                <div className="min-w-0 self-start sm:self-auto">
-                    <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
 
@@ -491,7 +500,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                         </Button>
                                                     )}
 
-                                                    {canManageOrders && hasFinancialValuesFilled && hasPendingPayment && (
+                                                    {canShowPendingPaymentButton && hasFinancialValuesFilled && hasPendingPayment && (
                                                         <OrderPaymentsModal
                                                             order={order}
                                                             orderPayments={[]}

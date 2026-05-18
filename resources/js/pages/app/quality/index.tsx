@@ -1,4 +1,3 @@
-import { Breadcrumbs } from '@/components/breadcrumbs';
 import { ChartQualityTrend } from '@/components/Charts/chart-quality-trend';
 import { DatePicker } from '@/components/date-picker';
 import { Icon } from '@/components/icon';
@@ -352,7 +351,7 @@ export default function QualityIndicators({
     };
 
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Garantias e avaliações" />
 
             <div className="flex min-h-20 items-center justify-between gap-4 px-4 py-3">
@@ -364,9 +363,6 @@ export default function QualityIndicators({
                             Acompanhe retornos em garantia e clientes que deram nota baixa para organizar a tratativa.
                         </p>
                     </div>
-                </div>
-                <div>
-                    <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
 

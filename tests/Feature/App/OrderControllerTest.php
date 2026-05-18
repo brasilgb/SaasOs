@@ -158,6 +158,36 @@ class OrderControllerTest extends TestCase
         $this->assertSame('Modelo novo', $order->fresh()->model);
     }
 
+    public function test_technician_can_update_owned_order_model_and_start_repair(): void
+    {
+        $technician = User::factory()->forTenant($this->tenant->id)->create([
+            'roles' => User::ROLE_TECHNICIAN,
+        ]);
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'user_id' => $technician->id,
+            'model' => 'Modelo antigo',
+            'service_status' => OrderStatus::OPEN,
+        ]);
+
+        $this->actingAs($technician);
+
+        $response = $this->put(route('app.orders.update', $order), $this->orderUpdatePayload($order, $customer, $equipment, [
+            'user_id' => $technician->id,
+            'model' => 'Modelo novo',
+            'service_status' => OrderStatus::REPAIR_IN_PROGRESS,
+        ]));
+
+        $response->assertRedirect(route('app.orders.show', ['order' => $order->id]));
+
+        $order->refresh();
+        $this->assertSame('Modelo novo', $order->model);
+        $this->assertSame(OrderStatus::REPAIR_IN_PROGRESS, (int) $order->service_status);
+    }
+
     public function test_it_logs_order_payment_registration(): void
     {
         $customer = Customer::factory()->forTenant($this->tenant->id)->create();

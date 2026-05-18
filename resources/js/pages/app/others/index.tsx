@@ -1,6 +1,5 @@
 import { toastSuccess, toastWarning } from '@/components/app-toast-messages';
 import AppearanceTabs from '@/components/appearance-tabs';
-import { Breadcrumbs } from '@/components/breadcrumbs';
 import HeadingSmall from '@/components/heading-small';
 import { Icon } from '@/components/icon';
 import { Button } from '@/components/ui/button';
@@ -85,15 +84,12 @@ export default function Others({ othersettings, company, time_remaining, mailSet
     }, [flash?.message, flash?.error]);
 
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Outras configurações" />
-            <div className="flex min-h-16 w-full flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-h-16 w-full flex-col justify-center gap-1 px-4 py-3">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={CogIcon} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Outras configurações</h2>
-                </div>
-                <div className="sm:ml-auto sm:text-right">
-                    <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
 

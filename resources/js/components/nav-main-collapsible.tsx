@@ -1,5 +1,6 @@
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
     SidebarGroupLabel,
     SidebarMenu,
@@ -12,6 +13,19 @@ import {
 } from '@/components/ui/sidebar';
 import { Link, usePage } from '@inertiajs/react';
 import { ChevronRight, type LucideIcon } from 'lucide-react';
+
+function TruncatedNavText({ children }: { children: string }) {
+    return (
+        <Tooltip>
+            <TooltipTrigger asChild>
+                <span className="min-w-0 flex-1 truncate">{children}</span>
+            </TooltipTrigger>
+            <TooltipContent side="right" align="center">
+                {children}
+            </TooltipContent>
+        </Tooltip>
+    );
+}
 
 export default function NavMainCollapsible({
     items,
@@ -68,7 +82,7 @@ export default function NavMainCollapsible({
                                                     className={route().current(subItem.active ?? '') ? 'bg-accent text-accent-foreground' : ''}
                                                 >
                                                     {subItem.icon && <subItem.icon className="h-4 w-4 shrink-0" />}
-                                                    <span className="truncate">{subItem.title}</span>
+                                                    <TruncatedNavText>{subItem.title}</TruncatedNavText>
                                                 </Link>
                                             </DropdownMenuItem>
                                         ))}
@@ -96,7 +110,7 @@ export default function NavMainCollapsible({
                                                 <SidebarMenuSubButton asChild isActive={route().current(subItem.active ?? '')}>
                                                     <Link href={subItem.url}>
                                                         {subItem.icon && <subItem.icon className="h-4 w-4 shrink-0" />}
-                                                        <span className="truncate">{subItem.title}</span>
+                                                        <TruncatedNavText>{subItem.title}</TruncatedNavText>
                                                     </Link>
                                                 </SidebarMenuSubButton>
                                             </SidebarMenuSubItem>

@@ -1,3 +1,4 @@
+import { Breadcrumbs } from '@/components/breadcrumbs';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useInitials } from '@/hooks/use-initials';
 import { SharedData, type BreadcrumbItem as BreadcrumbItemType } from '@/types';
@@ -21,7 +22,6 @@ type AppSidebarHeaderPageProps = SharedData & {
 };
 
 export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: BreadcrumbItemType[] }) {
-    void breadcrumbs;
     const page = usePage<AppSidebarHeaderPageProps>();
     const { auth, notifications = 0, orderStatus = [] } = page.props;
     const unreadMessages = Number(notifications || 0);
@@ -58,6 +58,11 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
         <header className="border-sidebar-border/50 flex h-16 min-w-0 shrink-0 items-center justify-between gap-2 border-b px-3 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 sm:px-4">
             <div className="flex min-w-0 items-center gap-2">
                 <SidebarTrigger className="-ml-1" />
+                {breadcrumbs.length > 0 && (
+                    <div className="border-sidebar-border/60 min-w-0 border-l pl-3">
+                        <Breadcrumbs breadcrumbs={breadcrumbs} />
+                    </div>
+                )}
             </div>
             <div className="flex min-w-0 shrink-0 items-center gap-2">
                 {auth.user.tenant_id !== null && auth.role !== 'technician' && orderStatus.length > 0 ? <BudgetsApproved count={orderStatus.length} /> : ''}

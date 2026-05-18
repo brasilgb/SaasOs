@@ -1,5 +1,4 @@
-import { toastSuccess } from '@/components/app-toast-messages';
-import { Breadcrumbs } from '@/components/breadcrumbs';
+import { toastSuccess, toastWarning } from '@/components/app-toast-messages';
 import { Icon } from '@/components/icon';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
@@ -107,20 +106,20 @@ export default function FiscalDocumentSettings({ fiscalSetting }: { fiscalSettin
         put(route('app.fiscal-documents.settings.update', fiscalSetting.id), {
             preserveScroll: true,
             onSuccess: () => toastSuccess('Sucesso', 'Configurações fiscais salvas com sucesso.'),
+            onError: (formErrors) => {
+                toastWarning('Erro', Object.values(formErrors)[0] ?? 'Não foi possível salvar as configurações fiscais.');
+            },
         });
     };
 
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Configurações fiscais" />
 
-            <div className="flex h-16 items-center justify-between px-4">
+            <div className="flex min-h-16 flex-col justify-center gap-1 px-4 py-3">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={ReceiptText} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Configurações fiscais</h2>
-                </div>
-                <div>
-                    <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
 

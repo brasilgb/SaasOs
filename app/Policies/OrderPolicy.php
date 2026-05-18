@@ -41,11 +41,11 @@ class OrderPolicy
 
     public function update(User $user, Order $order): bool
     {
-        return $this->create($user) && $this->view($user, $order);
+        return $user->hasPermission('orders') && $this->view($user, $order);
     }
 
     public function delete(User $user, Order $order): bool
     {
-        return $this->update($user, $order);
+        return $this->create($user) && $this->view($user, $order);
     }
 }

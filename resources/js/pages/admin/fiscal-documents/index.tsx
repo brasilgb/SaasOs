@@ -1,5 +1,4 @@
 import AppPagination from '@/components/app-pagination';
-import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -55,16 +54,13 @@ export default function AdminFiscalDocumentsIndex({ documents, settingConfigured
     };
 
     return (
-        <AdminLayout>
+        <AdminLayout breadcrumbs={breadcrumbs}>
             <Head title="Notas SaaS" />
 
-            <div className="flex min-h-16 flex-col justify-center gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:py-0">
+            <div className="flex min-h-16 flex-col justify-center gap-1 px-4 py-3">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={ReceiptText} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Notas SaaS</h2>
-                </div>
-                <div className="min-w-0 self-start sm:self-auto">
-                    <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
 

@@ -1,7 +1,6 @@
 import ActionDelete from '@/components/action-delete';
 import { AppLoadMessage } from '@/components/app-load-message';
 import AppPagination from '@/components/app-pagination';
-import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
 import InputSearch from '@/components/inputSearch';
 import SelectFilter from '@/components/SelectFilter';
@@ -44,15 +43,12 @@ export default function Messages({ messages, search }: any) {
     ];
 
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Mensagens" />
-            <div className="flex min-h-16 flex-col justify-center gap-3 px-4 py-3 sm:py-0">
+            <div className="flex min-h-16 flex-col justify-center gap-1 px-4 py-3">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={MessageSquareMore} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Mensagens</h2>
-                </div>
-                <div className="min-w-0 self-start sm:self-auto">
-                    <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
 

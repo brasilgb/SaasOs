@@ -1,4 +1,3 @@
-import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -136,7 +135,7 @@ export default function FollowUpTasks({ filters, summary, dailyAgenda, technicia
     };
 
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Central de pendências" />
 
             <div className="flex min-h-20 items-center justify-between gap-4 px-4 py-3">
@@ -146,9 +145,6 @@ export default function FollowUpTasks({ filters, summary, dailyAgenda, technicia
                         <h2 className="text-xl font-semibold tracking-tight">Central de pendências</h2>
                         <p className="text-muted-foreground text-sm">Veja contatos, cobranças e tratativas que precisam de ação ou responsável.</p>
                     </div>
-                </div>
-                <div>
-                    <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
 

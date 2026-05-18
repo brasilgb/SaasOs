@@ -1,5 +1,4 @@
 import AppPagination from '@/components/app-pagination';
-import { Breadcrumbs } from '@/components/breadcrumbs';
 import { ChartFollowUpTrend } from '@/components/Charts/chart-follow-up-trend';
 import { DatePicker } from '@/components/date-picker';
 import { Icon } from '@/components/icon';
@@ -421,7 +420,7 @@ export default function FollowUps({ filters, summary, budgetOrders, paymentOrder
         metricsDateRange?.from && metricsDateRange?.to ? `${formatDateRange(metricsDateRange.from)} até ${formatDateRange(metricsDateRange.to)}` : '';
 
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Retornos ao cliente" />
 
             <div className="flex min-h-20 items-center justify-between gap-4 px-4 py-3">
@@ -433,9 +432,6 @@ export default function FollowUps({ filters, summary, budgetOrders, paymentOrder
                             Use esta tela para ver quais clientes precisam de retorno sobre orçamento parado ou saldo pendente.
                         </p>
                     </div>
-                </div>
-                <div>
-                    <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
 
