@@ -73,6 +73,12 @@ export default function OrderDashboard({
               : `${timerange} dias`;
 
     const defaultKpiDescription = 'Acessar dados';
+    const periodKpiDescription = (value: number) => (
+        <span className="flex min-w-0 items-center gap-1.5">
+            <span className="truncate">Total período</span>
+            <span className="bg-primary/10 text-primary rounded-md px-1.5 py-0.5 font-semibold tabular-nums">{value}</span>
+        </span>
+    );
     const feedbackDelayLabel = `${Number(feedbackDelay || 7)} ${Number(feedbackDelay || 7) === 1 ? 'dia' : 'dias'}`;
 
     return (
@@ -82,30 +88,30 @@ export default function OrderDashboard({
                     <KpiDashboard
                         link={route('app.customers.index')}
                         title="Clientes"
-                        value={metrics?.customers ?? 0}
+                        value={acount?.numcust ?? 0}
                         icon={<Users className="h-10 w-10" />}
-                        description={defaultKpiDescription}
+                        description={periodKpiDescription(metrics?.customers ?? 0)}
                     />
                     <KpiDashboard
                         link={route('app.orders.index')}
                         title="Ordens"
-                        value={metrics?.orders ?? 0}
+                        value={acount?.numorde ?? 0}
                         icon={<Wrench className="h-10 w-10" />}
-                        description={defaultKpiDescription}
+                        description={periodKpiDescription(metrics?.orders ?? 0)}
                     />
                     <KpiDashboard
                         link={route('app.schedules.index')}
                         title="Agenda"
-                        value={metrics?.schedules ?? 0}
+                        value={acount?.numshed ?? 0}
                         icon={<Calendar className="h-10 w-10" />}
-                        description={defaultKpiDescription}
+                        description={periodKpiDescription(metrics?.schedules ?? 0)}
                     />
                     <KpiDashboard
                         link={route('app.messages.index')}
                         title="Mensagens"
-                        value={metrics?.messages ?? 0}
+                        value={acount?.nummess ?? 0}
                         icon={<MessageSquareMore className="h-10 w-10" />}
-                        description={defaultKpiDescription}
+                        description={periodKpiDescription(metrics?.messages ?? 0)}
                     />
                     <KpiDashboard
                         link={route('app.orders.index', { filter: 'budget_follow_up' })}
@@ -138,16 +144,16 @@ export default function OrderDashboard({
                     <KpiDashboard
                         link={route('app.parts.index')}
                         title="Peças"
-                        value={metrics?.parts ?? 0}
+                        value={acount?.numparts ?? 0}
                         icon={<MemoryStickIcon className="h-10 w-10" />}
-                        description={defaultKpiDescription}
+                        description={periodKpiDescription(metrics?.parts ?? 0)}
                     />
                     <KpiDashboard
                         link={route('app.parts.index')}
                         title="Produtos"
-                        value={metrics?.products ?? 0}
+                        value={acount?.numproducts ?? 0}
                         icon={<MemoryStickIcon className="h-10 w-10" />}
-                        description={defaultKpiDescription}
+                        description={periodKpiDescription(metrics?.products ?? 0)}
                     />
                 </div>
             </div>

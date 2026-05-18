@@ -3,7 +3,10 @@
 namespace Tests\Feature\App;
 
 use App\Models\App\OrderLog;
+use App\Models\App\Customer;
+use App\Models\App\Message;
 use App\Models\App\Order;
+use App\Models\App\Part;
 use App\Models\App\Sale;
 use App\Models\App\Schedule;
 use App\Models\Tenant;
@@ -50,6 +53,41 @@ class DashboardControllerTest extends TestCase
             ->assertViewHas('page.props.orders.garantia', function (array $orders) use ($warrantyReturnOrder) {
                 return collect($orders)->pluck('id')->contains($warrantyReturnOrder->id);
             });
+    }
+
+    public function test_dashboard_index_exposes_total_registration_counts_for_kpis(): void
+    {
+        Customer::factory()->forTenant($this->tenant->id)->count(3)->create([
+            'created_at' => now()->subDays(30),
+        ]);
+        Order::factory()->forTenant($this->tenant->id)->count(2)->create([
+            'created_at' => now()->subDays(30),
+        ]);
+        Schedule::factory()->forTenant($this->tenant->id)->count(4)->create([
+            'created_at' => now()->subDays(30),
+        ]);
+        Message::factory()->forTenant($this->tenant->id, $this->user->id, $this->user->id)->count(5)->create([
+            'created_at' => now()->subDays(30),
+        ]);
+        Part::factory()->forTenant($this->tenant->id)->count(6)->create([
+            'type' => 'part',
+            'created_at' => now()->subDays(30),
+        ]);
+        Part::factory()->forTenant($this->tenant->id)->count(7)->create([
+            'type' => 'product',
+            'created_at' => now()->subDays(30),
+        ]);
+
+        $response = $this->get(route('app.dashboard'));
+
+        $response
+            ->assertOk()
+            ->assertViewHas('page.props.acount.numcust', 3)
+            ->assertViewHas('page.props.acount.numorde', 2)
+            ->assertViewHas('page.props.acount.numshed', 4)
+            ->assertViewHas('page.props.acount.nummess', 5)
+            ->assertViewHas('page.props.acount.numparts', 6)
+            ->assertViewHas('page.props.acount.numproducts', 7);
     }
 
     public function test_dashboard_index_exposes_operation_status_items_with_searchable_identifiers(): void

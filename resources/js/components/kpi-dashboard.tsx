@@ -7,7 +7,7 @@ interface KpiDashboardProps {
     title: string;
     value?: number | null;
     icon: ReactNode;
-    description: string;
+    description: ReactNode;
     link?: string;
 }
 
@@ -26,7 +26,7 @@ export function KpiDashboard({ title, value, icon, description, link }: KpiDashb
 
             <CardFooter className="flex min-w-0 items-center justify-between gap-2 text-sm">
                 <div className="text-muted-foreground flex min-w-0 items-center gap-2 text-xs">
-                    <span className="truncate">{description}</span>
+                    {description}
                 </div>
 
                 {link && (
