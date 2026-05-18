@@ -474,7 +474,7 @@ function ServiceOrders({ order }: { order: Order }) {
                                             <div className="mt-3 grid gap-2 sm:grid-cols-2">
                                                 {hasBudgetReceipt && (
                                                     <a
-                                                        href={route('os.receipt', { token: order.tracking_token, type: 'ororcamento' })}
+                                                        href={route('os.receipt', { token: order.tracking_token, type: 'ororcamento', pdf: 1 })}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
@@ -563,38 +563,38 @@ function ServiceOrders({ order }: { order: Order }) {
                         </div>
                     </section>
 
-                    <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-                        <div className="space-y-6">
+                    <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
+                        <div className="min-w-0 space-y-6">
                             <section className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
                                 <div className="mb-4 flex items-center gap-3">
                                     <Smartphone className="h-5 w-5 text-slate-500" />
                                     <h2 className="text-lg font-semibold text-slate-900">Resumo do equipamento</h2>
                                 </div>
 
-                                <div className="grid gap-4 sm:grid-cols-2">
-                                    <div>
+                                <div className="grid min-w-0 gap-4 sm:grid-cols-2">
+                                    <div className="min-w-0">
                                         <p className="text-sm text-slate-500">Cliente</p>
-                                        <p className="font-medium text-slate-900">{order.customer?.name || '-'}</p>
+                                        <p className="break-words font-medium text-slate-900">{order.customer?.name || '-'}</p>
                                     </div>
-                                    <div>
+                                    <div className="min-w-0">
                                         <p className="text-sm text-slate-500">Tipo</p>
-                                        <p className="font-medium text-slate-900">{order.equipment?.equipment || '-'}</p>
+                                        <p className="break-words font-medium text-slate-900">{order.equipment?.equipment || '-'}</p>
                                     </div>
-                                    <div>
+                                    <div className="min-w-0">
                                         <p className="text-sm text-slate-500">Modelo</p>
-                                        <p className="font-medium text-slate-900">{order.model || '-'}</p>
+                                        <p className="break-words font-medium text-slate-900">{order.model || '-'}</p>
                                     </div>
-                                    <div>
+                                    <div className="min-w-0">
                                         <p className="text-sm text-slate-500">Acessórios</p>
-                                        <p className="font-medium text-slate-900">{order.accessories || '-'}</p>
+                                        <p className="break-words font-medium text-slate-900">{order.accessories || '-'}</p>
                                     </div>
-                                    <div className="sm:col-span-2">
+                                    <div className="min-w-0 sm:col-span-2">
                                         <p className="text-sm text-slate-500">Estado informado na entrada</p>
-                                        <p className="font-medium text-slate-900">{order.state_conservation || '-'}</p>
+                                        <p className="break-words font-medium text-slate-900">{order.state_conservation || '-'}</p>
                                     </div>
-                                    <div className="sm:col-span-2">
+                                    <div className="min-w-0 sm:col-span-2">
                                         <p className="text-sm text-slate-500">Defeito relatado</p>
-                                        <p className="font-medium text-slate-900">{order.defect || '-'}</p>
+                                        <p className="break-words font-medium text-slate-900">{order.defect || '-'}</p>
                                     </div>
                                 </div>
                             </section>
@@ -606,16 +606,16 @@ function ServiceOrders({ order }: { order: Order }) {
                                         <h2 className="text-lg font-semibold text-slate-900">Orçamento e decisão</h2>
                                     </div>
 
-                                    <div className="grid gap-4 md:grid-cols-[1.2fr_0.8fr]">
-                                        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700">
+                                    <div className="grid min-w-0 gap-4 md:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+                                        <div className="min-w-0 break-words rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700">
                                             {order.budget_description || 'Sem descrição detalhada do orçamento.'}
                                         </div>
-                                        <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
+                                        <div className="min-w-0 rounded-2xl border border-red-200 bg-red-50 p-4">
                                             <p className="text-sm text-slate-500">Valor do orçamento</p>
                                             <p className="mt-2 text-2xl font-semibold text-red-600">
                                                 R$ {maskMoney(String(order.budget_value ?? 0))}
                                             </p>
-                                            <p className="mt-3 text-sm text-slate-600">
+                                            <p className="mt-3 break-words text-sm text-slate-600">
                                                 Status atual: <span className="font-medium">{orderStatusLabel(order.service_status)}</span>
                                             </p>
                                         </div>
@@ -680,7 +680,7 @@ function ServiceOrders({ order }: { order: Order }) {
                             )}
                         </div>
 
-                        <div className="space-y-6">
+                        <div className="min-w-0 space-y-6">
                             <section className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
                                 <div className="mb-4 flex items-center gap-3">
                                     <ShieldCheck className="h-5 w-5 text-slate-500" />
@@ -727,7 +727,7 @@ function ServiceOrders({ order }: { order: Order }) {
                                         <div className="mt-3 grid gap-2 sm:grid-cols-2">
                                             {hasBudgetReceipt && (
                                                 <a
-                                                    href={route('os.receipt', { token: order.tracking_token, type: 'ororcamento' })}
+                                                    href={route('os.receipt', { token: order.tracking_token, type: 'ororcamento', pdf: 1 })}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="inline-flex items-center justify-between gap-3 rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-100"
