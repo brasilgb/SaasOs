@@ -515,7 +515,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                         <Button
                                                             asChild
                                                             size="icon"
-                                                            className="bg-solar-blue-primary hover:bg-solar-blue-primary/90 text-white"
+                                                            className="bg-sky-700 text-white hover:bg-sky-800"
                                                         >
                                                             <a
                                                                 target="_blank"
@@ -523,7 +523,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                                 title="Link para o cliente sobre a ordem de serviço"
                                                                 aria-label={`Abrir link do cliente da ordem ${order.order_number}`}
                                                             >
-                                                                <LinkIcon className="h-4 w-4" />
+                                                                <LinkIcon className="h-4 w-4 text-white" />
                                                             </a>
                                                         </Button>
                                                     )}

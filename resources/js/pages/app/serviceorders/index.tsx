@@ -512,7 +512,7 @@ function ServiceOrders({ order }: { order: Order }) {
                                                         rel="noopener noreferrer"
                                                         className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
                                                     >
-                                                        <ExternalLink className="h-4 w-4" />
+                                                        <ExternalLink className="h-4 w-4 text-slate-500" />
                                                         Nota ou fiscal
                                                     </a>
                                                 )}
@@ -736,7 +736,7 @@ function ServiceOrders({ order }: { order: Order }) {
                                                         <FileText className="h-4 w-4" />
                                                         Recibo do orçamento
                                                     </span>
-                                                    <ExternalLink className="h-4 w-4" />
+                                                    <ExternalLink className="h-4 w-4 flex-none text-slate-500" />
                                                 </a>
                                             )}
 
@@ -751,7 +751,7 @@ function ServiceOrders({ order }: { order: Order }) {
                                                         <ReceiptText className="h-4 w-4" />
                                                         Recibo de entrega
                                                     </span>
-                                                    <ExternalLink className="h-4 w-4" />
+                                                    <ExternalLink className="h-4 w-4 flex-none text-slate-500" />
                                                 </a>
                                             )}
 
@@ -766,7 +766,7 @@ function ServiceOrders({ order }: { order: Order }) {
                                                         <CreditCard className="h-4 w-4" />
                                                         Comprovante financeiro
                                                     </span>
-                                                    <ExternalLink className="h-4 w-4" />
+                                                    <ExternalLink className="h-4 w-4 flex-none text-slate-500" />
                                                 </a>
                                             )}
 
@@ -781,7 +781,7 @@ function ServiceOrders({ order }: { order: Order }) {
                                                         <ReceiptText className="h-4 w-4" />
                                                         Comprovante fiscal
                                                     </span>
-                                                    <ExternalLink className="h-4 w-4" />
+                                                    <ExternalLink className="h-4 w-4 flex-none text-slate-500" />
                                                 </a>
                                             )}
                                         </div>
