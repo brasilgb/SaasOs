@@ -1,1 +1,0 @@
-import"./order-status-CkrSyREy.js";const a=s=>{switch(s){case 0:return"Não lida";case 1:return"Lida"}},e=s=>{switch(s){case 0:return"Inativo";case 1:return"Ativo"}},r=s=>{switch(s){case 1:return"Peças";case 2:return"Produtos";case 3:return"Peças e produtos"}};export{a,e as s,r as t};

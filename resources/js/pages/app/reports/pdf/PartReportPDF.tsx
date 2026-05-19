@@ -1,4 +1,3 @@
-import { typesPartsByValue } from '@/Utils/functions';
 import { currencyFormatter } from '@/Utils/currency-formatter';
 import { Document, Image, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 import moment from 'moment';
@@ -91,10 +90,16 @@ const styles = StyleSheet.create({
     logoPlaceholder: { paddingVertical: 2, width: 38, height: 38, justifyContent: 'center', alignItems: 'center', minWidth: '100%' },
 });
 
+const partTypeLabels: Record<string, string> = {
+    part: 'Peça',
+    product: 'Produto',
+};
+
 export default function PartReportPDF({ data, dateRange, company }: any) {
     const normalizePartType = (value: unknown) => {
-        const numeric = Number(value);
-        return Number.isFinite(numeric) ? typesPartsByValue(numeric as 1 | 2 | 3) ?? '-' : '-';
+        if (value === null || value === undefined) return '-';
+
+        return partTypeLabels[String(value)] ?? '-';
     };
 
     const period =
