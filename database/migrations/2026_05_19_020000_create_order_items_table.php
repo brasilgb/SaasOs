@@ -32,6 +32,7 @@ return new class extends Migration
             });
         }
 
+        $this->ensureOrderItemsDescriptionLength();
         $this->backfillServiceItems();
         $this->backfillProductItems();
     }
@@ -39,6 +40,19 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('order_items');
+    }
+
+    private function ensureOrderItemsDescriptionLength(): void
+    {
+        if (
+            DB::getDriverName() !== 'mysql'
+            || ! Schema::hasTable('order_items')
+            || ! Schema::hasColumn('order_items', 'description')
+        ) {
+            return;
+        }
+
+        DB::statement('ALTER TABLE `order_items` MODIFY `description` VARCHAR(500) NOT NULL');
     }
 
     private function backfillServiceItems(): void
