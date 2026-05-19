@@ -141,7 +141,7 @@ export default function BudgetForm({ initialData, budgets, equipments }: BudgetF
                         options={optionsEquipment}
                         onChange={changeEquipment}
                         placeholder="Selecione o equipamento"
-                        className="h-9 rounded-md border border-gray-300 p-0 text-gray-700 shadow-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        className="min-w-0"
                         styles={selectStyles}
                     />
                     {errors.equipment_id && <div className="text-sm text-red-500">{errors.equipment_id}</div>}
@@ -203,7 +203,7 @@ export default function BudgetForm({ initialData, budgets, equipments }: BudgetF
                         isClearable
                         styles={selectStyles}
                         placeholder="Selecione ou defina a garantia"
-                        className="h-9 rounded-md border border-gray-300 p-0 text-gray-700 shadow-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        className="min-w-0"
                     />
                     <InputError message={errors.warranty} />
                 </div>

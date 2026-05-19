@@ -94,7 +94,7 @@ export default function ScheduleForm({ customers, initialData, technicals }: Sch
                         options={optionsCustomer}
                         onChange={changeCustomer}
                         placeholder="Selecione o cliente"
-                        className="h-9 rounded-md border border-gray-300 p-0 text-gray-700 shadow-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        className="min-w-0"
                         styles={selectStyles}
                     />
                     <InputError className="mt-2" message={errors.customer_id} />
@@ -139,7 +139,7 @@ export default function ScheduleForm({ customers, initialData, technicals }: Sch
                         options={optionsTechnical}
                         onChange={changeResponsibleTechnician}
                         placeholder="Selecione o técnico"
-                        className="h-9 rounded-md border border-gray-300 p-0 text-gray-700 shadow-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        className="min-w-0"
                         styles={selectStyles}
                     />
                 </div>
@@ -152,7 +152,7 @@ export default function ScheduleForm({ customers, initialData, technicals }: Sch
                         options={statusAgenda}
                         onChange={changeServiceStatus}
                         placeholder="Selecione o status"
-                        className="h-9 rounded-md border border-gray-300 p-0 text-gray-700 shadow-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        className="min-w-0"
                         styles={selectStyles}
                     />
                 </div>

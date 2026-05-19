@@ -193,7 +193,7 @@ export default function CreateUser({ user, tenants }: any) {
                                     options={rolesUser}
                                     onChange={changeRoles}
                                     placeholder="Selecione a função"
-                                    className="h-9 rounded-md border border-gray-300 p-0 text-gray-700 shadow-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                    className="min-w-0"
                                     styles={selectStyles}
                                 />
                                 <InputError className="mt-2" message={errors.roles} />
