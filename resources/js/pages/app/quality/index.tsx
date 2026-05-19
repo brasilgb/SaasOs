@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { usePersistedPeriodFilter } from '@/hooks/use-persisted-period-filter';
 import AppLayout from '@/layouts/app-layout';
@@ -227,7 +228,7 @@ function FeedbackRecoveryCard({
                                     </div>
                                     <div className="mt-3">
                                         <div className="mb-1 text-xs font-medium text-slate-500">Observação da tratativa</div>
-                                        <textarea
+                                        <Textarea
                                             value={form.notes}
                                             onChange={(e) =>
                                                 setForms((prev) => ({

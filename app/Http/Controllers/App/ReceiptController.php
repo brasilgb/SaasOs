@@ -38,9 +38,9 @@ class ReceiptController extends Controller
         Gate::authorize('receipts.access');
 
         $data = $request->validate([
-            'receivingequipment' => ['nullable', 'string'],
-            'equipmentdelivery' => ['nullable', 'string'],
-            'budgetissuance' => ['nullable', 'string'],
+            'receivingequipment' => ['nullable', 'string', 'max:500'],
+            'equipmentdelivery' => ['nullable', 'string', 'max:500'],
+            'budgetissuance' => ['nullable', 'string', 'max:500'],
         ]);
 
         $receipt->update($data);

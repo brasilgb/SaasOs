@@ -358,7 +358,7 @@ class QualityIndicatorController extends Controller
         $validated = $request->validate([
             'assigned_to' => ['nullable', 'integer', 'exists:users,id'],
             'status' => ['required', 'string', 'in:' . implode(',', self::FEEDBACK_RECOVERY_STATUSES)],
-            'notes' => ['nullable', 'string', 'max:2000'],
+            'notes' => ['nullable', 'string', 'max:500'],
         ]);
 
         abort_unless(

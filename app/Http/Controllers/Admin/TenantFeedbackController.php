@@ -113,11 +113,11 @@ class TenantFeedbackController extends Controller
         $validated = $request->validate([
             'feedback_recovery_assigned_to' => ['nullable', 'exists:users,id'],
             'feedback_recovery_status' => ['nullable', 'in:'.implode(',', self::RECOVERY_STATUSES)],
-            'feedback_recovery_notes' => ['nullable', 'string', 'max:2000'],
+            'feedback_recovery_notes' => ['nullable', 'string', 'max:500'],
             'testimonial_status' => ['nullable', 'in:'.implode(',', self::TESTIMONIAL_STATUSES)],
             'testimonial_public_name' => ['nullable', 'string', 'max:120'],
             'testimonial_public_role' => ['nullable', 'string', 'max:120'],
-            'testimonial_excerpt' => ['nullable', 'string', 'max:2000'],
+            'testimonial_excerpt' => ['nullable', 'string', 'max:500'],
         ]);
 
         $testimonialStatus = $validated['testimonial_status'] ?? null;

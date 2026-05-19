@@ -25,13 +25,14 @@ class BudgetsRequest extends FormRequest
         return [
             'equipment_id' => 'required',
             'model' => 'required',
-            'service' => 'required',
-            'description' => 'required',
+            'service' => 'required|string|max:500',
+            'description' => 'required|string|max:500',
             'estimated_time' => 'required',
             'labor_value' => 'required',
             'total_value' => 'required',
             'warranty' => 'required', // Garantia
             'validity' => 'required',
+            'obs' => 'nullable|string|max:500',
         ];
     }
 

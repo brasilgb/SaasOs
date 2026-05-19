@@ -23,7 +23,7 @@ class BranchRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'observations' => 'nullable|string|max:500',
         ];
     }
 }

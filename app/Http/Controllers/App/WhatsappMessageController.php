@@ -35,12 +35,12 @@ class WhatsappMessageController extends Controller
         Gate::authorize('whatsapp-messages.access');
 
         $data = $request->validate([
-            'generatedbudget' => 'nullable|string|max:5000',
-            'servicecompleted' => 'nullable|string|max:5000',
-            'feedback' => 'nullable|string|max:5000',
-            'defaultmessage' => 'nullable|string|max:5000',
-            'budgetfollowup' => 'nullable|string|max:5000',
-            'pendingpayment' => 'nullable|string|max:5000',
+            'generatedbudget' => 'nullable|string|max:500',
+            'servicecompleted' => 'nullable|string|max:500',
+            'feedback' => 'nullable|string|max:500',
+            'defaultmessage' => 'nullable|string|max:500',
+            'budgetfollowup' => 'nullable|string|max:500',
+            'pendingpayment' => 'nullable|string|max:500',
         ]);
 
         $whatsappmessage = $this->whatsappMessageTemplateService->update($whatsappmessage, $data);

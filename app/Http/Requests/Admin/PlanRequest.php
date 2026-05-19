@@ -25,7 +25,7 @@ class PlanRequest extends FormRequest
         return [
             'name' => 'required',
             'slug' => 'required',
-            'description' => 'required',
+            'description' => 'required|string|max:500',
             'value' => 'required|numeric|min:0',
             'billing_months' => 'required|integer|in:1,3,6,12,14',
         ];

@@ -3,6 +3,7 @@ import AppPagination from '@/components/app-pagination';
 import { Icon } from '@/components/icon';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import AdminLayout from '@/layouts/admin/admin-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
@@ -88,7 +89,7 @@ function RecoveryForm({ feedback, users, recoveryStatuses, testimonialStatuses }
                 ))}
             </select>
 
-            <textarea
+            <Textarea
                 value={form.data.feedback_recovery_notes}
                 onChange={(event) => form.setData('feedback_recovery_notes', event.target.value)}
                 rows={3}
@@ -126,7 +127,7 @@ function RecoveryForm({ feedback, users, recoveryStatuses, testimonialStatuses }
                     placeholder="Cargo ou contexto"
                 />
 
-                <textarea
+                <Textarea
                     value={form.data.testimonial_excerpt}
                     onChange={(event) => form.setData('testimonial_excerpt', event.target.value)}
                     rows={4}

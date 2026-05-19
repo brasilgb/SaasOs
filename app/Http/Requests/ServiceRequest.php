@@ -24,7 +24,7 @@ class ServiceRequest extends FormRequest
     {
         return [
             'equipment_id' => 'required',
-            'service' => 'required',
+            'service' => 'required|string|max:500',
         ];
     }
 

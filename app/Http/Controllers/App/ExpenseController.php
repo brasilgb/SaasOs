@@ -81,10 +81,10 @@ class ExpenseController extends Controller
 
         $validated = $request->validate([
             'expense_date' => 'required|date',
-            'description' => 'required|string|max:255',
+            'description' => 'required|string|max:500',
             'category' => 'nullable|string|max:120',
             'amount' => 'required|numeric|min:0.01',
-            'notes' => 'nullable|string|max:2000',
+            'notes' => 'nullable|string|max:500',
         ]);
 
         $expense = $this->expenseService->create($validated, (int) Auth::id());
@@ -107,10 +107,10 @@ class ExpenseController extends Controller
 
         $validated = $request->validate([
             'expense_date' => 'required|date',
-            'description' => 'required|string|max:255',
+            'description' => 'required|string|max:500',
             'category' => 'nullable|string|max:120',
             'amount' => 'required|numeric|min:0.01',
-            'notes' => 'nullable|string|max:2000',
+            'notes' => 'nullable|string|max:500',
         ]);
 
         $expense = $this->expenseService->update($expense, $validated);

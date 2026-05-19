@@ -42,6 +42,7 @@ class TenantRequest extends FormRequest
                 }),
             ],
             'status' => 'required',
+            'observations' => 'nullable|string|max:500',
         ];
     }
 
@@ -55,6 +56,7 @@ class TenantRequest extends FormRequest
             'status' => 'status',
             'plan_id' => 'plano',
             'period_id' => 'período',
+            'observations' => 'observações',
         ];
     }
 }

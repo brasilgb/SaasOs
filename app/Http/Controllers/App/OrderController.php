@@ -932,7 +932,7 @@ class OrderController extends Controller
             'amount' => 'required|numeric|min:0.01',
             'payment_method' => 'required|in:pix,cartao,dinheiro,transferencia,boleto',
             'paid_at' => 'nullable|date',
-            'notes' => 'nullable|string|max:1000',
+            'notes' => 'nullable|string|max:500',
         ]);
 
         $payment = $this->orderPaymentService->register($order, [
@@ -997,7 +997,7 @@ class OrderController extends Controller
             'fiscal_document_number' => 'required|string|max:120',
             'fiscal_document_url' => 'nullable|url|max:500',
             'fiscal_issued_at' => 'nullable|date',
-            'fiscal_notes' => 'nullable|string|max:2000',
+            'fiscal_notes' => 'nullable|string|max:500',
         ]);
 
         $document = $this->fiscalDocumentService->registerManualOrder($order, $validated, (int) Auth::id());

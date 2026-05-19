@@ -25,7 +25,7 @@ class MessageRequest extends FormRequest
         return [
             'recipient_id' => 'required',
             'title' => 'required',
-            'message' => 'required',
+            'message' => 'required|string|max:500',
             'status' => 'required',
         ];
     }

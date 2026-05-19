@@ -24,7 +24,7 @@ class ChecklistRequest extends FormRequest
     {
         return [
             'equipment_id' => 'required',
-            'checklist' => 'required',
+            'checklist' => 'required|string|max:500',
         ];
     }
 

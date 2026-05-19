@@ -4,6 +4,7 @@ import { Icon } from '@/components/icon';
 import { SlaTooltip } from '@/components/sla-tooltip';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
@@ -167,7 +168,7 @@ export default function TenantImprovementRequestsIndex({ requests, requestTypes,
 
                             <div className="grid gap-2">
                                 <Label htmlFor="description">Detalhes</Label>
-                                <textarea
+                                <Textarea
                                     id="description"
                                     rows={5}
                                     value={form.data.description}

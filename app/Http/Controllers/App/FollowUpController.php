@@ -1001,7 +1001,7 @@ class FollowUpController extends Controller
 
         $validated = $request->validate([
             'scope' => 'required|in:budget,payment,feedback',
-            'reason' => 'required|string|max:1000',
+            'reason' => 'required|string|max:500',
         ]);
 
         if ($validated['scope'] === 'feedback') {
@@ -1079,7 +1079,7 @@ class FollowUpController extends Controller
 
         $validated = $request->validate([
             'scope' => 'required|in:budget,payment',
-            'reason' => 'required|string|max:1000',
+            'reason' => 'required|string|max:500',
         ]);
 
         $columns = $this->scopeColumns($validated['scope']);

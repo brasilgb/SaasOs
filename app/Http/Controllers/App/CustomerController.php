@@ -279,7 +279,7 @@ class CustomerController extends Controller
                 $street = $this->limitString($this->normalizeCsvValue($linha, 8), 80);
                 $complement = $this->limitString($this->normalizeCsvValue($linha, 9), 80);
                 $contactName = $this->limitString($this->normalizeCsvValue($linha, 12), 50);
-                $observations = $this->normalizeCsvValue($linha, 15);
+                $observations = $this->limitString($this->normalizeCsvValue($linha, 15), 500);
 
                 $dadosParaInserir[] = [
                     'line' => $lineNumber,
@@ -318,6 +318,7 @@ class CustomerController extends Controller
                 $truncatedFields += (int) ($this->limitString($phone, 20) !== $phone);
                 $truncatedFields += (int) ($this->limitString($whatsapp, 255) !== $whatsapp);
                 $truncatedFields += (int) ($this->limitString($contactPhone, 20) !== $contactPhone);
+                $truncatedFields += (int) ($observations !== $this->normalizeCsvValue($linha, 15));
 
                 if (count($dadosParaInserir) >= 100) {
                     $this->flushCustomerImportBatch($dadosParaInserir, $errors, $inserted);

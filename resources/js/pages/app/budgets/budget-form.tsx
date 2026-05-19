@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Budget, OptionType } from '@/types';
 import { warrantyOptions } from '@/Utils/dataSelect';
 import { maskMoney, maskMoneyDot, unMask } from '@/Utils/mask';
@@ -172,7 +173,7 @@ export default function BudgetForm({ initialData, budgets, equipments }: BudgetF
 
             <div className="grid gap-2">
                 <Label>Descrição</Label>
-                <textarea className={textareaClass} value={data.description} onChange={(e) => setData('description', e.target.value)} />
+                <Textarea className={textareaClass} value={data.description} onChange={(e) => setData('description', e.target.value)} />
                 <InputError message={errors.description} />
             </div>
                 </CardContent>
@@ -236,7 +237,7 @@ export default function BudgetForm({ initialData, budgets, equipments }: BudgetF
             <div className="grid gap-4">
                 <div className="grid gap-2">
                     <Label>Observações</Label>
-                    <textarea className={textareaClass} value={data.obs} onChange={(e) => setData('obs', e.target.value)} />
+                    <Textarea className={textareaClass} value={data.obs} onChange={(e) => setData('obs', e.target.value)} />
                 </div>
             </div>
                 </CardContent>

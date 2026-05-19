@@ -29,15 +29,19 @@ class OrderRequest extends FormRequest
             'equipment_id' => 'required',
             'model' => 'nullable|string|max:50',
             'password' => 'nullable|string|max:50',
-            'defect' => 'required',
-            'state_conservation' => 'nullable|string',
-            'accessories' => 'nullable|string',
+            'defect' => 'required|string|max:500',
+            'state_conservation' => 'nullable|string|max:500',
+            'accessories' => 'nullable|string|max:500',
             'service_status' => ['required', 'integer', Rule::in(OrderStatus::values())],
             'warranty_days' => 'nullable|integer|min:0|max:3650',
 
             'budget_description' => [
                 Rule::requiredIf((int) $this->service_status === OrderStatus::BUDGET_GENERATED),
+                'nullable',
+                'string',
+                'max:500',
             ],
+            'services_performed' => 'nullable|string|max:500',
             'budget_value' => [
                 Rule::requiredIf((int) $this->service_status === OrderStatus::BUDGET_GENERATED),
                 function ($attribute, $value, $fail) {
@@ -52,7 +56,7 @@ class OrderRequest extends FormRequest
 
             'user_id' => $this->isMethod('post') ? 'nullable' : 'required',
             'delivery_forecast' => 'nullable|date',
-            'observations' => 'nullable|string',
+            'observations' => 'nullable|string|max:500',
         ];
     }
 

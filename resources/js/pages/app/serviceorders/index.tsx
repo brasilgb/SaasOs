@@ -857,10 +857,11 @@ function ServiceOrders({ order }: { order: Order }) {
                                                                 value={feedbackComment}
                                                                 onChange={(e) => setFeedbackComment(e.target.value)}
                                                                 rows={4}
-                                                                maxLength={2000}
+                                                                maxLength={500}
                                                                 placeholder="Se quiser, deixe um comentário rápido sobre o atendimento."
                                                                 className="w-full rounded-2xl border border-violet-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-violet-400"
                                                             />
+                                                            <p className="mt-1 text-right text-xs text-slate-500">{feedbackComment.length}/500</p>
 
                                                             <Button onClick={handleSubmitFeedback} disabled={loadingFeedback || !feedbackRating} className="bg-violet-600 text-white hover:bg-violet-700">
                                                                 {loadingFeedback ? 'Enviando avaliação...' : 'Enviar avaliação'}

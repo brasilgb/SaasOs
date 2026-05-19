@@ -3,6 +3,7 @@ import { toastSuccess, toastWarning } from '@/components/app-toast-messages';
 import { Icon } from '@/components/icon';
 import { SlaTooltip } from '@/components/sla-tooltip';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import AdminLayout from '@/layouts/admin/admin-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
@@ -117,7 +118,7 @@ function RequestForm({ request, statuses }: any) {
                 ))}
             </select>
 
-            <textarea
+            <Textarea
                 rows={4}
                 value={form.data.admin_notes}
                 onChange={(event) => form.setData('admin_notes', event.target.value)}

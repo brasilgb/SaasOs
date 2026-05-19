@@ -26,8 +26,9 @@ class ScheduleRequest extends FormRequest
             'customer_id' => 'required',
             'user_id' => 'required',
             'schedules' => 'required',
-            'service' => 'required',
-            'details' => 'required',
+            'service' => 'required|string|max:500',
+            'details' => 'required|string|max:500',
+            'observations' => 'nullable|string|max:500',
             'status' => 'required',
         ];
     }

@@ -79,7 +79,7 @@ class TenantImprovementRequestController extends Controller
     {
         $validated = $request->validate([
             'status' => ['required', 'in:'.implode(',', self::STATUSES)],
-            'admin_notes' => ['nullable', 'string', 'max:4000'],
+            'admin_notes' => ['nullable', 'string', 'max:500'],
         ]);
 
         $tenantImprovementRequest->loadMissing(['tenant:id,name,company,email', 'user:id,name,email']);

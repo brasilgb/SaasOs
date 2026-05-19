@@ -265,7 +265,7 @@ class OsController extends Controller
 
         $validated = $request->validate([
             'rating' => ['required', 'integer', 'min:1', 'max:5'],
-            'comment' => ['nullable', 'string', 'max:2000'],
+            'comment' => ['nullable', 'string', 'max:500'],
         ]);
 
         $now = now();

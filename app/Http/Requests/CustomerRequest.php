@@ -27,6 +27,7 @@ class CustomerRequest extends FormRequest
             'cpfcnpj' => 'required',
             // 'email'  => ($this->getMethod() == 'POST') ? 'required|unique:customers' : 'required|unique:customers,email,' . $this->customer->id,
             'phone' => 'required',
+            'observations' => 'nullable|string|max:500',
         ];
     }
 
@@ -36,6 +37,7 @@ class CustomerRequest extends FormRequest
             'name' => 'nome',
             'phone' => 'telefone',
             'cpfcnpj' => 'CPF/CNPJ',
+            'observations' => 'observações',
         ];
     }
 }

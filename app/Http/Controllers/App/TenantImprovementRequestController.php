@@ -42,7 +42,7 @@ class TenantImprovementRequestController extends Controller
         $validated = request()->validate([
             'request_type' => ['required', 'in:'.implode(',', self::REQUEST_TYPES)],
             'title' => ['required', 'string', 'max:160'],
-            'description' => ['required', 'string', 'max:4000'],
+            'description' => ['required', 'string', 'max:500'],
         ]);
 
         $requestItem = TenantImprovementRequest::query()->create([

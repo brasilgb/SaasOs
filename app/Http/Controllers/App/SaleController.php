@@ -212,7 +212,7 @@ class SaleController extends Controller
             'fiscal_document_number' => 'required|string|max:120',
             'fiscal_document_url' => 'nullable|url|max:500',
             'fiscal_issued_at' => 'nullable|date',
-            'fiscal_notes' => 'nullable|string|max:2000',
+            'fiscal_notes' => 'nullable|string|max:500',
         ]);
 
         try {

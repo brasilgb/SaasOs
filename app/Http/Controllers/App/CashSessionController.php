@@ -139,7 +139,7 @@ class CashSessionController extends Controller
 
         $validated = $request->validate([
             'opening_balance' => 'nullable|numeric|min:0',
-            'notes' => 'nullable|string|max:1000',
+            'notes' => 'nullable|string|max:500',
         ]);
 
         try {
@@ -172,7 +172,7 @@ class CashSessionController extends Controller
             'closing_balance' => 'required|numeric|min:0',
             'manual_entries' => 'nullable|numeric|min:0',
             'manual_exits' => 'nullable|numeric|min:0',
-            'closing_notes' => 'nullable|string|max:1000',
+            'closing_notes' => 'nullable|string|max:500',
         ]);
         try {
             $cashSession = $this->cashSessionService->close($cashSession, $validated, (int) Auth::id());
@@ -219,7 +219,7 @@ class CashSessionController extends Controller
 
         $validated = $request->validate([
             'amount' => 'required|numeric|min:0.01',
-            'description' => 'required|string|max:1000',
+            'description' => 'required|string|max:500',
         ], [
             'description.required' => 'Informe o motivo da sangria.',
         ]);
@@ -240,7 +240,7 @@ class CashSessionController extends Controller
         }
 
         $validated = $request->validate([
-            'cancellation_reason' => 'required|string|max:1000',
+            'cancellation_reason' => 'required|string|max:500',
         ], [
             'cancellation_reason.required' => 'Informe o motivo do cancelamento.',
         ]);

@@ -154,10 +154,11 @@ export default function TenantExperienceFeedback({ feedback }: TenantFeedbackPag
                                         value={form.data.comment}
                                         onChange={(event) => form.setData('comment', event.target.value)}
                                         rows={5}
-                                        maxLength={2000}
+                                        maxLength={500}
                                         className="mt-4 w-full rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-3 text-sm text-white transition outline-none placeholder:text-white/35 focus:border-[#f1b555]/40"
                                         placeholder="Escreva sua avaliação aqui."
                                     />
+                                    <p className="mt-1 text-right text-xs text-white/45">{form.data.comment.length}/500</p>
                                     {form.errors.comment ? <p className="mt-2 text-sm text-red-300">{form.errors.comment}</p> : null}
                                 </div>
 
