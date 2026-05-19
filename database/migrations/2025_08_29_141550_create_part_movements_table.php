@@ -21,7 +21,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('restrict');
 
             // Dados do movimento
-            $table->enum('movement_type', ['entrada', 'saida']);
+            $table->enum('movement_type', ['entrada', 'uso_os', 'venda', 'ajuste', 'devolucao', 'garantia']);
             $table->integer('quantity');
             $table->string('reason');
 

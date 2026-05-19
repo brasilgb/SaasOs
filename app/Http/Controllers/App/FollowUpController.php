@@ -34,6 +34,13 @@ class FollowUpController extends Controller
         return $user instanceof User ? $user : null;
     }
 
+    private function authorizeFollowUpManagement(): void
+    {
+        $user = $this->currentUser();
+
+        abort_unless($user && $user->hasPermission('orders') && ! $user->isTechnician(), 403);
+    }
+
     private function logOrderAction(Order $order, string $action, array $data = []): void
     {
         OrderLog::create([
@@ -989,6 +996,7 @@ class FollowUpController extends Controller
 
     public function pause(Request $request, Order $order)
     {
+        $this->authorizeFollowUpManagement();
         $this->authorize('update', $order);
 
         $validated = $request->validate([
@@ -1022,6 +1030,7 @@ class FollowUpController extends Controller
 
     public function resume(Request $request, Order $order)
     {
+        $this->authorizeFollowUpManagement();
         $this->authorize('update', $order);
 
         $validated = $request->validate([
@@ -1041,6 +1050,7 @@ class FollowUpController extends Controller
 
     public function respond(Request $request, Order $order)
     {
+        $this->authorizeFollowUpManagement();
         $this->authorize('update', $order);
 
         $validated = $request->validate([
@@ -1064,6 +1074,7 @@ class FollowUpController extends Controller
 
     public function completeTask(Request $request, Order $order)
     {
+        $this->authorizeFollowUpManagement();
         $this->authorize('update', $order);
 
         $validated = $request->validate([
@@ -1089,6 +1100,7 @@ class FollowUpController extends Controller
 
     public function snoozeTask(Request $request, Order $order)
     {
+        $this->authorizeFollowUpManagement();
         $this->authorize('update', $order);
 
         $validated = $request->validate([
@@ -1110,6 +1122,7 @@ class FollowUpController extends Controller
 
     public function assignTask(Request $request, Order $order)
     {
+        $this->authorizeFollowUpManagement();
         $this->authorize('update', $order);
 
         $validated = $request->validate([
@@ -1154,6 +1167,7 @@ class FollowUpController extends Controller
 
     public function assignSelectedTasks(Request $request)
     {
+        $this->authorizeFollowUpManagement();
         $this->authorize('create', Order::class);
 
         $validated = $request->validate([

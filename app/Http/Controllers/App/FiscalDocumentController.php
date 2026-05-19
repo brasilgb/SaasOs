@@ -7,7 +7,7 @@ use App\Models\App\FiscalDocument;
 use App\Models\App\FiscalSetting;
 use App\Models\App\Order;
 use App\Models\App\Sale;
-use App\Services\FocusNfeService;
+use App\Services\FiscalDocumentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -16,7 +16,7 @@ use Inertia\Response;
 
 class FiscalDocumentController extends Controller
 {
-    public function __construct(private readonly FocusNfeService $focusNfeService) {}
+    public function __construct(private readonly FiscalDocumentService $fiscalDocumentService) {}
 
     public function index(): Response
     {
@@ -132,7 +132,7 @@ class FiscalDocumentController extends Controller
         $this->authorize('update', $order);
 
         try {
-            $document = $this->focusNfeService->issueOrderNfse($order);
+            $document = $this->fiscalDocumentService->issueOrderNfse($order);
         } catch (\RuntimeException $exception) {
             return back()->with('error', $exception->getMessage());
         }
@@ -146,7 +146,7 @@ class FiscalDocumentController extends Controller
         $this->authorize('update', $sale);
 
         try {
-            $document = $this->focusNfeService->issueSaleNfe($sale);
+            $document = $this->fiscalDocumentService->issueSaleNfe($sale);
         } catch (\RuntimeException $exception) {
             return back()->with('error', $exception->getMessage());
         }
@@ -159,7 +159,7 @@ class FiscalDocumentController extends Controller
         Gate::authorize('fiscal-documents.access');
 
         try {
-            $document = $this->focusNfeService->refreshDocument($fiscalDocument);
+            $document = $this->fiscalDocumentService->sync($fiscalDocument);
         } catch (\RuntimeException $exception) {
             return back()->with('error', $exception->getMessage());
         }

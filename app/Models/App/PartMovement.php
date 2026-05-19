@@ -11,6 +11,13 @@ class PartMovement extends Model
 {
     use HasFactory, Tenantable;
 
+    public const TYPE_STOCK_IN = 'entrada';
+    public const TYPE_ORDER_USE = 'uso_os';
+    public const TYPE_SALE = 'venda';
+    public const TYPE_ADJUSTMENT = 'ajuste';
+    public const TYPE_RETURN = 'devolucao';
+    public const TYPE_WARRANTY = 'garantia';
+
     protected $guarded = [];
 
     public function part()

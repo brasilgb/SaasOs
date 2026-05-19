@@ -77,6 +77,19 @@ class SaleControllerTest extends TestCase
             'total_amount' => 400,
         ]);
 
+        $sale = Sale::query()->firstOrFail();
+        $this->assertDatabaseHas('accounts_receivable', [
+            'tenant_id' => $this->tenant->id,
+            'customer_id' => $customer->id,
+            'source_type' => 'sale',
+            'source_id' => $sale->id,
+            'total_amount' => 400,
+            'paid_amount' => 400,
+            'balance_amount' => 0,
+            'status' => 'paid',
+            'payment_method' => 'pix',
+        ]);
+
         $this->assertDatabaseHas('sale_items', [
             'part_id' => $part1->id,
             'quantity' => 2,
@@ -91,7 +104,6 @@ class SaleControllerTest extends TestCase
 
         $this->assertEquals(8, $part1->fresh()->quantity);
         $this->assertEquals(4, $part2->fresh()->quantity);
-        $sale = Sale::query()->firstOrFail();
         $this->assertDatabaseHas('sale_logs', [
             'sale_id' => $sale->id,
             'user_id' => $this->user->id,
@@ -100,14 +112,14 @@ class SaleControllerTest extends TestCase
         $this->assertDatabaseHas('part_movements', [
             'part_id' => $part1->id,
             'user_id' => $this->user->id,
-            'movement_type' => 'saida',
+            'movement_type' => 'venda',
             'quantity' => 2,
             'reason' => 'Venda '.$sale->sales_number,
         ]);
         $this->assertDatabaseHas('part_movements', [
             'part_id' => $part2->id,
             'user_id' => $this->user->id,
-            'movement_type' => 'saida',
+            'movement_type' => 'venda',
             'quantity' => 1,
             'reason' => 'Venda '.$sale->sales_number,
         ]);
@@ -218,11 +230,19 @@ class SaleControllerTest extends TestCase
             'cancelled_by' => $this->user->id,
         ]);
 
+        $this->assertDatabaseHas('accounts_receivable', [
+            'tenant_id' => $this->tenant->id,
+            'source_type' => 'sale',
+            'source_id' => $sale->id,
+            'status' => 'cancelled',
+            'balance_amount' => 0,
+        ]);
+
         $this->assertSame(4, $part->fresh()->quantity);
         $this->assertDatabaseHas('part_movements', [
             'part_id' => $part->id,
             'user_id' => $this->user->id,
-            'movement_type' => 'entrada',
+            'movement_type' => 'devolucao',
             'quantity' => 2,
             'reason' => 'Cancelamento da venda '.$sale->sales_number,
         ]);

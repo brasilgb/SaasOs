@@ -10,6 +10,8 @@ use RuntimeException;
 
 class OrderPaymentService
 {
+    public function __construct(private readonly FinancialReceivableService $financialReceivableService) {}
+
     public function register(Order $order, array $data): OrderPayment
     {
         $order->loadMissing('orderPayments');
@@ -34,7 +36,7 @@ class OrderPaymentService
             ]);
         }
 
-        return OrderPayment::create([
+        $payment = OrderPayment::create([
             'order_id' => $order->id,
             'cash_session_id' => $openCashSessionId,
             'amount' => $amount,
@@ -42,6 +44,10 @@ class OrderPaymentService
             'paid_at' => $data['paid_at'] ?? now(),
             'notes' => $data['notes'] ?? null,
         ]);
+
+        $this->financialReceivableService->syncOrder($order->fresh(['orderPayments']));
+
+        return $payment;
     }
 
     public function remove(OrderPayment $payment): array
@@ -59,6 +65,8 @@ class OrderPaymentService
         ];
 
         $payment->delete();
+
+        $this->financialReceivableService->syncOrder($payment->order()->with('orderPayments')->firstOrFail());
 
         return $paymentData;
     }

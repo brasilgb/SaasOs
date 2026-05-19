@@ -49,7 +49,7 @@ const mainNavGroups: NavGroup[] = [
         ],
     },
     {
-        title: 'Operacional',
+        title: 'Atendimento',
         icon: Wrench,
         items: [
             {
@@ -92,6 +92,12 @@ const mainNavGroups: NavGroup[] = [
                 enabled: 'messages',
                 permission: 'messages',
             },
+        ],
+    },
+    {
+        title: 'Estoque',
+        icon: PackageCheck,
+        items: [
             {
                 title: 'Peças e produtos',
                 href: route('app.parts.index'),
@@ -149,29 +155,41 @@ const mainNavGroups: NavGroup[] = [
         icon: WalletCards,
         items: [
             {
-                title: 'Vendas',
-                href: route('app.sales.index'),
-                icon: ShoppingCartIcon,
-                active: 'app.sales.*',
-                enabled: 'sales',
-                permission: 'sales',
+                title: 'Caixa',
+                href: route('app.cashier.index'),
+                icon: WalletCards,
+                active: 'app.cashier.*',
+                enabled: 'finance',
+                permission: 'finance',
             },
             {
                 title: 'Despesas',
                 href: route('app.expenses.index'),
                 icon: BanknoteArrowDownIcon,
                 active: 'app.expenses.*',
-                enabled: 'sales',
-                permission: 'sales',
+                enabled: 'finance',
+                permission: 'finance',
             },
+        ],
+    },
+    {
+        title: 'Vendas / PDV',
+        icon: ShoppingCartIcon,
+        items: [
             {
-                title: 'Caixa',
-                href: route('app.cashier.index'),
-                icon: WalletCards,
-                active: 'app.cashier.*',
+                title: 'PDV e vendas',
+                href: route('app.sales.index'),
+                icon: ShoppingCartIcon,
+                active: 'app.sales.*',
                 enabled: 'sales',
                 permission: 'sales',
             },
+        ],
+    },
+    {
+        title: 'Fiscal',
+        icon: ReceiptText,
+        items: [
             {
                 title: 'Notas fiscais',
                 href: route('app.fiscal-documents.index'),

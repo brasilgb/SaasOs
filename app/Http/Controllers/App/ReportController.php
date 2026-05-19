@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\App\Customer;
 use App\Models\App\CashSession;
 use App\Models\App\Expense;
+use App\Models\App\FiscalDocument;
 use App\Models\App\Order;
 use App\Models\App\Other;
 use App\Models\App\Part;
@@ -43,6 +44,19 @@ class ReportController extends Controller
         return (bool) ($user?->hasPermission('sales') && $otherSetting?->enablesales);
     }
 
+    private function canUseFinanceReports(): bool
+    {
+        $user = Auth::user();
+        $otherSetting = Other::query()->first();
+
+        return (bool) ($user?->hasPermission('finance') && $otherSetting?->enable_finance);
+    }
+
+    private function canUseFiscalReports(): bool
+    {
+        return (bool) Auth::user()?->hasPermission('fiscal_documents');
+    }
+
     private function severityForRate(float $rate, float $threshold): string
     {
         if ($rate <= 5) {
@@ -74,6 +88,7 @@ class ReportController extends Controller
 
         switch ($type) {
             case 'orders':
+                abort_unless(Auth::user()?->hasPermission('orders'), 403);
                 $data = Order::with(['customer', 'equipment', 'user'])
                     ->whereBetween('created_at', [$from, $to])
                     ->orderBy('created_at', 'desc')
@@ -85,10 +100,12 @@ class ReportController extends Controller
                 break;
 
             case 'customers':
+                abort_unless(Auth::user()?->hasPermission('customers'), 403);
                 $data = Customer::whereBetween('created_at', [$from, $to])->get();
                 break;
 
             case 'schedules':
+                abort_unless(Auth::user()?->hasPermission('schedules'), 403);
                 $data = Schedule::with(['customer', 'user'])
                     ->whereBetween('created_at', [$from, $to])
                     ->get();
@@ -110,6 +127,7 @@ class ReportController extends Controller
                 break;
 
             case 'parts':
+                abort_unless(Auth::user()?->hasPermission('parts'), 403);
                 $data = Part::query()
                     ->withCount('part_movements')
                     ->whereBetween('created_at', [$from, $to])
@@ -118,7 +136,7 @@ class ReportController extends Controller
                 break;
 
             case 'cashier':
-                if (! $this->canUseSalesReports()) {
+                if (! $this->canUseFinanceReports()) {
                     abort(403, 'Relatórios de caixa estão desabilitados.');
                 }
 
@@ -184,6 +202,7 @@ class ReportController extends Controller
                 break;
 
             case 'quality':
+                abort_unless(Auth::user()?->hasPermission('reports'), 403);
                 $data = Order::query()
                     ->with([
                         'equipment:id,equipment',
@@ -271,7 +290,7 @@ class ReportController extends Controller
                 break;
 
             case 'expenses':
-                if (! $this->canUseSalesReports()) {
+                if (! $this->canUseFinanceReports()) {
                     abort(403, 'Relatórios de despesas estão desabilitados.');
                 }
 
@@ -280,6 +299,27 @@ class ReportController extends Controller
                     ->orderByDesc('expense_date')
                     ->orderByDesc('expense_number')
                     ->get();
+                break;
+
+            case 'fiscal':
+                if (! $this->canUseFiscalReports()) {
+                    abort(403, 'Relatórios fiscais estão desabilitados.');
+                }
+
+                $data = FiscalDocument::query()
+                    ->with('registeredBy:id,name')
+                    ->whereBetween('created_at', [$from, $to])
+                    ->orderByDesc('created_at')
+                    ->get();
+
+                $reportMeta = [
+                    'documents_count' => $data->count(),
+                    'manual_count' => $data->where('provider', 'manual')->count(),
+                    'focus_count' => $data->where('provider', 'focus_nfe')->count(),
+                    'nfe_count' => $data->where('type', 'nfe')->count(),
+                    'nfse_count' => $data->where('type', 'nfse')->count(),
+                    'error_count' => $data->where('status', 'error')->count(),
+                ];
                 break;
 
             default:

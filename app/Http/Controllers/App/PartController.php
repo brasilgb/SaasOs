@@ -80,8 +80,7 @@ class PartController extends Controller
     {
         Gate::authorize('parts.access');
 
-        $data = $request->all();
-        $request->validated();
+        $data = $request->validated();
         DB::transaction(function () use ($data) {
             $part = Part::firstOrCreate(
                 [
@@ -96,12 +95,12 @@ class PartController extends Controller
                     'name' => $data['name'],
                     'description' => $data['description'],
                     'manufacturer' => $data['manufacturer'],
-                    'model_compatibility' => $data['model_compatibility'],
+                    'model_compatibility' => $data['model_compatibility'] ?? null,
                     'cost_price' => $data['cost_price'],
                     'sale_price' => $data['sale_price'],
                     'quantity' => 0, // Começa com 0, será incrementado abaixo
                     'minimum_stock_level' => $data['minimum_stock_level'],
-                    'location' => $data['location'],
+                    'location' => $data['location'] ?? null,
                     'status' => $data['status'],
                 ]
             );
@@ -113,7 +112,7 @@ class PartController extends Controller
             PartMovement::create([
                 'part_id' => $part->id,
                 'user_id' => Auth::id(),
-                'movement_type' => 'entrada',
+                'movement_type' => PartMovement::TYPE_STOCK_IN,
                 'quantity' => $data['quantity'],
                 'reason' => 'Cadastro inicial',
             ]);
@@ -171,8 +170,7 @@ class PartController extends Controller
     {
         Gate::authorize('parts.access');
 
-        $data = $request->all();
-        $request->validated();
+        $data = $request->validated();
 
         DB::transaction(function () use ($part, $data) {
             $oldQuantity = $part->quantity;
@@ -185,7 +183,7 @@ class PartController extends Controller
                 PartMovement::create([
                     'part_id' => $part->id,
                     'user_id' => Auth::id(),
-                    'movement_type' => $quantityDiff > 0 ? 'entrada' : 'saida',
+                    'movement_type' => PartMovement::TYPE_ADJUSTMENT,
                     'quantity' => abs($quantityDiff),
                     'reason' => 'Ajuste de estoque',
                 ]);
@@ -206,7 +204,7 @@ class PartController extends Controller
             PartMovement::create([
                 'part_id' => $part->id,
                 'user_id' => Auth::id(),
-                'movement_type' => 'saida',
+                'movement_type' => PartMovement::TYPE_ADJUSTMENT,
                 'quantity' => $part->quantity,
                 'reason' => 'Exclusão de peça',
             ]);

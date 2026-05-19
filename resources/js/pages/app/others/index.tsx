@@ -33,6 +33,7 @@ export default function Others({ othersettings, company, time_remaining, mailSet
         navigation: othersettings?.navigation,
         budget: othersettings?.budget,
         enableparts: othersettings?.enableparts,
+        enable_finance: othersettings?.enable_finance ?? false,
         enablesales: othersettings?.enablesales ?? false,
         show_follow_ups_menu: othersettings?.show_follow_ups_menu ?? false,
         show_tasks_menu: othersettings?.show_tasks_menu ?? false,
@@ -119,18 +120,50 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                             <TabsContent value="system" className="w-full space-y-8">
                                 <div className="space-y-6 rounded-2xl border p-5">
                                     <HeadingSmall
-                                        title="Habilitar vendas, despesas e operações de caixa"
-                                        description="Ao habilitar, libera os módulos de Vendas, Despesas e Caixa Diário para administradores e operadores. Ao desabilitar, esses módulos ficam ocultos e bloqueados."
+                                        title="Módulos financeiros"
+                                        description="Separe o financeiro da assistência técnica do PDV. O financeiro libera caixa, despesas e pagamentos das ordens; vendas libera apenas o PDV para venda avulsa de peças e produtos."
                                     />
-                                    <div className="flex items-center gap-3">
-                                        <Switch
-                                            id="status"
-                                            checked={data.enablesales}
-                                            disabled={!canManageOtherSettings}
-                                            onCheckedChange={(checked) => setData('enablesales', checked)}
-                                        />
 
-                                        <span className="text-muted-foreground text-sm">{data.enablesales ? 'Habilitado' : 'Desabilitado'}</span>
+                                    <div className="grid gap-4 xl:grid-cols-2">
+                                        <div className="bg-card text-card-foreground flex items-center justify-between gap-4 rounded-2xl border p-4 shadow-sm">
+                                            <div>
+                                                <p className="font-medium">Financeiro da assistência</p>
+                                                <p className="text-muted-foreground text-sm">
+                                                    Habilita Caixa, Despesas e registro de pagamentos nas ordens de serviço.
+                                                </p>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <Switch
+                                                    id="enable_finance"
+                                                    checked={data.enable_finance}
+                                                    disabled={!canManageOtherSettings}
+                                                    onCheckedChange={(checked) => setData('enable_finance', checked)}
+                                                />
+                                                <span className="text-muted-foreground text-sm">
+                                                    {data.enable_finance ? 'Habilitado' : 'Desabilitado'}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-card text-card-foreground flex items-center justify-between gap-4 rounded-2xl border p-4 shadow-sm">
+                                            <div>
+                                                <p className="font-medium">Vendas / PDV</p>
+                                                <p className="text-muted-foreground text-sm">
+                                                    Habilita o PDV para venda direta de peças e produtos fora da ordem de serviço.
+                                                </p>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <Switch
+                                                    id="enablesales"
+                                                    checked={data.enablesales}
+                                                    disabled={!canManageOtherSettings}
+                                                    onCheckedChange={(checked) => setData('enablesales', checked)}
+                                                />
+                                                <span className="text-muted-foreground text-sm">
+                                                    {data.enablesales ? 'Habilitado' : 'Desabilitado'}
+                                                </span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 

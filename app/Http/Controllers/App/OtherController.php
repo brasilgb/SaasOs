@@ -31,6 +31,7 @@ class OtherController extends Controller
         $othersettings = Other::query()->firstOrCreate([
             'tenant_id' => $tenantId,
         ], [
+            'enable_finance' => false,
             'enablesales' => false,
             'show_follow_ups_menu' => false,
             'show_tasks_menu' => false,
@@ -99,6 +100,7 @@ class OtherController extends Controller
             'navigation' => 'sometimes|boolean',
             'budget' => 'sometimes|boolean',
             'enableparts' => 'sometimes|boolean',
+            'enable_finance' => 'sometimes|boolean',
             'enablesales' => 'sometimes|boolean',
             'show_follow_ups_menu' => 'sometimes|boolean',
             'show_tasks_menu' => 'sometimes|boolean',

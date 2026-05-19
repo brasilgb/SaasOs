@@ -15,7 +15,13 @@ class PartMovementFactory extends Factory
     public function definition(): array
     {
         return [
-            'movement_type' => $this->faker->randomElement(['entrada', 'saida']),
+            'movement_type' => $this->faker->randomElement([
+                PartMovement::TYPE_STOCK_IN,
+                PartMovement::TYPE_ORDER_USE,
+                PartMovement::TYPE_SALE,
+                PartMovement::TYPE_ADJUSTMENT,
+                PartMovement::TYPE_RETURN,
+            ]),
             'quantity' => $this->faker->numberBetween(1, 5),
             'reason' => $this->faker->randomElement([
                 'Ajuste de estoque',

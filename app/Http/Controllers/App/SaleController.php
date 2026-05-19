@@ -8,6 +8,7 @@ use App\Events\SaleDeleted;
 use App\Http\Controllers\Controller;
 use App\Models\App\CashSession;
 use App\Models\App\Sale;
+use App\Services\FiscalDocumentService;
 use App\Services\SaleService;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -18,7 +19,10 @@ use Symfony\Component\HttpFoundation\Response;
 
 class SaleController extends Controller
 {
-    public function __construct(private readonly SaleService $saleService) {}
+    public function __construct(
+        private readonly SaleService $saleService,
+        private readonly FiscalDocumentService $fiscalDocumentService,
+    ) {}
 
     private function authorizeSalesAccess(?Sale $sale = null, string $ability = 'viewAny'): ?Response
     {
@@ -212,7 +216,7 @@ class SaleController extends Controller
         ]);
 
         try {
-            $sale = $this->saleService->registerFiscal($sale, $validated, (int) Auth::id());
+            $this->fiscalDocumentService->registerManualSale($sale, $validated, (int) Auth::id());
         } catch (\RuntimeException $exception) {
             return back()->with('error', $exception->getMessage());
         }

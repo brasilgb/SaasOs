@@ -31,11 +31,11 @@ class ExpenseController extends Controller
 
         if (request()->expectsJson()) {
             return response()->json([
-                'message' => 'Módulo de vendas desabilitado ou acesso não permitido.',
+                'message' => 'Módulo financeiro desabilitado ou acesso não permitido.',
             ], 403);
         }
 
-        return redirect()->route('app.dashboard')->with('error', 'Módulo de vendas desabilitado ou acesso não permitido.');
+        return redirect()->route('app.dashboard')->with('error', 'Módulo financeiro desabilitado ou acesso não permitido.');
     }
 
     public function index(Request $request)

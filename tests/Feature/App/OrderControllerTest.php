@@ -33,6 +33,10 @@ class OrderControllerTest extends TestCase
 
         $this->tenant = Tenant::factory()->create(['name' => 'Test Tenant']);
         $this->user = User::factory()->forTenant($this->tenant->id)->create();
+        Other::factory()->forTenant($this->tenant->id)->create([
+            'enable_finance' => true,
+            'enablesales' => true,
+        ]);
 
         $this->withSession(['tenant_id' => $this->tenant->id])
             ->actingAs($this->user);
@@ -121,6 +125,15 @@ class OrderControllerTest extends TestCase
             'status' => OrderStatus::BUDGET_GENERATED,
             'changed_by' => $this->user->id,
             'note' => OrderStatus::label(OrderStatus::BUDGET_GENERATED),
+        ]);
+        $this->assertDatabaseHas('order_items', [
+            'tenant_id' => $this->tenant->id,
+            'order_id' => $order->id,
+            'item_type' => 'service',
+            'source_type' => 'order_service',
+            'quantity' => 1,
+            'unit_price' => 150,
+            'total_price' => 150,
         ]);
 
         $this->assertDatabaseHas('order_logs', [
@@ -222,6 +235,17 @@ class OrderControllerTest extends TestCase
             'order_id' => $order->id,
             'payment_method' => 'pix',
             'notes' => 'Entrada inicial',
+        ]);
+
+        $this->assertDatabaseHas('accounts_receivable', [
+            'tenant_id' => $this->tenant->id,
+            'customer_id' => $customer->id,
+            'source_type' => 'order',
+            'source_id' => $order->id,
+            'total_amount' => 200,
+            'paid_amount' => 50,
+            'balance_amount' => 150,
+            'status' => 'partial',
         ]);
 
         $this->assertDatabaseHas('order_logs', [
@@ -356,6 +380,17 @@ class OrderControllerTest extends TestCase
 
         $this->assertDatabaseMissing('order_payments', [
             'id' => $payment->id,
+        ]);
+
+        $this->assertDatabaseHas('accounts_receivable', [
+            'tenant_id' => $this->tenant->id,
+            'customer_id' => $customer->id,
+            'source_type' => 'order',
+            'source_id' => $order->id,
+            'total_amount' => 200,
+            'paid_amount' => 0,
+            'balance_amount' => 200,
+            'status' => 'pending',
         ]);
 
         $this->assertDatabaseHas('order_logs', [
@@ -598,11 +633,22 @@ class OrderControllerTest extends TestCase
             'part_id' => $part->id,
             'quantity' => 2,
         ]);
+        $this->assertDatabaseHas('order_items', [
+            'tenant_id' => $this->tenant->id,
+            'order_id' => $order->id,
+            'item_type' => 'product',
+            'source_type' => 'part',
+            'source_id' => $part->id,
+            'description' => 'Conector USB-C',
+            'quantity' => 2,
+            'unit_price' => 80,
+            'total_price' => 160,
+        ]);
         $this->assertDatabaseHas('part_movements', [
             'part_id' => $part->id,
             'order_id' => $order->id,
             'user_id' => $this->user->id,
-            'movement_type' => 'saida',
+            'movement_type' => 'uso_os',
             'quantity' => 2,
             'reason' => 'Uso na OS '.$order->order_number,
         ]);
@@ -647,7 +693,7 @@ class OrderControllerTest extends TestCase
             'part_id' => $part->id,
             'order_id' => $order->id,
             'user_id' => $this->user->id,
-            'movement_type' => 'entrada',
+            'movement_type' => 'devolucao',
             'quantity' => 2,
             'reason' => 'Devolução de peça da OS '.$order->order_number,
         ]);
@@ -715,11 +761,24 @@ class OrderControllerTest extends TestCase
             'order_id' => $order->id,
             'part_id' => $part->id,
         ]);
+        $this->assertDatabaseMissing('order_items', [
+            'order_id' => $order->id,
+            'item_type' => 'product',
+            'source_type' => 'part',
+            'source_id' => $part->id,
+        ]);
+        $this->assertDatabaseHas('order_items', [
+            'tenant_id' => $this->tenant->id,
+            'order_id' => $order->id,
+            'item_type' => 'service',
+            'source_type' => 'order_service',
+            'total_price' => 40,
+        ]);
         $this->assertDatabaseHas('part_movements', [
             'part_id' => $part->id,
             'order_id' => $order->id,
             'user_id' => $this->user->id,
-            'movement_type' => 'entrada',
+            'movement_type' => 'devolucao',
             'quantity' => 2,
             'reason' => 'Devolução de peça removida da OS '.$order->order_number,
         ]);

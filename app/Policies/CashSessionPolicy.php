@@ -8,9 +8,9 @@ use App\Models\User;
 
 class CashSessionPolicy
 {
-    private function canAccessSalesModule(User $user): bool
+    private function canAccessFinanceModule(User $user): bool
     {
-        if (! $user->hasPermission('sales')) {
+        if (! $user->hasPermission('finance')) {
             return false;
         }
 
@@ -18,21 +18,23 @@ class CashSessionPolicy
             return false;
         }
 
-        return (bool) (Other::query()->value('enablesales') ?? false);
+        return (bool) (Other::query()
+            ->where('tenant_id', $user->tenant_id)
+            ->value('enable_finance') ?? false);
     }
 
     public function viewAny(User $user): bool
     {
-        return $this->canAccessSalesModule($user);
+        return $this->canAccessFinanceModule($user);
     }
 
     public function create(User $user): bool
     {
-        return $this->canAccessSalesModule($user);
+        return $this->canAccessFinanceModule($user);
     }
 
     public function update(User $user, CashSession $cashSession): bool
     {
-        return $this->canAccessSalesModule($user);
+        return $this->canAccessFinanceModule($user);
     }
 }

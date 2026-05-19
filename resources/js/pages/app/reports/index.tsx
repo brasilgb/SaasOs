@@ -8,6 +8,7 @@ import { FileTextIcon } from 'lucide-react';
 import CustomersReport from './customers-report';
 import CashierReport from './cashier-report';
 import ExpensesReport from './expenses-report';
+import FiscalReport from './fiscal-report';
 import OrdersStatistics from './order-statistics';
 import OrdersDaily from './orders-daily';
 import OrdersReport from './orders-report';
@@ -39,14 +40,18 @@ export default function Parts() {
     const canViewCustomers = permissions.includes('customers');
     const canViewSchedules = permissions.includes('schedules');
     const canViewSales = Boolean(permissions.includes('sales') && othersetting?.enablesales);
-    const canViewExpenses = Boolean(permissions.includes('sales') && othersetting?.enablesales);
-    const canViewCashier = Boolean(permissions.includes('sales') && othersetting?.enablesales);
+    const canViewExpenses = Boolean(permissions.includes('finance') && othersetting?.enable_finance);
+    const canViewCashier = Boolean(permissions.includes('finance') && othersetting?.enable_finance);
     const canViewParts = permissions.includes('parts');
+    const canViewFiscal = permissions.includes('fiscal_documents');
     const canViewQuality = permissions.includes('reports');
-    const hasOperationalReports = canViewOrders || canViewCustomers || canViewSchedules || canViewParts;
-    const hasFinancialReports = canViewSales || canViewExpenses || canViewCashier;
+    const hasOperationalReports = canViewOrders || canViewCustomers || canViewSchedules;
+    const hasStockReports = canViewParts;
+    const hasCommercialReports = canViewSales;
+    const hasFinancialReports = canViewExpenses || canViewCashier;
+    const hasFiscalReports = canViewFiscal;
     const hasManagementReports = canViewQuality;
-    const hasAnyReport = hasOperationalReports || hasFinancialReports || hasManagementReports;
+    const hasAnyReport = hasOperationalReports || hasStockReports || hasCommercialReports || hasFinancialReports || hasFiscalReports || hasManagementReports;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -80,7 +85,7 @@ export default function Parts() {
                             <section className="space-y-3">
                                 <div>
                                     <h3 className="text-sm font-semibold">Operação</h3>
-                                    <p className="text-muted-foreground text-sm">Ordens, agenda, clientes, técnicos e estoque.</p>
+                                    <p className="text-muted-foreground text-sm">Ordens, agenda, clientes e técnicos.</p>
                                 </div>
                                 <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                                     {canViewOrders && <TechnicianProductivity dateRange={dateRange} company={company} />}
@@ -89,7 +94,30 @@ export default function Parts() {
                                     {canViewOrders && <OrdersDaily dateRange={dateRange} company={company} />}
                                     {canViewCustomers && <CustomersReport dateRange={dateRange} company={company} />}
                                     {canViewSchedules && <SchedulesReport dateRange={dateRange} company={company} />}
+                                </div>
+                            </section>
+                        )}
+
+                        {hasStockReports && (
+                            <section className="space-y-3">
+                                <div>
+                                    <h3 className="text-sm font-semibold">Estoque</h3>
+                                    <p className="text-muted-foreground text-sm">Produtos, peças e movimentações de estoque.</p>
+                                </div>
+                                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                                     {canViewParts && <PartsReport dateRange={dateRange} company={company} />}
+                                </div>
+                            </section>
+                        )}
+
+                        {hasCommercialReports && (
+                            <section className="space-y-3">
+                                <div>
+                                    <h3 className="text-sm font-semibold">Comercial</h3>
+                                    <p className="text-muted-foreground text-sm">Vendas e desempenho do PDV.</p>
+                                </div>
+                                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                                    {canViewSales && <SalesReport dateRange={dateRange} company={company} />}
                                 </div>
                             </section>
                         )}
@@ -98,12 +126,23 @@ export default function Parts() {
                             <section className="space-y-3">
                                 <div>
                                     <h3 className="text-sm font-semibold">Financeiro</h3>
-                                    <p className="text-muted-foreground text-sm">Vendas, despesas e conferência de caixa.</p>
+                                    <p className="text-muted-foreground text-sm">Despesas e conferência de caixa da operação.</p>
                                 </div>
                                 <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                                    {canViewSales && <SalesReport dateRange={dateRange} company={company} />}
                                     {canViewExpenses && <ExpensesReport dateRange={dateRange} company={company} />}
                                     {canViewCashier && <CashierReport dateRange={dateRange} company={company} />}
+                                </div>
+                            </section>
+                        )}
+
+                        {hasFiscalReports && (
+                            <section className="space-y-3">
+                                <div>
+                                    <h3 className="text-sm font-semibold">Fiscal</h3>
+                                    <p className="text-muted-foreground text-sm">NF-e, NFS-e, registros manuais e integrações fiscais.</p>
+                                </div>
+                                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                                    {canViewFiscal && <FiscalReport dateRange={dateRange} company={company} />}
                                 </div>
                             </section>
                         )}

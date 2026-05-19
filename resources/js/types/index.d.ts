@@ -44,6 +44,8 @@ export interface SharedData {
     othersettings: {
         budget: boolean;
         navigation: boolean;
+        enable_finance?: boolean;
+        enablesales?: boolean;
         show_follow_ups_menu?: boolean;
         show_tasks_menu?: boolean;
         show_commercial_performance_menu?: boolean;

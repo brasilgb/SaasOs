@@ -82,6 +82,37 @@ class FollowUpControllerTest extends TestCase
             });
     }
 
+    public function test_technician_can_view_relationship_menu_data_as_read_only(): void
+    {
+        $technician = User::factory()->forTenant($this->tenant->id)->create([
+            'roles' => User::ROLE_TECHNICIAN,
+        ]);
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'user_id' => $technician->id,
+            'service_status' => OrderStatus::BUDGET_GENERATED,
+            'updated_at' => now()->subDays(5),
+        ]);
+
+        $this->actingAs($technician)
+            ->withSession(['tenant_id' => $this->tenant->id]);
+
+        $this->get(route('app.follow-ups.index'))
+            ->assertOk()
+            ->assertViewHas('page.props.budgetOrders', function ($orders) use ($order) {
+                return collect($orders['data'] ?? [])->pluck('id')->contains($order->id);
+            });
+
+        $this->post(route('app.follow-ups.pause', $order), [
+            'scope' => 'budget',
+            'reason' => 'Tentativa de pausa pelo técnico.',
+        ])->assertForbidden();
+    }
+
     public function test_it_filters_follow_ups_by_type(): void
     {
         $response = $this->get(route('app.follow-ups.index', ['type' => 'budget']));

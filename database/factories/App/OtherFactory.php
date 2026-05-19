@@ -17,6 +17,7 @@ class OtherFactory extends Factory
         return [
             'navigation' => $this->faker->boolean(60),
             'enableparts' => $this->faker->boolean(75),
+            'enable_finance' => false,
             'enablesales' => false,
             'show_follow_ups_menu' => false,
             'show_tasks_menu' => false,

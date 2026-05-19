@@ -130,7 +130,7 @@ class FocusNfeService
 
         $document->update([
             'status' => 'error',
-            'request_payload' => $payload,
+            'request_payload' => $requestPayload ?? $document->request_payload,
             'response_payload' => $body ?: ['raw' => $response->body()],
             'error_message' => Str::limit((string) $message, 2000, ''),
         ]);

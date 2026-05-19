@@ -13,7 +13,6 @@ use App\Http\Requests\OrderRequest;
 use App\Models\App\Other;
 use App\Models\App\Customer;
 use App\Models\App\Equipment;
-use App\Models\App\FiscalDocument;
 use App\Models\App\CashSession;
 use App\Models\App\Order;
 use App\Models\App\OrderLog;
@@ -24,6 +23,9 @@ use App\Models\App\PartMovement;
 use App\Models\App\WhatsappMessage;
 use App\Services\OrderStatusService;
 use App\Services\OrderPaymentService;
+use App\Services\FinancialReceivableService;
+use App\Services\OrderItemSyncService;
+use App\Services\FiscalDocumentService;
 use App\Services\OrderNotificationService;
 use App\Services\OperationalAuditService;
 use App\Support\OrderStatus;
@@ -43,6 +45,9 @@ class OrderController extends Controller
         private readonly OperationalAuditService $operationalAuditService,
         private readonly OrderPaymentService $orderPaymentService,
         private readonly OrderStatusService $orderStatusService,
+        private readonly FinancialReceivableService $financialReceivableService,
+        private readonly OrderItemSyncService $orderItemSyncService,
+        private readonly FiscalDocumentService $fiscalDocumentService,
         private readonly OrderNotificationService $orderNotificationService,
     ) {}
 
@@ -54,6 +59,17 @@ class OrderController extends Controller
         }
 
         return $this->orderNotificationService->canSendToCustomer($order, $customerEmail);
+    }
+
+    private function financeEnabled(): bool
+    {
+        if (! $this->currentUser()?->hasPermission('finance')) {
+            return false;
+        }
+
+        return (bool) (Other::query()
+            ->where('tenant_id', $this->currentUser()?->tenant_id)
+            ->value('enable_finance') ?? false);
     }
 
     private function appendPaymentReminderAvailability(Order $order): Order
@@ -297,13 +313,13 @@ class OrderController extends Controller
                 }
 
                 $part->decrement('quantity', $quantityDiff);
-                $movementType = 'saida';
+                $movementType = PartMovement::TYPE_ORDER_USE;
                 $movementReason = 'Uso na OS '.$order->order_number;
                 $movementQuantity = $quantityDiff;
             } else {
                 $movementQuantity = abs($quantityDiff);
                 $part->increment('quantity', $movementQuantity);
-                $movementType = 'entrada';
+                $movementType = PartMovement::TYPE_RETURN;
                 $movementReason = 'Devolução de peça da OS '.$order->order_number;
             }
 
@@ -612,6 +628,7 @@ class OrderController extends Controller
         $order->load([
             'customer',
             'orderParts',
+            'orderItems',
             'orderPayments',
             'statusHistory.user:id,name',
             'logs.user:id,name',
@@ -819,6 +836,10 @@ class OrderController extends Controller
             ]);
         }
 
+        $order = $order->fresh(['orderPayments']);
+        $this->orderItemSyncService->sync($order);
+        $this->financialReceivableService->syncOrder($order);
+
         return redirect()->route('app.orders.show', ['order' => $order->id])->with('success', $successMessage);
     }
 
@@ -829,6 +850,7 @@ class OrderController extends Controller
     {
         $this->authorize('delete', $order);
 
+        $this->financialReceivableService->deleteSource('order', (int) $order->id, (int) $order->tenant_id);
         $order->delete();
         $order->orderParts()->detach();
 
@@ -870,7 +892,7 @@ class OrderController extends Controller
                     'part_id' => $stockPart->id,
                     'order_id' => $order->id,
                     'user_id' => $this->currentUser()?->id,
-                    'movement_type' => 'entrada',
+                    'movement_type' => PartMovement::TYPE_RETURN,
                     'quantity' => (int) $removedQuantity,
                     'reason' => 'Devolução de peça removida da OS '.$order->order_number,
                 ]);
@@ -882,6 +904,11 @@ class OrderController extends Controller
                 'service_cost' => $nextServiceCost,
             ]);
         });
+
+        $order = $order->fresh(['orderPayments']);
+        $this->orderItemSyncService->sync($order);
+        $this->financialReceivableService->syncOrder($order);
+
         $this->logOrderAction($order, 'part_removed', [
             'part_id' => (int) $part->id,
             'part_name' => $part->name,
@@ -895,6 +922,7 @@ class OrderController extends Controller
     public function storePayment(Request $request, Order $order): RedirectResponse
     {
         $this->authorize('update', $order);
+        abort_unless($this->financeEnabled(), 403);
 
         $request->merge([
             'amount' => $this->normalizeMoneyFloat($request->input('amount')),
@@ -926,6 +954,7 @@ class OrderController extends Controller
     public function destroyPayment(Order $order, OrderPayment $payment): RedirectResponse
     {
         $this->authorize('update', $order);
+        abort_unless($this->financeEnabled(), 403);
         abort_unless((int) $payment->order_id === (int) $order->id, 404);
 
         try {
@@ -942,6 +971,7 @@ class OrderController extends Controller
     public function paymentsData(Order $order)
     {
         $this->authorize('view', $order);
+        abort_unless($this->financeEnabled(), 403);
 
         $order->load('customer');
         $orderPayments = $order->orderPayments()->latest('paid_at')->get();
@@ -970,48 +1000,12 @@ class OrderController extends Controller
             'fiscal_notes' => 'nullable|string|max:2000',
         ]);
 
-        $fiscalDocumentKey = $order->fiscal_document_key;
-
-        if (empty($fiscalDocumentKey)) {
-            $fiscalDocumentKey = hash('sha256', implode('|', [
-                (string) $order->id,
-                (string) now()->timestamp,
-                (string) $validated['fiscal_document_number'],
-            ]));
-        }
-
-        $order->update([
-            'fiscal_document_number' => $validated['fiscal_document_number'],
-            'fiscal_document_key' => $fiscalDocumentKey,
-            'fiscal_document_url' => $validated['fiscal_document_url'] ?? null,
-            'fiscal_issued_at' => $validated['fiscal_issued_at'] ?? now(),
-            'fiscal_registered_by' => Auth::id(),
-            'fiscal_notes' => $validated['fiscal_notes'] ?? null,
-        ]);
-
-        FiscalDocument::updateOrCreate(
-            [
-                'documentable_type' => Order::class,
-                'documentable_id' => $order->id,
-                'provider' => 'manual',
-            ],
-            [
-                'tenant_id' => $order->tenant_id,
-                'type' => 'nfse',
-                'number' => $validated['fiscal_document_number'],
-                'access_key' => $fiscalDocumentKey,
-                'status' => 'registered',
-                'pdf_url' => $validated['fiscal_document_url'] ?? null,
-                'issued_at' => $validated['fiscal_issued_at'] ?? now(),
-                'registered_by' => Auth::id(),
-                'notes' => $validated['fiscal_notes'] ?? null,
-            ]
-        );
+        $document = $this->fiscalDocumentService->registerManualOrder($order, $validated, (int) Auth::id());
 
         $this->logOrderAction($order, 'fiscal_registered', [
-            'fiscal_document_number' => $validated['fiscal_document_number'],
-            'fiscal_document_url' => $validated['fiscal_document_url'] ?? null,
-            'fiscal_issued_at' => $validated['fiscal_issued_at'] ?? now()->toDateTimeString(),
+            'fiscal_document_number' => $document->number,
+            'fiscal_document_url' => $document->pdf_url,
+            'fiscal_issued_at' => $document->issued_at?->toDateTimeString(),
         ]);
 
         return back()->with('success', 'Comprovante fiscal da ordem registrado com sucesso.');
@@ -1020,6 +1014,7 @@ class OrderController extends Controller
     public function sendPaymentReminder(Order $order): RedirectResponse
     {
         $this->authorize('update', $order);
+        abort_unless($this->financeEnabled(), 403);
 
         $order->load('customer', 'orderPayments');
         $paymentSummary = $this->buildPaymentSummary($order);

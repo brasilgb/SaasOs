@@ -324,6 +324,7 @@ class HandleInertiaRequests extends Middleware
             $otherSetting = Other::query()->firstOrCreate([
                 'tenant_id' => $user->tenant_id,
             ], [
+                'enable_finance' => false,
                 'enablesales' => false,
                 'show_follow_ups_menu' => false,
                 'show_tasks_menu' => false,
@@ -381,6 +382,7 @@ class HandleInertiaRequests extends Middleware
             'whatsapp' => $user ? WhatsappMessage::first() : null,
             'othersetting' => $otherSetting ? [
                 ...$otherSetting->toArray(),
+                'enable_finance' => $otherSetting->enable_finance ?? false,
                 'enablesales' => $otherSetting->enablesales ?? false,
                 'show_follow_ups_menu' => $otherSetting->show_follow_ups_menu ?? false,
                 'show_tasks_menu' => $otherSetting->show_tasks_menu ?? false,

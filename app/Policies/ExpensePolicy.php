@@ -8,9 +8,9 @@ use App\Models\User;
 
 class ExpensePolicy
 {
-    private function canAccessSalesModule(User $user): bool
+    private function canAccessFinanceModule(User $user): bool
     {
-        if (! $user->hasPermission('sales')) {
+        if (! $user->hasPermission('finance')) {
             return false;
         }
 
@@ -20,7 +20,7 @@ class ExpensePolicy
 
         return (bool) (Other::query()
             ->where('tenant_id', $user->tenant_id)
-            ->value('enablesales') ?? false);
+            ->value('enable_finance') ?? false);
     }
 
     private function sameTenant(User $user, Expense $expense): bool
@@ -30,21 +30,21 @@ class ExpensePolicy
 
     public function viewAny(User $user): bool
     {
-        return $this->canAccessSalesModule($user);
+        return $this->canAccessFinanceModule($user);
     }
 
     public function create(User $user): bool
     {
-        return $this->canAccessSalesModule($user);
+        return $this->canAccessFinanceModule($user);
     }
 
     public function update(User $user, Expense $expense): bool
     {
-        return $this->canAccessSalesModule($user) && $this->sameTenant($user, $expense);
+        return $this->canAccessFinanceModule($user) && $this->sameTenant($user, $expense);
     }
 
     public function delete(User $user, Expense $expense): bool
     {
-        return $this->canAccessSalesModule($user) && $this->sameTenant($user, $expense);
+        return $this->canAccessFinanceModule($user) && $this->sameTenant($user, $expense);
     }
 }

@@ -75,6 +75,11 @@ class Order extends Model
         return $this->hasMany(OrderPayment::class)->latest('paid_at');
     }
 
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(OrderItem::class)->orderBy('sort_order')->orderBy('id');
+    }
+
     public function fiscalDocuments(): HasMany
     {
         return $this->hasMany(FiscalDocument::class, 'documentable_id')

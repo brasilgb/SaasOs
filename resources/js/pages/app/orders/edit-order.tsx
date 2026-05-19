@@ -107,8 +107,12 @@ export default function EditOrder({
         return Number.isFinite(parsed) ? parsed : 0;
     };
 
-    const { othersetting, auth } = usePage().props as any;
+    const { othersetting, auth, fiscalSetting } = usePage().props as any;
     const canManageOrders = auth?.role !== 'technician' && auth?.permissions?.includes('orders');
+    const canAccessSalesModules =
+        auth?.role === 'administrator' || auth?.role === 'operator' || auth?.role === 'root_app' || auth?.role === 'root_system';
+    const canManagePayments = canManageOrders && canAccessSalesModules && Boolean(othersetting?.enable_finance) && Boolean(auth?.permissions?.includes('finance'));
+    const canIssueServiceInvoice = canManageOrders && Boolean(fiscalSetting?.enabled) && Boolean(fiscalSetting?.nfse_enabled);
     const [partsData, setPartsData] = useState<any>([]);
 
     const initialModelOptions = Array.from(new Set([...(models ?? []), order?.model].filter(Boolean))).map((model: any) => ({
@@ -309,7 +313,7 @@ export default function EditOrder({
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Ordens" />
-            <InvoiceModal open={openInvoiceModal} onClose={() => setOpenInvoiceModal(false)} order={order} summary={paymentSummary} />
+            {canIssueServiceInvoice && <InvoiceModal open={openInvoiceModal} onClose={() => setOpenInvoiceModal(false)} order={order} summary={paymentSummary} />}
             <div className="flex min-h-16 flex-col justify-center gap-1 px-4 py-3">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={Wrench} className="h-8 w-8" />
@@ -343,7 +347,7 @@ export default function EditOrder({
                             </a>
                         </Button>
                     )}
-                    {canManageOrders && ORDER_STATUSES_READY_FOR_INVOICE.includes(Number(order.service_status)) && (
+                    {canIssueServiceInvoice && ORDER_STATUSES_READY_FOR_INVOICE.includes(Number(order.service_status)) && (
                         <Button onClick={() => setOpenInvoiceModal(true)} className="rounded-lg py-2 text-sm font-medium">
                             <FileTextIcon className="h-4 w-4" />
                             Emitir NFSe
@@ -364,7 +368,7 @@ export default function EditOrder({
                             {budgetFollowUpForm.processing ? 'Enviando...' : 'Cobrar orçamento'}
                         </Button>
                     )}
-                    {canManageOrders && (
+                    {canManagePayments && (
                         <OrderPaymentsModal
                             order={order}
                             orderPayments={orderPayments}

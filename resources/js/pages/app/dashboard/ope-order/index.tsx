@@ -41,7 +41,10 @@ export default function OrderDashboard({
 }: any) {
     const [metrics, setMetrics] = useState<any>([]);
     const canUsePdv = auth?.permissions?.includes('sales') && auth?.role !== 'technician';
+    const canUseFinance = auth?.permissions?.includes('finance') && auth?.role !== 'technician';
     const isCashierOpen = Boolean(cashier?.isOpen);
+    const showFinanceShortcut = Boolean(others?.enable_finance && canUseFinance);
+    const showPdvShortcut = Boolean(others?.enablesales && canUsePdv);
 
     useEffect(() => {
         const getOrders = async () => {
@@ -159,21 +162,23 @@ export default function OrderDashboard({
             </div>
             <div className="mt-3 grid min-h-[210px] gap-3 2xl:grid-cols-7">
                 <div className="h-full min-w-0">
-                    {others?.enablesales && canUsePdv ? (
+                    {showFinanceShortcut || showPdvShortcut ? (
                         <div className="flex h-full flex-col gap-3">
                             <Card className="flex h-full flex-col items-center justify-center gap-3 p-4">
-                                <div className="w-full rounded-lg border p-3 text-center">
-                                    <div className="text-sm font-medium">Caixa</div>
-                                    <div className={`text-xs ${isCashierOpen ? 'text-emerald-600' : 'text-amber-600'}`}>
-                                        {isCashierOpen ? 'Aberto' : 'Fechado'}
+                                {showFinanceShortcut && (
+                                    <div className="w-full rounded-lg border p-3 text-center">
+                                        <div className="text-sm font-medium">Caixa</div>
+                                        <div className={`text-xs ${isCashierOpen ? 'text-emerald-600' : 'text-amber-600'}`}>
+                                            {isCashierOpen ? 'Aberto' : 'Fechado'}
+                                        </div>
+                                        {!isCashierOpen && (
+                                            <Button variant="outline" size="sm" className="mt-2" asChild>
+                                                <Link href={route('app.cashier.index')}>Abrir caixa</Link>
+                                            </Button>
+                                        )}
                                     </div>
-                                    {!isCashierOpen && (
-                                        <Button variant="outline" size="sm" className="mt-2" asChild>
-                                            <Link href={route('app.cashier.index')}>Abrir caixa</Link>
-                                        </Button>
-                                    )}
-                                </div>
-                                <SalesProducts parts={parts} customers={customers} iconSize={60} />
+                                )}
+                                {showPdvShortcut && <SalesProducts parts={parts} customers={customers} iconSize={60} />}
                             </Card>
                             <Card className="flex h-full items-center justify-center p-4">
                                 <ScheduleCalendarModal schedules={listSchedules} iconSize={60} variant="outline" />

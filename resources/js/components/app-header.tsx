@@ -45,6 +45,7 @@ type AppHeaderPageProps = SharedData & {
     othersetting?: {
         budget?: boolean;
         enableparts?: boolean;
+        enable_finance?: boolean;
         enablesales?: boolean;
         show_follow_ups_menu?: boolean;
         show_tasks_menu?: boolean;
@@ -67,6 +68,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     const { auth, othersetting, fiscalSetting } = page.props;
     const disableParts = !othersetting?.enableparts ? 'parts' : '';
     const disableSales = !othersetting?.enablesales ? 'sales' : '';
+    const disableFinance = !othersetting?.enable_finance ? 'finance' : '';
     const permissions = auth?.permissions ?? [];
     const getInitials = useInitials();
 
@@ -98,6 +100,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                                             : true) &&
                                                         item.enabled !== disableParts &&
                                                         item.enabled !== disableSales &&
+                                                        item.enabled !== disableFinance &&
                                                         (!item.fiscalSetting || Boolean(fiscalSetting?.[item.fiscalSetting])) &&
                                                         (!item.permission || permissions.includes(item.permission)),
                                                 );
@@ -166,6 +169,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                             : true) &&
                                         item.enabled !== disableParts &&
                                         item.enabled !== disableSales &&
+                                        item.enabled !== disableFinance &&
                                         (!item.fiscalSetting || Boolean(fiscalSetting?.[item.fiscalSetting])) &&
                                         (!item.permission || permissions.includes(item.permission)) && (
                                             <NavigationMenuItem key={index} className="relative flex h-full items-center">

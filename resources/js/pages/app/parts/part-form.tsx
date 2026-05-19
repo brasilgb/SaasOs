@@ -44,7 +44,7 @@ export default function PartForm({ categories, manufacturers, initialData }: Par
     const { data, setData, post, patch, progress, processing, reset, errors } = useForm({
         category: initialData?.category ?? '',
         type: initialData?.type ?? '',
-        is_sellable: initialData?.is_sellable ?? '',
+        is_sellable: Boolean(initialData?.is_sellable ?? false),
         reference_number: initialData?.reference_number ?? '',
         name: initialData?.name ?? '',
         description: initialData?.description ?? '',
@@ -55,7 +55,7 @@ export default function PartForm({ categories, manufacturers, initialData }: Par
         quantity: initialData?.quantity ?? '',
         minimum_stock_level: initialData?.minimum_stock_level ?? '',
         location: initialData?.location ?? '',
-        status: initialData?.status ?? '',
+        status: Boolean(initialData?.status ?? true),
     });
 
     const [categoryOptions, setCategoryOptions] = useState<OptionType[]>(initialCategoryOptions);
@@ -128,12 +128,13 @@ export default function PartForm({ categories, manufacturers, initialData }: Par
                     minimum_stock_level: parts.minimum_stock_level,
                     location: parts.location,
                     status: parts.status,
-                    is_sellable: parts.type,
+                    is_sellable: Boolean(parts.is_sellable),
                 }));
             } else {
                 setDisableInput(false);
 
-                reset('name', 'description', 'manufacturer', 'model_compatibility', 'quantity', 'location', 'status', 'type', 'is_sellable');
+                reset('name', 'description', 'manufacturer', 'model_compatibility', 'quantity', 'location', 'type');
+                setData((data) => ({ ...data, is_sellable: false, status: true }));
             }
         } catch (error) {
             console.error(error);
@@ -248,7 +249,7 @@ export default function PartForm({ categories, manufacturers, initialData }: Par
                         <div className="flex items-center justify-between gap-2">
                             <span className="text-muted-foreground text-sm">Para venda</span>
 
-                            <Switch checked={data.is_sellable} onCheckedChange={(checked) => setData('is_sellable', checked)} />
+                            <Switch checked={Boolean(data.is_sellable)} onCheckedChange={(checked) => setData('is_sellable', checked)} />
                         </div>
                     </div>
 

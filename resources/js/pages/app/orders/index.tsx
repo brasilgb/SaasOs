@@ -43,10 +43,15 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Orders({ orders, whats, feedback, search, status, filter }: any) {
-    const { auth, othersetting } = usePage<{
+    const { auth, fiscalSetting, othersetting } = usePage<{
         auth?: { role?: string; permissions?: string[] };
+        fiscalSetting?: {
+            enabled?: boolean;
+            nfse_enabled?: boolean;
+        } | null;
         othersetting?: {
             automatic_follow_ups_enabled?: boolean;
+            enable_finance?: boolean;
             enablesales?: boolean;
             print_label_button_after_order_create?: boolean;
             show_follow_ups_menu?: boolean;
@@ -69,10 +74,11 @@ export default function Orders({ orders, whats, feedback, search, status, filter
     const canManageOrders = auth?.role !== 'technician' && auth?.permissions?.includes('orders');
     const canAccessSalesModules =
         auth?.role === 'administrator' || auth?.role === 'operator' || auth?.role === 'root_app' || auth?.role === 'root_system';
-    const isFinancialActive = canAccessSalesModules && Boolean(othersetting?.enablesales) && Boolean(auth?.permissions?.includes('sales'));
+    const isFinancialActive = canAccessSalesModules && Boolean(othersetting?.enable_finance) && Boolean(auth?.permissions?.includes('finance'));
     const isBillingActive = Boolean(
         othersetting?.show_follow_ups_menu || othersetting?.show_tasks_menu || othersetting?.automatic_follow_ups_enabled,
     );
+    const canIssueServiceInvoice = canManageOrders && Boolean(fiscalSetting?.enabled) && Boolean(fiscalSetting?.nfse_enabled);
     const canShowPendingPaymentButton = canManageOrders && (isFinancialActive || isBillingActive);
     const feedbackWindowIds = new Set((feedback || []).map((feed: any) => feed.id));
 
@@ -527,7 +533,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                             </a>
                                                         </Button>
                                                     )}
-                                                    {canManageOrders && ORDER_STATUSES_READY_FOR_INVOICE.includes(Number(order.service_status)) && (
+                                                    {canIssueServiceInvoice && ORDER_STATUSES_READY_FOR_INVOICE.includes(Number(order.service_status)) && (
                                                         <Button
                                                             size="icon"
                                                             title="Emitir NFSe"

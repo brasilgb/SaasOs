@@ -18,6 +18,7 @@ import { ChevronRight } from 'lucide-react';
 
 type NavMainPageProps = {
     othersetting?: {
+        enable_finance?: boolean;
         enablesales?: boolean;
         show_follow_ups_menu?: boolean;
         show_tasks_menu?: boolean;
@@ -68,17 +69,17 @@ export function NavMain({
     const { state } = useSidebar();
     const isCollapsed = state === 'collapsed';
     const disableSales = !othersetting?.enablesales ? 'sales' : '';
+    const disableFinance = !othersetting?.enable_finance ? 'finance' : '';
     const permissions = auth?.permissions ?? [];
     const canAccessSalesModules =
         auth?.role === 'administrator' || auth?.role === 'operator' || auth?.role === 'root_app' || auth?.role === 'root_system';
     const visibleItems = items.filter(
         (item) =>
             (item.visibilitySetting ? (othersetting?.[item.visibilitySetting as keyof typeof othersetting] ?? false) : true) &&
-            (item.title !== 'Vendas' && item.title !== 'Despesas' && item.title !== 'Caixa'
-                ? true
-                : canAccessSalesModules && !!othersetting?.enablesales) &&
+            (item.enabled === 'sales' || item.enabled === 'finance' ? canAccessSalesModules : true) &&
             (!item.fiscalSetting || Boolean(fiscalSetting?.[item.fiscalSetting])) &&
             item.enabled !== disableSales &&
+            item.enabled !== disableFinance &&
             (!item.permission || permissions.includes(item.permission)),
     );
 

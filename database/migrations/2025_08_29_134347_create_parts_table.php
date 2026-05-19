@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('tenant_id')->nullable()->constrained()->onDelete('cascade');
             $table->string('type');
             $table->boolean('is_sellable');
-            $table->string('category')->unique();
+            $table->string('category');
             $table->string('part_number')->unique();
             $table->string('reference_number')->unique();
             $table->string('name');

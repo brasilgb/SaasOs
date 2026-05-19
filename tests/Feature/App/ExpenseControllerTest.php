@@ -27,6 +27,7 @@ class ExpenseControllerTest extends TestCase
             'tenant_id' => $this->tenant->id,
             'navigation' => false,
             'enableparts' => false,
+            'enable_finance' => true,
             'enablesales' => true,
             'created_at' => now(),
             'updated_at' => now(),

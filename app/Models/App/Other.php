@@ -13,6 +13,7 @@ class Other extends Model
     protected $casts = [
         'navigation' => 'boolean',
         'enableparts' => 'boolean',
+        'enable_finance' => 'boolean',
         'enablesales' => 'boolean',
         'show_follow_ups_menu' => 'boolean',
         'show_tasks_menu' => 'boolean',
