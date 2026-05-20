@@ -435,7 +435,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                     </div>
                                                     <div>
                                                         <span className="text-muted-foreground">Entrega:</span>{' '}
-                                                        {order.delivery_date ? moment(order.delivery_date).format('DD/MM/YYYY') : '-'}
+                                                        {order.delivery_date ? moment(order.delivery_date).format('DD/MM/YYYY HH:mm') : '-'}
                                                     </div>
                                                 </div>
                                             </TableCell>

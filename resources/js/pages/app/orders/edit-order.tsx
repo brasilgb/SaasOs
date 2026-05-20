@@ -1,5 +1,6 @@
 import { toastSuccess } from '@/components/app-toast-messages';
 import { DatePicker } from '@/components/date-picker';
+import { DateTimePicker } from '@/components/date-time-picker';
 import FormFieldHelp from '@/components/form-field-help';
 import { Icon } from '@/components/icon';
 import InputError from '@/components/input-error';
@@ -222,10 +223,16 @@ export default function EditOrder({
             service_cost: total.toFixed(2),
         }));
 
-        if (Number(data.service_status) === ORDER_STATUS.SERVICE_NOT_EXECUTED) {
-            setData((data: any) => ({ ...data, delivery_date: moment().format('YYYY-MM-DD HH:mm:ss') }));
+    }, [data.parts_value, data.service_value]);
+
+    useEffect(() => {
+        const status = Number(data.service_status);
+        const shouldRegisterDelivery = status === ORDER_STATUS.DELIVERED || status === ORDER_STATUS.SERVICE_NOT_EXECUTED;
+
+        if (shouldRegisterDelivery && !data.delivery_date) {
+            setData((currentData: any) => ({ ...currentData, delivery_date: moment().format('YYYY-MM-DDTHH:mm') }));
         }
-    }, [data.parts_value, data.service_value, data.budget_value, data.delivery_date, data.service_status]);
+    }, [data.service_status]);
 
     const changeCustomer = (selected: any) => {
         setData('customer_id', selected?.value || '');
@@ -695,6 +702,19 @@ export default function EditOrder({
                                                     className="min-w-0"
                                                     styles={selectStyles}
                                                 />
+                                            </div>
+                                            <div className="grid gap-2">
+                                                <FormFieldHelp
+                                                    label="Data de entrega"
+                                                    content="Preenchida automaticamente ao marcar a OS como entregue ao cliente. Pode ser ajustada se a entrega ocorreu em outro horário."
+                                                />
+                                                <DateTimePicker
+                                                    id="delivery_date"
+                                                    value={data.delivery_date}
+                                                    onChange={(value) => setData('delivery_date', value)}
+                                                    placeholder="Sem entrega registrada"
+                                                />
+                                                {errors.delivery_date && <div className="text-sm text-red-500">{errors.delivery_date}</div>}
                                             </div>
                                             <div className="grid gap-2">
                                                 <FormFieldHelp

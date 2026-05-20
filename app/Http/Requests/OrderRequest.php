@@ -55,6 +55,7 @@ class OrderRequest extends FormRequest
             ],
 
             'user_id' => $this->isMethod('post') ? 'nullable' : 'required',
+            'delivery_date' => 'nullable|date',
             'delivery_forecast' => 'nullable|date',
             'observations' => 'nullable|string|max:500',
         ];
@@ -73,6 +74,7 @@ class OrderRequest extends FormRequest
             'state_conservation' => 'estado de conservação',
             'accessories' => 'acessórios',
             'user_id' => 'técnico',
+            'delivery_date' => 'data de entrega',
             'warranty_days' => 'garantia em dias',
             'delivery_forecast' => 'previsão de entrega',
             'observations' => 'observações',
