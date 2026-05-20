@@ -96,7 +96,12 @@ class FollowUpController extends Controller
 
     private function communicationThresholdDays(): int
     {
-        return Other::communicationFollowUpCooldownDays();
+        return Other::communicationFollowUpCooldownDays($this->currentUser()?->tenant_id);
+    }
+
+    private function financeEnabled(): bool
+    {
+        return Other::financeEnabled($this->currentUser()?->tenant_id);
     }
 
     private function latestCommunication(Order $order): ?array
@@ -119,6 +124,37 @@ class FollowUpController extends Controller
             'recipient' => $data['recipient'] ?? null,
             'created_at' => $log->created_at?->toIso8601String(),
         ];
+    }
+
+    private function contactLogAction(string $scope): string
+    {
+        return match ($scope) {
+            'budget' => 'budget_follow_up_sent',
+            'payment' => 'payment_reminder_sent',
+            default => abort(422, 'Escopo de follow-up inválido.'),
+        };
+    }
+
+    private function applyActiveFollowUpRules($query, string $scope)
+    {
+        $columns = $this->scopeColumns($scope);
+        $cooldownCutoff = now()->subDays($this->communicationThresholdDays());
+
+        return $query
+            ->whereNull($columns['paused_at'])
+            ->where(function ($query) use ($columns) {
+                $query
+                    ->whereNull($columns['snoozed_until'])
+                    ->orWhere($columns['snoozed_until'], '<=', now());
+            })
+            ->whereDoesntHave('logs', function ($query) use ($columns, $cooldownCutoff, $scope) {
+                $query
+                    ->whereIn('action', [
+                        $this->contactLogAction($scope),
+                        $columns['log_task_completed'],
+                    ])
+                    ->where('created_at', '>=', $cooldownCutoff);
+            });
     }
 
     private function metricsPeriod(Request $request): array
@@ -712,37 +748,27 @@ class FollowUpController extends Controller
             ])
             ->where('service_status', OrderStatus::BUDGET_GENERATED)
             ->where('updated_at', '<=', now()->subDays($thresholdDays))
-            ->orderBy('budget_follow_up_paused_at')
             ->orderBy('budget_contact_count')
             ->orderBy('updated_at');
+        $budgetQuery = $this->applyActiveFollowUpRules($budgetQuery, 'budget');
         $budgetQuery = $this->applyResponseFilter($budgetQuery, $request, 'budget');
 
         $paymentQuery = (clone $this->baseQuery($request))
             ->withCount([
                 'logs as payment_contact_count' => fn ($query) => $query->where('action', 'payment_reminder_sent'),
             ])
-            ->whereIn('service_status', [
-                OrderStatus::SERVICE_COMPLETED,
-                OrderStatus::CUSTOMER_NOTIFIED,
-                OrderStatus::DELIVERED,
-            ])
-            ->where(function ($subQuery) use ($thresholdDays) {
-                $subQuery
-                    ->where(function ($dateQuery) use ($thresholdDays) {
-                        $dateQuery->whereNotNull('delivery_date')
-                            ->where('delivery_date', '<=', now()->subDays($thresholdDays));
-                    })
-                    ->orWhere(function ($dateQuery) use ($thresholdDays) {
-                        $dateQuery->whereNull('delivery_date')
-                            ->where('updated_at', '<=', now()->subDays($thresholdDays));
-                    });
-            })
+            ->where('service_status', OrderStatus::DELIVERED)
+            ->whereNotNull('delivery_date')
+            ->where('delivery_date', '<=', now()->subDays($thresholdDays))
             ->whereRaw(
                 '(COALESCE(orders.service_cost, 0) - COALESCE((SELECT SUM(op.amount) FROM order_payments op WHERE op.order_id = orders.id), 0)) > 0.009'
             )
-            ->orderBy('payment_follow_up_paused_at')
             ->orderBy('payment_contact_count')
             ->orderByRaw('COALESCE(orders.delivery_date, orders.updated_at, orders.created_at)');
+        $paymentQuery = $this->applyActiveFollowUpRules($paymentQuery, 'payment');
+        if (! $this->financeEnabled()) {
+            $paymentQuery->whereRaw('1 = 0');
+        }
         $paymentQuery = $this->applyResponseFilter($paymentQuery, $request, 'payment');
 
         $budgetSummaryOrders = (clone $budgetQuery)
@@ -798,6 +824,8 @@ class FollowUpController extends Controller
                 'budget_follow_ups' => $budgetSummaryOrders->count(),
                 'payment_follow_ups' => $paymentSummaryOrders->count(),
                 'threshold_days' => $thresholdDays,
+                'cooldown_days' => $thresholdDays,
+                'automatic_follow_ups_enabled' => Other::automaticFollowUpsEnabled($this->currentUser()?->tenant_id),
                 'recovery' => $this->recoverySummary($metricsFrom, $metricsTo),
                 'trigger_performance' => $this->triggerPerformanceSummary($metricsFrom, $metricsTo),
                 'commercial' => $this->commercialDashboard($metricsFrom, $metricsTo),
@@ -869,32 +897,24 @@ class FollowUpController extends Controller
 
         $budgetOrders = (clone $this->baseQuery($request))
             ->where('service_status', OrderStatus::BUDGET_GENERATED)
-            ->where('updated_at', '<=', now()->subDays($thresholdDays))
+            ->where('updated_at', '<=', now()->subDays($thresholdDays));
+        $budgetOrders = $this->applyActiveFollowUpRules($budgetOrders, 'budget')
             ->get()
             ->map(fn (Order $order) => $this->appendFollowUpData($order));
 
         $paymentOrders = (clone $this->baseQuery($request))
-            ->whereIn('service_status', [
-                OrderStatus::SERVICE_COMPLETED,
-                OrderStatus::CUSTOMER_NOTIFIED,
-                OrderStatus::DELIVERED,
-            ])
-            ->where(function ($subQuery) use ($thresholdDays) {
-                $subQuery
-                    ->where(function ($dateQuery) use ($thresholdDays) {
-                        $dateQuery->whereNotNull('delivery_date')
-                            ->where('delivery_date', '<=', now()->subDays($thresholdDays));
-                    })
-                    ->orWhere(function ($dateQuery) use ($thresholdDays) {
-                        $dateQuery->whereNull('delivery_date')
-                            ->where('updated_at', '<=', now()->subDays($thresholdDays));
-                    });
-            })
+            ->where('service_status', OrderStatus::DELIVERED)
+            ->whereNotNull('delivery_date')
+            ->where('delivery_date', '<=', now()->subDays($thresholdDays))
             ->whereRaw(
                 '(COALESCE(orders.service_cost, 0) - COALESCE((SELECT SUM(op.amount) FROM order_payments op WHERE op.order_id = orders.id), 0)) > 0.009'
-            )
+            );
+        $paymentOrders = $this->applyActiveFollowUpRules($paymentOrders, 'payment')
             ->get()
             ->map(fn (Order $order) => $this->appendFollowUpData($order));
+        if (! $this->financeEnabled()) {
+            $paymentOrders = collect();
+        }
 
         $feedbackOrders = (clone $this->baseQuery($request))
             ->where('service_status', OrderStatus::DELIVERED)

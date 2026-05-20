@@ -31,6 +31,11 @@ class SendPaymentFollowUps extends Command
         return Other::automaticFollowUpsEnabled($tenantId);
     }
 
+    private function financeEnabled(?int $tenantId): bool
+    {
+        return Other::financeEnabled($tenantId);
+    }
+
     private function remainingAmount(Order $order): float
     {
         $totalOrder = round((float) ($order->service_cost ?? 0), 2);
@@ -55,22 +60,9 @@ class SendPaymentFollowUps extends Command
         $query = Order::query()
             ->with('customer')
             ->withSum('orderPayments as total_paid', 'amount')
-            ->whereIn('service_status', [
-                OrderStatus::SERVICE_COMPLETED,
-                OrderStatus::CUSTOMER_NOTIFIED,
-                OrderStatus::DELIVERED,
-            ])
-            ->where(function ($builder) {
-                $builder
-                    ->where(function ($dateQuery) {
-                        $dateQuery->whereNotNull('delivery_date')
-                            ->where('delivery_date', '<=', now()->subDays(1));
-                    })
-                    ->orWhere(function ($dateQuery) {
-                        $dateQuery->whereNull('delivery_date')
-                            ->where('updated_at', '<=', now()->subDays(1));
-                    });
-            });
+            ->where('service_status', OrderStatus::DELIVERED)
+            ->whereNotNull('delivery_date')
+            ->where('delivery_date', '<=', now()->subDays(1));
 
         if ($tenantId = $this->option('tenant')) {
             $query->where('tenant_id', (int) $tenantId);
@@ -93,6 +85,11 @@ class SendPaymentFollowUps extends Command
             $tenantId = $order->tenant_id ? (int) $order->tenant_id : null;
 
             if (! $this->automaticFollowUpsEnabled($tenantId)) {
+                $skipped++;
+                continue;
+            }
+
+            if (! $this->financeEnabled($tenantId)) {
                 $skipped++;
                 continue;
             }

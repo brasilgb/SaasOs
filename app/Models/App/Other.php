@@ -73,6 +73,17 @@ class Other extends Model
         return false;
     }
 
+    public static function financeEnabled(?int $tenantId = null): bool
+    {
+        $query = static::query();
+
+        if ($tenantId) {
+            $query->where('tenant_id', $tenantId);
+        }
+
+        return (bool) ($query->value('enable_finance') ?? false);
+    }
+
     public static function budgetConversionTarget(?int $tenantId = null): float
     {
         $query = static::query();

@@ -7,6 +7,7 @@ use App\Http\Requests\CustomerRequest;
 use App\Models\App\Customer;
 use App\Models\App\Order;
 use App\Models\App\OrderPayment;
+use App\Support\OrderStatus;
 use App\Support\TenantSequence;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -380,11 +381,13 @@ class CustomerController extends Controller
 
         $ordersTotalsSub = Order::query()
             ->selectRaw('customer_id, COALESCE(SUM(service_cost), 0) as total_order_amount')
+            ->where('service_status', OrderStatus::DELIVERED)
             ->groupBy('customer_id');
 
         $paymentsTotalsSub = OrderPayment::query()
             ->join('orders', 'orders.id', '=', 'order_payments.order_id')
             ->selectRaw('orders.customer_id as customer_id, COALESCE(SUM(order_payments.amount), 0) as total_paid_amount')
+            ->where('orders.service_status', OrderStatus::DELIVERED)
             ->groupBy('orders.customer_id');
 
         $query = Customer::query()

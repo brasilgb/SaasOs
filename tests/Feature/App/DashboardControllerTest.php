@@ -7,6 +7,7 @@ use App\Models\App\Customer;
 use App\Models\App\Message;
 use App\Models\App\Order;
 use App\Models\App\Part;
+use App\Models\App\Other;
 use App\Models\App\Sale;
 use App\Models\App\Schedule;
 use App\Models\Tenant;
@@ -29,6 +30,9 @@ class DashboardControllerTest extends TestCase
 
         $this->tenant = Tenant::factory()->create(['name' => 'Test Tenant']);
         $this->user = User::factory()->forTenant($this->tenant->id)->create();
+        Other::factory()->forTenant($this->tenant->id)->create([
+            'enable_finance' => true,
+        ]);
 
         $this->withSession(['tenant_id' => $this->tenant->id])
             ->actingAs($this->user);
@@ -324,6 +328,53 @@ class DashboardControllerTest extends TestCase
             ->assertJsonPath('kpis.comparison.range_revenue.previous', 100)
             ->assertJsonPath('kpis.comparison.range_revenue.change', 200)
             ->assertJsonPath('kpis.comparison.range_revenue.percent', 200);
+    }
+
+    public function test_financial_sales_kpis_normalize_payment_methods_for_chart(): void
+    {
+        Sale::factory()->forTenant($this->tenant->id)->create([
+            'status' => 'completed',
+            'payment_method' => 'pix',
+            'total_amount' => 120,
+            'created_at' => now()->subDay(),
+        ]);
+
+        Sale::factory()->forTenant($this->tenant->id)->create([
+            'status' => 'completed',
+            'payment_method' => 'cash',
+            'total_amount' => 80,
+            'created_at' => now()->subDay(),
+        ]);
+
+        Sale::factory()->forTenant($this->tenant->id)->create([
+            'status' => 'completed',
+            'payment_method' => 'credit_card',
+            'total_amount' => 50,
+            'created_at' => now()->subDay(),
+        ]);
+
+        Sale::factory()->forTenant($this->tenant->id)->create([
+            'status' => 'completed',
+            'payment_method' => 'vale',
+            'total_amount' => 30,
+            'created_at' => now()->subDay(),
+        ]);
+
+        Sale::factory()->forTenant($this->tenant->id)->create([
+            'status' => 'cancelled',
+            'payment_method' => 'pix',
+            'total_amount' => 999,
+            'created_at' => now()->subDay(),
+        ]);
+
+        $response = $this->get(route('app.kpisFinancialSales', ['timerange' => 7]));
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('kpis.payment_methods.pix', 120)
+            ->assertJsonPath('kpis.payment_methods.dinheiro', 80)
+            ->assertJsonPath('kpis.payment_methods.cartao', 50)
+            ->assertJsonPath('kpis.payment_methods.outros', 30);
     }
 
     public function test_dashboard_index_exposes_customer_feedback_alert(): void

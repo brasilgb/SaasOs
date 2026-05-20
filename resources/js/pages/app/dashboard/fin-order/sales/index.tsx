@@ -5,7 +5,7 @@ import { BadgeDollarSign, ShoppingCart, TrendingUp, WalletCards } from 'lucide-r
 import moment from 'moment';
 import type { ReactNode } from 'react';
 import { useEffect, useMemo, useState } from 'react';
-import { Bar, CartesianGrid, ComposedChart, Line, Pie, PieChart, XAxis, YAxis } from 'recharts';
+import { CartesianGrid, Cell, ComposedChart, Line, Pie, PieChart, XAxis, YAxis } from 'recharts';
 
 function formatIsoDate(date: Date | string) {
     const d = date instanceof Date ? date : new Date(date);
@@ -75,6 +75,7 @@ type SalesKpis = {
         dinheiro?: number;
         transferencia?: number;
         boleto?: number;
+        outros?: number;
     };
 };
 
@@ -83,8 +84,8 @@ const chartConfig = {
         label: 'Vendas',
         color: 'var(--chart-1)',
     },
-    profit: {
-        label: 'Lucro',
+    expenses: {
+        label: 'Despesas',
         color: 'var(--chart-2)',
     },
 } satisfies ChartConfig;
@@ -95,6 +96,7 @@ const paymentChartConfig = {
     dinheiro: { label: 'Dinheiro', color: 'var(--chart-3)' },
     transferencia: { label: 'Transferência', color: 'var(--chart-4)' },
     boleto: { label: 'Boleto', color: 'var(--chart-5)' },
+    outros: { label: 'Outros', color: 'var(--muted-foreground)' },
 } satisfies ChartConfig;
 
 function SalesRevenueChart({ data }: { data: SalesRevenuePoint[] }) {
@@ -130,7 +132,7 @@ function SalesRevenueChart({ data }: { data: SalesRevenuePoint[] }) {
                         <ChartTooltipContent
                             labelFormatter={(_, payload) => (payload?.[0]?.payload?.date ? moment(payload[0].payload.date).format('DD/MM/YYYY') : '')}
                             formatter={(value, name) => {
-                                const label = name === 'total' ? 'Vendas' : 'Lucro';
+                                const label = name === 'total' ? 'Vendas' : 'Despesas';
                                 return (
                                     <div className="flex w-full items-center justify-between gap-3">
                                         <span>{label}</span>
@@ -141,12 +143,20 @@ function SalesRevenueChart({ data }: { data: SalesRevenuePoint[] }) {
                         />
                     }
                 />
-                <Bar dataKey="total" name="total" fill="var(--color-total)" radius={[6, 6, 0, 0]} maxBarSize={24} />
                 <Line
                     type="monotone"
-                    dataKey="profit"
-                    name="profit"
-                    stroke="var(--color-profit)"
+                    dataKey="total"
+                    name="total"
+                    stroke="var(--color-total)"
+                    strokeWidth={2}
+                    dot={{ r: 2 }}
+                    activeDot={{ r: 4 }}
+                />
+                <Line
+                    type="monotone"
+                    dataKey="expenses"
+                    name="expenses"
+                    stroke="var(--color-expenses)"
                     strokeWidth={2}
                     dot={{ r: 2 }}
                     activeDot={{ r: 4 }}
@@ -166,6 +176,7 @@ function SalesPaymentMethodsPie({
         dinheiro?: number;
         transferencia?: number;
         boleto?: number;
+        outros?: number;
     };
 }) {
     const pieData = useMemo(
@@ -181,9 +192,19 @@ function SalesPaymentMethodsPie({
                     fill: 'var(--color-transferencia)',
                 },
                 { key: 'boleto', label: 'Boleto', value: Number(paymentMethods?.boleto || 0), fill: 'var(--color-boleto)' },
+                { key: 'outros', label: 'Outros', value: Number(paymentMethods?.outros || 0), fill: 'var(--color-outros)' },
             ].filter((item) => item.value > 0),
         [paymentMethods],
     );
+
+    if (pieData.length === 0) {
+        return (
+            <div className="flex h-[260px] w-full flex-col items-center justify-center rounded-md border border-dashed px-4 text-center sm:h-[300px]">
+                <p className="text-sm font-medium">Sem vendas concluídas no período</p>
+                <p className="text-muted-foreground mt-1 text-xs">Altere o período ou registre uma venda concluída para gerar a distribuição.</p>
+            </div>
+        );
+    }
 
     return (
         <ChartContainer config={paymentChartConfig} className="h-[260px] w-full sm:h-[300px]">
@@ -202,7 +223,11 @@ function SalesPaymentMethodsPie({
                         />
                     }
                 />
-                <Pie data={pieData} dataKey="value" nameKey="label" innerRadius={42} outerRadius={78} strokeWidth={2} />
+                <Pie data={pieData} dataKey="value" nameKey="label" innerRadius={42} outerRadius={78} strokeWidth={2}>
+                    {pieData.map((entry) => (
+                        <Cell key={entry.key} fill={entry.fill} />
+                    ))}
+                </Pie>
                 <ChartLegend
                     align="left"
                     verticalAlign="bottom"
@@ -373,7 +398,7 @@ export default function FinanceiroSales({
                 <Card className="min-w-0 xl:col-span-8">
                     <CardHeader>
                         <CardTitle>Faturamento de vendas</CardTitle>
-                        <CardDescription>Mês corrente (do dia 01 ao último dia do mês): barras de vendas e linha de lucro</CardDescription>
+                        <CardDescription>Mês corrente: linhas de vendas concluídas e despesas lançadas</CardDescription>
                     </CardHeader>
 
                     <CardContent className="px-4 pb-4 sm:px-6">

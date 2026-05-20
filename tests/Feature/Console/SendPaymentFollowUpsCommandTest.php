@@ -43,6 +43,7 @@ class SendPaymentFollowUpsCommandTest extends TestCase
             'mail_from_address' => 'noreply@example.com',
             'mail_from_name' => 'Sigma OS',
             'automatic_follow_ups_enabled' => true,
+            'enable_finance' => true,
         ]);
 
         $order = Order::factory()->forTenant($tenant->id)->create([
@@ -98,6 +99,7 @@ class SendPaymentFollowUpsCommandTest extends TestCase
             'mail_from_address' => 'noreply@example.com',
             'mail_from_name' => 'Sigma OS',
             'automatic_follow_ups_enabled' => true,
+            'enable_finance' => true,
         ]);
 
         $order = Order::factory()->forTenant($tenant->id)->create([
@@ -114,6 +116,53 @@ class SendPaymentFollowUpsCommandTest extends TestCase
             'action' => 'payment_reminder_sent',
             'data' => ['trigger' => 'automatic'],
             'created_at' => now()->subDay(),
+        ]);
+
+        $this->artisan('sigmaos:send-payment-followups')
+            ->expectsOutputToContain('Processadas: 1 | Enviadas: 0 | Ignoradas: 1')
+            ->assertExitCode(0);
+
+        Queue::assertNothingPushed();
+    }
+
+    public function test_it_skips_payment_follow_up_when_finance_module_is_disabled(): void
+    {
+        Queue::fake();
+
+        $tenant = Tenant::factory()->create();
+        $customer = Customer::factory()->forTenant($tenant->id)->create([
+            'email' => 'cliente@example.com',
+        ]);
+        $equipment = Equipment::factory()->forTenant($tenant->id)->create();
+
+        Other::query()->create([
+            'tenant_id' => $tenant->id,
+            'mail_mailer' => 'smtp',
+            'mail_host' => 'smtp.example.com',
+            'mail_port' => 587,
+            'mail_username' => 'user@example.com',
+            'mail_password' => Crypt::encryptString('secret'),
+            'mail_encryption' => 'tls',
+            'mail_from_address' => 'noreply@example.com',
+            'mail_from_name' => 'Sigma OS',
+            'automatic_follow_ups_enabled' => true,
+            'enable_finance' => false,
+        ]);
+
+        $order = Order::factory()->forTenant($tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'service_status' => OrderStatus::DELIVERED,
+            'service_cost' => 300,
+            'delivery_date' => now()->subDays(4),
+            'updated_at' => now()->subDays(4),
+        ]);
+
+        OrderPayment::create([
+            'order_id' => $order->id,
+            'amount' => 100,
+            'payment_method' => 'pix',
+            'paid_at' => now()->subDays(3),
         ]);
 
         $this->artisan('sigmaos:send-payment-followups')
@@ -144,6 +193,7 @@ class SendPaymentFollowUpsCommandTest extends TestCase
             'mail_from_address' => 'noreply@example.com',
             'mail_from_name' => 'Sigma OS',
             'automatic_follow_ups_enabled' => true,
+            'enable_finance' => true,
         ]);
 
         $order = Order::factory()->forTenant($tenant->id)->create([
@@ -197,6 +247,7 @@ class SendPaymentFollowUpsCommandTest extends TestCase
             'mail_from_address' => 'noreply@example.com',
             'mail_from_name' => 'Sigma OS',
             'automatic_follow_ups_enabled' => true,
+            'enable_finance' => true,
         ]);
 
         $order = Order::factory()->forTenant($tenant->id)->create([

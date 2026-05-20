@@ -83,6 +83,10 @@ export default function OrderDashboard({
         </span>
     );
     const feedbackDelayLabel = `${Number(feedbackDelay || 7)} ${Number(feedbackDelay || 7) === 1 ? 'dia' : 'dias'}`;
+    const operationLinkClass =
+        'inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-md bg-slate-200 px-4 py-2 text-sm font-medium whitespace-nowrap text-slate-900 shadow-xs transition-all hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-50 dark:hover:bg-slate-600';
+    const warrantyLinkClass =
+        'inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-md bg-amber-100 px-4 py-2 text-sm font-medium whitespace-nowrap text-amber-900 shadow-xs transition-all hover:bg-amber-200 dark:bg-amber-500/25 dark:text-amber-100 dark:hover:bg-amber-500/35';
 
     return (
         <div className="min-w-0">
@@ -245,11 +249,13 @@ export default function OrderDashboard({
                                         <div className="py-1 text-xs font-semibold">Visitas agendadas pelo número do agendamento</div>
                                         <div className="flex flex-wrap gap-2 border-t py-2">
                                             {orders?.agendados.map((age: any, index: number) => (
-                                                <Button key={`ag-${age.schedules_number ?? index}`} variant={'secondary'} asChild>
-                                                    <Link href={route('app.schedules.index', { search: age.schedules_number, init: true })}>
-                                                        {age.schedules_number}
-                                                    </Link>
-                                                </Button>
+                                                <Link
+                                                    key={`ag-${age.schedules_number ?? index}`}
+                                                    href={route('app.schedules.index', { search: age.schedules_number, init: true })}
+                                                    className={operationLinkClass}
+                                                >
+                                                    {age.schedules_number}
+                                                </Link>
                                             ))}
                                         </div>
                                     </TabsContent>
@@ -257,11 +263,13 @@ export default function OrderDashboard({
                                         <div className="py-1 text-xs font-semibold">Orçamentos gerados por número de ordem</div>
                                         <div className="flex flex-wrap gap-2 border-t py-2">
                                             {orders?.gerados.map((ger: any, index: number) => (
-                                                <Button key={`og-${ger.order_number ?? index}`} variant={'secondary'} asChild>
-                                                    <Link href={route('app.orders.index', { search: ger.order_number, init: true })}>
-                                                        {ger.order_number}
-                                                    </Link>
-                                                </Button>
+                                                <Link
+                                                    key={`og-${ger.order_number ?? index}`}
+                                                    href={route('app.orders.index', { search: ger.order_number, init: true })}
+                                                    className={operationLinkClass}
+                                                >
+                                                    {ger.order_number}
+                                                </Link>
                                             ))}
                                         </div>
                                     </TabsContent>
@@ -269,11 +277,13 @@ export default function OrderDashboard({
                                         <div className="py-1 text-xs font-semibold">Orçamentos aprovados por número de ordem</div>
                                         <div className="flex flex-wrap gap-2 border-t py-2">
                                             {orders?.aprovados.map((apro: any, index: number) => (
-                                                <Button key={`oa-${apro.order_number ?? index}`} variant={'secondary'} asChild>
-                                                    <Link href={route('app.orders.index', { search: apro.order_number, init: true })}>
-                                                        {apro.order_number}
-                                                    </Link>
-                                                </Button>
+                                                <Link
+                                                    key={`oa-${apro.order_number ?? index}`}
+                                                    href={route('app.orders.index', { search: apro.order_number, init: true })}
+                                                    className={operationLinkClass}
+                                                >
+                                                    {apro.order_number}
+                                                </Link>
                                             ))}
                                         </div>
                                     </TabsContent>
@@ -281,11 +291,13 @@ export default function OrderDashboard({
                                         <div className="py-1 text-xs font-semibold">Serviços concluídos por número de ordem e clientes avisados</div>
                                         <div className="flex flex-wrap gap-2 border-t py-2">
                                             {orders?.concluidosca.map((conca: any, index: number) => (
-                                                <Button key={`ca-${conca.order_number ?? index}`} variant={'secondary'} asChild>
-                                                    <Link href={route('app.orders.index', { search: conca.order_number, init: true })}>
-                                                        {conca.order_number}
-                                                    </Link>
-                                                </Button>
+                                                <Link
+                                                    key={`ca-${conca.order_number ?? index}`}
+                                                    href={route('app.orders.index', { search: conca.order_number, init: true })}
+                                                    className={operationLinkClass}
+                                                >
+                                                    {conca.order_number}
+                                                </Link>
                                             ))}
                                         </div>
                                     </TabsContent>
@@ -295,11 +307,13 @@ export default function OrderDashboard({
                                         </div>
                                         <div className="flex flex-wrap gap-2 border-t py-2">
                                             {orders?.concluidoscn.map((concn: any, index: number) => (
-                                                <Button key={`cn-${concn.order_number ?? index}`} variant={'secondary'} asChild>
-                                                    <Link href={route('app.orders.index', { search: concn.order_number, init: true })}>
-                                                        {concn.order_number}
-                                                    </Link>
-                                                </Button>
+                                                <Link
+                                                    key={`cn-${concn.order_number ?? index}`}
+                                                    href={route('app.orders.index', { search: concn.order_number, init: true })}
+                                                    className={operationLinkClass}
+                                                >
+                                                    {concn.order_number}
+                                                </Link>
                                             ))}
                                         </div>
                                     </TabsContent>
@@ -309,15 +323,14 @@ export default function OrderDashboard({
                                         </div>
                                         <div className="flex flex-wrap gap-2 border-t py-2">
                                             {orders?.feedback.map((ger: any, index: number) => (
-                                                <Button key={`fb-${ger.order_number ?? index}`} variant={'secondary'} asChild>
-                                                    <Link
-                                                        href={route('app.orders.index', { search: ger.order_number, init: true, fd: 1 })}
-                                                        className="relative"
-                                                    >
-                                                        {ger.feedback && <Check className="absolute -top-1 -right-1 h-4 w-4" />}
-                                                        {ger.order_number}
-                                                    </Link>
-                                                </Button>
+                                                <Link
+                                                    key={`fb-${ger.order_number ?? index}`}
+                                                    href={route('app.orders.index', { search: ger.order_number, init: true, fd: 1 })}
+                                                    className={`${operationLinkClass} relative`}
+                                                >
+                                                    {ger.feedback && <Check className="absolute -top-1 -right-1 h-4 w-4" />}
+                                                    {ger.order_number}
+                                                </Link>
                                             ))}
                                         </div>
                                     </TabsContent>
@@ -325,16 +338,16 @@ export default function OrderDashboard({
                                         <div className="py-1 text-xs font-semibold">Ordens identificadas como retorno em garantia</div>
                                         <div className="flex flex-wrap gap-2 border-t py-2">
                                             {orders?.garantia.map((ret: any, index: number) => (
-                                                <Button key={`wg-${ret.order_number ?? index}`} variant={'secondary'} asChild>
-                                                    <Link
-                                                        href={route('app.orders.index', {
-                                                            filter: 'warranty_return',
-                                                            search: ret.order_number,
-                                                        })}
-                                                    >
-                                                        {ret.order_number}
-                                                    </Link>
-                                                </Button>
+                                                <Link
+                                                    key={`wg-${ret.order_number ?? index}`}
+                                                    href={route('app.orders.index', {
+                                                        filter: 'warranty_return',
+                                                        search: ret.order_number,
+                                                    })}
+                                                    className={warrantyLinkClass}
+                                                >
+                                                    {ret.order_number}
+                                                </Link>
                                             ))}
                                         </div>
                                     </TabsContent>

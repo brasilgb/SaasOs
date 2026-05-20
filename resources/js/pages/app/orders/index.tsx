@@ -15,7 +15,7 @@ import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { statusServico } from '@/Utils/dataSelect';
 import { maskPhone } from '@/Utils/mask';
-import { ORDER_STATUSES_READY_FOR_INVOICE } from '@/Utils/order-status';
+import { ORDER_STATUS, ORDER_STATUSES_READY_FOR_INVOICE } from '@/Utils/order-status';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { AlertTriangle, Barcode, Camera, Edit, FileTextIcon, ImageUp, LinkIcon, Mail, Plus, Wrench, X } from 'lucide-react';
 import moment from 'moment';
@@ -75,11 +75,8 @@ export default function Orders({ orders, whats, feedback, search, status, filter
     const canAccessSalesModules =
         auth?.role === 'administrator' || auth?.role === 'operator' || auth?.role === 'root_app' || auth?.role === 'root_system';
     const isFinancialActive = canAccessSalesModules && Boolean(othersetting?.enable_finance) && Boolean(auth?.permissions?.includes('finance'));
-    const isBillingActive = Boolean(
-        othersetting?.show_follow_ups_menu || othersetting?.show_tasks_menu || othersetting?.automatic_follow_ups_enabled,
-    );
     const canIssueServiceInvoice = canManageOrders && Boolean(fiscalSetting?.enabled) && Boolean(fiscalSetting?.nfse_enabled);
-    const canShowPendingPaymentButton = canManageOrders && (isFinancialActive || isBillingActive);
+    const canShowPendingPaymentButton = canManageOrders && isFinancialActive;
     const feedbackWindowIds = new Set((feedback || []).map((feed: any) => feed.id));
 
     const handleBudgetFollowUp = (id: number) => {
@@ -371,6 +368,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                         order.service_value !== null &&
                                         order.service_value !== '' &&
                                         totalOrder > 0;
+                                    const isDelivered = Number(order.service_status) === ORDER_STATUS.DELIVERED;
                                     const hasPendingPayment = remaining > 0.009;
                                     const hasFiscalRegistered = Boolean(order?.fiscal_document_number || order?.fiscal_document_url);
                                     const hasBudgetFollowUp = Boolean(order.budget_follow_up);
@@ -506,7 +504,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                         </Button>
                                                     )}
 
-                                                    {canShowPendingPaymentButton && hasFinancialValuesFilled && hasPendingPayment && (
+                                                    {canShowPendingPaymentButton && isDelivered && hasFinancialValuesFilled && hasPendingPayment && (
                                                         <OrderPaymentsModal
                                                             order={order}
                                                             orderPayments={[]}

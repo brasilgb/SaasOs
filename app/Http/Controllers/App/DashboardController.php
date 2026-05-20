@@ -150,6 +150,24 @@ class DashboardController extends Controller
         ];
     }
 
+    private function normalizePaymentMethod(?string $method): string
+    {
+        $normalized = str($method ?? '')
+            ->lower()
+            ->ascii()
+            ->replace([' ', '-', '.'], '_')
+            ->toString();
+
+        return match ($normalized) {
+            'pix' => 'pix',
+            'cartao', 'cartao_credito', 'cartao_de_credito', 'credito', 'credit_card', 'card' => 'cartao',
+            'dinheiro', 'cash' => 'dinheiro',
+            'transferencia', 'transferencia_bancaria', 'bank_transfer', 'ted', 'doc' => 'transferencia',
+            'boleto', 'bank_slip' => 'boleto',
+            default => 'outros',
+        };
+    }
+
     public function chartEquipments($timerange)
     {
         [$start, $end] = $this->getRange($timerange);
@@ -293,28 +311,17 @@ class DashboardController extends Controller
             ->where('updated_at', '<=', $communicationThreshold)
             ->count();
 
-        $pendingPaymentFollowUps = Order::query()
-            ->whereIn('service_status', [
-                OrderStatus::SERVICE_COMPLETED,
-                OrderStatus::CUSTOMER_NOTIFIED,
-                OrderStatus::DELIVERED,
-            ])
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->where(function ($query) use ($communicationThreshold) {
-                $query
-                    ->where(function ($dateQuery) use ($communicationThreshold) {
-                        $dateQuery->whereNotNull('delivery_date')
-                            ->where('delivery_date', '<=', $communicationThreshold);
-                    })
-                    ->orWhere(function ($dateQuery) use ($communicationThreshold) {
-                        $dateQuery->whereNull('delivery_date')
-                            ->where('updated_at', '<=', $communicationThreshold);
-                    });
-            })
-            ->whereRaw(
-                '(COALESCE(orders.service_cost, 0) - COALESCE((SELECT SUM(op.amount) FROM order_payments op WHERE op.order_id = orders.id), 0)) > 0.009'
-            )
-            ->count();
+        $pendingPaymentFollowUps = Other::financeEnabled(auth()->user()?->tenant_id)
+            ? Order::query()
+                ->where('service_status', OrderStatus::DELIVERED)
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->whereNotNull('delivery_date')
+                ->where('delivery_date', '<=', $communicationThreshold)
+                ->whereRaw(
+                    '(COALESCE(orders.service_cost, 0) - COALESCE((SELECT SUM(op.amount) FROM order_payments op WHERE op.order_id = orders.id), 0)) > 0.009'
+                )
+                ->count()
+            : 0;
 
         return response()->json([
 
@@ -640,12 +647,17 @@ class DashboardController extends Controller
             ->pluck('total', 'payment_method')
             ->toArray();
         $paymentMethods = [
-            'pix' => (float) ($paymentMethodsRaw['pix'] ?? 0),
-            'cartao' => (float) ($paymentMethodsRaw['cartao'] ?? 0),
-            'dinheiro' => (float) ($paymentMethodsRaw['dinheiro'] ?? 0),
-            'transferencia' => (float) ($paymentMethodsRaw['transferencia'] ?? 0),
-            'boleto' => (float) ($paymentMethodsRaw['boleto'] ?? 0),
+            'pix' => 0.0,
+            'cartao' => 0.0,
+            'dinheiro' => 0.0,
+            'transferencia' => 0.0,
+            'boleto' => 0.0,
+            'outros' => 0.0,
         ];
+
+        foreach ($paymentMethodsRaw as $method => $total) {
+            $paymentMethods[$this->normalizePaymentMethod((string) $method)] += (float) $total;
+        }
 
         return response()->json([
             'range' => $timeRange,

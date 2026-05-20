@@ -33,6 +33,7 @@ class HandleInertiaRequests extends Middleware
         }
 
         $thresholdDays = Other::communicationFollowUpCooldownDays();
+        $paymentFollowUpsEnabled = Other::financeEnabled($user->tenant_id);
 
         $budgetOrders = Order::query()
             ->where('budget_follow_up_assigned_to', $user->id)
@@ -50,22 +51,9 @@ class HandleInertiaRequests extends Middleware
 
         $paymentOrders = Order::query()
             ->where('payment_follow_up_assigned_to', $user->id)
-            ->whereIn('service_status', [
-                OrderStatus::SERVICE_COMPLETED,
-                OrderStatus::CUSTOMER_NOTIFIED,
-                OrderStatus::DELIVERED,
-            ])
-            ->where(function ($subQuery) use ($thresholdDays) {
-                $subQuery
-                    ->where(function ($dateQuery) use ($thresholdDays) {
-                        $dateQuery->whereNotNull('delivery_date')
-                            ->where('delivery_date', '<=', now()->subDays($thresholdDays));
-                    })
-                    ->orWhere(function ($dateQuery) use ($thresholdDays) {
-                        $dateQuery->whereNull('delivery_date')
-                            ->where('updated_at', '<=', now()->subDays($thresholdDays));
-                    });
-            })
+            ->where('service_status', OrderStatus::DELIVERED)
+            ->whereNotNull('delivery_date')
+            ->where('delivery_date', '<=', now()->subDays($thresholdDays))
             ->where(function ($query) {
                 $query->whereNull('payment_follow_up_snoozed_until')
                     ->orWhere('payment_follow_up_snoozed_until', '<=', now());
@@ -78,6 +66,9 @@ class HandleInertiaRequests extends Middleware
                     ->whereDate('created_at', now()->toDateString());
             })
             ->get(['id', 'updated_at', 'delivery_date']);
+        if (! $paymentFollowUpsEnabled) {
+            $paymentOrders = collect();
+        }
 
         $criticalBudget = $budgetOrders->filter(fn ($order) => optional($order->updated_at)->diffInDays(now()) >= 10)->count();
         $criticalPayment = $paymentOrders->filter(function ($order) {
@@ -100,36 +91,25 @@ class HandleInertiaRequests extends Middleware
             })
             ->count();
 
-        $unassignedPayment = Order::query()
-            ->whereNull('payment_follow_up_assigned_to')
-            ->whereIn('service_status', [
-                OrderStatus::SERVICE_COMPLETED,
-                OrderStatus::CUSTOMER_NOTIFIED,
-                OrderStatus::DELIVERED,
-            ])
-            ->where(function ($subQuery) use ($thresholdDays) {
-                $subQuery
-                    ->where(function ($dateQuery) use ($thresholdDays) {
-                        $dateQuery->whereNotNull('delivery_date')
-                            ->where('delivery_date', '<=', now()->subDays($thresholdDays));
-                    })
-                    ->orWhere(function ($dateQuery) use ($thresholdDays) {
-                        $dateQuery->whereNull('delivery_date')
-                            ->where('updated_at', '<=', now()->subDays($thresholdDays));
-                    });
-            })
-            ->where(function ($query) {
-                $query->whereNull('payment_follow_up_snoozed_until')
-                    ->orWhere('payment_follow_up_snoozed_until', '<=', now());
-            })
-            ->whereRaw(
-                '(COALESCE(orders.service_cost, 0) - COALESCE((SELECT SUM(op.amount) FROM order_payments op WHERE op.order_id = orders.id), 0)) > 0.009'
-            )
-            ->whereDoesntHave('logs', function ($query) {
-                $query->where('action', 'payment_follow_up_task_completed')
-                    ->whereDate('created_at', now()->toDateString());
-            })
-            ->count();
+        $unassignedPayment = $paymentFollowUpsEnabled
+            ? Order::query()
+                ->whereNull('payment_follow_up_assigned_to')
+                ->where('service_status', OrderStatus::DELIVERED)
+                ->whereNotNull('delivery_date')
+                ->where('delivery_date', '<=', now()->subDays($thresholdDays))
+                ->where(function ($query) {
+                    $query->whereNull('payment_follow_up_snoozed_until')
+                        ->orWhere('payment_follow_up_snoozed_until', '<=', now());
+                })
+                ->whereRaw(
+                    '(COALESCE(orders.service_cost, 0) - COALESCE((SELECT SUM(op.amount) FROM order_payments op WHERE op.order_id = orders.id), 0)) > 0.009'
+                )
+                ->whereDoesntHave('logs', function ($query) {
+                    $query->where('action', 'payment_follow_up_task_completed')
+                        ->whereDate('created_at', now()->toDateString());
+                })
+                ->count()
+            : 0;
 
         $total = $budgetOrders->count() + $paymentOrders->count();
 

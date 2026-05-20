@@ -28,6 +28,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Others({ othersettings, company, time_remaining, mailSettings, businessMetrics }: any) {
     const { auth, flash } = usePage().props as any;
     const canManageOtherSettings = auth?.permissions?.includes('other_settings');
+    const initialTab =
+        typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('tab') === 'operational' ? 'operational' : 'system';
 
     const { data, setData, put, processing } = useForm({
         navigation: othersettings?.navigation,
@@ -111,7 +113,7 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                     </div>
 
                     <form onSubmit={handleSubmit} autoComplete="off" className="mt-8 w-full space-y-8">
-                        <Tabs defaultValue="system" className="w-full space-y-6">
+                        <Tabs defaultValue={initialTab} className="w-full space-y-6">
                             <TabsList className="grid w-full grid-cols-2 lg:w-fit lg:min-w-[420px]">
                                 <TabsTrigger value="system">Sistema e SMTP</TabsTrigger>
                                 <TabsTrigger value="operational">Operacionais</TabsTrigger>
@@ -333,7 +335,7 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                     </div>
                                 </div>
 
-                                <div className="space-y-6 rounded-2xl border p-5">
+                                <div id="intervalo-follow-up-cliente" className="scroll-mt-24 space-y-6 rounded-2xl border p-5">
                                     <HeadingSmall
                                         title="Indicador de retorno em garantia"
                                         description="Defina o percentual máximo aceitável de retorno em garantia no período. Acima desse valor, o dashboard e os relatórios passam a exibir alerta visual."
@@ -366,7 +368,7 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                 <div className="space-y-6 rounded-2xl border p-5">
                                     <HeadingSmall
                                         title="Intervalo de follow-up com cliente"
-                                        description="Define quantos dias o sistema espera para considerar orçamento parado ou cobrança pendente elegíveis para novo contato automático."
+                                        description="Define quantos dias o sistema espera para considerar orçamento parado ou cobrança pendente elegíveis para novo contato, manual ou automático."
                                     />
 
                                     <div className="grid w-full gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(280px,0.8fr)]">
@@ -395,7 +397,7 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                                 max="30"
                                                 step="1"
                                                 value={data.communication_follow_up_cooldown_days}
-                                                disabled={!canManageOtherSettings || !data.automatic_follow_ups_enabled}
+                                                disabled={!canManageOtherSettings}
                                                 onChange={(e) =>
                                                     setData(
                                                         'communication_follow_up_cooldown_days',
@@ -405,8 +407,9 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                                 placeholder="2"
                                             />
                                             <p className="text-muted-foreground text-xs leading-relaxed">
-                                                Esse valor é usado na listagem de ordens e nas automações de orçamento parado e cobrança pendente. Se
-                                                o envio automático estiver desligado, este intervalo fica apenas configurado para uso futuro.
+                                                Esse valor é usado na fila manual, na listagem de ordens e nas automações de orçamento parado e
+                                                cobrança pendente. Se o envio automático estiver desligado, a janela continua controlando quando a
+                                                pendência volta a aparecer para contato manual.
                                             </p>
                                         </div>
                                     </div>

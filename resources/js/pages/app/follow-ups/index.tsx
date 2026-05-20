@@ -16,7 +16,7 @@ import { maskMoney, maskPhone } from '@/Utils/mask';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { CheckCircle2, Filter, LinkIcon, Mail, MessageCircle, PauseCircle, PlayCircle, Search, Wrench } from 'lucide-react';
 import moment from 'moment';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Painel', href: route('app.dashboard') },
@@ -98,12 +98,14 @@ function FollowUpTable({
     orders,
     type,
     canManageOrders,
+    automaticFollowUpsEnabled,
 }: {
     title: string;
-    description: string;
+    description: ReactNode;
     orders: any;
     type: 'budget' | 'payment';
     canManageOrders: boolean;
+    automaticFollowUpsEnabled: boolean;
 }) {
     const pauseKey = type === 'budget' ? 'budget_follow_up_paused' : 'payment_follow_up_paused';
     const pauseReasonKey = type === 'budget' ? 'budget_follow_up_pause_reason' : 'payment_follow_up_pause_reason';
@@ -294,7 +296,7 @@ function FollowUpTable({
                                                                 <CheckCircle2 className="h-4 w-4" />
                                                             </Button>
                                                         )}
-                                                        {canManageOrders && !order[pauseKey] && (
+                                                        {canManageOrders && automaticFollowUpsEnabled && !order[pauseKey] && (
                                                             <Button
                                                                 type="button"
                                                                 size="icon"
@@ -370,6 +372,7 @@ function FollowUpTable({
 export default function FollowUps({ filters, summary, budgetOrders, paymentOrders, technicians, trends }: any) {
     const { auth } = usePage<{ auth?: { role?: string; permissions?: string[] } }>().props;
     const canManageOrders = Boolean(auth?.role !== 'technician' && auth?.permissions?.includes('orders'));
+    const canManageOtherSettings = Boolean(auth?.permissions?.includes('other_settings'));
     const [search, setSearch] = useState(filters?.search ?? '');
     const responseStatus = filters?.response_status ?? 'all';
     const [metricsDateRange, setMetricsDateRange] = useState<any>({
@@ -429,7 +432,7 @@ export default function FollowUps({ filters, summary, budgetOrders, paymentOrder
                     <div>
                         <h2 className="text-xl font-semibold tracking-tight">Retornos ao cliente</h2>
                         <p className="text-muted-foreground text-sm">
-                            Use esta tela para ver quais clientes precisam de retorno sobre orçamento parado ou saldo pendente.
+                            Lista ativa de clientes que precisam de retorno. Contatos feitos saem da fila pelo prazo configurado.
                         </p>
                     </div>
                 </div>
@@ -464,6 +467,11 @@ export default function FollowUps({ filters, summary, budgetOrders, paymentOrder
                         </CardHeader>
                         <CardContent className="text-3xl font-bold">{summary?.threshold_days ?? 0}d</CardContent>
                     </Card>
+                </div>
+
+                <div className="mt-4 rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-blue-950 dark:border-blue-500/30 dark:bg-blue-950/20 dark:text-blue-100">
+                    Pendência ativa é todo orçamento ou cobrança ainda aberto, sem pausa, sem adiamento e sem contato recente nos últimos{' '}
+                    {summary?.cooldown_days ?? summary?.threshold_days ?? 0} dia(s). O histórico continua disponível nos resultados dos contatos.
                 </div>
 
                 <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
@@ -717,10 +725,27 @@ export default function FollowUps({ filters, summary, budgetOrders, paymentOrder
                     {activeType !== 'payment' && (
                         <FollowUpTable
                             title="Orçamento parado"
-                            description="Ordens com orçamento gerado e sem retorno dentro da janela configurada."
+                            description={
+                                <>
+                                    Ordens com orçamento gerado e sem retorno dentro da janela configurada ({summary?.cooldown_days ?? 0} dia
+                                    {(summary?.cooldown_days ?? 0) === 1 ? '' : 's'}).{' '}
+                                    {canManageOtherSettings ? (
+                                        <Link
+                                            href={`${route('app.other-settings.index')}?tab=operational#intervalo-follow-up-cliente`}
+                                            className="font-medium text-primary underline-offset-4 hover:underline"
+                                        >
+                                            Alterar janela
+                                        </Link>
+                                    ) : (
+                                        <span>Alteração disponível em Outras configurações para usuários autorizados.</span>
+                                    )}{' '}
+                                    {!summary?.automatic_follow_ups_enabled && <span>O envio automático está desligado.</span>}
+                                </>
+                            }
                             orders={budgetOrders}
                             type="budget"
                             canManageOrders={canManageOrders}
+                            automaticFollowUpsEnabled={Boolean(summary?.automatic_follow_ups_enabled)}
                         />
                     )}
                     {activeType !== 'budget' && (
@@ -730,6 +755,7 @@ export default function FollowUps({ filters, summary, budgetOrders, paymentOrder
                             orders={paymentOrders}
                             type="payment"
                             canManageOrders={canManageOrders}
+                            automaticFollowUpsEnabled={Boolean(summary?.automatic_follow_ups_enabled)}
                         />
                     )}
                 </div>

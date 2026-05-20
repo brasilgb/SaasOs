@@ -143,12 +143,19 @@ export default function FollowUpTasks({ filters, summary, dailyAgenda, technicia
                     <Icon iconNode={ClipboardList} className="h-8 w-8" />
                     <div>
                         <h2 className="text-xl font-semibold tracking-tight">Central de pendências</h2>
-                        <p className="text-muted-foreground text-sm">Veja contatos, cobranças e tratativas que precisam de ação ou responsável.</p>
+                        <p className="text-muted-foreground text-sm">
+                            Fila ativa de contatos, cobranças e tratativas que precisam de ação agora.
+                        </p>
                     </div>
                 </div>
             </div>
 
             <div className="space-y-4 p-4">
+                <div className="rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-blue-950 dark:border-blue-500/30 dark:bg-blue-950/20 dark:text-blue-100">
+                    Ao concluir uma tarefa ou enviar contato, ela sai da fila pelo prazo configurado. Ela volta somente se o orçamento, pagamento ou
+                    retorno continuar pendente depois desse período. Em feedback, concluir resolve a tratativa.
+                </div>
+
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-base">Filtros operacionais</CardTitle>

@@ -38,9 +38,10 @@ class ScheduleRequest extends FormRequest
         return [
             'customer_id' => 'cliente',
             'user_id' => 'técnico',
-            'schedules' => 'equipamento',
+            'schedules' => 'horário da visita',
             'service' => 'serviço',
             'details' => 'detalhes',
+            'status' => 'status do agendamento',
         ];
     }
 }

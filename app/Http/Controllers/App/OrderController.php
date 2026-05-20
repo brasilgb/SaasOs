@@ -67,9 +67,7 @@ class OrderController extends Controller
             return false;
         }
 
-        return (bool) (Other::query()
-            ->where('tenant_id', $this->currentUser()?->tenant_id)
-            ->value('enable_finance') ?? false);
+        return Other::financeEnabled($this->currentUser()?->tenant_id);
     }
 
     private function appendPaymentReminderAvailability(Order $order): Order
@@ -156,15 +154,15 @@ class OrderController extends Controller
             return false;
         }
 
-        if (! in_array((int) $order->service_status, [
-            OrderStatus::SERVICE_COMPLETED,
-            OrderStatus::CUSTOMER_NOTIFIED,
-            OrderStatus::DELIVERED,
-        ], true)) {
+        if (! Other::financeEnabled($order->tenant_id ? (int) $order->tenant_id : $this->currentUser()?->tenant_id)) {
             return false;
         }
 
-        $referenceDate = $order->delivery_date ?? $order->updated_at;
+        if ((int) $order->service_status !== OrderStatus::DELIVERED) {
+            return false;
+        }
+
+        $referenceDate = $order->delivery_date;
 
         return $referenceDate?->lte(now()->subDays($this->communicationThresholdDays())) ?? false;
     }
@@ -462,30 +460,25 @@ class OrderController extends Controller
                     $q->whereNull('feedback')->orWhere('feedback', 0);
                 });
         } elseif ($filter === 'financial_open') {
-            $query->whereRaw(
-                '(COALESCE(orders.service_cost, 0) - COALESCE((SELECT SUM(op.amount) FROM order_payments op WHERE op.order_id = orders.id), 0)) > 0.009'
-            );
+            $query
+                ->where('service_status', OrderStatus::DELIVERED)
+                ->whereRaw(
+                    'EXISTS (SELECT 1 FROM others WHERE others.tenant_id = orders.tenant_id AND others.enable_finance = 1)'
+                )
+                ->whereRaw(
+                    '(COALESCE(orders.service_cost, 0) - COALESCE((SELECT SUM(op.amount) FROM order_payments op WHERE op.order_id = orders.id), 0)) > 0.009'
+                );
         } elseif ($filter === 'budget_follow_up') {
             $query->where('service_status', OrderStatus::BUDGET_GENERATED)
                 ->where('updated_at', '<=', now()->subDays($this->communicationThresholdDays()));
         } elseif ($filter === 'pending_payment_follow_up') {
             $query
-                ->whereIn('service_status', [
-                    OrderStatus::SERVICE_COMPLETED,
-                    OrderStatus::CUSTOMER_NOTIFIED,
-                    OrderStatus::DELIVERED,
-                ])
-                ->where(function ($subQuery) {
-                    $subQuery
-                        ->where(function ($dateQuery) {
-                            $dateQuery->whereNotNull('delivery_date')
-                                ->where('delivery_date', '<=', now()->subDays($this->communicationThresholdDays()));
-                        })
-                        ->orWhere(function ($dateQuery) {
-                            $dateQuery->whereNull('delivery_date')
-                                ->where('updated_at', '<=', now()->subDays($this->communicationThresholdDays()));
-                        });
-                })
+                ->where('service_status', OrderStatus::DELIVERED)
+                ->whereNotNull('delivery_date')
+                ->where('delivery_date', '<=', now()->subDays($this->communicationThresholdDays()))
+                ->whereRaw(
+                    'EXISTS (SELECT 1 FROM others WHERE others.tenant_id = orders.tenant_id AND others.enable_finance = 1)'
+                )
                 ->whereRaw(
                     '(COALESCE(orders.service_cost, 0) - COALESCE((SELECT SUM(op.amount) FROM order_payments op WHERE op.order_id = orders.id), 0)) > 0.009'
                 );

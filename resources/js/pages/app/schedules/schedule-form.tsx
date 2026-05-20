@@ -1,4 +1,5 @@
 import { toastSuccess } from '@/components/app-toast-messages';
+import { DateTimePicker } from '@/components/date-time-picker';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
@@ -63,11 +64,11 @@ export default function ScheduleForm({ customers, initialData, technicals }: Sch
     };
 
     const changeServiceStatus = (selected: any) => {
-        setData('status', selected?.value);
+        setData('status', selected?.value ?? '');
     };
 
     const changeResponsibleTechnician = (selected: any) => {
-        setData('user_id', selected?.value);
+        setData('user_id', selected?.value ?? '');
     };
 
     const defaultCustomer = optionsCustomer
@@ -102,7 +103,8 @@ export default function ScheduleForm({ customers, initialData, technicals }: Sch
 
                 <div className="grid gap-2">
                     <Label htmlFor="schedules">Horário da visita</Label>
-                    <Input type="datetime-local" id="schedules" value={data.schedules} onChange={(e) => setData('schedules', e.target.value)} />
+                    <DateTimePicker id="schedules" value={data.schedules} onChange={(value) => setData('schedules', value)} />
+                    <InputError className="mt-2" message={errors.schedules} />
                 </div>
             </div>
                 </CardContent>
@@ -142,6 +144,7 @@ export default function ScheduleForm({ customers, initialData, technicals }: Sch
                         className="min-w-0"
                         styles={selectStyles}
                     />
+                    <InputError className="mt-2" message={errors.user_id} />
                 </div>
 
                 <div className="grid gap-2">
@@ -155,6 +158,7 @@ export default function ScheduleForm({ customers, initialData, technicals }: Sch
                         className="min-w-0"
                         styles={selectStyles}
                     />
+                    <InputError className="mt-2" message={errors.status} />
                 </div>
             </div>
 

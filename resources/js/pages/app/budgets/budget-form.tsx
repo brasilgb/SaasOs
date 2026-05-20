@@ -18,16 +18,22 @@ import CreatableSelect from 'react-select/creatable';
 
 interface BudgetFormProps {
     initialData?: Budget;
-    budgets: Budget[];
+    budgets: Array<Budget | string | null>;
     equipments: { id: number; equipment: string }[];
 }
 
 export default function BudgetForm({ initialData, budgets, equipments }: BudgetFormProps) {
     const isEdit = !!initialData;
 
-    const initialModelOptions: OptionType[] = budgets?.map((bud) => ({
-        value: bud.model,
-        label: bud.model,
+    const initialModelOptions: OptionType[] = Array.from(
+        new Set(
+            (budgets ?? [])
+                .map((budget) => (typeof budget === 'string' ? budget : budget?.model))
+                .filter((model): model is string => Boolean(model?.trim())),
+        ),
+    ).map((model) => ({
+        value: model,
+        label: model,
     }));
 
     const optionsEquipment: OptionType[] = equipments?.map((equipment) => ({

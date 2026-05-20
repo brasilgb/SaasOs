@@ -7,6 +7,7 @@ use App\Models\App\Equipment;
 use App\Models\App\Order;
 use App\Models\App\OrderPayment;
 use App\Models\App\OrderLog;
+use App\Models\App\Other;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Support\OrderStatus;
@@ -27,6 +28,9 @@ class FollowUpControllerTest extends TestCase
 
         $this->tenant = Tenant::factory()->create(['name' => 'Test Tenant']);
         $this->user = User::factory()->forTenant($this->tenant->id)->create();
+        Other::factory()->forTenant($this->tenant->id)->create([
+            'enable_finance' => true,
+        ]);
 
         $this->withSession(['tenant_id' => $this->tenant->id])
             ->actingAs($this->user);
@@ -79,6 +83,103 @@ class FollowUpControllerTest extends TestCase
             })
             ->assertViewHas('page.props.paymentOrders', function ($orders) use ($paymentOrder) {
                 return collect($orders['data'] ?? [])->pluck('id')->contains($paymentOrder->id);
+            });
+    }
+
+    public function test_recently_contacted_follow_ups_leave_active_lists_until_cooldown_expires(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+
+        $recentlyContactedOrder = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'user_id' => $this->user->id,
+            'service_status' => OrderStatus::BUDGET_GENERATED,
+            'updated_at' => now()->subDays(6),
+        ]);
+
+        $eligibleAgainOrder = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'user_id' => $this->user->id,
+            'service_status' => OrderStatus::BUDGET_GENERATED,
+            'updated_at' => now()->subDays(6),
+        ]);
+
+        OrderLog::create([
+            'order_id' => $recentlyContactedOrder->id,
+            'user_id' => $this->user->id,
+            'action' => 'budget_follow_up_sent',
+            'data' => ['trigger' => 'manual'],
+            'created_at' => now()->subDay(),
+        ]);
+
+        OrderLog::create([
+            'order_id' => $eligibleAgainOrder->id,
+            'user_id' => $this->user->id,
+            'action' => 'budget_follow_up_sent',
+            'data' => ['trigger' => 'manual'],
+            'created_at' => now()->subDays(4),
+        ]);
+
+        $response = $this->get(route('app.follow-ups.index', ['type' => 'budget']));
+
+        $response
+            ->assertOk()
+            ->assertViewHas('page.props.summary.budget_follow_ups', 1)
+            ->assertViewHas('page.props.budgetOrders', function ($orders) use ($recentlyContactedOrder, $eligibleAgainOrder) {
+                $ids = collect($orders['data'] ?? [])->pluck('id');
+
+                return ! $ids->contains($recentlyContactedOrder->id) && $ids->contains($eligibleAgainOrder->id);
+            });
+
+        $tasksResponse = $this->get(route('app.follow-ups.tasks', [
+            'type' => 'budget',
+            'assigned_to' => 'all',
+        ]));
+
+        $tasksResponse
+            ->assertOk()
+            ->assertViewHas('page.props.dailyAgenda', function ($agenda) use ($recentlyContactedOrder, $eligibleAgainOrder) {
+                $ids = collect($agenda)->pluck('id');
+
+                return ! $ids->contains($recentlyContactedOrder->id) && $ids->contains($eligibleAgainOrder->id);
+            });
+    }
+
+    public function test_completed_follow_up_task_leaves_active_lists_until_cooldown_expires(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'user_id' => $this->user->id,
+            'service_status' => OrderStatus::BUDGET_GENERATED,
+            'updated_at' => now()->subDays(6),
+        ]);
+
+        $this->post(route('app.follow-ups.complete-task', $order), [
+            'scope' => 'budget',
+            'reason' => 'Contato feito e retorno combinado.',
+        ])->assertRedirect();
+
+        $this->get(route('app.follow-ups.index', ['type' => 'budget']))
+            ->assertOk()
+            ->assertViewHas('page.props.summary.budget_follow_ups', 0)
+            ->assertViewHas('page.props.budgetOrders', function ($orders) use ($order) {
+                return ! collect($orders['data'] ?? [])->pluck('id')->contains($order->id);
+            });
+
+        $this->get(route('app.follow-ups.tasks', [
+            'type' => 'budget',
+            'assigned_to' => 'all',
+        ]))
+            ->assertOk()
+            ->assertViewHas('page.props.dailyAgenda', function ($agenda) use ($order) {
+                return ! collect($agenda)->pluck('id')->contains($order->id);
             });
     }
 
