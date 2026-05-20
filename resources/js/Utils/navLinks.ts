@@ -1,12 +1,10 @@
 import { type NavGroup, type NavItem } from '@/types';
 import {
-    BadgeCheck,
     BanknoteArrowDownIcon,
     Barcode,
     BookOpenText,
     Building,
     Calendar,
-    CalendarRange,
     ClipboardCheck,
     ClipboardList,
     Cog,
@@ -14,7 +12,6 @@ import {
     Copyright,
     FileChartColumn,
     FileTextIcon,
-    HandCoins,
     LayoutGrid,
     Lightbulb,
     MessageCircle,
@@ -333,31 +330,12 @@ const mainAdminItems = [
     },
 ];
 
-const mainPlansItems = [
+const mainPlansItems: NavItem[] = [
     {
-        title: 'Planos',
-        url: '#',
-        icon: HandCoins,
-        items: [
-            {
-                title: 'Cadastrar plano',
-                url: route('admin.plans.index'),
-                icon: Copyright,
-                active: 'admin.plans.*',
-            },
-            {
-                title: 'Cadastrar períodos',
-                url: route('admin.periods.index'),
-                icon: CalendarRange,
-                active: 'admin.periods.*',
-            },
-            {
-                title: 'Cadastrar característica',
-                url: route('admin.features.index'),
-                icon: BadgeCheck,
-                active: 'admin.features.*',
-            },
-        ],
+        title: 'Cadastrar plano',
+        href: route('admin.plans.index'),
+        icon: Copyright,
+        active: 'admin.plans.*',
     },
 ];
 

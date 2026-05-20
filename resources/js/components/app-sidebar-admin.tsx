@@ -11,7 +11,6 @@ import {
 } from '@/components/ui/sidebar';
 import { mainAdminItems, mainPlansItems } from '@/Utils/navLinks';
 import { Link } from '@inertiajs/react';
-import NavMainCollapsible from './nav-main-collapsible';
 import { SigmaOSPanelLogo } from './sigma-os-logo';
 
 export function AppSidebarAdmin() {
@@ -33,8 +32,8 @@ export function AppSidebarAdmin() {
                     <SidebarGroupLabel>Operações Administrativas</SidebarGroupLabel>
 
                     <NavMain items={mainAdminItems} />
-                    <div className="my-1">
-                        <NavMainCollapsible items={mainPlansItems} />
+                    <div className="mt-1">
+                        <NavMain items={mainPlansItems} />
                     </div>
                 </SidebarGroup>
             </SidebarContent>

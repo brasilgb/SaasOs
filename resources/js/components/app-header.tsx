@@ -241,40 +241,24 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
 
                             {othersetting?.budget ? (
                                 <NavigationMenuList className="flex h-full items-stretch space-x-2">
-                                    <NavigationMenuItem className="relative z-50 flex h-full items-center">
-                                        {mainPlansItems.map((item, index) => (
-                                            <div key={`${item.title}-${index}`}>
-                                                <NavigationMenuTrigger className="flex items-center space-x-2 font-medium">
-                                                    {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
-                                                    <span>{item.title}</span>
-                                                </NavigationMenuTrigger>
-                                                <NavigationMenuContent key={index}>
-                                                    <ul className="grid w-[220px] gap-4">
-                                                        {item.items.map((subItems, index) => (
-                                                            <li key={`${subItems.title}-${index}`}>
-                                                                <NavigationMenuItem key={index} className="relative flex h-full items-center">
-                                                                    <Link
-                                                                        href={subItems.url}
-                                                                        className={cn(
-                                                                            navigationMenuTriggerStyle(),
-                                                                            page.url === subItems.url && activeItemStyles,
-                                                                            'h-9 cursor-pointer px-3',
-                                                                        )}
-                                                                    >
-                                                                        {subItems.icon && <Icon iconNode={subItems.icon} className="mr-2 h-4 w-4" />}
-                                                                        {subItems.title}
-                                                                    </Link>
-                                                                    {page.url === subItems.url && (
-                                                                        <div className="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-black dark:bg-white"></div>
-                                                                    )}
-                                                                </NavigationMenuItem>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </NavigationMenuContent>
-                                            </div>
-                                        ))}
-                                    </NavigationMenuItem>
+                                    {mainPlansItems.map((item, index) => (
+                                        <NavigationMenuItem key={index} className="relative flex h-full items-center">
+                                            <Link
+                                                href={item.href}
+                                                className={cn(
+                                                    navigationMenuTriggerStyle(),
+                                                    page.url === item.href && activeItemStyles,
+                                                    'h-9 cursor-pointer px-3',
+                                                )}
+                                            >
+                                                {item.icon && <Icon iconNode={item.icon} className="mr-2 h-4 w-4" />}
+                                                {item.title}
+                                            </Link>
+                                            {page.url === item.href && (
+                                                <div className="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-black dark:bg-white"></div>
+                                            )}
+                                        </NavigationMenuItem>
+                                    ))}
                                 </NavigationMenuList>
                             ) : (
                                 ''
