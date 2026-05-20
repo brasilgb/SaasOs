@@ -9,6 +9,7 @@ use App\Models\App\Order;
 use App\Models\App\Part;
 use App\Models\App\Other;
 use App\Models\App\Sale;
+use App\Models\App\SaleItem;
 use App\Models\App\Schedule;
 use App\Models\Tenant;
 use App\Models\User;
@@ -375,6 +376,45 @@ class DashboardControllerTest extends TestCase
             ->assertJsonPath('kpis.payment_methods.dinheiro', 80)
             ->assertJsonPath('kpis.payment_methods.cartao', 50)
             ->assertJsonPath('kpis.payment_methods.outros', 30);
+    }
+
+    public function test_financial_sales_kpis_include_actionable_sales_insights(): void
+    {
+        $part = Part::factory()->forTenant($this->tenant->id)->create([
+            'name' => 'Cabo USB-C',
+        ]);
+
+        $completedSale = Sale::factory()->forTenant($this->tenant->id)->create([
+            'status' => 'completed',
+            'financial_status' => 'partial',
+            'total_amount' => 300,
+            'paid_amount' => 120,
+            'created_at' => now()->subDay(),
+        ]);
+
+        SaleItem::factory()->create([
+            'sale_id' => $completedSale->id,
+            'part_id' => $part->id,
+            'quantity' => 3,
+            'unit_price' => 50,
+        ]);
+
+        Sale::factory()->forTenant($this->tenant->id)->create([
+            'status' => 'cancelled',
+            'total_amount' => 70,
+            'created_at' => now()->subDay(),
+        ]);
+
+        $response = $this->get(route('app.kpisFinancialSales', ['timerange' => 7]));
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('kpis.pending_sales_amount', 180)
+            ->assertJsonPath('kpis.cancelled_sales_amount', 70)
+            ->assertJsonPath('kpis.cancelled_sales_count', 1)
+            ->assertJsonPath('kpis.top_products.0.name', 'Cabo USB-C')
+            ->assertJsonPath('kpis.top_products.0.quantity', 3)
+            ->assertJsonPath('kpis.top_products.0.total', 150);
     }
 
     public function test_dashboard_index_exposes_customer_feedback_alert(): void

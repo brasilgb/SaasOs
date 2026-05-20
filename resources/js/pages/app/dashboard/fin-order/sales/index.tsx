@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { connectBackend } from '@/Utils/connectApi';
-import { BadgeDollarSign, ShoppingCart, TrendingUp, WalletCards } from 'lucide-react';
+import { BadgeDollarSign, PackageSearch, ShoppingCart, TrendingUp, WalletCards, XCircle } from 'lucide-react';
 import moment from 'moment';
 import type { ReactNode } from 'react';
 import { useEffect, useMemo, useState } from 'react';
@@ -62,6 +62,14 @@ type SalesKpis = {
     sales_count: number;
     sales_today_count: number;
     sales_month_count: number;
+    pending_sales_amount?: number;
+    cancelled_sales_amount?: number;
+    cancelled_sales_count?: number;
+    top_products?: {
+        name: string;
+        quantity: number;
+        total: number;
+    }[];
     comparison?: {
         range_revenue?: KpiComparison;
         range_profit?: KpiComparison;
@@ -283,6 +291,72 @@ function KpiCard({
     );
 }
 
+function InsightCard({
+    title,
+    value,
+    description,
+    icon,
+    tone = 'default',
+}: {
+    title: string;
+    value: string;
+    description: string;
+    icon: ReactNode;
+    tone?: 'default' | 'positive' | 'warning';
+}) {
+    const toneClass = {
+        default: 'text-muted-foreground',
+        positive: 'text-emerald-600',
+        warning: 'text-amber-600',
+    }[tone];
+
+    return (
+        <Card className="min-w-0">
+            <CardHeader className="flex flex-row items-center justify-between gap-3 pb-2">
+                <CardDescription>{title}</CardDescription>
+                <div className={`shrink-0 ${toneClass}`}>{icon}</div>
+            </CardHeader>
+            <CardContent className="space-y-2">
+                <CardTitle className="text-xl leading-tight font-bold break-words tabular-nums sm:text-2xl">{value}</CardTitle>
+                <p className="text-muted-foreground text-xs">{description}</p>
+            </CardContent>
+        </Card>
+    );
+}
+
+function TopProductsCard({ products }: { products?: SalesKpis['top_products'] }) {
+    const items = products ?? [];
+
+    return (
+        <Card className="min-w-0">
+            <CardHeader className="flex flex-row items-center justify-between gap-3 pb-2">
+                <div>
+                    <CardTitle className="text-base">Mais vendidos</CardTitle>
+                    <CardDescription>Produtos e peças com maior receita no período</CardDescription>
+                </div>
+                <PackageSearch className="text-muted-foreground h-5 w-5 shrink-0" />
+            </CardHeader>
+            <CardContent>
+                {items.length === 0 ? (
+                    <p className="text-muted-foreground text-sm">Sem itens vendidos no período.</p>
+                ) : (
+                    <div className="space-y-3">
+                        {items.map((item, index) => (
+                            <div key={`${item.name}-${index}`} className="flex items-center justify-between gap-3 border-b pb-2 last:border-b-0 last:pb-0">
+                                <div className="min-w-0">
+                                    <p className="truncate text-sm font-medium">{item.name}</p>
+                                    <p className="text-muted-foreground text-xs">{Number(item.quantity || 0)} un.</p>
+                                </div>
+                                <span className="shrink-0 text-sm font-medium tabular-nums">{formatCurrency(item.total)}</span>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+    );
+}
+
 export default function FinanceiroSales({
     timerange,
     dateRange,
@@ -405,6 +479,31 @@ export default function FinanceiroSales({
                         <SalesRevenueChart data={chartSalesFinancial} />
                     </CardContent>
                 </Card>
+            </div>
+
+            <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <InsightCard
+                    title="Resultado do período"
+                    value={formatCurrency(kpisSales?.range_profit)}
+                    description="Vendas concluídas menos despesas lançadas"
+                    icon={<WalletCards size={18} />}
+                    tone={Number(kpisSales?.range_profit || 0) >= 0 ? 'positive' : 'warning'}
+                />
+                <InsightCard
+                    title="Pendente em vendas"
+                    value={formatCurrency(kpisSales?.pending_sales_amount)}
+                    description="Saldo ainda aberto em vendas parciais ou pendentes"
+                    icon={<BadgeDollarSign size={18} />}
+                    tone={Number(kpisSales?.pending_sales_amount || 0) > 0 ? 'warning' : 'default'}
+                />
+                <InsightCard
+                    title="Vendas canceladas"
+                    value={formatCurrency(kpisSales?.cancelled_sales_amount)}
+                    description={`${Number(kpisSales?.cancelled_sales_count || 0)} ${Number(kpisSales?.cancelled_sales_count || 0) === 1 ? 'cancelamento' : 'cancelamentos'} no período`}
+                    icon={<XCircle size={18} />}
+                    tone={Number(kpisSales?.cancelled_sales_amount || 0) > 0 ? 'warning' : 'default'}
+                />
+                <TopProductsCard products={kpisSales?.top_products} />
             </div>
         </div>
     );

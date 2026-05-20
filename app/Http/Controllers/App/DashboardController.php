@@ -12,6 +12,7 @@ use App\Models\App\Order;
 use App\Models\App\Other;
 use App\Models\App\Part;
 use App\Models\App\Sale;
+use App\Models\App\SaleItem;
 use App\Models\App\Schedule;
 use App\Support\OrderStatus;
 use App\Models\User;
@@ -629,6 +630,40 @@ class DashboardController extends Controller
             ->whereDate('created_at', $today)
             ->count();
 
+        $pendingSalesAmount = (float) Sale::query()
+            ->where('status', 'completed')
+            ->whereIn('financial_status', ['pending', 'partial'])
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->selectRaw('SUM(CASE WHEN COALESCE(total_amount, 0) - COALESCE(paid_amount, 0) > 0 THEN COALESCE(total_amount, 0) - COALESCE(paid_amount, 0) ELSE 0 END) as pending_total')
+            ->value('pending_total');
+
+        $cancelledSalesAmount = (float) Sale::query()
+            ->where('status', 'cancelled')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->sum('total_amount');
+
+        $cancelledSalesCount = Sale::query()
+            ->where('status', 'cancelled')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->count();
+
+        $topProducts = SaleItem::query()
+            ->join('sales', 'sales.id', '=', 'sale_items.sale_id')
+            ->join('parts', 'parts.id', '=', 'sale_items.part_id')
+            ->where('sales.status', 'completed')
+            ->whereBetween('sales.created_at', [$startDate, $endDate])
+            ->selectRaw('parts.name as name, SUM(sale_items.quantity) as quantity, SUM(sale_items.quantity * sale_items.unit_price) as total')
+            ->groupBy('parts.id', 'parts.name')
+            ->orderByDesc('total')
+            ->limit(5)
+            ->get()
+            ->map(fn ($item) => [
+                'name' => $item->name,
+                'quantity' => (int) $item->quantity,
+                'total' => (float) $item->total,
+            ])
+            ->values();
+
         $dailyAverage = $rangeDays > 0 ? $rangeRevenue / $rangeDays : 0;
         $dailyExpenseAverage = $rangeDays > 0 ? $rangeExpenses / $rangeDays : 0;
         $averageTicket = $salesCount > 0 ? $rangeRevenue / $salesCount : 0;
@@ -679,6 +714,10 @@ class DashboardController extends Controller
                 'sales_count' => $salesCount,
                 'sales_today_count' => $salesTodayCount,
                 'sales_month_count' => $monthSalesCount,
+                'pending_sales_amount' => $pendingSalesAmount,
+                'cancelled_sales_amount' => $cancelledSalesAmount,
+                'cancelled_sales_count' => $cancelledSalesCount,
+                'top_products' => $topProducts,
                 'payment_methods' => $paymentMethods,
                 'comparison' => [
                     'range_revenue' => $this->comparison($rangeRevenue, $previousRangeRevenue),

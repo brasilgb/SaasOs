@@ -461,7 +461,7 @@
             <p>Manual do cliente com foco operacional, financeiro e de configuração do sistema.</p>
 
             <div class="meta">
-                <div><strong>Versão do manual</strong>1.5</div>
+                <div><strong>Versão do manual</strong>1.6</div>
                 <div><strong>Atualizado em</strong>Maio de 2026</div>
                 <div><strong>Formato</strong>HTML navegável</div>
             </div>
@@ -651,6 +651,13 @@
                         <li><strong>Atendente:</strong> usa os atalhos para abrir OS, consultar clientes e localizar pendências.</li>
                         <li><strong>Gestor:</strong> identifica gargalos, acompanha metas e decide prioridades do dia.</li>
                     </ul>
+                    <h4>4.3 Dashboard de vendas</h4>
+                    <p>Quando o módulo de vendas está ativo, o dashboard financeiro apresenta leituras próprias para o
+                        comercial. O gráfico <strong>Meios de pagamento</strong> mostra a distribuição das vendas por
+                        Pix, cartão, dinheiro, transferência, boleto e outros meios no período selecionado.</p>
+                    <p>O gráfico <strong>Faturamento de vendas</strong> compara vendas concluídas e despesas do mês
+                        corrente, usando linhas para facilitar a leitura da evolução diária. A tela também pode exibir
+                        resultado do período, saldo pendente em vendas, vendas canceladas e produtos mais vendidos.</p>
                 </section>
 
                 <section id="clientes">
@@ -678,6 +685,9 @@
                         <li><strong>WhatsApp:</strong> abre o fluxo de contato rápido com o cliente.</li>
                         <li><strong>Pesquisar:</strong> filtra por nome, documento ou informação relevante.</li>
                     </ul>
+                    <p>O saldo pendente do cliente considera ordens entregues ao cliente que ainda possuem valor em
+                        aberto. Ordens em orçamento, reparo ou etapas anteriores não devem gerar cobrança pendente na
+                        ficha do cliente.</p>
                     <h4>5.3 O que acontece ao clicar nos botões</h4>
                     <ul>
                         <li><strong>Salvar cliente:</strong> grava os dados e deixa o cadastro disponível para OS, agendamentos, vendas e consultas futuras.</li>
@@ -850,8 +860,8 @@
                             O caixa diário deve estar aberto para registrar pagamentos.
                         </div>
                     </div>
-                    <p>Quando a ordem já possui data de entrega, ainda há saldo pendente e o e-mail do cliente está
-                        válido, o sistema pode enviar lembrete de cobrança por e-mail.</p>
+                    <p>Quando o financeiro de OS está ativo, a ordem já foi entregue ao cliente, ainda há saldo pendente
+                        e o e-mail do cliente está válido, o sistema pode enviar lembrete de cobrança por e-mail.</p>
                     <p>Quando a integração fiscal estiver ativa e a NFS-e estiver habilitada, a ordem pode ser enviada
                         para emissão pela Focus NFe. Se a integração estiver desativada, a empresa ainda pode registrar
                         manualmente os dados do comprovante fiscal.</p>
@@ -860,7 +870,7 @@
                         <li><strong>Registrar pagamento:</strong> grava valor, data, forma de pagamento e observações.</li>
                         <li><strong>Excluir pagamento:</strong> remove o lançamento quando a regra do caixa permitir.</li>
                         <li><strong>Dados de pagamento:</strong> mostra histórico e total pago.</li>
-                        <li><strong>Lembrete de cobrança:</strong> envia contato manual ao cliente e registra a ação.</li>
+                        <li><strong>Lembrete de cobrança:</strong> envia contato manual ao cliente e registra a ação quando o financeiro de OS estiver ativo.</li>
                     </ul>
                     <p>Nos bastidores, o sistema impede pagamento maior que o saldo, exige caixa aberto para lançamento
                         e atualiza o total pago da ordem para cálculo de saldo restante.</p>
@@ -906,6 +916,10 @@
                         <li><strong>Administrador e atendente:</strong> geram orçamento, enviam acompanhamento e fazem tratativa comercial.</li>
                         <li><strong>Cliente final:</strong> aprova ou reprova pelo link público quando o recurso estiver disponível.</li>
                     </ul>
+                    <h4>8.3 Campos de seleção</h4>
+                    <p>No formulário de orçamento, campos como cliente, equipamento, garantia, marca e modelo usam seleção
+                        pesquisável. Digite parte do nome ou do modelo para localizar opções cadastradas sem precisar
+                        percorrer listas longas.</p>
                 </section>
 
                 <section id="agendamentos">
@@ -918,6 +932,10 @@
                     </ul>
                     <p>Os status usuais do agendamento são aberto, em atendimento e fechado.</p>
                     <p>Esse módulo é útil para assistência externa, coleta, entrega técnica e visitas programadas.</p>
+                    <p>No cadastro e edição, cliente, técnico responsável e status usam campos de seleção. Técnico e
+                        status são obrigatórios; se algum deles ficar em branco, o sistema exibe a validação antes de
+                        salvar. A data e hora podem ser escolhidas em um componente de calendário e horário para agilizar
+                        o preenchimento.</p>
                     <h4>9.1 O que os botões normalmente fazem</h4>
                     <ul>
                         <li><strong>Novo agendamento:</strong> reserva a visita e organiza a agenda operacional.</li>
@@ -1000,12 +1018,18 @@
                     </ul>
                     <h4>11.2 O que o sistema faz por trás</h4>
                     <ul>
-                        <li>Consulta ordens elegíveis com base em status, data da última atualização e saldo pendente.</li>
-                        <li>Respeita o intervalo mínimo entre contatos configurado em Operacionais.</li>
+                        <li>Consulta ordens elegíveis com base em status, data da última atualização, entrega e saldo pendente.</li>
+                        <li>Considera orçamento parado quando a OS está em orçamento gerado e sem retorno dentro da janela configurada.</li>
+                        <li>Considera cobrança pendente somente para OS entregue ao cliente, com saldo em aberto e financeiro de OS ativo.</li>
+                        <li>Respeita o intervalo mínimo entre contatos configurado em Operacionais, mesmo para a fila manual.</li>
                         <li>Ignora ordens pausadas, adia tarefas snoozadas e registra cada envio em log.</li>
-                        <li>Pode disparar e-mails automáticos quando a automação está ligada e o SMTP está válido.</li>
+                        <li>Quando um contato é feito ou uma tarefa é concluída, a pendência sai da fila ativa durante a janela configurada.</li>
+                        <li>Se a pendência continuar aberta depois desse prazo, ela volta a aparecer para novo acompanhamento.</li>
+                        <li>Pode disparar e-mails automáticos quando a automação está ligada, o SMTP está válido e as regras do módulo permitem.</li>
                         <li>Usa cron para executar acompanhamentos automáticos de orçamento e cobrança.</li>
                     </ul>
+                    <p>A tela de acompanhamentos mostra pendências ativas, não um histórico completo de todos os contatos.
+                        Para consultar o histórico, use os registros e a linha do tempo da própria ordem.</p>
                     <h4>11.3 Quando usar cada ação</h4>
                     <ul>
                         <li><strong>Pausar:</strong> quando o cliente pediu prazo, está viajando ou já respondeu por outro canal.</li>
@@ -1014,7 +1038,14 @@
                         <li><strong>Atribuir:</strong> quando você quer deixar claro quem será responsável pelo próximo contato.</li>
                         <li><strong>Concluir tarefa:</strong> quando a pendência realmente terminou, para não poluir a fila.</li>
                     </ul>
-                    <h4>11.4 Quem normalmente usa</h4>
+                    <h4>11.4 Automação e janela de retorno</h4>
+                    <p>A opção de janela fica em <strong>Configurações gerais &gt; Operacionais &gt; Intervalo de
+                        follow-up com cliente</strong>. O link <strong>Alterar janela</strong>, quando exibido nos
+                        acompanhamentos, leva diretamente para essa configuração.</p>
+                    <p>Se o envio automático estiver desligado, o sistema não envia e-mails automáticos, mas continua
+                        usando a janela para organizar a fila manual. O botão <strong>Pausar automação</strong> aparece
+                        apenas quando a automação está ativa para aquele tipo de acompanhamento.</p>
+                    <h4>11.5 Quem normalmente usa</h4>
                     <ul>
                         <li><strong>Administrador:</strong> acompanha a fila, ajusta regras e redistribui pendências.</li>
                         <li><strong>Atendente/comercial:</strong> executa os contatos e registra as respostas.</li>
@@ -1082,6 +1113,7 @@
                         <li><strong>Editar mensagem:</strong> corrige texto já enviado quando a regra da tela permitir.</li>
                         <li><strong>Marcar como lida:</strong> ajuda a equipe a saber se a orientação interna já foi vista.</li>
                         <li><strong>Modelo de WhatsApp:</strong> padroniza textos de cobrança, aviso, orçamento e pós-atendimento.</li>
+                        <li><strong>Campo Para:</strong> permite escolher o destinatário da mensagem interna por seleção pesquisável.</li>
                     </ul>
                     <h4>13.3 Quem costuma usar</h4>
                     <ul>
@@ -1133,6 +1165,9 @@
                     <p>O sistema exige caixa aberto para concluir uma venda e não permite valor pago acima do total.</p>
                     <p>Ao cancelar uma venda, o sistema pode devolver o item ao estoque e registrar logs de operação
                         e auditoria.</p>
+                    <p>No dashboard de vendas, os meios de pagamento são agrupados para facilitar a análise. Formas
+                        equivalentes, como cartão e cartão de crédito, aparecem juntas; meios não classificados entram
+                        como outros.</p>
                     <h4>15.1 Botões e responsabilidades</h4>
                     <ul>
                         <li><strong>Nova venda:</strong> cria o lançamento comercial e reserva os itens até a conclusão.</li>
@@ -1319,8 +1354,12 @@
                     </ul>
                     <h4>19.2 Regras de acompanhamento</h4>
                     <p>O intervalo de acompanhamento define quantos dias o sistema deve esperar antes de considerar um novo
-                        contato automático elegível. Se a opção de envio automático estiver desligada, o sistema não
-                        dispara acompanhamentos automáticos.</p>
+                        contato elegível. Esse intervalo organiza tanto a fila manual quanto os contatos automáticos.
+                        Se a opção de envio automático estiver desligada, o sistema não dispara acompanhamentos
+                        automáticos, mas a janela continua sendo usada para não repetir contatos cedo demais.</p>
+                    <p>O ajuste fica em <strong>Operacionais &gt; Intervalo de follow-up com cliente</strong>. Essa é a
+                        mesma janela mostrada na tela de acompanhamentos quando uma pendência informa que está dentro ou
+                        fora do prazo configurado.</p>
                     <h4>19.3 Avaliações e metas</h4>
                     <p>Também é possível configurar o prazo para solicitar avaliação do cliente após a entrega e definir
                         metas mínimas para conversão de orçamento e recuperação de cobrança.</p>
@@ -1353,7 +1392,8 @@
                         <li>Técnico.</li>
                     </ul>
                     <p>As permissões ajudam a separar rotinas administrativas, atendimento, operação técnica e gestão do
-                        sistema.</p>
+                        sistema. No formulário, o campo de funções do usuário usa seleção para evitar digitação livre e
+                        manter os perfis padronizados.</p>
                     <h4>20.1 Exemplo prático de uso por perfil</h4>
                     <ul>
                         <li><strong>Administrador:</strong> configura empresa, SMTP, usuários, módulos e indicadores.</li>
@@ -1519,6 +1559,7 @@
                     <ul>
                         <li>Manter clientes e equipamentos sempre atualizados.</li>
                         <li>Preencher corretamente defeito, acessórios e observações.</li>
+                        <li>Usar os contadores dos campos de texto; descrições e observações operacionais aceitam até 500 caracteres.</li>
                         <li>Atualizar o status da ordem conforme a etapa real do atendimento.</li>
                         <li>Registrar pagamentos e vendas no momento em que acontecerem.</li>
                         <li>Abrir e fechar o caixa diariamente com conferência.</li>
