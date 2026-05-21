@@ -11,9 +11,11 @@ import {
     Printer,
     ReceiptText,
     Settings,
+    ShieldCheck,
     ShoppingCart,
     Smartphone,
     Users,
+    UserRoundCog,
 } from 'lucide-react';
 
 const features = [
@@ -85,7 +87,7 @@ const features = [
     {
         icon: Settings,
         title: 'Gestão de Usuários',
-        description: 'Defina papéis e permissões para técnicos, atendentes e administradores.',
+        description: 'Defina papéis, permissões e liberação de técnico master para visualizar todas as ordens quando necessário.',
     },
 ];
 
