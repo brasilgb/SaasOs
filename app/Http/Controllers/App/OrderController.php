@@ -371,7 +371,7 @@ class OrderController extends Controller
     {
         $user = $this->currentUser();
 
-        if ($user?->isTechnician()) {
+        if ($user?->isTechnician() && ! $user->canViewAllOrders()) {
             $query->where(function ($q) use ($user) {
                 $q->whereNull('user_id')
                     ->orWhere('user_id', $user->id);

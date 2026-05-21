@@ -42,6 +42,7 @@ export default function CreateUser() {
         telephone: '',
         whatsapp: '',
         roles: '',
+        can_view_all_orders: false,
         status: false,
         password: '',
         password_confirmation: '',
@@ -59,7 +60,13 @@ export default function CreateUser() {
 
     const changeRoles = (selected: any) => {
         setData('roles', selected?.value);
+        if (selected?.value !== '3') {
+            setData('can_view_all_orders', false);
+        }
     };
+
+    const canManageTechnicianMaster = ['root_system', 'root_app', 'administrator'].includes(auth?.role);
+    const showTechnicianMasterSwitch = canManageTechnicianMaster && String(data.roles) === '3';
 
     const optionsRolesUser = rolesUser
         .filter((role: any) => role.label !== 'RootSystem' && role.label !== 'RootApp')
@@ -201,6 +208,26 @@ export default function CreateUser() {
                                     <span className="text-muted-foreground text-sm">{data.status ? 'Ativo' : 'Inativo'}</span>
                                 </div>
                             </div>
+
+                            {showTechnicianMasterSwitch && (
+                                <div className="grid gap-2 md:col-span-2">
+                                    <Label htmlFor="can_view_all_orders">Técnico master</Label>
+
+                                    <div className="flex items-center gap-3">
+                                        <Switch
+                                            id="can_view_all_orders"
+                                            checked={data.can_view_all_orders}
+                                            onCheckedChange={(checked) => setData('can_view_all_orders', checked)}
+                                        />
+
+                                        <span className="text-muted-foreground text-sm">
+                                            {data.can_view_all_orders
+                                                ? 'Pode visualizar todas as ordens de serviço'
+                                                : 'Visualiza apenas ordens atribuídas a ele'}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                         <div className="flex justify-end">
                             <Button type="submit" disabled={processing}>

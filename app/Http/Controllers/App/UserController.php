@@ -16,6 +16,24 @@ use Inertia\Inertia;
 
 class UserController extends Controller
 {
+    private function canManageTechnicianMaster(User $actor): bool
+    {
+        return $actor->isRoot() || $actor->isAdministrator();
+    }
+
+    private function resolveTechnicianMasterFlag(User $actor, array $data, ?User $target = null): bool
+    {
+        if ((int) ($data['roles'] ?? 0) !== User::ROLE_TECHNICIAN) {
+            return false;
+        }
+
+        if (! $this->canManageTechnicianMaster($actor)) {
+            return (bool) ($target?->can_view_all_orders ?? false);
+        }
+
+        return (bool) ($data['can_view_all_orders'] ?? false);
+    }
+
     private function scopeUserListingByActor($query)
     {
         $authUser = Auth::user();
@@ -66,6 +84,7 @@ class UserController extends Controller
         Gate::authorize('assignRole', [User::class, $data['roles'] ?? null]);
         $data['password'] = Hash::make($request->password);
         $data['tenant_id'] = Auth::user()->tenant_id;
+        $data['can_view_all_orders'] = $this->resolveTechnicianMasterFlag(Auth::user(), $data);
         $data['user_number'] = TenantSequence::next(User::class, 'user_number');
         Model::reguard();
         User::create($data);
@@ -114,6 +133,7 @@ class UserController extends Controller
         Gate::authorize('assignRole', [User::class, $data['roles'] ?? null]);
         $data['password'] = $request->password ? Hash::make($request->password) : $user->password;
         $data['tenant_id'] = $user->tenant_id;
+        $data['can_view_all_orders'] = $this->resolveTechnicianMasterFlag(Auth::user(), $data, $user);
         Model::reguard();
         $user->update($data);
         Model::unguard();

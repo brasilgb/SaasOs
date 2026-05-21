@@ -41,6 +41,7 @@ class User extends Authenticatable
         'whatsapp',
         'password',
         'roles',
+        'can_view_all_orders',
         'status',
     ];
 
@@ -64,6 +65,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'can_view_all_orders' => 'boolean',
         ];
     }
 
@@ -115,6 +117,11 @@ class User extends Authenticatable
     public function isTechnician(): bool
     {
         return $this->roles === self::ROLE_TECHNICIAN;
+    }
+
+    public function canViewAllOrders(): bool
+    {
+        return ! $this->isTechnician() || (bool) $this->can_view_all_orders;
     }
 
     public function roleKey(): string

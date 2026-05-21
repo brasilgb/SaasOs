@@ -54,6 +54,7 @@ CREATE TABLE users (
     whatsapp VARCHAR(255),
     password VARCHAR(255) NOT NULL,
     roles SMALLINT,
+    can_view_all_orders SMALLINT DEFAULT 0 NOT NULL,
     status SMALLINT,
     email_verified_at TIMESTAMP,
     remember_token VARCHAR(100),

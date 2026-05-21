@@ -27,7 +27,7 @@ class OrderPolicy
             return false;
         }
 
-        if (! $user->isTechnician()) {
+        if ($user->canViewAllOrders()) {
             return true;
         }
 
