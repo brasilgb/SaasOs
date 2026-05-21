@@ -3,9 +3,9 @@ import { ReactNode } from 'react';
 
 interface KpiFinancialProps {
     title: string;
-    total?: number;
-    services?: number;
-    parts?: number;
+    total?: number | string;
+    services?: number | string;
+    parts?: number | string;
     orders?: number;
     ordersLabel?: string;
     comparison?: {
@@ -17,8 +17,10 @@ interface KpiFinancialProps {
 }
 
 export function KpiFinancial({ title, total = 0, services = 0, parts = 0, orders = 0, ordersLabel, comparison, icon }: KpiFinancialProps) {
-    const format = (v: number) =>
-        v.toLocaleString('pt-BR', {
+    const toNumber = (value?: number | string) => Number(value || 0);
+
+    const format = (v?: number | string) =>
+        toNumber(v).toLocaleString('pt-BR', {
             style: 'currency',
             currency: 'BRL',
         });
@@ -26,9 +28,13 @@ export function KpiFinancial({ title, total = 0, services = 0, parts = 0, orders
     const formatPercent = (value?: number | null) =>
         value === null || value === undefined ? 'Sem base anterior' : `${value > 0 ? '+' : ''}${value.toFixed(1)}%`;
 
-    const percentServices = total > 0 ? Math.round((services / total) * 100) : 0;
+    const totalValue = toNumber(total);
+    const servicesValue = toNumber(services);
+    const partsValue = toNumber(parts);
 
-    const percentParts = total > 0 ? Math.round((parts / total) * 100) : 0;
+    const percentServices = totalValue > 0 ? Math.round((servicesValue / totalValue) * 100) : 0;
+
+    const percentParts = totalValue > 0 ? Math.round((partsValue / totalValue) * 100) : 0;
     const comparisonClass = Number(comparison?.change || 0) >= 0 ? 'text-emerald-600' : 'text-rose-600';
 
     return (

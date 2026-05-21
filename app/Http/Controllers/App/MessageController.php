@@ -35,10 +35,16 @@ class MessageController extends Controller
         $filter = $request->get('filter');
 
         $logged = Auth::user();
-        $query = Message::where(function ($q) use ($logged) {
-            $q->where('recipient_id', $logged->id)
-                ->orWhere('sender_id', $logged->id);
-        })->orderBy('id', 'DESC');
+        $query = Message::query();
+
+        if ((int) $logged->roles !== User::ROLE_ROOT_APP) {
+            $query->where(function ($q) use ($logged) {
+                $q->where('recipient_id', $logged->id)
+                    ->orWhere('sender_id', $logged->id);
+            });
+        }
+
+        $query->orderBy('id', 'DESC');
 
         if ($sdate) {
             $query->whereDate('created_at', $sdate);

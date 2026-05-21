@@ -23,6 +23,10 @@ class MessagePolicy
             return false;
         }
 
+        if ((int) $user->roles === User::ROLE_ROOT_APP) {
+            return true;
+        }
+
         return (int) $message->sender_id === (int) $user->id
             || (int) $message->recipient_id === (int) $user->id;
     }

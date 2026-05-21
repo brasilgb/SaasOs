@@ -54,7 +54,21 @@ export function FinancialRevenueChart({ data }: { data: FinancialRevenuePoint[] 
     return (
         <ChartContainer config={chartConfig} className="h-[260px] w-full sm:h-[300px]">
             <PieChart>
-                <ChartTooltip cursor={false} content={<ChartTooltipContent nameKey="key" hideLabel />} />
+                <ChartTooltip
+                    cursor={false}
+                    content={
+                        <ChartTooltipContent
+                            nameKey="key"
+                            hideLabel
+                            formatter={(value, name) => (
+                                <div className="flex w-full items-center justify-between gap-3">
+                                    <span>{String(name)}</span>
+                                    <span className="font-mono font-medium tabular-nums">{formatCurrency(Number(value || 0))}</span>
+                                </div>
+                            )}
+                        />
+                    }
+                />
                 <Pie data={pieData} dataKey="value" nameKey="label" innerRadius={42} outerRadius={78} strokeWidth={2} />
                 <ChartLegend
                     align="left"
@@ -101,9 +115,7 @@ export function FinancialRevenueTrendChart({ data }: { data: FinancialRevenuePoi
                     cursor={false}
                     content={
                         <ChartTooltipContent
-                            labelFormatter={(_, payload) =>
-                                payload?.[0]?.payload?.date ? moment(payload[0].payload.date).format('DD/MM/YYYY') : ''
-                            }
+                            labelFormatter={(_, payload) => (payload?.[0]?.payload?.date ? moment(payload[0].payload.date).format('DD/MM/YYYY') : '')}
                             formatter={(value, name) => {
                                 const label = name === 'services' ? 'Serviços' : 'Peças';
                                 return (
