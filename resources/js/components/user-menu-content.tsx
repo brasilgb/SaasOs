@@ -3,7 +3,7 @@ import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { type User } from '@/types';
 import { Link, router } from '@inertiajs/react';
-import { FileTextIcon, LogOut } from 'lucide-react';
+import { FileTextIcon, LogOut, UserRound } from 'lucide-react';
 
 interface UserMenuContentProps {
     user: User;
@@ -35,6 +35,12 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
                 <DropdownMenuItem asChild>
+                    <Link className="block w-full" href={route('app.profile.edit')}>
+                        <UserRound className="mr-2" />
+                        <span>Perfil</span>
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
                     <a href={import.meta.env.VITE_APP_URL + '/documentation/doc-sigmaos.html'} target="_blank" rel="noopener noreferrer">
                         <FileTextIcon className="mr-2" />
                         <span>Documentação</span>
@@ -49,7 +55,7 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                 </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-muted-foreground px-2 py-1 text-xs font-normal text-center">Função: {userRoleLabel}</DropdownMenuLabel>
+            <DropdownMenuLabel className="text-muted-foreground px-2 py-1 text-center text-xs font-normal">Função: {userRoleLabel}</DropdownMenuLabel>
         </>
     );
 }

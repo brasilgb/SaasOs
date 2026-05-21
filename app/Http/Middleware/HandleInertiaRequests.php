@@ -331,6 +331,7 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('success'),
                 'message' => fn () => $request->session()->get('message'),
                 'error' => fn () => $request->session()->get('error'),
+                'authorization_error' => fn () => $request->session()->get('authorization_error'),
                 'import_success' => fn () => $request->session()->get('import_success'),
                 'import_error' => fn () => $request->session()->get('import_error'),
                 'label_print' => fn () => $request->session()->get('label_print'),

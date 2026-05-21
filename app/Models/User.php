@@ -39,6 +39,7 @@ class User extends Authenticatable
         'email',
         'telephone',
         'whatsapp',
+        'avatar',
         'password',
         'roles',
         'can_view_all_orders',

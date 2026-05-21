@@ -2,6 +2,7 @@ import { AppContent } from '@/components/app-content';
 import { AppShell } from '@/components/app-shell';
 import { AppSidebarAdmin } from '@/components/app-sidebar-admin';
 import { AppSidebarHeader } from '@/components/app-sidebar-header';
+import { FlashToastMessages } from '@/components/flash-toast-messages';
 import { useAppearance } from '@/hooks/use-appearance';
 import { type BreadcrumbItem } from '@/types';
 import { PropsWithChildren } from 'react';
@@ -15,6 +16,7 @@ export default function AdminLayout({ breadcrumbs = [], children }: PropsWithChi
             <AppContent variant="sidebar">
                 <AppSidebarHeader breadcrumbs={breadcrumbs} />
                 {children}
+                <FlashToastMessages />
                 <Toaster theme={appearance} />
             </AppContent>
         </AppShell>

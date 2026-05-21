@@ -16,6 +16,7 @@ use App\Http\Controllers\App\MessageController;
 use App\Http\Controllers\App\OrderController;
 use App\Http\Controllers\App\OtherController;
 use App\Http\Controllers\App\PartController;
+use App\Http\Controllers\App\ProfileController;
 use App\Http\Controllers\App\QualityIndicatorController;
 use App\Http\Controllers\App\ReceiptController;
 use App\Http\Controllers\App\ReportController;
@@ -36,6 +37,8 @@ Route::get('/kpisFinancialOrder/{timerange}', [DashboardController::class, 'kpis
 Route::get('/financialRevenueChart/{timerange}', [DashboardController::class, 'financialRevenueChart'])->name('financialRevenueChart');
 Route::get('/kpisFinancialSales/{timerange}', [DashboardController::class, 'kpisFinancialSales'])->name('kpisFinancialSales');
 Route::get('/financialSalesRevenueChart/{timerange}', [DashboardController::class, 'financialSalesRevenueChart'])->name('financialSalesRevenueChart');
+Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
 Route::get('/quality-indicators', [QualityIndicatorController::class, 'index'])->name('quality.index');
 Route::get('/quality-indicators/metrics/{timerange}', [QualityIndicatorController::class, 'metrics'])->name('quality.metrics');
 Route::post('/quality-indicators/{order}/feedback-recovery', [QualityIndicatorController::class, 'updateFeedbackRecovery'])->name('quality.feedback-recovery');

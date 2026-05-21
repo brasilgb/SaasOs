@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use App\Support\TenantSequence;
 use Inertia\Inertia;
 
@@ -34,11 +35,54 @@ class UserController extends Controller
         return (bool) ($data['can_view_all_orders'] ?? false);
     }
 
+    private function storeAvatar(UserRequest $request, ?User $target = null): ?string
+    {
+        if (! $request->hasFile('avatar')) {
+            return $target?->avatar;
+        }
+
+        $disk = Storage::disk('public');
+        if (! $disk->directoryExists('avatars')) {
+            $disk->makeDirectory('avatars');
+        }
+
+        if ($target?->avatar) {
+            $disk->delete(str_replace('/storage/', '', $target->avatar));
+        }
+
+        $path = $request->file('avatar')->store('avatars', 'public');
+
+        return '/storage/'.$path;
+    }
+
     private function scopeUserListingByActor($query)
     {
         $authUser = Auth::user();
-        if ($authUser instanceof User && $authUser->isOperator()) {
-            $query->whereIn('roles', [User::ROLE_OPERATOR, User::ROLE_TECHNICIAN]);
+
+        if (! $authUser instanceof User) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        if (is_null($authUser->tenant_id) && $authUser->isRoot()) {
+            return $query;
+        }
+
+        if ($authUser->isRoot()) {
+            return $query->where(function ($query) use ($authUser) {
+                $query->whereIn('roles', [User::ROLE_ADMIN, User::ROLE_OPERATOR, User::ROLE_TECHNICIAN])
+                    ->orWhere('id', $authUser->id);
+            });
+        }
+
+        if ($authUser->isAdministrator()) {
+            return $query->whereIn('roles', [User::ROLE_ADMIN, User::ROLE_OPERATOR, User::ROLE_TECHNICIAN]);
+        }
+
+        if ($authUser->isOperator()) {
+            return $query->where(function ($query) use ($authUser) {
+                $query->where('roles', User::ROLE_TECHNICIAN)
+                    ->orWhere('id', $authUser->id);
+            });
         }
 
         return $query;
@@ -85,6 +129,7 @@ class UserController extends Controller
         $data['password'] = Hash::make($request->password);
         $data['tenant_id'] = Auth::user()->tenant_id;
         $data['can_view_all_orders'] = $this->resolveTechnicianMasterFlag(Auth::user(), $data);
+        $data['avatar'] = $this->storeAvatar($request);
         $data['user_number'] = TenantSequence::next(User::class, 'user_number');
         Model::reguard();
         User::create($data);
@@ -130,10 +175,13 @@ class UserController extends Controller
 
         $data = $request->all();
         $request->validated();
-        Gate::authorize('assignRole', [User::class, $data['roles'] ?? null]);
+        if ((int) ($data['roles'] ?? $user->roles) !== (int) $user->roles) {
+            Gate::authorize('assignRole', [User::class, $data['roles'] ?? null]);
+        }
         $data['password'] = $request->password ? Hash::make($request->password) : $user->password;
         $data['tenant_id'] = $user->tenant_id;
         $data['can_view_all_orders'] = $this->resolveTechnicianMasterFlag(Auth::user(), $data, $user);
+        $data['avatar'] = $this->storeAvatar($request, $user);
         Model::reguard();
         $user->update($data);
         Model::unguard();

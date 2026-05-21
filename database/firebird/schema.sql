@@ -52,6 +52,7 @@ CREATE TABLE users (
     email VARCHAR(255) NOT NULL,
     telephone VARCHAR(255),
     whatsapp VARCHAR(255),
+    avatar VARCHAR(255),
     password VARCHAR(255) NOT NULL,
     roles SMALLINT,
     can_view_all_orders SMALLINT DEFAULT 0 NOT NULL,

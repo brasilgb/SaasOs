@@ -37,6 +37,14 @@ class UserPolicy
 
     private function canManageTarget(User $actor, User $target): bool
     {
+        if ($actor->isOperator()) {
+            return $this->sameTenantOrSystem($actor, $target)
+                && (
+                    (int) $actor->id === (int) $target->id
+                    || (int) $target->roles === User::ROLE_TECHNICIAN
+                );
+        }
+
         return $this->sameTenantOrSystem($actor, $target)
             && $this->canManageRole($actor, $target->roles);
     }
@@ -53,11 +61,19 @@ class UserPolicy
 
     public function view(User $user, User $target): bool
     {
+        if ((int) $user->id === (int) $target->id) {
+            return true;
+        }
+
         return $this->viewAny($user) && $this->canManageTarget($user, $target);
     }
 
     public function update(User $user, User $target): bool
     {
+        if ((int) $user->id === (int) $target->id) {
+            return true;
+        }
+
         return ($user->hasPermission('users') || $user->hasPermission('users.update'))
             && $this->canManageTarget($user, $target);
     }

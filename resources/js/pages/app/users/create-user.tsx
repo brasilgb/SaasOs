@@ -1,10 +1,12 @@
 import { toastSuccess } from '@/components/app-toast-messages';
 import { Icon } from '@/components/icon';
 import InputError from '@/components/input-error';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { useInitials } from '@/hooks/use-initials';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { rolesUser } from '@/Utils/dataSelect';
@@ -33,14 +35,16 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function CreateUser() {
     const [showPassword, setShowPassword] = useState<boolean>(false);
     const { flash, auth } = usePage().props as any;
+    const getInitials = useInitials();
     const isOperator = auth?.role === 'operator';
 
-    const { data, setData, post, progress, processing, reset, errors } = useForm({
+    const { data, setData, post, progress, processing, reset, errors } = useForm<any>({
         tenant_id: auth.user.tenant_id,
         name: '',
         email: '',
         telephone: '',
         whatsapp: '',
+        avatar: null,
         roles: '',
         can_view_all_orders: false,
         status: false,
@@ -52,6 +56,7 @@ export default function CreateUser() {
         e.preventDefault();
 
         post(route('app.users.store'), {
+            forceFormData: true,
             onSuccess: () => {
                 (toastSuccess('Sucesso', 'Cadastro realizado com sucesso'), reset());
             },
@@ -102,6 +107,25 @@ export default function CreateUser() {
                 <div className="rounded-lg border p-2">
                     <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
                         <div className="mt-4 grid gap-4 md:grid-cols-6">
+                            <div className="grid gap-2 md:col-span-6">
+                                <Label htmlFor="avatar">Imagem do perfil</Label>
+                                <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                                    <Avatar className="size-16">
+                                        <AvatarFallback>{getInitials(data.name || 'Usuário')}</AvatarFallback>
+                                    </Avatar>
+                                    <div className="grid flex-1 gap-2">
+                                        <Input
+                                            id="avatar"
+                                            type="file"
+                                            accept="image/png,image/jpeg,image/jpg,image/webp"
+                                            onChange={(e) => setData('avatar', e.target.files?.[0] ?? null)}
+                                        />
+                                        <p className="text-muted-foreground text-xs">Use JPG, PNG ou WebP até 2 MB.</p>
+                                        <InputError className="mt-2" message={errors.avatar} />
+                                    </div>
+                                </div>
+                            </div>
+
                             <div className="grid gap-2 md:col-span-2">
                                 <Label htmlFor="name">Nome</Label>
                                 <Input value={data.name} type="text" id="name" onChange={(e) => setData('name', e.target.value)} />
