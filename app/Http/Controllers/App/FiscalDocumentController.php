@@ -11,6 +11,7 @@ use App\Services\FiscalDocumentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -68,27 +69,53 @@ class FiscalDocumentController extends Controller
         $data = $request->validate([
             'enabled' => ['required', 'boolean'],
             'environment' => ['required', 'in:sandbox,production'],
-            'api_token' => ['nullable', 'string', 'max:4000'],
+            'api_token' => [Rule::requiredIf(fn () => $request->boolean('enabled') && empty($fiscalSetting->api_token)), 'nullable', 'string', 'max:4000'],
             'webhook_secret' => ['nullable', 'string', 'max:4000'],
             'nfe_enabled' => ['required', 'boolean'],
             'nfse_enabled' => ['required', 'boolean'],
-            'company_tax_regime' => ['nullable', 'string', 'max:50'],
-            'state_registration' => ['nullable', 'string', 'max:50'],
-            'municipal_registration' => ['nullable', 'string', 'max:50'],
-            'service_city_code' => ['nullable', 'string', 'max:20'],
-            'service_list_item' => ['nullable', 'string', 'max:30'],
-            'default_iss_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'default_nfe_series' => ['nullable', 'string', 'max:20'],
-            'default_nfse_series' => ['nullable', 'string', 'max:20'],
-            'default_ncm' => ['nullable', 'string', 'max:20'],
-            'default_cfop' => ['nullable', 'string', 'max:10'],
-            'default_commercial_unit' => ['nullable', 'string', 'max:10'],
-            'default_tax_unit' => ['nullable', 'string', 'max:10'],
-            'default_icms_origin' => ['nullable', 'string', 'max:5'],
-            'default_icms_situation' => ['nullable', 'string', 'max:10'],
-            'default_pis_situation' => ['nullable', 'string', 'max:10'],
-            'default_cofins_situation' => ['nullable', 'string', 'max:10'],
+            'company_tax_regime' => [Rule::requiredIf(fn () => $request->boolean('enabled') && $request->boolean('nfe_enabled')), 'nullable', 'string', 'max:50'],
+            'state_registration' => [Rule::requiredIf(fn () => $request->boolean('enabled') && $request->boolean('nfe_enabled')), 'nullable', 'string', 'max:50'],
+            'municipal_registration' => [Rule::requiredIf(fn () => $request->boolean('enabled') && $request->boolean('nfse_enabled')), 'nullable', 'string', 'max:50'],
+            'service_city_code' => [Rule::requiredIf(fn () => $request->boolean('enabled') && $request->boolean('nfse_enabled')), 'nullable', 'string', 'max:20'],
+            'service_list_item' => [Rule::requiredIf(fn () => $request->boolean('enabled') && $request->boolean('nfse_enabled')), 'nullable', 'string', 'max:30'],
+            'default_iss_rate' => [Rule::requiredIf(fn () => $request->boolean('enabled') && $request->boolean('nfse_enabled')), 'nullable', 'numeric', 'min:0', 'max:100'],
+            'default_nfe_series' => [Rule::requiredIf(fn () => $request->boolean('enabled') && $request->boolean('nfe_enabled')), 'nullable', 'string', 'max:20'],
+            'default_nfse_series' => [Rule::requiredIf(fn () => $request->boolean('enabled') && $request->boolean('nfse_enabled')), 'nullable', 'string', 'max:20'],
+            'default_ncm' => [Rule::requiredIf(fn () => $request->boolean('enabled') && $request->boolean('nfe_enabled')), 'nullable', 'string', 'max:20'],
+            'default_cfop' => [Rule::requiredIf(fn () => $request->boolean('enabled') && $request->boolean('nfe_enabled')), 'nullable', 'string', 'max:10'],
+            'default_commercial_unit' => [Rule::requiredIf(fn () => $request->boolean('enabled') && $request->boolean('nfe_enabled')), 'nullable', 'string', 'max:10'],
+            'default_tax_unit' => [Rule::requiredIf(fn () => $request->boolean('enabled') && $request->boolean('nfe_enabled')), 'nullable', 'string', 'max:10'],
+            'default_icms_origin' => [Rule::requiredIf(fn () => $request->boolean('enabled') && $request->boolean('nfe_enabled')), 'nullable', 'string', 'max:5'],
+            'default_icms_situation' => [Rule::requiredIf(fn () => $request->boolean('enabled') && $request->boolean('nfe_enabled')), 'nullable', 'string', 'max:10'],
+            'default_pis_situation' => [Rule::requiredIf(fn () => $request->boolean('enabled') && $request->boolean('nfe_enabled')), 'nullable', 'string', 'max:10'],
+            'default_cofins_situation' => [Rule::requiredIf(fn () => $request->boolean('enabled') && $request->boolean('nfe_enabled')), 'nullable', 'string', 'max:10'],
+        ], [], [
+            'api_token' => 'token Focus NFe',
+            'nfe_enabled' => 'NF-e de produtos',
+            'nfse_enabled' => 'NFS-e de serviços',
+            'company_tax_regime' => 'regime tributário',
+            'state_registration' => 'inscrição estadual',
+            'municipal_registration' => 'inscrição municipal',
+            'service_city_code' => 'código do município',
+            'service_list_item' => 'item da lista de serviço',
+            'default_iss_rate' => 'alíquota ISS padrão',
+            'default_nfe_series' => 'série NF-e',
+            'default_nfse_series' => 'série NFS-e',
+            'default_ncm' => 'NCM padrão',
+            'default_cfop' => 'CFOP padrão',
+            'default_commercial_unit' => 'unidade comercial',
+            'default_tax_unit' => 'unidade tributável',
+            'default_icms_origin' => 'origem ICMS',
+            'default_icms_situation' => 'situação ICMS',
+            'default_pis_situation' => 'situação PIS',
+            'default_cofins_situation' => 'situação COFINS',
         ]);
+
+        if ($data['enabled'] && ! $data['nfe_enabled'] && ! $data['nfse_enabled']) {
+            return back()
+                ->withErrors(['nfe_enabled' => 'Habilite NF-e, NFS-e ou ambas para ativar documentos fiscais.'])
+                ->withInput();
+        }
 
         $data['provider'] = 'focus_nfe';
 
