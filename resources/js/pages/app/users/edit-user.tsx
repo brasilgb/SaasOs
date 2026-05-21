@@ -38,7 +38,8 @@ export default function CreateUser({ user, page, search }: any) {
     const getInitials = useInitials();
     const isOperator = auth?.role === 'operator';
 
-    const { data, setData, patch, progress, processing, reset, errors } = useForm<any>({
+    const { data, setData, post, progress, processing, reset, errors } = useForm<any>({
+        _method: 'patch',
         tenant_id: auth.user.tenant_id,
         name: user?.name,
         email: user?.email,
@@ -54,7 +55,7 @@ export default function CreateUser({ user, page, search }: any) {
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
-        patch(route('app.users.update', user?.id), {
+        post(route('app.users.update', user?.id), {
             forceFormData: true,
             onSuccess: () => {
                 toastSuccess('Sucesso', 'Cadastro alterado com sucesso');

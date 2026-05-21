@@ -461,7 +461,7 @@
             <p>Manual do cliente com foco operacional, financeiro e de configuração do sistema.</p>
 
             <div class="meta">
-                <div><strong>Versão do manual</strong>1.6</div>
+                <div><strong>Versão do manual</strong>1.7</div>
                 <div><strong>Atualizado em</strong>Maio de 2026</div>
                 <div><strong>Formato</strong>HTML navegável</div>
             </div>
@@ -524,6 +524,11 @@
                     funciona bem no navegador,
                     pode ser atualizada com facilidade e consultada pela equipe durante a rotina de atendimento.
                 </div>
+                <div class="callout">
+                    Atualizações recentes para usuários SaaS: perfil com imagem, troca de senha pelo menu Perfil,
+                    regras de visibilidade entre perfis, liberação de Técnico master para visualizar todas as ordens,
+                    avisos amigáveis para ações não autorizadas e confirmação visual após pagamento de assinatura.
+                </div>
 
                 <section id="introducao">
                     <h3>1. Introdução</h3>
@@ -538,6 +543,11 @@
                         celulares. A proposta deste manual é mostrar o que cada área faz, quando usar cada recurso,
                         quais ações alteram dados operacionais e quais rotinas automáticas podem ser disparadas em
                         segundo plano.</p>
+                    <p>Quando a assinatura estiver bloqueada e o pagamento for realizado pelo fluxo disponível no
+                        sistema, o acesso é liberado e uma mensagem de agradecimento confirma que a conta foi
+                        regularizada. A cobrança Pix gerada pelo provedor de pagamento usa um e-mail técnico interno
+                        para evitar envio duplicado de cobrança ao cliente, já que a fatura principal é enviada pelo
+                        SigmaOS.</p>
                 </section>
 
                 <section id="visao-geral">
@@ -658,6 +668,9 @@
                     <p>O gráfico <strong>Faturamento de vendas</strong> compara vendas concluídas e despesas do mês
                         corrente, usando linhas para facilitar a leitura da evolução diária. A tela também pode exibir
                         resultado do período, saldo pendente em vendas, vendas canceladas e produtos mais vendidos.</p>
+                    <p>Nos indicadores financeiros operacionais, os valores de faturamento, serviços e peças são
+                        apresentados com formatação monetária em reais. Isso facilita a conferência visual dos KPIs e
+                        evita leitura ambígua de valores sem o prefixo <strong>R$</strong>.</p>
                 </section>
 
                 <section id="clientes">
@@ -723,6 +736,10 @@
                     <p>Ao salvar uma OS, o sistema registra dados do cliente, equipamento e serviço. Dependendo do
                         momento do fluxo, ele também pode gerar histórico de status, registrar logs operacionais e
                         disparar comunicações ao cliente.</p>
+                    <p>Por padrão, usuários com perfil de técnico visualizam apenas as ordens atribuídas a eles. Quando
+                        a empresa precisar que um técnico acompanhe toda a operação técnica, o administrador pode
+                        habilitar a opção <strong>Técnico master</strong> no cadastro do usuário. Com essa opção ativa,
+                        o técnico passa a visualizar todas as ordens de serviço da empresa.</p>
 
                     <h4>Status da ordem</h4>
                     <table class="status-table">
@@ -1380,6 +1397,10 @@
                         <li><strong>Gestor:</strong> pode participar da definição de metas, menus e automações.</li>
                         <li><strong>Atendente e técnico:</strong> normalmente apenas consultam, para evitar mudanças com impacto global.</li>
                     </ul>
+                    <h4>19.7 Mensagens de permissão</h4>
+                    <p>Quando um usuário tentar executar uma ação para a qual não possui permissão, o sistema exibe um
+                        aviso na tela informando que a ação não é autorizada. Esse comportamento evita telas técnicas de
+                        erro e ajuda o usuário a entender que a limitação está relacionada ao perfil de acesso.</p>
                 </section>
 
                 <section id="usuarios">
@@ -1400,6 +1421,26 @@
                         <li><strong>Operador / atendente:</strong> abre OS, registra clientes, pagamentos e contatos.</li>
                         <li><strong>Técnico:</strong> atualiza andamento, diagnóstico, peças e observações técnicas.</li>
                     </ul>
+                    <h4>20.2 Visibilidade entre perfis</h4>
+                    <p>A listagem e a edição de usuários seguem uma hierarquia de acesso para proteger contas de maior
+                        privilégio.</p>
+                    <ul>
+                        <li><strong>RootApp:</strong> pode consultar a própria conta e os usuários operacionais da empresa.</li>
+                        <li><strong>Administrador:</strong> visualiza administradores, atendentes e técnicos, mas não visualiza RootApp.</li>
+                        <li><strong>Atendente:</strong> visualiza apenas a própria conta e usuários técnicos.</li>
+                        <li><strong>Técnico:</strong> acessa apenas as funções liberadas para sua rotina operacional.</li>
+                    </ul>
+                    <h4>20.3 Técnico master</h4>
+                    <p>Ao cadastrar ou editar um usuário com função <strong>Técnico</strong>, administradores podem
+                        habilitar a opção <strong>Técnico master</strong>. Essa liberação permite que o técnico veja
+                        todas as ordens de serviço, não apenas as ordens atribuídas a ele. Quando a opção estiver
+                        desligada, o técnico continua restrito às próprias ordens.</p>
+                    <h4>20.4 Perfil e imagem do usuário</h4>
+                    <p>No menu do usuário existe a opção <strong>Perfil</strong>, usada para alterar o nome, trocar a
+                        senha e enviar uma imagem de perfil. A mesma imagem também pode ser definida no cadastro ou na
+                        edição de usuários, inclusive para técnicos.</p>
+                    <p>As imagens aceitas são JPG, PNG ou WebP, com limite de 2 MB. Caso a pasta de armazenamento de
+                        avatares ainda não exista, o sistema cria automaticamente no primeiro envio.</p>
                 </section>
 
                 <section id="imagens">

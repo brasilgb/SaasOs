@@ -12,6 +12,7 @@ import { Save, UserRound } from 'lucide-react';
 import { FormEventHandler, useRef } from 'react';
 
 type ProfileForm = {
+    _method: string;
     name: string;
     avatar: File | null;
     current_password: string;
@@ -36,7 +37,8 @@ export default function Profile() {
     const passwordInput = useRef<HTMLInputElement>(null);
     const currentPasswordInput = useRef<HTMLInputElement>(null);
 
-    const { data, setData, patch, errors, processing, reset } = useForm<ProfileForm>({
+    const { data, setData, post, errors, processing, reset } = useForm<ProfileForm>({
+        _method: 'patch',
         name: auth.user.name,
         avatar: null,
         current_password: '',
@@ -47,7 +49,7 @@ export default function Profile() {
     const submit: FormEventHandler = (event) => {
         event.preventDefault();
 
-        patch(route('app.profile.update'), {
+        post(route('app.profile.update'), {
             preserveScroll: true,
             forceFormData: true,
             onSuccess: () => {
