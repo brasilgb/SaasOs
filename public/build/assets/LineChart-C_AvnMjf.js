@@ -1,0 +1,1 @@
+import{I as a,X as i,Y as s,K as r}from"./chart-KEiyEZ6O.js";import{L as x}from"./Line-D-LiC72X.js";var t=a({chartName:"LineChart",GraphicalChild:x,axisComponents:[{axisType:"xAxis",AxisComp:i},{axisType:"yAxis",AxisComp:s}],formatAxisMap:r});export{t as L};

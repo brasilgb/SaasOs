@@ -90,7 +90,7 @@ export default function EditOrder({
         if (!communication) return '';
 
         if (communication.action === 'budget_follow_up_sent') {
-            return 'Follow-up de orçamento';
+            return 'Acompanhamento de orçamento';
         }
 
         return 'Cobrança';

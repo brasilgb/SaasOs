@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, Table
 import AdminLayout from '@/layouts/admin/admin-layout';
 import { BreadcrumbItem } from '@/types';
 import { statusSaasByValue } from '@/Utils/functions';
-import { maskPhone } from '@/Utils/mask';
+import { maskCnpj, maskPhone } from '@/Utils/mask';
 import { Head, Link, router } from '@inertiajs/react';
 import { Building, Edit, Eye, FileText, Plus } from 'lucide-react';
 import moment from 'moment';
@@ -165,7 +165,7 @@ export default function TenantsIndex({ tenants, filters }: any) {
                                         <TableCell>{tenant.id}</TableCell>
                                         <TableCell>{tenant.name}</TableCell>
                                         <TableCell>{tenant.company}</TableCell>
-                                        <TableCell>{tenant.cnpj}</TableCell>
+                                        <TableCell>{maskCnpj(tenant.cnpj) || '-'}</TableCell>
                                         <TableCell>{tenant.email}</TableCell>
                                         <TableCell>{maskPhone(tenant.phone)}</TableCell>
                                         <TableCell>{statusSaasByValue(tenant.status)}</TableCell>

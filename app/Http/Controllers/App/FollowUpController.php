@@ -131,7 +131,7 @@ class FollowUpController extends Controller
         return match ($scope) {
             'budget' => 'budget_follow_up_sent',
             'payment' => 'payment_reminder_sent',
-            default => abort(422, 'Escopo de follow-up inválido.'),
+            default => abort(422, 'Escopo de acompanhamento inválido.'),
         };
     }
 

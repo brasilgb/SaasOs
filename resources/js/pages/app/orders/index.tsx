@@ -94,7 +94,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
         if (!communication) return '';
 
         if (communication.action === 'budget_follow_up_sent') {
-            return 'follow-up de orçamento';
+            return 'acompanhamento de orçamento';
         }
 
         return 'cobrança';
@@ -496,8 +496,8 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                             type="button"
                                                             size="icon"
                                                             variant="outline"
-                                                            title="Enviar follow-up de orçamento"
-                                                            aria-label={`Enviar follow-up de orçamento da ordem ${order.order_number}`}
+                                                            title="Enviar acompanhamento de orçamento"
+                                                            aria-label={`Enviar acompanhamento de orçamento da ordem ${order.order_number}`}
                                                             onClick={() => handleBudgetFollowUp(order.id)}
                                                         >
                                                             <Mail className="h-4 w-4" />

@@ -119,7 +119,7 @@ function describeLog(log: OrderLogItem): Omit<TimelineEvent, 'id' | 'createdAt' 
             };
         case 'budget_follow_up_sent':
             return {
-                title: 'Follow-up de orçamento enviado',
+                title: 'Acompanhamento de orçamento enviado',
                 description: [
                     data.trigger === 'automatic'
                         ? 'automático'

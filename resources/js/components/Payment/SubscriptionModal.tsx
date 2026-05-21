@@ -1,3 +1,4 @@
+import SubscriptionPaymentSuccess from '@/components/Payment/SubscriptionPaymentSuccess';
 import { usePage } from '@inertiajs/react';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
@@ -30,6 +31,7 @@ export default function SubscriptionModal() {
     const [selectedPlan, setSelectedPlan] = useState<number | null>(null);
     const [pixData, setPixData] = useState<PixData | null>(null);
     const [loading, setLoading] = useState(false);
+    const [paymentConfirmed, setPaymentConfirmed] = useState(false);
 
     const COOLDOWN_HOURS = 3;
 
@@ -70,7 +72,7 @@ export default function SubscriptionModal() {
                         if (interval) {
                             clearInterval(interval);
                         }
-                        window.location.href = route('app.dashboard');
+                        setPaymentConfirmed(true);
                     }
                 } catch (error) {
                     console.error('Erro ao verificar status', error);
@@ -98,81 +100,93 @@ export default function SubscriptionModal() {
         }
     };
 
+    const handleContinue = () => {
+        window.location.href = route('app.dashboard');
+    };
+
     // Renderização Condicional (Abaixo de todos os Hooks)
-    if (!isOpen) return null;
+    if (!isOpen && !paymentConfirmed) return null;
 
     return (
-        <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black p-4">
-            <div className="relative w-full max-w-lg rounded-lg bg-white p-6 shadow-xl">
-                <h2 className="mb-2 text-xl font-bold text-red-600">Assinatura Pendente</h2>
+        <>
+            <SubscriptionPaymentSuccess open={paymentConfirmed} onContinue={handleContinue} />
 
-                <p className="mb-4 text-gray-600">
-                    Sua assinatura venceu há <strong>{Math.floor(subscription_alert?.days_overdue || 0)}</strong> dias. Você tem{' '}
-                    <strong>{Math.max(0, Math.ceil(3 - (subscription_alert?.days_overdue || 0)))}</strong> dias de cortesia restantes.
-                </p>
+            {isOpen && !paymentConfirmed && (
+                <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black p-4">
+                    <div className="relative w-full max-w-lg rounded-lg bg-white p-6 shadow-xl">
+                        <h2 className="mb-2 text-xl font-bold text-red-600">Assinatura Pendente</h2>
 
-                {pixData && (
-                    <div className="mb-4 flex animate-pulse items-center justify-center rounded bg-blue-50 p-2 text-blue-600">
-                        <span className="text-sm font-medium">Aguardando confirmação do banco...</span>
-                    </div>
-                )}
+                        <p className="mb-4 text-gray-600">
+                            Sua assinatura venceu há <strong>{Math.floor(subscription_alert?.days_overdue || 0)}</strong> dias. Você tem{' '}
+                            <strong>{Math.max(0, Math.ceil(3 - (subscription_alert?.days_overdue || 0)))}</strong> dias de cortesia restantes.
+                        </p>
 
-                {!pixData ? (
-                    <div className="space-y-3">
-                        <label className="text-sm font-medium text-gray-700">Escolha um plano:</label>
+                        {pixData && (
+                            <div className="mb-4 flex animate-pulse items-center justify-center rounded bg-blue-50 p-2 text-blue-600">
+                                <span className="text-sm font-medium">Aguardando confirmação do banco...</span>
+                            </div>
+                        )}
 
-                        {(!plans || plans.length === 0) && <p className="rounded bg-red-50 p-2 text-sm text-red-500">Nenhum plano disponível.</p>}
+                        {!pixData ? (
+                            <div className="space-y-3">
+                                <label className="text-sm font-medium text-gray-700">Escolha um plano:</label>
 
-                        {plans
-                            ?.filter((p) => parseFloat(p.value) > 0)
-                            .map((plan) => (
-                                <div
-                                    key={plan.id}
-                                    className={`flex cursor-pointer items-center justify-between rounded border p-3 transition ${
-                                        selectedPlan === plan.id
-                                            ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500'
-                                            : 'border-gray-200 hover:bg-gray-50'
-                                    }`}
-                                    onClick={() => setSelectedPlan(plan.id)}
+                                {(!plans || plans.length === 0) && (
+                                    <p className="rounded bg-red-50 p-2 text-sm text-red-500">Nenhum plano disponível.</p>
+                                )}
+
+                                {plans
+                                    ?.filter((p) => parseFloat(p.value) > 0)
+                                    .map((plan) => (
+                                        <div
+                                            key={plan.id}
+                                            className={`flex cursor-pointer items-center justify-between rounded border p-3 transition ${
+                                                selectedPlan === plan.id
+                                                    ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500'
+                                                    : 'border-gray-200 hover:bg-gray-50'
+                                            }`}
+                                            onClick={() => setSelectedPlan(plan.id)}
+                                        >
+                                            <div>
+                                                <div className="font-bold text-gray-800">{plan.name}</div>
+                                                <div className="text-xs text-gray-500">{plan.description}</div>
+                                            </div>
+                                            <div className="font-semibold text-blue-600">
+                                                R$ {parseFloat(plan.value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                            </div>
+                                        </div>
+                                    ))}
+
+                                <button
+                                    onClick={handleGeneratePix}
+                                    disabled={!selectedPlan || loading}
+                                    className="mt-4 w-full rounded-lg bg-blue-600 py-3 font-bold text-white disabled:opacity-50"
                                 >
-                                    <div>
-                                        <div className="font-bold text-gray-800">{plan.name}</div>
-                                        <div className="text-xs text-gray-500">{plan.description}</div>
-                                    </div>
-                                    <div className="font-semibold text-blue-600">
-                                        R$ {parseFloat(plan.value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                                    </div>
-                                </div>
-                            ))}
+                                    {loading ? 'Processando...' : 'Gerar PIX'}
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="text-center">
+                                <img src={`data:image/png;base64,${pixData.qr_code}`} alt="QR Code" className="mx-auto mb-4 h-48 w-48 border p-2" />
+                                <input type="text" readOnly value={pixData.qr_code_copy_paste} className="w-full border bg-gray-50 p-2 text-xs" />
+                                <button
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(pixData.qr_code_copy_paste);
+                                        alert('Código Copiado!');
+                                    }}
+                                    className="mx-auto mt-2 block text-sm text-blue-600 underline"
+                                >
+                                    Copiar Código PIX
+                                </button>
+                            </div>
+                        )}
 
-                        <button
-                            onClick={handleGeneratePix}
-                            disabled={!selectedPlan || loading}
-                            className="mt-4 w-full rounded-lg bg-blue-600 py-3 font-bold text-white disabled:opacity-50"
-                        >
-                            {loading ? 'Processando...' : 'Gerar PIX'}
+                        <button onClick={() => setIsOpen(false)} className="mt-6 w-full text-center text-sm text-gray-400 underline">
+                            Fechar e pagar depois
                         </button>
                     </div>
-                ) : (
-                    <div className="text-center">
-                        <img src={`data:image/png;base64,${pixData.qr_code}`} alt="QR Code" className="mx-auto mb-4 h-48 w-48 border p-2" />
-                        <input type="text" readOnly value={pixData.qr_code_copy_paste} className="w-full border bg-gray-50 p-2 text-xs" />
-                        <button
-                            onClick={() => {
-                                navigator.clipboard.writeText(pixData.qr_code_copy_paste);
-                                alert('Código Copiado!');
-                            }}
-                            className="mx-auto mt-2 block text-sm text-blue-600 underline"
-                        >
-                            Copiar Código PIX
-                        </button>
-                    </div>
-                )}
-
-                <button onClick={() => setIsOpen(false)} className="mt-6 w-full text-center text-sm text-gray-400 underline">
-                    Fechar e pagar depois
-                </button>
-            </div>
-        </div>
+                </div>
+            )}
+        </>
     );
 }

@@ -41,7 +41,7 @@ class FollowUpTaskService
                 'log_task_snoozed' => 'payment_follow_up_task_snoozed',
                 'log_task_assigned' => 'payment_follow_up_task_assigned',
             ],
-            default => abort(422, 'Escopo de follow-up inválido.'),
+            default => abort(422, 'Escopo de acompanhamento inválido.'),
         };
     }
 

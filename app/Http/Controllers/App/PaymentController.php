@@ -43,7 +43,7 @@ class PaymentController extends Controller
                 'description' => 'Assinatura '.$plan->name.' - '.$tenant->name,
                 'payment_method_id' => 'pix',
                 'payer' => [
-                    'email' => $tenant->email,
+                    'email' => "pix_{$tenant->id}@sigmaos.com.br",
                     'first_name' => explode(' ', trim($tenant->name))[0], // Apenas o primeiro nome evita erros de validação
                     'identification' => [
                         'type' => strlen(preg_replace('/\D/', '', $tenant->cnpj)) > 11 ? 'CNPJ' : 'CPF',

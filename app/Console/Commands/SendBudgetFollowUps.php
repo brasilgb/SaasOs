@@ -13,7 +13,7 @@ class SendBudgetFollowUps extends Command
 {
     protected $signature = 'sigmaos:send-budget-followups {--tenant=} {--dry-run}';
 
-    protected $description = 'Envia follow-up automático para orçamentos parados';
+    protected $description = 'Envia acompanhamento automático para orçamentos parados';
 
     public function __construct(private readonly OrderNotificationService $orderNotificationService)
     {
@@ -130,7 +130,7 @@ class SendBudgetFollowUps extends Command
             } catch (\Throwable $e) {
                 report($e);
                 $skipped++;
-                $this->warn(sprintf('Falha ao enviar follow-up da OS #%s: %s', $order->order_number, $e->getMessage()));
+                $this->warn(sprintf('Falha ao enviar acompanhamento da OS #%s: %s', $order->order_number, $e->getMessage()));
             }
         }
 

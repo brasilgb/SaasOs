@@ -367,14 +367,14 @@ export default function Others({ othersettings, company, time_remaining, mailSet
 
                                 <div className="space-y-6 rounded-2xl border p-5">
                                     <HeadingSmall
-                                        title="Intervalo de follow-up com cliente"
+                                        title="Intervalo de acompanhamento com cliente"
                                         description="Define quantos dias o sistema espera para considerar orçamento parado ou cobrança pendente elegíveis para novo contato, manual ou automático."
                                     />
 
                                     <div className="grid w-full gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(280px,0.8fr)]">
                                         <div className="bg-card text-card-foreground flex items-center justify-between rounded-2xl border p-4 shadow-sm">
                                             <div>
-                                                <p className="font-medium">Envio automático de follow-up</p>
+                                                <p className="font-medium">Envio automático de acompanhamento</p>
                                                 <p className="text-muted-foreground text-sm">
                                                     Quando desabilitado, o sistema não envia automaticamente e-mails de orçamento parado nem de
                                                     cobrança pendente.

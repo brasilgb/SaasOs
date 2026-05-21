@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AdminLayout from '@/layouts/admin/admin-layout';
 import { BreadcrumbItem } from '@/types';
-import { maskPhone } from '@/Utils/mask';
+import { maskCnpj, maskPhone } from '@/Utils/mask';
 import { Head, Link } from '@inertiajs/react';
 import { Building, Edit, Plus } from 'lucide-react';
 import moment from 'moment';
@@ -67,7 +67,7 @@ export default function BranchesIndex({ branches }: any) {
                                     <TableRow key={branche.id}>
                                         <TableCell>{branche.id}</TableCell>
                                         <TableCell>{branche.name}</TableCell>
-                                        <TableCell>{branche.cnpj}</TableCell>
+                                        <TableCell>{maskCnpj(branche.branch_cnpj) || '-'}</TableCell>
                                         <TableCell>{branche.contact_email}</TableCell>
                                         <TableCell>{maskPhone(branche.contact_phone)}</TableCell>
                                         <TableCell>{moment(branche.created_at).format('DD/MM/YYYY')}</TableCell>

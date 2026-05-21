@@ -1067,7 +1067,7 @@ class OrderController extends Controller
         $order->load('customer', 'tenant');
 
         if ((int) $order->service_status !== OrderStatus::BUDGET_GENERATED) {
-            return back()->with('error', 'O follow-up de orçamento só pode ser enviado quando a ordem estiver com orçamento gerado.');
+            return back()->with('error', 'O acompanhamento de orçamento só pode ser enviado quando a ordem estiver com orçamento gerado.');
         }
 
         $customerEmail = trim((string) ($order->customer?->email ?? ''));
@@ -1083,7 +1083,7 @@ class OrderController extends Controller
         } catch (\Throwable $e) {
             report($e);
 
-            return back()->with('error', 'Falha ao enviar o follow-up do orçamento. Verifique a configuração SMTP e tente novamente.');
+            return back()->with('error', 'Falha ao enviar o acompanhamento do orçamento. Verifique a configuração SMTP e tente novamente.');
         }
 
         $this->logOrderAction($order, 'budget_follow_up_sent', [
@@ -1093,7 +1093,7 @@ class OrderController extends Controller
             'trigger' => 'manual',
         ]);
 
-        return back()->with('success', 'Follow-up de orçamento enviado com sucesso.');
+        return back()->with('success', 'Acompanhamento de orçamento enviado com sucesso.');
     }
 
     public function markFeedback(Order $order)

@@ -1,3 +1,4 @@
+import SubscriptionPaymentSuccess from '@/components/Payment/SubscriptionPaymentSuccess';
 import { Head, router } from '@inertiajs/react'; // "router" substitui "Inertia" nas versoes novas
 import axios from 'axios';
 import { useEffect, useState } from 'react';
@@ -6,6 +7,7 @@ export default function Blocked({ plans, tenant }: any) {
     const [selectedPlan, setSelectedPlan] = useState(null);
     const [loading, setLoading] = useState(false);
     const [pixData, setPixData] = useState<any>(null);
+    const [paymentConfirmed, setPaymentConfirmed] = useState(false);
 
     // Efeito de Polling: Verifica status a cada 5 segundos se estiver aguardando pagamento
     useEffect(() => {
@@ -20,8 +22,7 @@ export default function Blocked({ plans, tenant }: any) {
                     if (response.data.status === 'active') {
                         // 1. Limpa o intervalo imediatamente
                         clearInterval(interval);
-                        // window.location.reload() é mais seguro para resetar todos os middlewares
-                        window.location.href = route('app.dashboard');
+                        setPaymentConfirmed(true);
                     }
                 } catch (error) {
                     console.error('Erro ao verificar status do pagamento', error);
@@ -60,9 +61,15 @@ export default function Blocked({ plans, tenant }: any) {
         router.post(route('logout'));
     };
 
+    const handleContinue = () => {
+        // window.location.href é mais seguro para resetar todos os middlewares
+        window.location.href = route('app.dashboard');
+    };
+
     return (
         <div className="flex min-h-screen flex-col justify-center bg-gray-100 py-12 sm:px-6 lg:px-8">
             <Head title="Acesso Bloqueado" />
+            <SubscriptionPaymentSuccess open={paymentConfirmed} onContinue={handleContinue} />
 
             {pixData && (
                 <div className="mt-4 flex flex-col items-center">
