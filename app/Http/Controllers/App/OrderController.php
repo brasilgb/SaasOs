@@ -498,6 +498,7 @@ class OrderController extends Controller
 
         $orders = $query
             ->with('equipment', 'customer')
+            ->withCount('images')
             ->withSum('orderPayments as total_paid', 'amount')
             ->paginate(11)
             ->withQueryString();
