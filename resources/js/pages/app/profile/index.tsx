@@ -89,7 +89,7 @@ export default function Profile() {
                         <div className="mt-4 grid gap-4 md:grid-cols-6">
                             <div className="grid gap-2 md:col-span-6">
                                 <Label htmlFor="avatar">Imagem do perfil</Label>
-                                <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                                <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-6">
                                     <Avatar className="size-16">
                                         <AvatarImage src={auth.user.avatar} alt={auth.user.name} />
                                         <AvatarFallback>{getInitials(auth.user.name)}</AvatarFallback>

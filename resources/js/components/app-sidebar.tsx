@@ -43,7 +43,7 @@ export function AppSidebar() {
                             />
                         </div>
                     ))}
-                    <div className="mt-1">
+                    <div className="[&_[data-slot=sidebar-menu]]:gap-0">
                         <NavMainCollapsible items={mainConfItems} />
                     </div>
                     <div className="mt-1">
