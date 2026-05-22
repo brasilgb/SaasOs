@@ -70,7 +70,7 @@ const features = [
     {
         icon: Smartphone,
         title: 'Aplicativo Android',
-        description: 'Registre fotos e atualizações de serviço direto pelo celular.',
+        description: 'Registre fotos de equipamentos direto pelo celular.',
     },
     {
         icon: Printer,
