@@ -11,11 +11,9 @@ import {
     Printer,
     ReceiptText,
     Settings,
-    ShieldCheck,
     ShoppingCart,
     Smartphone,
     Users,
-    UserRoundCog,
 } from 'lucide-react';
 
 const features = [
