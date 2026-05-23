@@ -45,7 +45,7 @@ function ReceiptCopy({
             <div className="mb-1.5 bg-gray-100 py-0.5 text-center text-[10px] font-semibold text-gray-500 uppercase">
                 {type === 'oraberta' && 'Recibo de Entrada de Equipamento'}
                 {type === 'orentrega' && 'Recibo de Entrega de Equipamento'}
-                {type === 'ororcamento' && 'Orçamento emitido'}
+                {type === 'ororcamento' && 'Orçamento ao cliente'}
                 {type === 'orchecklist' && 'Checklist para Entrega do Equipamento'}
             </div>
             <div className="mb-1.5 flex items-start justify-between">
