@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
 function titleByType(type: string) {
     if (type === 'oraberta') return 'Recibo de Entrada de Equipamento';
     if (type === 'orentrega') return 'Recibo de Entrega de Equipamento';
-    if (type === 'ororcamento') return 'Recibo de Geração de Orçamento';
+    if (type === 'ororcamento') return 'Orçamento emitido';
     if (type === 'orchecklist') return 'Checklist para Entrega do Equipamento';
     return 'Recibo';
 }

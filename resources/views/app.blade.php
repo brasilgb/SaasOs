@@ -1,3 +1,15 @@
+@php
+    $meta = $meta ?? [];
+    $metaTitle = $meta['title'] ?? 'SigmaOS - Sistema de Ordem de Serviço para Assistência Técnica';
+    $metaDescription =
+        $meta['description'] ??
+        'Sistema de ordem de serviço para assistência técnica de celulares, informática e eletrônica. Controle clientes, equipamentos, estoque e atendimentos com aplicativo para técnicos.';
+    $metaUrl = $meta['url'] ?? rtrim(config('app.url', url('/')), '/');
+    $metaImage = $meta['image'] ?? rtrim(config('app.url', url('/')), '/') . '/images/banner-social.jpg';
+    $metaImageAlt = $meta['imageAlt'] ?? 'Banner do SigmaOS com destaque para o sistema de ordem de serviço.';
+    $metaSiteName = $meta['siteName'] ?? 'SigmaOS';
+    $metaRobots = $meta['robots'] ?? 'index, follow, max-image-preview:large';
+@endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
     class="{{ ($appearance ?? 'system') === 'dark' ? 'dark' : '' }}">
@@ -6,17 +18,16 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title inertia>{{ config('app.name', 'SigmaOS') }} | Sistema de Ordem de Serviço para Assistência Técnica</title>
+    <title inertia>{{ $metaTitle }}</title>
 
-    <meta name="description"
-        content="Sistema de ordem de serviço para assistência técnica de celulares, informática e eletrônica. Controle clientes, equipamentos, estoque e atendimentos com aplicativo para técnicos.">
+    <meta name="description" content="{{ $metaDescription }}">
 
-    <meta name="robots" content="index, follow, max-image-preview:large">
-    <meta name="author" content="SigmaOS">
+    <meta name="robots" content="{{ $metaRobots }}">
+    <meta name="author" content="{{ $metaSiteName }}">
     <meta name="language" content="pt-BR">
     <meta name="app-appearance" content="{{ $appearance ?? 'system' }}">
 
-    <link rel="canonical" href="{{ rtrim(config('app.url', url('/')), '/') }}">
+    <link rel="canonical" href="{{ $metaUrl }}">
     <link rel="alternate" hreflang="pt-BR" href="{{ rtrim(config('app.url', url('/')), '/') }}">
 
     <meta name="theme-color" content="#0f172a">
@@ -33,29 +44,27 @@
 
     {{-- Open Graph --}}
     <meta property="og:type" content="website">
-    <meta property="og:site_name" content="SigmaOS">
+    <meta property="og:site_name" content="{{ $metaSiteName }}">
     <meta property="og:locale" content="pt_BR">
 
-    <meta property="og:title" content="SigmaOS - Sistema de Ordem de Serviço para Assistência Técnica">
+    <meta property="og:title" content="{{ $metaTitle }}">
 
-    <meta property="og:description"
-        content="Gerencie clientes, equipamentos, ordens de serviço e estoque em um único sistema. Ideal para assistência técnica e empresas de manutenção.">
+    <meta property="og:description" content="{{ $metaDescription }}">
 
-    <meta property="og:url" content="{{ rtrim(config('app.url', url('/')), '/') }}">
+    <meta property="og:url" content="{{ $metaUrl }}">
 
-    <meta property="og:image" content="{{ rtrim(config('app.url', url('/')), '/') . '/images/banner-social.jpg' }}">
+    <meta property="og:image" content="{{ $metaImage }}">
     <meta property="og:image:type" content="image/jpeg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="Banner do SigmaOS com destaque para o sistema de ordem de serviço.">
+    <meta property="og:image:alt" content="{{ $metaImageAlt }}">
 
     {{-- Twitter --}}
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="SigmaOS - Sistema de Ordem de Serviço">
-    <meta name="twitter:description" content="Sistema completo para assistência técnica e empresas de manutenção.">
-    <meta name="twitter:image" content="{{ rtrim(config('app.url', url('/')), '/') . '/images/banner-social.jpg' }}">
-    <meta name="twitter:image:alt"
-        content="Banner do SigmaOS com destaque para o sistema de ordem de serviço.">
+    <meta name="twitter:title" content="{{ $metaTitle }}">
+    <meta name="twitter:description" content="{{ $metaDescription }}">
+    <meta name="twitter:image" content="{{ $metaImage }}">
+    <meta name="twitter:image:alt" content="{{ $metaImageAlt }}">
 
     {{-- Dark mode detection --}}
     <script>

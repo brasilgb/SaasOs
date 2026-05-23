@@ -45,7 +45,7 @@ function ReceiptCopy({
             <div className="mb-1.5 bg-gray-100 py-0.5 text-center text-[10px] font-semibold text-gray-500 uppercase">
                 {type === 'oraberta' && 'Recibo de Entrada de Equipamento'}
                 {type === 'orentrega' && 'Recibo de Entrega de Equipamento'}
-                {type === 'ororcamento' && 'Recibo de geração de orçamento'}
+                {type === 'ororcamento' && 'Orçamento emitido'}
                 {type === 'orchecklist' && 'Checklist para Entrega do Equipamento'}
             </div>
             <div className="mb-1.5 flex items-start justify-between">
@@ -247,14 +247,13 @@ export default function Receipt({
     checklist: any;
     backUrl?: string;
 }) {
-    const [openAsPdf, setOpenAsPdf] = useState(false);
-    const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+    const [openAsPdf] = useState(() => {
+        if (typeof window === 'undefined') return false;
 
-    useEffect(() => {
-        if (typeof window === 'undefined') return;
         const query = new URLSearchParams(window.location.search);
-        setOpenAsPdf(query.get('pdf') === '1');
-    }, []);
+        return query.get('pdf') === '1';
+    });
+    const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
     useEffect(() => {
         if (!openAsPdf) return;

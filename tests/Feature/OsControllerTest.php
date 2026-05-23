@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\App\Company;
 use App\Models\App\Customer;
 use App\Models\App\Equipment;
-use App\Models\App\OrderLog;
 use App\Models\App\Order;
 use App\Models\App\OrderPayment;
 use App\Models\App\Receipt;
@@ -16,6 +16,32 @@ use Tests\TestCase;
 class OsControllerTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_public_order_page_uses_order_meta_for_social_preview(): void
+    {
+        $tenant = Tenant::factory()->create();
+        Company::factory()->forTenant($tenant->id)->create([
+            'shortname' => 'Assist Tec',
+            'companyname' => 'Assistencia Tecnica Modelo',
+        ]);
+        $customer = Customer::factory()->forTenant($tenant->id)->create([
+            'name' => 'Joao Martinez',
+        ]);
+        $equipment = Equipment::factory()->forTenant($tenant->id)->create();
+        $order = Order::factory()->forTenant($tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'order_number' => 1,
+        ]);
+
+        $response = $this->get(route('os.token', $order->tracking_token));
+
+        $response->assertOk();
+        $response->assertSee('<meta property="og:site_name" content="Assist Tec">', false);
+        $response->assertSee('<meta property="og:title" content="OS 1 - Joao Martinez">', false);
+        $response->assertSee('<meta property="og:description" content="Acompanhe o andamento da ordem de serviço em Assist Tec.">', false);
+        $response->assertSee('<meta name="robots" content="noindex, nofollow, max-image-preview:large">', false);
+    }
 
     public function test_customer_can_approve_budget_only_from_budget_generated_status(): void
     {

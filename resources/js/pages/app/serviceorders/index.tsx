@@ -734,7 +734,7 @@ function ServiceOrders({ order }: { order: Order }) {
                                                 >
                                                     <span className="inline-flex items-center gap-2">
                                                         <FileText className="h-4 w-4" />
-                                                        Recibo do orçamento
+                                                        Orçamento emitido
                                                     </span>
                                                     <ExternalLink className="h-4 w-4 flex-none text-slate-500" />
                                                 </a>
