@@ -38,8 +38,8 @@ class OsControllerTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('<meta property="og:site_name" content="Assist Tec">', false);
-        $response->assertSee('<meta property="og:title" content="OS 1 - Joao Martinez">', false);
-        $response->assertSee('<meta property="og:description" content="Acompanhe o andamento da ordem de serviço em Assist Tec.">', false);
+        $response->assertSee('<meta property="og:title" content="Assist Tec">', false);
+        $response->assertSee('<meta property="og:description" content="Acompanhe o andamento da ordem de serviço">', false);
         $response->assertSee('<meta name="robots" content="noindex, nofollow, max-image-preview:large">', false);
     }
 

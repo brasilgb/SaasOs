@@ -55,9 +55,7 @@ class OsController extends Controller
     private function orderMeta(Order $order, ?Company $company): array
     {
         $companyName = $company?->shortname ?: $company?->companyname ?: config('app.name', 'SigmaOS');
-        $customerName = $order->customer?->name;
-        $title = trim("OS {$order->order_number}".($customerName ? " - {$customerName}" : ''));
-        $description = "Acompanhe o andamento da ordem de serviço em {$companyName}.";
+        $description = 'Acompanhe o andamento da ordem de serviço';
         $url = route('os.token', $order->tracking_token);
         $logoPath = $company?->logo ? public_path('storage/logos/'.$company->logo) : null;
         $image = $logoPath && file_exists($logoPath)
@@ -65,7 +63,7 @@ class OsController extends Controller
             : asset('images/default.png');
 
         return [
-            'title' => $title,
+            'title' => $companyName,
             'description' => $description,
             'url' => $url,
             'image' => $image,
