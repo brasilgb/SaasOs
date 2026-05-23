@@ -205,6 +205,7 @@ class OsControllerTest extends TestCase
         $response->assertInertia(fn ($page) => $page
             ->component('app/receipts/print-receipt')
             ->where('type', 'orentrega')
+            ->where('copies', 1)
             ->where('backUrl', route('os.token', $order->tracking_token)));
     }
 

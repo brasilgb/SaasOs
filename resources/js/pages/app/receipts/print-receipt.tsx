@@ -239,6 +239,7 @@ export default function Receipt({
     receipt,
     checklist,
     backUrl,
+    copies = 2,
 }: {
     order: any;
     company: any;
@@ -246,6 +247,7 @@ export default function Receipt({
     receipt: any;
     checklist: any;
     backUrl?: string;
+    copies?: number;
 }) {
     const [openAsPdf] = useState(() => {
         if (typeof window === 'undefined') return false;
@@ -315,7 +317,7 @@ export default function Receipt({
                 <ReceiptCopy order={order} company={company} type={type} receipt={receipt} checklist={checklist} qrcode={false} />
 
                 {/* Segunda Via */}
-                <ReceiptCopy order={order} company={company} type={type} receipt={receipt} checklist={checklist} qrcode={false} />
+                {copies > 1 && <ReceiptCopy order={order} company={company} type={type} receipt={receipt} checklist={checklist} qrcode={false} />}
             </div>
         </div>
     );

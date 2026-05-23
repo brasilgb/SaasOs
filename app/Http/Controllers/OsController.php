@@ -241,6 +241,7 @@ class OsController extends Controller
             'receipt' => $receipt,
             'checklist' => $checklist,
             'backUrl' => route('os.token', $order->tracking_token),
+            'copies' => 1,
         ]);
     }
 
