@@ -513,7 +513,7 @@ function ServiceOrders({ order }: { order: Order }) {
                                                 )}
                                                 {hasDeliveryReceipt && (
                                                     <a
-                                                        href={route('os.receipt', { token: order.tracking_token, type: 'orentrega' })}
+                                                        href={route('os.receipt', { token: order.tracking_token, type: 'orentrega', pdf: 1 })}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
@@ -759,7 +759,7 @@ function ServiceOrders({ order }: { order: Order }) {
 
                                             {hasDeliveryReceipt && (
                                                 <a
-                                                    href={route('os.receipt', { token: order.tracking_token, type: 'orentrega' })}
+                                                    href={route('os.receipt', { token: order.tracking_token, type: 'orentrega', pdf: 1 })}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="inline-flex items-center justify-between gap-3 rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-100"
