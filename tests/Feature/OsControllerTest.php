@@ -34,12 +34,13 @@ class OsControllerTest extends TestCase
             'order_number' => 1,
         ]);
 
-        $response = $this->get(route('os.token', $order->tracking_token));
+        $response = $this->get(route('os.token', ['token' => $order->tracking_token, 'preview' => 'whatsapp']));
 
         $response->assertOk();
         $response->assertSee('<meta property="og:site_name" content="Assist Tec">', false);
         $response->assertSee('<meta property="og:title" content="Assist Tec">', false);
         $response->assertSee('<meta property="og:description" content="Acompanhe o andamento da ordem de serviço">', false);
+        $response->assertSee('preview=whatsapp', false);
         $response->assertSee('<meta name="robots" content="noindex, nofollow, max-image-preview:large">', false);
     }
 

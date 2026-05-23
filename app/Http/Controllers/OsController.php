@@ -30,7 +30,7 @@ class OsController extends Controller
             ->where('tracking_token', $token);
     }
 
-    public function index($token)
+    public function index(Request $request, $token)
     {
         $order = $this->publicOrderByToken($token)
             ->with('equipment')
@@ -48,15 +48,15 @@ class OsController extends Controller
             'order' => $order,
             'company' => $company,
         ])->withViewData([
-            'meta' => $this->orderMeta($order, $company),
+            'meta' => $this->orderMeta($order, $company, $request->fullUrl()),
         ]);
     }
 
-    private function orderMeta(Order $order, ?Company $company): array
+    private function orderMeta(Order $order, ?Company $company, ?string $url = null): array
     {
         $companyName = $company?->shortname ?: $company?->companyname ?: config('app.name', 'SigmaOS');
         $description = 'Acompanhe o andamento da ordem de serviço';
-        $url = route('os.token', $order->tracking_token);
+        $url ??= route('os.token', $order->tracking_token);
         $logoPath = $company?->logo ? public_path('storage/logos/'.$company->logo) : null;
         $image = $logoPath && file_exists($logoPath)
             ? asset('storage/logos/'.$company->logo)

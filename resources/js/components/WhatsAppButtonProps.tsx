@@ -40,7 +40,7 @@ const buildTrackingUrl = (trackingToken?: string) => {
     if (!trackingToken) return '';
 
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://sigmaos.com.br';
-    return `${origin}/os/${trackingToken}`;
+    return `${origin}/os/${trackingToken}?preview=whatsapp`;
 };
 
 const applyTemplate = (template: string, values: Record<string, string>) => {
