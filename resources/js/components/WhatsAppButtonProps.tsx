@@ -69,7 +69,9 @@ const hasPlaceholder = (template: string, key: string) => {
     });
 };
 
-const withGreeting = (greeting: string, customerName: string, content: string) => `${greeting}, ${customerName}!\n\n${content}`;
+const withGreeting = (greeting: string, customerName: string, content: string) => `${greeting}, ${customerName}!\n${content}`;
+
+const normalizeWhatsAppLineBreaks = (message: string) => message.replace(/\n{2,}/g, '\n').trim();
 
 const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -89,7 +91,7 @@ const applyOpenOrderGreeting = (message: string, greeting: string, customerName:
         return `${greeting}, ${customerName}!`;
     }
 
-    return `${greeting}, ${customerName}!\n\n${capitalizeFirstLetter(content)}`;
+    return `${greeting}, ${customerName}!\n${capitalizeFirstLetter(content)}`;
 };
 
 const normalizePhone = (phone: string) => {
@@ -200,13 +202,13 @@ const buildMessage = ({
     const selectedTemplate = getTemplateForContext({ status, feedback, context, whats });
     if (!selectedTemplate) return '';
 
-    return formatTemplateMessage({
+    return normalizeWhatsAppLineBreaks(formatTemplateMessage({
         template: selectedTemplate,
         greeting,
         customerName,
         values: templateValues,
         status,
-    });
+    }));
 };
 
 const canSendWhatsAppMessage = ({ status, feedback, context, whats }: Pick<WhatsAppButtonProps, 'status' | 'feedback' | 'context' | 'whats'>) => {

@@ -212,6 +212,7 @@ function ServiceOrders({ order }: { order: Order }) {
 
     const remaining = getRemainingTime(order.delivery_forecast);
     const heroNote = nextStepText(order, financialSummary.remaining);
+    const companyName = company?.shortname || company?.companyname;
     const checklist = actionChecklist(order, financialSummary.remaining);
     const canAcknowledgePickup =
         (order.service_status === ORDER_STATUS.CUSTOMER_NOTIFIED || order.service_status === ORDER_STATUS.DELIVERED) &&
@@ -348,7 +349,23 @@ function ServiceOrders({ order }: { order: Order }) {
                             <div className="bg-[radial-gradient(circle_at_top_left,_rgba(245,158,11,0.15),_transparent_38%),linear-gradient(135deg,#0f172a_0%,#1e293b_55%,#334155_100%)] p-6 text-white md:p-8">
                                 <div className="flex flex-wrap items-start justify-between gap-4">
                                     <div className="space-y-3">
-                                        {company?.logo && <img src={`/storage/logos/${company.logo}`} className="h-12 rounded-md bg-white/90 p-2" />}
+                                        {(company?.logo || companyName || company?.cnpj) && (
+                                            <div className="flex flex-wrap items-center gap-3">
+                                                {company?.logo && (
+                                                    <img
+                                                        src={`/storage/logos/${company.logo}`}
+                                                        alt={companyName ? `Logo ${companyName}` : 'Logo da empresa'}
+                                                        className="h-12 rounded-md bg-white/90 p-2"
+                                                    />
+                                                )}
+                                                {(companyName || company?.cnpj) && (
+                                                    <div className="min-w-0">
+                                                        {companyName && <p className="text-base font-semibold leading-tight text-white">{companyName}</p>}
+                                                        {company?.cnpj && <p className="mt-1 text-xs font-medium text-slate-300">CNPJ: {company.cnpj}</p>}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
                                         <div>
                                             <p className="text-sm font-medium uppercase tracking-[0.25em] text-amber-200">Acompanhamento online</p>
                                             <h1 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl">
