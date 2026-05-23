@@ -1,4 +1,5 @@
 import React from 'react';
+import { normalizeWhatsappPhone } from '@/Utils/mask';
 
 type WhatsAppButtonProps = {
     phone: string;
@@ -92,13 +93,6 @@ const applyOpenOrderGreeting = (message: string, greeting: string, customerName:
     }
 
     return `${greeting}, ${customerName}!\n${capitalizeFirstLetter(content)}`;
-};
-
-const normalizePhone = (phone: string) => {
-    let cleanPhone = phone.replace(/\D/g, '');
-    if (!cleanPhone) return '';
-    if (!cleanPhone.startsWith('55')) cleanPhone = `55${cleanPhone}`;
-    return cleanPhone;
 };
 
 const getTemplateForContext = ({
@@ -273,7 +267,7 @@ export const WhatsAppButton: React.FC<WhatsAppButtonProps> = ({
     const handleClick = () => {
         if (!phone || !canSend || isDisabled) return;
 
-        const cleanPhone = normalizePhone(phone);
+        const cleanPhone = normalizeWhatsappPhone(phone);
 
         if (cleanPhone.length < 12) {
             alert('Número de WhatsApp inválido para envio.');

@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, Table
 import AdminLayout from '@/layouts/admin/admin-layout';
 import { BreadcrumbItem } from '@/types';
 import { statusSaasByValue } from '@/Utils/functions';
-import { maskCnpj, maskPhone } from '@/Utils/mask';
+import { maskCnpj, maskPhone, normalizeWhatsappPhone } from '@/Utils/mask';
 import { Head, Link, router } from '@inertiajs/react';
 import { Building, Edit, Eye, FileText, Plus } from 'lucide-react';
 import moment from 'moment';
@@ -181,7 +181,7 @@ export default function TenantsIndex({ tenants, filters }: any) {
                                         <TableCell>{tenant.status_label}</TableCell>
                                         <TableCell className="flex justify-end gap-2">
                                             <Button asChild size="icon" className="bg-green-500 text-white hover:bg-green-500">
-                                                <a target="_blank" href={`https://wa.me/${tenant.whatsapp}?text=Olá, ${tenant.name}`}>
+                                                <a target="_blank" href={`https://wa.me/${normalizeWhatsappPhone(tenant.whatsapp)}?text=Olá, ${tenant.name}`}>
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"
                                                         width="16"

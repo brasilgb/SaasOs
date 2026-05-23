@@ -5,7 +5,7 @@ import Timeline from '@/components/timeline';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Toaster } from '@/components/ui/sonner';
-import { maskMoney } from '@/Utils/mask';
+import { maskMoney, normalizeWhatsappPhone } from '@/Utils/mask';
 import { ORDER_STATUS, orderStatusLabel } from '@/Utils/order-status';
 import { Head, router, usePage } from '@inertiajs/react';
 import {
@@ -565,7 +565,7 @@ function ServiceOrders({ order }: { order: Order }) {
 
                                         {order.company?.whatsapp && (
                                             <a
-                                                href={`https://wa.me/${order.company.whatsapp}`}
+                                                href={`https://wa.me/${normalizeWhatsappPhone(order.company.whatsapp)}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-green-500 px-5 py-3 text-sm font-medium text-white transition hover:bg-green-600"
