@@ -4,6 +4,7 @@ namespace Tests\Feature\App;
 
 use App\Models\App\Order;
 use App\Models\App\FiscalDocument;
+use App\Models\App\FiscalSetting;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -56,6 +57,13 @@ class ReportControllerTest extends TestCase
 
     public function test_fiscal_report_exposes_documents_by_domain(): void
     {
+        FiscalSetting::create([
+            'tenant_id' => $this->tenant->id,
+            'enabled' => true,
+            'nfe_enabled' => true,
+            'nfse_enabled' => true,
+        ]);
+
         $order = Order::factory()->forTenant($this->tenant->id)->create();
 
         FiscalDocument::create([
