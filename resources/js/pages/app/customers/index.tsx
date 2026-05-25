@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
-import { maskCpfCnpj, maskPhone, unMask } from '@/Utils/mask';
+import { maskCpfCnpj, maskPhone, normalizeWhatsappPhone, unMask } from '@/Utils/mask';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { Calendar, Edit, Plus, Upload, Users2, Wrench } from 'lucide-react';
 import moment from 'moment';
@@ -151,7 +151,7 @@ export default function Customers({ customers, search, pending }: any) {
                                                     <a
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        href={`https://wa.me/${unMask(customer.whatsapp ?? '')}?text=${encodeURIComponent(getWhatsappGreeting(customer.name))}`}
+                                                        href={`https://wa.me/${normalizeWhatsappPhone(customer.whatsapp)}?text=${encodeURIComponent(getWhatsappGreeting(customer.name))}`}
                                                         aria-label={`Enviar WhatsApp para ${customer.name}`}
                                                     >
                                                         <svg

@@ -45,7 +45,7 @@ function ReceiptCopy({
             <div className="mb-1.5 bg-gray-100 py-0.5 text-center text-[10px] font-semibold text-gray-500 uppercase">
                 {type === 'oraberta' && 'Recibo de Entrada de Equipamento'}
                 {type === 'orentrega' && 'Recibo de Entrega de Equipamento'}
-                {type === 'ororcamento' && 'Recibo de geração de orçamento'}
+                {type === 'ororcamento' && 'Orçamento ao cliente'}
                 {type === 'orchecklist' && 'Checklist para Entrega do Equipamento'}
             </div>
             <div className="mb-1.5 flex items-start justify-between">
@@ -239,6 +239,7 @@ export default function Receipt({
     receipt,
     checklist,
     backUrl,
+    copies = 2,
 }: {
     order: any;
     company: any;
@@ -246,15 +247,15 @@ export default function Receipt({
     receipt: any;
     checklist: any;
     backUrl?: string;
+    copies?: number;
 }) {
-    const [openAsPdf, setOpenAsPdf] = useState(false);
-    const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+    const [openAsPdf] = useState(() => {
+        if (typeof window === 'undefined') return false;
 
-    useEffect(() => {
-        if (typeof window === 'undefined') return;
         const query = new URLSearchParams(window.location.search);
-        setOpenAsPdf(query.get('pdf') === '1');
-    }, []);
+        return query.get('pdf') === '1';
+    });
+    const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
     useEffect(() => {
         if (!openAsPdf) return;
@@ -316,7 +317,7 @@ export default function Receipt({
                 <ReceiptCopy order={order} company={company} type={type} receipt={receipt} checklist={checklist} qrcode={false} />
 
                 {/* Segunda Via */}
-                <ReceiptCopy order={order} company={company} type={type} receipt={receipt} checklist={checklist} qrcode={false} />
+                {copies > 1 && <ReceiptCopy order={order} company={company} type={type} receipt={receipt} checklist={checklist} qrcode={false} />}
             </div>
         </div>
     );
