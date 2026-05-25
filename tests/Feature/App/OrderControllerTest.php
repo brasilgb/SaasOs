@@ -561,7 +561,7 @@ class OrderControllerTest extends TestCase
             'customer_id' => $customer->id,
             'equipment_id' => $equipment->id,
             'user_id' => $this->user->id,
-            'service_status' => OrderStatus::SERVICE_COMPLETED,
+            'service_status' => OrderStatus::CUSTOMER_NOTIFIED,
         ]);
 
         $deliveryDate = now()->setTime(10, 0, 0);
@@ -583,7 +583,7 @@ class OrderControllerTest extends TestCase
             'service_cost' => '100,00',
             'delivery_date' => $deliveryDate->format('Y-m-d H:i:s'),
             'warranty_days' => 90,
-            'service_status' => OrderStatus::SERVICE_COMPLETED,
+            'service_status' => OrderStatus::DELIVERED,
             'delivery_forecast' => null,
             'observations' => null,
         ]);
@@ -599,6 +599,35 @@ class OrderControllerTest extends TestCase
             $deliveryDate->copy()->addDays(90)->toDateTimeString(),
             $order->fresh()->warranty_expires_at?->toDateTimeString()
         );
+    }
+
+    public function test_it_clears_delivery_date_when_status_is_not_delivered(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'user_id' => $this->user->id,
+            'service_status' => OrderStatus::DELIVERED,
+            'delivery_date' => now()->subDay(),
+            'warranty_days' => 90,
+            'warranty_expires_at' => now()->addDays(89),
+        ]);
+
+        $response = $this->put(route('app.orders.update', $order), $this->orderUpdatePayload($order, $customer, $equipment, [
+            'delivery_date' => now()->toDateTimeString(),
+            'warranty_days' => 90,
+            'service_status' => OrderStatus::SERVICE_COMPLETED,
+        ]));
+
+        $response->assertRedirect(route('app.orders.show', ['order' => $order->id]));
+
+        $freshOrder = $order->fresh();
+
+        $this->assertNull($freshOrder->delivery_date);
+        $this->assertNull($freshOrder->warranty_expires_at);
+        $this->assertSame(OrderStatus::SERVICE_COMPLETED, (int) $freshOrder->service_status);
     }
 
     public function test_it_decrements_stock_when_parts_are_added_to_order(): void

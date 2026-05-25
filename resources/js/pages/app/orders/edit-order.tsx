@@ -226,10 +226,13 @@ export default function EditOrder({
 
     useEffect(() => {
         const status = Number(data.service_status);
-        const shouldRegisterDelivery = status === ORDER_STATUS.DELIVERED || status === ORDER_STATUS.SERVICE_NOT_EXECUTED;
 
-        if (shouldRegisterDelivery && !data.delivery_date) {
+        if (status === ORDER_STATUS.DELIVERED && !data.delivery_date) {
             setData((currentData: any) => ({ ...currentData, delivery_date: moment().format('YYYY-MM-DD') }));
+        }
+
+        if (status !== ORDER_STATUS.DELIVERED && data.delivery_date) {
+            setData((currentData: any) => ({ ...currentData, delivery_date: '' }));
         }
     }, [data.service_status]);
 
@@ -315,6 +318,7 @@ export default function EditOrder({
     };
 
     const currentStatusLabel = statusServico.find((item: any) => Number(item.value) === Number(data.service_status))?.label ?? 'Status';
+    const isDeliveryStatus = Number(data.service_status) === ORDER_STATUS.DELIVERED;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -705,27 +709,31 @@ export default function EditOrder({
                                             <div className="grid gap-2">
                                                 <FormFieldHelp
                                                     label="Data de entrega"
-                                                    content="Preenchida automaticamente ao marcar a OS como entregue ao cliente. Pode ser ajustada se a entrega ocorreu em outro dia."
+                                                    content="Preenchida somente ao marcar a OS como entregue ao cliente. Em qualquer outro status, permanece vazia."
                                                 />
-                                                <DatePicker
-                                                    mode="single"
-                                                    date={data.delivery_date}
-                                                    setDate={(value) => {
-                                                        if (!value) {
-                                                            setData('delivery_date', '');
-                                                            return;
-                                                        }
+                                                {isDeliveryStatus ? (
+                                                    <DatePicker
+                                                        mode="single"
+                                                        date={data.delivery_date}
+                                                        setDate={(value) => {
+                                                            if (!value) {
+                                                                setData('delivery_date', '');
+                                                                return;
+                                                            }
 
-                                                        const d = value as Date;
-                                                        const formatted = [
-                                                            d.getFullYear(),
-                                                            String(d.getMonth() + 1).padStart(2, '0'),
-                                                            String(d.getDate()).padStart(2, '0'),
-                                                        ].join('-');
+                                                            const d = value as Date;
+                                                            const formatted = [
+                                                                d.getFullYear(),
+                                                                String(d.getMonth() + 1).padStart(2, '0'),
+                                                                String(d.getDate()).padStart(2, '0'),
+                                                            ].join('-');
 
-                                                        setData('delivery_date', formatted);
-                                                    }}
-                                                />
+                                                            setData('delivery_date', formatted);
+                                                        }}
+                                                    />
+                                                ) : (
+                                                    <Input value="Disponível somente para OS entregue" disabled />
+                                                )}
                                                 {errors.delivery_date && <div className="text-sm text-red-500">{errors.delivery_date}</div>}
                                             </div>
                                             <div className="grid gap-2">

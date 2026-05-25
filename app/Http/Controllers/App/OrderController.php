@@ -226,6 +226,23 @@ class OrderController extends Controller
         return round($value, 2);
     }
 
+    private function normalizeDeliveryDateForStatus(array $data): array
+    {
+        $status = (int) ($data['service_status'] ?? 0);
+
+        if ($status !== OrderStatus::DELIVERED) {
+            $data['delivery_date'] = null;
+
+            return $data;
+        }
+
+        if (empty($data['delivery_date'])) {
+            $data['delivery_date'] = now()->toDateTimeString();
+        }
+
+        return $data;
+    }
+
     private function detectWarrantyReturn(
         ?int $customerId,
         ?int $equipmentId,
@@ -556,6 +573,7 @@ class OrderController extends Controller
         $data['order_number'] = TenantSequence::next(Order::class, 'order_number', $tenantId);
         $data['tracking_token'] = Str::uuid();
         $data['warranty_days'] = isset($data['warranty_days']) && $data['warranty_days'] !== '' ? max(0, (int) $data['warranty_days']) : null;
+        $data = $this->normalizeDeliveryDateForStatus($data);
         $warrantySourceOrder = $this->detectWarrantyReturn(
             isset($data['customer_id']) ? (int) $data['customer_id'] : null,
             isset($data['equipment_id']) ? (int) $data['equipment_id'] : null,
@@ -729,12 +747,7 @@ class OrderController extends Controller
         $data['parts_value'] = $this->normalizeMoneyValue($data['parts_value'] ?? 0);
         $data['service_value'] = $this->normalizeMoneyValue($data['service_value'] ?? 0);
         $data['service_cost'] = $this->normalizeMoneyValue($data['service_cost'] ?? 0);
-        if (
-            empty($data['delivery_date'])
-            && in_array((int) ($data['service_status'] ?? 0), [OrderStatus::DELIVERED, OrderStatus::SERVICE_NOT_EXECUTED], true)
-        ) {
-            $data['delivery_date'] = now()->toDateTimeString();
-        }
+        $data = $this->normalizeDeliveryDateForStatus($data);
         $warrantyDays = isset($data['warranty_days']) && $data['warranty_days'] !== '' ? max(0, (int) $data['warranty_days']) : null;
         $deliveryDate = ! empty($data['delivery_date']) ? Carbon::parse($data['delivery_date']) : null;
         $warrantyExpiresAt = $deliveryDate && $warrantyDays ? $deliveryDate->copy()->addDays($warrantyDays) : null;
