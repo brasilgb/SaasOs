@@ -713,6 +713,8 @@ class OrderController extends Controller
             ],
             'page' => $request->page,
             'search' => $request->search,
+            'status' => $request->status,
+            'filter' => $request->filter,
         ]);
     }
 
@@ -727,6 +729,8 @@ class OrderController extends Controller
             'order' => $order->id,
             'page' => $request->page,
             'search' => $request->search,
+            'status' => $request->status,
+            'filter' => $request->filter,
             'open_payments' => $request->get('open_payments'),
         ]);
     }
@@ -742,7 +746,9 @@ class OrderController extends Controller
         $request->validated();
         Customer::query()->whereKey($data['customer_id'])->firstOrFail();
         Equipment::query()->whereKey($data['equipment_id'])->firstOrFail();
-        User::query()->whereKey($data['user_id'])->firstOrFail();
+        if (! empty($data['user_id'])) {
+            User::query()->whereKey($data['user_id'])->firstOrFail();
+        }
         $data['budget_value'] = $this->normalizeMoneyValue($data['budget_value'] ?? 0);
         $data['parts_value'] = $this->normalizeMoneyValue($data['parts_value'] ?? 0);
         $data['service_value'] = $this->normalizeMoneyValue($data['service_value'] ?? 0);
@@ -771,7 +777,7 @@ class OrderController extends Controller
             $order->update([
                 'customer_id' => $data['customer_id'],
                 'equipment_id' => $data['equipment_id'], // equipamento
-                'user_id' => $data['user_id'], // equipamento
+                'user_id' => $data['user_id'] ?? null, // técnico responsável
                 'model' => $data['model'],
                 'password' => $data['password'],
                 'defect' => $data['defect'],
@@ -779,6 +785,7 @@ class OrderController extends Controller
                 'accessories' => $data['accessories'],
                 'budget_description' => $data['budget_description'] ?? null,
                 'budget_value' => $data['budget_value'] ?? 0,
+                'budget_link' => $data['budget_link'] ?? null,
                 'services_performed' => $data['services_performed'], // servicos executados
                 'parts_value' => $data['parts_value'] ?? 0,
                 'service_value' => $data['service_value'] ?? 0,
@@ -853,7 +860,13 @@ class OrderController extends Controller
         $this->orderItemSyncService->sync($order);
         $this->financialReceivableService->syncOrder($order);
 
-        return redirect()->route('app.orders.show', ['order' => $order->id])->with('success', $successMessage);
+        return redirect()->route('app.orders.show', [
+            'order' => $order->id,
+            'page' => $request->page,
+            'search' => $request->search,
+            'status' => $request->status,
+            'filter' => $request->filter,
+        ])->with('success', $successMessage);
     }
 
     /**

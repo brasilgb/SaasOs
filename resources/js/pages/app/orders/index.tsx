@@ -596,7 +596,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                     >
                                                         <Link
                                                             href={route('app.orders.edit', order.id)}
-                                                            data={{ page: orders.current_page, search: search }}
+                                                            data={{ page: orders.current_page, search: search, status: status, filter: filter }}
                                                             aria-label={`Editar ordem ${order.order_number}`}
                                                         >
                                                             <Edit className="h-4 w-4" />
