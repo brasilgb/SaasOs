@@ -47,6 +47,7 @@ Route::get('/follow-ups/tasks', [FollowUpController::class, 'tasks'])->name('fol
 Route::get('/follow-ups/performance', [FollowUpController::class, 'performance'])->name('follow-ups.performance');
 Route::get('/improvement-requests', [TenantImprovementRequestController::class, 'index'])->name('improvement-requests.index');
 Route::post('/improvement-requests', [TenantImprovementRequestController::class, 'store'])->name('improvement-requests.store');
+Route::post('/improvement-requests/feedback', [TenantImprovementRequestController::class, 'storeFeedback'])->name('improvement-requests.feedback.store');
 Route::post('/follow-ups/{order}/pause', [FollowUpController::class, 'pause'])->name('follow-ups.pause');
 Route::post('/follow-ups/{order}/resume', [FollowUpController::class, 'resume'])->name('follow-ups.resume');
 Route::post('/follow-ups/{order}/respond', [FollowUpController::class, 'respond'])->name('follow-ups.respond');

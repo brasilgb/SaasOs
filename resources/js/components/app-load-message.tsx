@@ -19,7 +19,7 @@ type LoadMessage = {
     message: string;
 };
 
-export function AppLoadMessage({ message }: { message: LoadMessage }) {
+export function AppLoadMessage({ message, canMarkRead = true }: { message: LoadMessage; canMarkRead?: boolean }) {
     const [open, setOpen] = useState(false);
 
     const handleSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -43,7 +43,9 @@ export function AppLoadMessage({ message }: { message: LoadMessage }) {
                         <MessageCircleMore /> Ler mensagem
                     </DialogTitle>
                     <DialogDescription>
-                        Para marcar a mensage como lida clique em marcar como lida, ou para sair sem ler clique em sair.
+                        {canMarkRead
+                            ? 'Para marcar a mensagem como lida clique em marcar como lida, ou para sair sem ler clique em sair.'
+                            : 'Você pode visualizar esta mensagem, mas somente o destinatário pode alterar o status de leitura.'}
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid rounded-md border-t bg-gray-50">
@@ -54,9 +56,11 @@ export function AppLoadMessage({ message }: { message: LoadMessage }) {
                     <DialogClose asChild>
                         <Button variant="outline">Sair</Button>
                     </DialogClose>
-                    <Button onClick={handleSubmit} type="submit">
-                        {message.status ? 'Marcar como não lida' : 'Marcar como lida'}
-                    </Button>
+                    {canMarkRead ? (
+                        <Button onClick={handleSubmit} type="submit">
+                            {message.status ? 'Marcar como não lida' : 'Marcar como lida'}
+                        </Button>
+                    ) : null}
                 </DialogFooter>
             </DialogContent>
         </Dialog>
