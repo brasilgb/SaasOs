@@ -32,7 +32,10 @@
 
     <meta name="theme-color" content="#0f172a">
 
-    <link rel="icon" type="image/png" href="{{ asset('logos/logo-light.png') }}">
+    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
+    <link rel="icon" type="image/png" href="{{ asset('favicon-48x48.png') }}" sizes="48x48">
+    <link rel="icon" type="image/png" href="{{ asset('favicon-96x96.png') }}" sizes="96x96">
+    <link rel="icon" type="image/png" href="{{ asset('favicon-192x192.png') }}" sizes="192x192">
     <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
 
     {{-- Performance --}}
