@@ -31,4 +31,5 @@ yarn-error.log*
 .env.backup
 .env.local
 .env.development
-.env.production
+.env.productionbackup/*.sql
+backup/

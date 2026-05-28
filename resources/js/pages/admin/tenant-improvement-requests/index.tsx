@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import AdminLayout from '@/layouts/admin/admin-layout';
 import { BreadcrumbItem } from '@/types';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { ChevronRight, Lightbulb } from 'lucide-react';
 import { Fragment, useEffect, type FormEvent, useState } from 'react';
 
@@ -16,7 +16,11 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: route('admin.dashboard'),
     },
     {
-        title: 'Melhorias SaaS',
+        title: 'Ajustes/Avaliações',
+        href: route('admin.tenant-improvement-requests.index'),
+    },
+    {
+        title: 'Ajustes e solicitações',
         href: route('admin.tenant-improvement-requests.index'),
     },
 ];
@@ -171,12 +175,20 @@ export default function TenantImprovementRequestsIndex({ requests, filters, summ
 
     return (
         <AdminLayout breadcrumbs={breadcrumbs}>
-            <Head title="Melhorias SaaS" />
+            <Head title="Ajustes e solicitações SaaS" />
 
             <div className="flex min-h-16 w-full flex-col justify-center gap-1 px-4 py-3">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={Lightbulb} className="h-8 w-8" />
-                    <h2 className="text-xl font-semibold tracking-tight">Melhorias SaaS</h2>
+                    <h2 className="text-xl font-semibold tracking-tight">Ajustes e solicitações SaaS</h2>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                    <Button size="sm" variant="outline" asChild>
+                        <Link href={route('admin.tenant-feedbacks.index')}>Avaliações</Link>
+                    </Button>
+                    <Button size="sm" asChild>
+                        <Link href={route('admin.tenant-improvement-requests.index')}>Ajustes e solicitações</Link>
+                    </Button>
                 </div>
             </div>
 

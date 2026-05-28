@@ -31,10 +31,10 @@ export function AppSidebar() {
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarHeader>
-            <SidebarContent>
-                <SidebarGroup>
+            <SidebarContent className="gap-0">
+                <SidebarGroup className="gap-0 p-2 [&_[data-slot=sidebar-menu]]:gap-0 [&_[data-slot=sidebar-menu-item]]:my-0.5 [&_[data-slot=sidebar-menu-sub]]:gap-0 [&_[data-slot=sidebar-menu-sub]]:py-0 [&_[data-slot=sidebar-menu-sub-item]]:my-0.5">
                     {mainNavGroups.map((group, index) => (
-                        <div key={group.title} className={index === 0 ? undefined : 'mt-1'}>
+                        <div key={group.title}>
                             <NavMain
                                 label={collapsibleGroups.includes(group.title) ? group.title : undefined}
                                 groupIcon={group.icon}
@@ -43,10 +43,10 @@ export function AppSidebar() {
                             />
                         </div>
                     ))}
-                    <div className="mt-1">
+                    <div>
                         <NavMainCollapsible items={mainConfItems} />
                     </div>
-                    <div className="mt-1">
+                    <div>
                         <NavMain items={mainUserItems} />
                     </div>
                 </SidebarGroup>

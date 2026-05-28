@@ -104,4 +104,110 @@ class MessageControllerTest extends TestCase
             'action' => 'message_deleted',
         ]);
     }
+
+    public function test_administrator_can_view_all_messages_and_filter_only_their_messages(): void
+    {
+        Message::query()->create([
+            'tenant_id' => $this->tenant->id,
+            'message_number' => 999,
+            'sender_id' => $this->sender->id,
+            'recipient_id' => $this->recipient->id,
+            'title' => 'Mensagem para operador',
+            'message' => 'Conteudo da mensagem.',
+            'status' => 0,
+        ]);
+
+        $admin = User::factory()->forTenant($this->tenant->id)->create([
+            'roles' => User::ROLE_ADMIN,
+        ]);
+
+        Message::query()->create([
+            'tenant_id' => $this->tenant->id,
+            'message_number' => 1000,
+            'sender_id' => $admin->id,
+            'recipient_id' => $this->recipient->id,
+            'title' => 'Mensagem do administrador',
+            'message' => 'Conteudo da mensagem do administrador.',
+            'status' => 0,
+        ]);
+
+        $response = $this->withSession(['tenant_id' => $this->tenant->id])
+            ->actingAs($admin)
+            ->get(route('app.messages.index'));
+
+        $response->assertOk()
+            ->assertViewHas('page.props.messages.data', fn ($messages) => count($messages) === 2);
+
+        $response = $this->withSession(['tenant_id' => $this->tenant->id])
+            ->actingAs($admin)
+            ->get(route('app.messages.index', ['filter' => 'mine']));
+
+        $response->assertOk()
+            ->assertViewHas(
+                'page.props.messages.data',
+                fn ($messages) => count($messages) === 1 && collect($messages)->pluck('message_number')->contains(1000)
+            );
+    }
+
+    public function test_root_app_cannot_mark_message_as_read_when_not_recipient(): void
+    {
+        $message = Message::query()->create([
+            'tenant_id' => $this->tenant->id,
+            'message_number' => 1001,
+            'sender_id' => $this->sender->id,
+            'recipient_id' => $this->recipient->id,
+            'title' => 'Mensagem para operador',
+            'message' => 'Conteudo da mensagem.',
+            'status' => 0,
+        ]);
+
+        $rootApp = User::factory()->forTenant($this->tenant->id)->create([
+            'roles' => User::ROLE_ROOT_APP,
+        ]);
+
+        $response = $this->withSession(['tenant_id' => $this->tenant->id])
+            ->actingAs($rootApp)
+            ->patch(route('app.messages.read', $message), [
+                'status' => 1,
+            ]);
+
+        $response->assertRedirect();
+
+        $this->assertDatabaseHas('messages', [
+            'id' => $message->id,
+            'status' => 0,
+        ]);
+    }
+
+    public function test_marking_message_as_read_preserves_current_message_filters(): void
+    {
+        $message = Message::query()->create([
+            'tenant_id' => $this->tenant->id,
+            'message_number' => 1002,
+            'sender_id' => $this->sender->id,
+            'recipient_id' => $this->recipient->id,
+            'title' => 'Mensagem recebida',
+            'message' => 'Conteudo da mensagem recebida.',
+            'status' => 0,
+        ]);
+
+        $filteredUrl = route('app.messages.index', [
+            'filter' => 'received',
+            'status' => '0',
+        ]);
+
+        $response = $this->withSession(['tenant_id' => $this->tenant->id])
+            ->actingAs($this->recipient)
+            ->from($filteredUrl)
+            ->patch(route('app.messages.read', $message), [
+                'status' => 1,
+            ]);
+
+        $response->assertRedirect($filteredUrl);
+
+        $this->assertDatabaseHas('messages', [
+            'id' => $message->id,
+            'status' => 1,
+        ]);
+    }
 }

@@ -275,6 +275,13 @@ const mainConfItems = [
                 permission: 'register_checklists',
             },
             {
+                title: 'Ajustes/Avaliações',
+                url: route('app.improvement-requests.index'),
+                icon: MessageSquareMore,
+                active: 'app.improvement-requests.*',
+                permission: 'dashboard',
+            },
+            {
                 title: 'Outras configurações',
                 url: route('app.other-settings.index'),
                 icon: CogIcon,
@@ -305,18 +312,6 @@ const mainAdminItems = [
         active: 'admin.fiscal-documents.*',
     },
     {
-        title: 'Feedback SaaS',
-        href: route('admin.tenant-feedbacks.index'),
-        icon: MessageSquareMore,
-        active: 'admin.tenant-feedbacks.*',
-    },
-    {
-        title: 'Melhorias SaaS',
-        href: route('admin.tenant-improvement-requests.index'),
-        icon: Lightbulb,
-        active: 'admin.tenant-improvement-requests.*',
-    },
-    {
         title: 'Usuários',
         href: route('admin.users.index'),
         icon: UserCog,
@@ -327,6 +322,21 @@ const mainAdminItems = [
         href: route('admin.settings.index'),
         icon: Cog,
         active: 'admin.settings.*',
+    },
+];
+
+const mainAdminAdjustmentItems: NavItem[] = [
+    {
+        title: 'Avaliações',
+        href: route('admin.tenant-feedbacks.index'),
+        icon: MessageSquareMore,
+        active: 'admin.tenant-feedbacks.*',
+    },
+    {
+        title: 'Ajustes e solicitações',
+        href: route('admin.tenant-improvement-requests.index'),
+        icon: Lightbulb,
+        active: 'admin.tenant-improvement-requests.*',
     },
 ];
 
@@ -347,12 +357,12 @@ const footerNavItems: NavItem[] = [
         external: true,
     },
     {
-        title: 'Solicitar ajustes',
+        title: 'Ajustes/Avaliações',
         href: route('app.improvement-requests.index'),
-        icon: Lightbulb,
+        icon: MessageSquareMore,
         active: 'app.improvement-requests.*',
         permission: 'dashboard',
     },
 ];
 
-export { footerNavItems, mainAdminItems, mainConfItems, mainNavGroups, mainNavItems, mainPlansItems, mainUserItems };
+export { footerNavItems, mainAdminAdjustmentItems, mainAdminItems, mainConfItems, mainNavGroups, mainNavItems, mainPlansItems, mainUserItems };

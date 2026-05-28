@@ -23,7 +23,7 @@ class MessagePolicy
             return false;
         }
 
-        if ((int) $user->roles === User::ROLE_ROOT_APP) {
+        if ($user->isRoot() || $user->isAdministrator()) {
             return true;
         }
 

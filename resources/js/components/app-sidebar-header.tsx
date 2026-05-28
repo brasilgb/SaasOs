@@ -2,7 +2,7 @@ import { Breadcrumbs } from '@/components/breadcrumbs';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useInitials } from '@/hooks/use-initials';
 import { SharedData, type BreadcrumbItem as BreadcrumbItemType } from '@/types';
-import { Link, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { MessageSquareMoreIcon } from 'lucide-react';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
@@ -33,26 +33,48 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
             return;
         }
 
-        const storageKey = `sigmaos:internal-messages:${auth.user.id}`;
-        const previousUnread = Number(window.localStorage.getItem(storageKey) ?? 0);
+        const notifyUnreadMessages = () => {
+            if (unreadMessages <= 0) {
+                return;
+            }
 
-        if (unreadMessages > previousUnread) {
             toast.message('Nova mensagem interna', {
+                id: 'sigmaos:internal-messages:unread',
                 description:
                     unreadMessages === 1
                         ? 'Você tem 1 mensagem não lida.'
                         : `Você tem ${unreadMessages} mensagens não lidas.`,
+                duration: 9000,
                 action: {
                     label: 'Abrir',
                     onClick: () => {
-                        window.location.href = route('app.messages.index');
+                        router.visit(route('app.messages.index'));
                     },
                 },
             });
+        };
+
+        notifyUnreadMessages();
+        const notificationInterval = window.setInterval(notifyUnreadMessages, 60000);
+
+        return () => window.clearInterval(notificationInterval);
+    }, [auth.user?.id, auth.user.tenant_id, unreadMessages]);
+
+    useEffect(() => {
+        if (!auth.user?.id || auth.user.tenant_id === null) {
+            return;
         }
 
-        window.localStorage.setItem(storageKey, String(unreadMessages));
-    }, [auth.user?.id, auth.user.tenant_id, unreadMessages]);
+        const refreshInterval = window.setInterval(() => {
+            router.reload({
+                only: ['notifications'],
+                preserveScroll: true,
+                preserveState: true,
+            });
+        }, 60000);
+
+        return () => window.clearInterval(refreshInterval);
+    }, [auth.user?.id, auth.user.tenant_id]);
 
     return (
         <header className="border-sidebar-border/50 flex h-16 min-w-0 shrink-0 items-center justify-between gap-2 border-b px-3 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 sm:px-4">

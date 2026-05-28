@@ -154,6 +154,7 @@ class OrderControllerTest extends TestCase
     {
         $customer = Customer::factory()->forTenant($this->tenant->id)->create();
         $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+        $budgetLink = 'https://produto.mercadolivre.com.br/MLB-123456789-produto-com-parametros?searchVariation=123&tracking_id=abc';
         $order = Order::factory()->forTenant($this->tenant->id)->create([
             'customer_id' => $customer->id,
             'equipment_id' => $equipment->id,
@@ -164,11 +165,14 @@ class OrderControllerTest extends TestCase
 
         $response = $this->put(route('app.orders.update', $order), $this->orderUpdatePayload($order, $customer, $equipment, [
             'model' => 'Modelo novo',
+            'budget_link' => $budgetLink,
         ]));
 
         $response->assertRedirect(route('app.orders.show', ['order' => $order->id]));
 
-        $this->assertSame('Modelo novo', $order->fresh()->model);
+        $order->refresh();
+        $this->assertSame('Modelo novo', $order->model);
+        $this->assertSame($budgetLink, $order->budget_link);
     }
 
     public function test_technician_can_update_owned_order_model_and_start_repair(): void
@@ -199,6 +203,39 @@ class OrderControllerTest extends TestCase
         $order->refresh();
         $this->assertSame('Modelo novo', $order->model);
         $this->assertSame(OrderStatus::REPAIR_IN_PROGRESS, (int) $order->service_status);
+    }
+
+    public function test_operator_can_change_unassigned_order_status_without_responsible_technician(): void
+    {
+        $operator = User::factory()->forTenant($this->tenant->id)->create([
+            'roles' => User::ROLE_OPERATOR,
+        ]);
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'user_id' => null,
+            'service_status' => OrderStatus::OPEN,
+        ]);
+
+        $this->actingAs($operator);
+
+        $response = $this->put(route('app.orders.update', $order), $this->orderUpdatePayload($order, $customer, $equipment, [
+            'user_id' => null,
+            'service_status' => OrderStatus::CANCELLED,
+        ]));
+
+        $response->assertRedirect(route('app.orders.show', ['order' => $order->id]));
+
+        $order->refresh();
+        $this->assertNull($order->user_id);
+        $this->assertSame(OrderStatus::CANCELLED, (int) $order->service_status);
+        $this->assertDatabaseHas('order_status_history', [
+            'order_id' => $order->id,
+            'status' => OrderStatus::CANCELLED,
+            'changed_by' => $operator->id,
+        ]);
     }
 
     public function test_it_logs_order_payment_registration(): void
@@ -561,7 +598,7 @@ class OrderControllerTest extends TestCase
             'customer_id' => $customer->id,
             'equipment_id' => $equipment->id,
             'user_id' => $this->user->id,
-            'service_status' => OrderStatus::SERVICE_COMPLETED,
+            'service_status' => OrderStatus::CUSTOMER_NOTIFIED,
         ]);
 
         $deliveryDate = now()->setTime(10, 0, 0);
@@ -583,7 +620,7 @@ class OrderControllerTest extends TestCase
             'service_cost' => '100,00',
             'delivery_date' => $deliveryDate->format('Y-m-d H:i:s'),
             'warranty_days' => 90,
-            'service_status' => OrderStatus::SERVICE_COMPLETED,
+            'service_status' => OrderStatus::DELIVERED,
             'delivery_forecast' => null,
             'observations' => null,
         ]);
@@ -599,6 +636,35 @@ class OrderControllerTest extends TestCase
             $deliveryDate->copy()->addDays(90)->toDateTimeString(),
             $order->fresh()->warranty_expires_at?->toDateTimeString()
         );
+    }
+
+    public function test_it_clears_delivery_date_when_status_is_not_delivered(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'user_id' => $this->user->id,
+            'service_status' => OrderStatus::DELIVERED,
+            'delivery_date' => now()->subDay(),
+            'warranty_days' => 90,
+            'warranty_expires_at' => now()->addDays(89),
+        ]);
+
+        $response = $this->put(route('app.orders.update', $order), $this->orderUpdatePayload($order, $customer, $equipment, [
+            'delivery_date' => now()->toDateTimeString(),
+            'warranty_days' => 90,
+            'service_status' => OrderStatus::SERVICE_COMPLETED,
+        ]));
+
+        $response->assertRedirect(route('app.orders.show', ['order' => $order->id]));
+
+        $freshOrder = $order->fresh();
+
+        $this->assertNull($freshOrder->delivery_date);
+        $this->assertNull($freshOrder->warranty_expires_at);
+        $this->assertSame(OrderStatus::SERVICE_COMPLETED, (int) $freshOrder->service_status);
     }
 
     public function test_it_decrements_stock_when_parts_are_added_to_order(): void
@@ -1004,7 +1070,7 @@ class OrderControllerTest extends TestCase
 
         $response = $this->post(route('app.orders.budget-follow-up', $order));
 
-        $response->assertSessionHas('success', 'Follow-up de orçamento enviado com sucesso.');
+        $response->assertSessionHas('success', 'Acompanhamento de orçamento enviado com sucesso.');
 
         Queue::assertPushed(SendOrderBudgetFollowUpNotification::class, 1);
 
@@ -1062,6 +1128,7 @@ class OrderControllerTest extends TestCase
             'accessories' => mb_substr($order->accessories ?? 'Sem acessórios', 0, 500),
             'budget_description' => $order->budget_description ? mb_substr($order->budget_description, 0, 500) : null,
             'budget_value' => '0,00',
+            'budget_link' => $order->budget_link,
             'services_performed' => $order->services_performed ? mb_substr($order->services_performed, 0, 500) : null,
             'parts_value' => '0,00',
             'service_value' => '0,00',

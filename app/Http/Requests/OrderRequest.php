@@ -53,8 +53,9 @@ class OrderRequest extends FormRequest
                     }
                 },
             ],
+            'budget_link' => 'nullable|string|max:2048',
 
-            'user_id' => $this->isMethod('post') ? 'nullable' : 'required',
+            'user_id' => 'nullable|exists:users,id',
             'delivery_date' => 'nullable|date',
             'delivery_forecast' => 'nullable|date',
             'observations' => 'nullable|string|max:500',
@@ -67,6 +68,7 @@ class OrderRequest extends FormRequest
             'customer_id' => 'cliente',
             'budget_description' => 'descrição do orçamento',
             'budget_value' => 'valor do orçamento',
+            'budget_link' => 'link orçamento de peças',
             'equipment_id' => 'equipamento',
             'model' => 'marca e modelo',
             'password' => 'senha',

@@ -29,6 +29,13 @@ function maskWhatsApp(value: string): string {
     return onlyDigits(value).slice(0, 13);
 }
 
+function normalizeWhatsappPhone(value: unknown): string {
+    let digits = onlyDigits(value);
+    if (!digits) return '';
+    if (!digits.startsWith('55')) digits = `55${digits}`;
+    return digits;
+}
+
 function maskDate(value: string): string {
     const digits = onlyDigits(value).slice(0, 8);
     if (!digits) return '';
@@ -146,4 +153,17 @@ function createSlug(title: string): string {
     return '';
 }
 
-export { createSlug, maskCep, maskCnpj, maskCpfCnpj, maskDate, maskMoney, maskMoneyDot, maskPhone, maskWhatsApp, unMasCpfCnpj, unMask };
+export {
+    createSlug,
+    maskCep,
+    maskCnpj,
+    maskCpfCnpj,
+    maskDate,
+    maskMoney,
+    maskMoneyDot,
+    maskPhone,
+    maskWhatsApp,
+    normalizeWhatsappPhone,
+    unMasCpfCnpj,
+    unMask,
+};

@@ -36,8 +36,9 @@ class MessageController extends Controller
 
         $logged = Auth::user();
         $query = Message::query();
+        $canViewAllMessages = $logged->isRoot() || $logged->isAdministrator();
 
-        if ((int) $logged->roles !== User::ROLE_ROOT_APP) {
+        if (! $canViewAllMessages || $filter === 'mine') {
             $query->where(function ($q) use ($logged) {
                 $q->where('recipient_id', $logged->id)
                     ->orWhere('sender_id', $logged->id);
@@ -170,7 +171,7 @@ class MessageController extends Controller
             'status' => (bool) $message->status,
         ]));
 
-        return redirect()->route('app.messages.index')->with('success', 'Mensagem marcada como lida');
+        return back()->with('success', 'Mensagem marcada como lida');
     }
 
     /**

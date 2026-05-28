@@ -30,7 +30,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Parts() {
-    const { company, auth, othersetting } = usePage().props as any;
+    const { company, auth, othersetting, fiscalSetting } = usePage().props as any;
     const [dateRange, setDateRange] = useRemember<any>({
         from: new Date(),
         to: new Date(),
@@ -43,8 +43,8 @@ export default function Parts() {
     const canViewExpenses = Boolean(permissions.includes('finance') && othersetting?.enable_finance);
     const canViewCashier = Boolean(permissions.includes('finance') && othersetting?.enable_finance);
     const canViewParts = permissions.includes('parts');
-    const canViewFiscal = permissions.includes('fiscal_documents');
-    const canViewQuality = permissions.includes('reports');
+    const canViewFiscal = Boolean(permissions.includes('fiscal_documents') && fiscalSetting?.enabled);
+    const canViewQuality = Boolean(permissions.includes('reports') && othersetting?.show_quality_menu);
     const hasOperationalReports = canViewOrders || canViewCustomers || canViewSchedules;
     const hasStockReports = canViewParts;
     const hasCommercialReports = canViewSales;

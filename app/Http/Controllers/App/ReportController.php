@@ -7,6 +7,7 @@ use App\Models\App\Customer;
 use App\Models\App\CashSession;
 use App\Models\App\Expense;
 use App\Models\App\FiscalDocument;
+use App\Models\App\FiscalSetting;
 use App\Models\App\Order;
 use App\Models\App\Other;
 use App\Models\App\Part;
@@ -54,7 +55,18 @@ class ReportController extends Controller
 
     private function canUseFiscalReports(): bool
     {
-        return (bool) Auth::user()?->hasPermission('fiscal_documents');
+        $user = Auth::user();
+        $fiscalSetting = FiscalSetting::query()->first();
+
+        return (bool) ($user?->hasPermission('fiscal_documents') && $fiscalSetting?->enabled);
+    }
+
+    private function canUseQualityReports(): bool
+    {
+        $user = Auth::user();
+        $otherSetting = Other::query()->first();
+
+        return (bool) ($user?->hasPermission('reports') && $otherSetting?->show_quality_menu);
     }
 
     private function severityForRate(float $rate, float $threshold): string
@@ -202,7 +214,10 @@ class ReportController extends Controller
                 break;
 
             case 'quality':
-                abort_unless(Auth::user()?->hasPermission('reports'), 403);
+                if (! $this->canUseQualityReports()) {
+                    abort(403, 'Relatórios de gestão estão desabilitados.');
+                }
+
                 $data = Order::query()
                     ->with([
                         'equipment:id,equipment',

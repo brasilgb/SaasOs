@@ -14,7 +14,7 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { statusAgenda } from '@/Utils/dataSelect';
-import { unMask } from '@/Utils/mask';
+import { normalizeWhatsappPhone } from '@/Utils/mask';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -26,18 +26,6 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '#',
     },
 ];
-
-function getWhatsappPhone(value: string) {
-    const digits = unMask(value ?? '');
-    if (!digits) return '';
-
-    // Se vier apenas DDD + número, adiciona DDI do Brasil.
-    if (digits.length === 10 || digits.length === 11) {
-        return `55${digits}`;
-    }
-
-    return digits;
-}
 
 function getTechnicianWhatsappMessage(schedule: any) {
     const visitDate = moment(schedule.schedules).format('DD/MM/YYYY HH:mm');
@@ -160,7 +148,7 @@ export default function Schedules({ schedules, search, status }: any) {
                                                         <a
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            href={`https://wa.me/${getWhatsappPhone(schedule.user?.whatsapp ?? '')}?text=${encodeURIComponent(getTechnicianWhatsappMessage(schedule))}`}
+                                                            href={`https://wa.me/${normalizeWhatsappPhone(schedule.user?.whatsapp)}?text=${encodeURIComponent(getTechnicianWhatsappMessage(schedule))}`}
                                                             aria-label={`Enviar WhatsApp para ${schedule.user?.name}`}
                                                         >
                                                             <svg

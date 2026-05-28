@@ -20,7 +20,7 @@ import { maskMoney, maskMoneyDot } from '@/Utils/mask';
 import { ORDER_STATUS, ORDER_STATUSES_READY_FOR_INVOICE } from '@/Utils/order-status';
 import selectStyles from '@/Utils/selectStyles';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, FileTextIcon, Mail, Printer, Save, Wrench, X } from 'lucide-react';
+import { ArrowLeft, Copy, FileTextIcon, Mail, Printer, Save, Wrench, X } from 'lucide-react';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
 import Select from 'react-select';
@@ -82,6 +82,8 @@ export default function EditOrder({
     equipmentHistory,
     page,
     search,
+    status,
+    filter,
     models,
 }: any) {
     const budgetFollowUpForm = useForm({});
@@ -152,6 +154,7 @@ export default function EditOrder({
         accessories: order?.accessories,
         budget_description: order?.budget_description, // descrição do orçamento
         budget_value: order?.budget_value, // valor do orçamento
+        budget_link: order?.budget_link ?? '',
         services_performed: order.services_performed, // servicos executados
         parts_value: order.parts_value,
         service_value: order.service_value,
@@ -180,7 +183,7 @@ export default function EditOrder({
         e.preventDefault();
         commitModelInput();
 
-        patch(route('app.orders.update', order.id), {
+        patch(route('app.orders.update', { order: order.id, page, search, status, filter }), {
             onSuccess: () => {
                 toastSuccess('Sucesso', 'Ordem de serviço alterada com sucesso');
                 setPartsData([]);
@@ -226,10 +229,13 @@ export default function EditOrder({
 
     useEffect(() => {
         const status = Number(data.service_status);
-        const shouldRegisterDelivery = status === ORDER_STATUS.DELIVERED || status === ORDER_STATUS.SERVICE_NOT_EXECUTED;
 
-        if (shouldRegisterDelivery && !data.delivery_date) {
+        if (status === ORDER_STATUS.DELIVERED && !data.delivery_date) {
             setData((currentData: any) => ({ ...currentData, delivery_date: moment().format('YYYY-MM-DD') }));
+        }
+
+        if (status !== ORDER_STATUS.DELIVERED && data.delivery_date) {
+            setData((currentData: any) => ({ ...currentData, delivery_date: '' }));
         }
     }, [data.service_status]);
 
@@ -243,6 +249,17 @@ export default function EditOrder({
 
     const changeServiceStatus = (selected: any) => {
         setData('service_status', selected?.value);
+    };
+
+    const copyBudgetLink = async () => {
+        const link = String(data.budget_link ?? '').trim();
+
+        if (!link || typeof navigator === 'undefined' || !navigator.clipboard) {
+            return;
+        }
+
+        await navigator.clipboard.writeText(link);
+        toastSuccess('Copiado', 'Link do orçamento copiado para a área de transferência');
     };
 
     const changeResponsibleTechnician = (selected: any) => {
@@ -315,6 +332,7 @@ export default function EditOrder({
     };
 
     const currentStatusLabel = statusServico.find((item: any) => Number(item.value) === Number(data.service_status))?.label ?? 'Status';
+    const isDeliveryStatus = Number(data.service_status) === ORDER_STATUS.DELIVERED;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -330,7 +348,7 @@ export default function EditOrder({
             <div className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
                 <div>
                     <Button variant={'default'} asChild>
-                        <Link href={route('app.orders.index', { page: page, search: search })}>
+                        <Link href={route('app.orders.index', { page: page, search: search, status: status, filter: filter })} preserveState={false}>
                             <ArrowLeft className="h-4 w-4" />
                             <span>Voltar</span>
                         </Link>
@@ -574,6 +592,32 @@ export default function EditOrder({
                                                 {errors.budget_value && <div className="text-sm text-red-500">{errors.budget_value}</div>}
                                             </div>
                                         </div>
+
+                                        <div className="mt-4 grid gap-2">
+                                            <Label htmlFor="budget_link">Link orçamento de peças</Label>
+                                            <div className="flex gap-2">
+                                                <Input
+                                                    type="text"
+                                                    id="budget_link"
+                                                    name="budget_link"
+                                                    value={data.budget_link}
+                                                    onChange={(e) => setData('budget_link', e.target.value)}
+                                                    placeholder="Cole aqui o link do orçamento ou produto"
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    size="icon"
+                                                    variant="outline"
+                                                    onClick={copyBudgetLink}
+                                                    disabled={!String(data.budget_link ?? '').trim()}
+                                                    title="Copiar link do orçamento"
+                                                    aria-label="Copiar link do orçamento"
+                                                >
+                                                    <Copy className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                            {errors.budget_link && <div className="text-sm text-red-500">{errors.budget_link}</div>}
+                                        </div>
                                     </CardContent>
                                 </Card>
 
@@ -705,27 +749,31 @@ export default function EditOrder({
                                             <div className="grid gap-2">
                                                 <FormFieldHelp
                                                     label="Data de entrega"
-                                                    content="Preenchida automaticamente ao marcar a OS como entregue ao cliente. Pode ser ajustada se a entrega ocorreu em outro dia."
+                                                    content="Preenchida somente ao marcar a OS como entregue ao cliente. Em qualquer outro status, permanece vazia."
                                                 />
-                                                <DatePicker
-                                                    mode="single"
-                                                    date={data.delivery_date}
-                                                    setDate={(value) => {
-                                                        if (!value) {
-                                                            setData('delivery_date', '');
-                                                            return;
-                                                        }
+                                                {isDeliveryStatus ? (
+                                                    <DatePicker
+                                                        mode="single"
+                                                        date={data.delivery_date}
+                                                        setDate={(value) => {
+                                                            if (!value) {
+                                                                setData('delivery_date', '');
+                                                                return;
+                                                            }
 
-                                                        const d = value as Date;
-                                                        const formatted = [
-                                                            d.getFullYear(),
-                                                            String(d.getMonth() + 1).padStart(2, '0'),
-                                                            String(d.getDate()).padStart(2, '0'),
-                                                        ].join('-');
+                                                            const d = value as Date;
+                                                            const formatted = [
+                                                                d.getFullYear(),
+                                                                String(d.getMonth() + 1).padStart(2, '0'),
+                                                                String(d.getDate()).padStart(2, '0'),
+                                                            ].join('-');
 
-                                                        setData('delivery_date', formatted);
-                                                    }}
-                                                />
+                                                            setData('delivery_date', formatted);
+                                                        }}
+                                                    />
+                                                ) : (
+                                                    <Input value="Disponível somente para OS entregue" disabled />
+                                                )}
                                                 {errors.delivery_date && <div className="text-sm text-red-500">{errors.delivery_date}</div>}
                                             </div>
                                             <div className="grid gap-2">

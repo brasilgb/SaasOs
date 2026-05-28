@@ -374,6 +374,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                     const hasBudgetFollowUp = Boolean(order.budget_follow_up);
                                     const hasPendingPaymentFollowUp = Boolean(order.pending_payment_follow_up);
                                     const communicationDaysPending = Number(order.communication_days_pending ?? 0);
+                                    const imagesCount = Number(order.images_count ?? 0);
                                     const feedbackDaysPending =
                                         !hasCustomerFeedback && order.delivery_date
                                             ? Math.max(0, moment().diff(moment(order.delivery_date), 'days'))
@@ -571,14 +572,19 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                     <Button
                                                         asChild
                                                         size="icon"
-                                                        className="bg-fuchsia-700 text-white hover:bg-fuchsia-700"
-                                                        title="Enviar imagens"
+                                                        className="relative bg-fuchsia-700 text-white hover:bg-fuchsia-700"
+                                                        title={`${imagesCount} imagem(ns) adicionada(s)`}
                                                     >
                                                         <Link
                                                             href={route('app.images.index', { or: order.id })}
-                                                            aria-label={`Enviar imagens da ordem ${order.order_number}`}
+                                                            aria-label={`Enviar imagens da ordem ${order.order_number}. ${imagesCount} imagem(ns) adicionada(s).`}
                                                         >
                                                             <ImageUp className="h-4 w-4" />
+                                                            {imagesCount > 0 && (
+                                                                <span className="absolute -top-2 -right-2 flex h-5 min-w-5 items-center justify-center rounded-full border border-background bg-emerald-600 px-1 text-[10px] leading-none font-semibold text-white shadow-sm">
+                                                                    {imagesCount > 99 ? '99+' : imagesCount}
+                                                                </span>
+                                                            )}
                                                         </Link>
                                                     </Button>
 
@@ -590,7 +596,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                     >
                                                         <Link
                                                             href={route('app.orders.edit', order.id)}
-                                                            data={{ page: orders.current_page, search: search }}
+                                                            data={{ page: orders.current_page, search: search, status: status, filter: filter }}
                                                             aria-label={`Editar ordem ${order.order_number}`}
                                                         >
                                                             <Edit className="h-4 w-4" />

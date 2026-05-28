@@ -70,7 +70,7 @@ const features = [
     {
         icon: Smartphone,
         title: 'Aplicativo Android',
-        description: 'Registre fotos e atualizações de serviço direto pelo celular.',
+        description: 'Registre fotos de equipamentos direto pelo celular.',
     },
     {
         icon: Printer,
@@ -85,7 +85,7 @@ const features = [
     {
         icon: Settings,
         title: 'Gestão de Usuários',
-        description: 'Defina papéis e permissões para técnicos, atendentes e administradores.',
+        description: 'Defina papéis, permissões e liberação de técnico master para visualizar todas as ordens quando necessário.',
     },
 ];
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import { normalizeWhatsappPhone } from '@/Utils/mask';
 
 type WhatsAppButtonProps = {
     phone: string;
@@ -40,7 +41,7 @@ const buildTrackingUrl = (trackingToken?: string) => {
     if (!trackingToken) return '';
 
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://sigmaos.com.br';
-    return `${origin}/os/${trackingToken}`;
+    return `${origin}/os/${trackingToken}?preview=whatsapp`;
 };
 
 const applyTemplate = (template: string, values: Record<string, string>) => {
@@ -69,7 +70,9 @@ const hasPlaceholder = (template: string, key: string) => {
     });
 };
 
-const withGreeting = (greeting: string, customerName: string, content: string) => `${greeting}, ${customerName}!\n\n${content}`;
+const withGreeting = (greeting: string, customerName: string, content: string) => `${greeting}, ${customerName}!\n${content}`;
+
+const normalizeWhatsAppLineBreaks = (message: string) => message.replace(/\n{2,}/g, '\n').trim();
 
 const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -89,14 +92,7 @@ const applyOpenOrderGreeting = (message: string, greeting: string, customerName:
         return `${greeting}, ${customerName}!`;
     }
 
-    return `${greeting}, ${customerName}!\n\n${capitalizeFirstLetter(content)}`;
-};
-
-const normalizePhone = (phone: string) => {
-    let cleanPhone = phone.replace(/\D/g, '');
-    if (!cleanPhone) return '';
-    if (!cleanPhone.startsWith('55')) cleanPhone = `55${cleanPhone}`;
-    return cleanPhone;
+    return `${greeting}, ${customerName}!\n${capitalizeFirstLetter(content)}`;
 };
 
 const getTemplateForContext = ({
@@ -200,13 +196,13 @@ const buildMessage = ({
     const selectedTemplate = getTemplateForContext({ status, feedback, context, whats });
     if (!selectedTemplate) return '';
 
-    return formatTemplateMessage({
+    return normalizeWhatsAppLineBreaks(formatTemplateMessage({
         template: selectedTemplate,
         greeting,
         customerName,
         values: templateValues,
         status,
-    });
+    }));
 };
 
 const canSendWhatsAppMessage = ({ status, feedback, context, whats }: Pick<WhatsAppButtonProps, 'status' | 'feedback' | 'context' | 'whats'>) => {
@@ -271,7 +267,7 @@ export const WhatsAppButton: React.FC<WhatsAppButtonProps> = ({
     const handleClick = () => {
         if (!phone || !canSend || isDisabled) return;
 
-        const cleanPhone = normalizePhone(phone);
+        const cleanPhone = normalizeWhatsappPhone(phone);
 
         if (cleanPhone.length < 12) {
             alert('Número de WhatsApp inválido para envio.');

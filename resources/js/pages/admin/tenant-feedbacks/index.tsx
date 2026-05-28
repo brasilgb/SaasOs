@@ -17,7 +17,11 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: route('admin.dashboard'),
     },
     {
-        title: 'Feedback SaaS',
+        title: 'Ajustes/Avaliações',
+        href: route('admin.tenant-feedbacks.index'),
+    },
+    {
+        title: 'Avaliações',
         href: route('admin.tenant-feedbacks.index'),
     },
 ];
@@ -40,6 +44,28 @@ function ratingBadgeClass(rating?: number | null) {
     if (rating <= 3) return 'border-rose-200 bg-rose-50 text-rose-700';
     if (rating === 4) return 'border-amber-200 bg-amber-50 text-amber-700';
     return 'border-emerald-200 bg-emerald-50 text-emerald-700';
+}
+
+function feedbackStatusLabel(status?: string | null) {
+    if (status === 'submitted') return 'Respondido';
+    if (status === 'opened') return 'Aberto';
+    if (status === 'pending') return 'Pendente';
+    return 'Pendente';
+}
+
+function recoveryStatusLabel(status?: string | null) {
+    if (status === 'resolved') return 'Resolvido';
+    if (status === 'in_progress') return 'Em andamento';
+    if (status === 'pending') return 'Pendente';
+    return 'Sem tratativa';
+}
+
+function testimonialStatusLabel(status?: string | null) {
+    if (status === 'approved') return 'Aprovado';
+    if (status === 'rejected') return 'Rejeitado';
+    if (status === 'published') return 'Publicado';
+    if (status === 'pending') return 'Pendente';
+    return 'Sem depoimento';
 }
 
 function RecoveryForm({ feedback, users, recoveryStatuses, testimonialStatuses }: any) {
@@ -84,7 +110,7 @@ function RecoveryForm({ feedback, users, recoveryStatuses, testimonialStatuses }
                 <option value="">Sem status</option>
                 {recoveryStatuses.map((status: string) => (
                     <option key={status} value={status}>
-                        {status}
+                        {recoveryStatusLabel(status)}
                     </option>
                 ))}
             </select>
@@ -108,7 +134,7 @@ function RecoveryForm({ feedback, users, recoveryStatuses, testimonialStatuses }
                     <option value="">Sem status</option>
                     {testimonialStatuses.map((status: string) => (
                         <option key={status} value={status}>
-                            {status}
+                            {testimonialStatusLabel(status)}
                         </option>
                     ))}
                 </select>
@@ -166,13 +192,21 @@ export default function TenantFeedbacksIndex({ feedbacks, filters, summary, user
 
     return (
         <AdminLayout breadcrumbs={breadcrumbs}>
-            <Head title="Feedback SaaS" />
+            <Head title="Avaliações SaaS" />
             {flash?.success && <AlertSuccess message={flash.success} />}
 
             <div className="flex min-h-16 w-full flex-col justify-center gap-1 px-4 py-3">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={MessageSquareMore} className="h-8 w-8" />
-                    <h2 className="text-xl font-semibold tracking-tight">Feedback SaaS</h2>
+                    <h2 className="text-xl font-semibold tracking-tight">Avaliações SaaS</h2>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                    <Button size="sm" asChild>
+                        <Link href={route('admin.tenant-feedbacks.index')}>Avaliações</Link>
+                    </Button>
+                    <Button size="sm" variant="outline" asChild>
+                        <Link href={route('admin.tenant-improvement-requests.index')}>Ajustes e solicitações</Link>
+                    </Button>
                 </div>
             </div>
 
@@ -301,7 +335,7 @@ export default function TenantFeedbacksIndex({ feedbacks, filters, summary, user
                                                     </td>
                                                     <td className="px-4 py-3">
                                                         <Badge variant="outline" className={statusBadgeClass(feedback.feedback_status)}>
-                                                            {feedback.feedback_status}
+                                                            {feedbackStatusLabel(feedback.feedback_status)}
                                                         </Badge>
                                                     </td>
                                                     <td className="px-4 py-3">
@@ -311,12 +345,12 @@ export default function TenantFeedbacksIndex({ feedbacks, filters, summary, user
                                                     </td>
                                                     <td className="px-4 py-3">
                                                         <Badge variant="outline" className={recoveryBadgeClass(feedback.feedback_recovery_status)}>
-                                                            {feedback.feedback_recovery_status || 'Sem tratativa'}
+                                                            {recoveryStatusLabel(feedback.feedback_recovery_status)}
                                                         </Badge>
                                                     </td>
                                                     <td className="px-4 py-3">
                                                         <Badge variant="outline" className={recoveryBadgeClass(feedback.testimonial_status)}>
-                                                            {feedback.testimonial_status || 'Sem depoimento'}
+                                                            {testimonialStatusLabel(feedback.testimonial_status)}
                                                         </Badge>
                                                     </td>
                                                     <td className="px-4 py-3 text-muted-foreground">

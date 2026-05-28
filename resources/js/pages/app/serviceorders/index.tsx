@@ -5,7 +5,7 @@ import Timeline from '@/components/timeline';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Toaster } from '@/components/ui/sonner';
-import { maskMoney } from '@/Utils/mask';
+import { maskMoney, normalizeWhatsappPhone } from '@/Utils/mask';
 import { ORDER_STATUS, orderStatusLabel } from '@/Utils/order-status';
 import { Head, router, usePage } from '@inertiajs/react';
 import {
@@ -212,6 +212,7 @@ function ServiceOrders({ order }: { order: Order }) {
 
     const remaining = getRemainingTime(order.delivery_forecast);
     const heroNote = nextStepText(order, financialSummary.remaining);
+    const companyName = company?.shortname || company?.companyname;
     const checklist = actionChecklist(order, financialSummary.remaining);
     const canAcknowledgePickup =
         (order.service_status === ORDER_STATUS.CUSTOMER_NOTIFIED || order.service_status === ORDER_STATUS.DELIVERED) &&
@@ -348,7 +349,23 @@ function ServiceOrders({ order }: { order: Order }) {
                             <div className="bg-[radial-gradient(circle_at_top_left,_rgba(245,158,11,0.15),_transparent_38%),linear-gradient(135deg,#0f172a_0%,#1e293b_55%,#334155_100%)] p-6 text-white md:p-8">
                                 <div className="flex flex-wrap items-start justify-between gap-4">
                                     <div className="space-y-3">
-                                        {company?.logo && <img src={`/storage/logos/${company.logo}`} className="h-12 rounded-md bg-white/90 p-2" />}
+                                        {(company?.logo || companyName || company?.cnpj) && (
+                                            <div className="flex flex-wrap items-center gap-3">
+                                                {company?.logo && (
+                                                    <img
+                                                        src={`/storage/logos/${company.logo}`}
+                                                        alt={companyName ? `Logo ${companyName}` : 'Logo da empresa'}
+                                                        className="h-12 rounded-md bg-white/90 p-2"
+                                                    />
+                                                )}
+                                                {(companyName || company?.cnpj) && (
+                                                    <div className="min-w-0">
+                                                        {companyName && <p className="text-base font-semibold leading-tight text-white">{companyName}</p>}
+                                                        {company?.cnpj && <p className="mt-1 text-xs font-medium text-slate-300">CNPJ: {company.cnpj}</p>}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
                                         <div>
                                             <p className="text-sm font-medium uppercase tracking-[0.25em] text-amber-200">Acompanhamento online</p>
                                             <h1 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl">
@@ -496,7 +513,7 @@ function ServiceOrders({ order }: { order: Order }) {
                                                 )}
                                                 {hasDeliveryReceipt && (
                                                     <a
-                                                        href={route('os.receipt', { token: order.tracking_token, type: 'orentrega' })}
+                                                        href={route('os.receipt', { token: order.tracking_token, type: 'orentrega', pdf: 1 })}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
@@ -548,7 +565,7 @@ function ServiceOrders({ order }: { order: Order }) {
 
                                         {order.company?.whatsapp && (
                                             <a
-                                                href={`https://wa.me/${order.company.whatsapp}`}
+                                                href={`https://wa.me/${normalizeWhatsappPhone(order.company.whatsapp)}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-green-500 px-5 py-3 text-sm font-medium text-white transition hover:bg-green-600"
@@ -734,7 +751,7 @@ function ServiceOrders({ order }: { order: Order }) {
                                                 >
                                                     <span className="inline-flex items-center gap-2">
                                                         <FileText className="h-4 w-4" />
-                                                        Recibo do orçamento
+                                                        Orçamento ao cliente
                                                     </span>
                                                     <ExternalLink className="h-4 w-4 flex-none text-slate-500" />
                                                 </a>
@@ -742,7 +759,7 @@ function ServiceOrders({ order }: { order: Order }) {
 
                                             {hasDeliveryReceipt && (
                                                 <a
-                                                    href={route('os.receipt', { token: order.tracking_token, type: 'orentrega' })}
+                                                    href={route('os.receipt', { token: order.tracking_token, type: 'orentrega', pdf: 1 })}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="inline-flex items-center justify-between gap-3 rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-100"

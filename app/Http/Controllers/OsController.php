@@ -12,6 +12,7 @@ use App\Models\App\Receipt;
 use App\Services\OrderStatusService;
 use App\Support\OrderStatus;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
 class OsController extends Controller
@@ -29,7 +30,7 @@ class OsController extends Controller
             ->where('tracking_token', $token);
     }
 
-    public function index($token)
+    public function index(Request $request, $token)
     {
         $order = $this->publicOrderByToken($token)
             ->with('equipment')
@@ -41,7 +42,35 @@ class OsController extends Controller
             ->with('warrantySourceOrder:id,order_number,warranty_expires_at')
             ->firstOrFail();
 
-        return Inertia::render('app/serviceorders/index', ['order' => $order]);
+        $company = $this->tenantScopedFirst(Company::class, (int) $order->tenant_id);
+
+        return Inertia::render('app/serviceorders/index', [
+            'order' => $order,
+            'company' => $company,
+        ])->withViewData([
+            'meta' => $this->orderMeta($order, $company, $request->fullUrl()),
+        ]);
+    }
+
+    private function orderMeta(Order $order, ?Company $company, ?string $url = null): array
+    {
+        $companyName = $company?->shortname ?: $company?->companyname ?: config('app.name', 'SigmaOS');
+        $description = 'Acompanhe o andamento da ordem de serviço';
+        $url ??= route('os.token', $order->tracking_token);
+        $logoPath = $company?->logo ? public_path('storage/logos/'.$company->logo) : null;
+        $image = $logoPath && file_exists($logoPath)
+            ? asset('storage/logos/'.$company->logo)
+            : asset('images/default.png');
+
+        return [
+            'title' => $companyName,
+            'description' => $description,
+            'url' => $url,
+            'image' => $image,
+            'imageAlt' => "Logo {$companyName}",
+            'siteName' => $companyName,
+            'robots' => 'noindex, nofollow, max-image-preview:large',
+        ];
     }
 
     private function tenantScopedFirst(string $modelClass, int $tenantId)
@@ -80,7 +109,7 @@ class OsController extends Controller
 
         try {
             $this->orderStatusService->transition($order, (int) $validated['status'], null);
-        } catch (\Illuminate\Validation\ValidationException) {
+        } catch (ValidationException) {
             return back()->withErrors([
                 'status' => 'Transição de status não permitida para este orçamento.',
             ]);
@@ -212,6 +241,7 @@ class OsController extends Controller
             'receipt' => $receipt,
             'checklist' => $checklist,
             'backUrl' => route('os.token', $order->tracking_token),
+            'copies' => 1,
         ]);
     }
 

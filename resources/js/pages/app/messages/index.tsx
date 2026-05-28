@@ -3,14 +3,14 @@ import { AppLoadMessage } from '@/components/app-load-message';
 import AppPagination from '@/components/app-pagination';
 import { Icon } from '@/components/icon';
 import InputSearch from '@/components/inputSearch';
-import SelectFilter from '@/components/SelectFilter';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { statusMessageByValue } from '@/Utils/functions';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Edit, Eye, MessageSquareMore, Plus } from 'lucide-react';
 import moment from 'moment';
 
@@ -32,15 +32,39 @@ function messageStatusBadgeClass(status: number | string) {
 }
 
 export default function Messages({ messages, search }: any) {
-    const { auth } = usePage().props as any;
+    const { auth, ziggy } = usePage().props as any;
+    const currentQuery = ziggy?.query ?? {};
+    const currentStatus = currentQuery.status ?? 'all';
+    const currentFilter = currentQuery.filter ?? 'all';
     const messageStatusFilter = [
+        { value: 'all', label: 'Todos os status' },
         { value: '0', label: 'Não lida' },
         { value: '1', label: 'Lida' },
     ];
     const messageOperationFilter = [
+        { value: 'mine', label: 'Minhas mensagens', param: 'filter' as const },
         { value: 'received', label: 'Recebidas', param: 'filter' as const },
         { value: 'sent', label: 'Enviadas', param: 'filter' as const },
     ];
+    const canViewAllMessages = ['root_system', 'root_app', 'administrator'].includes(auth.role);
+    const operationFilters = canViewAllMessages
+        ? [{ value: 'all', label: 'Todas', param: 'filter' as const }, ...messageOperationFilter]
+        : [{ value: 'all', label: 'Minhas mensagens', param: 'filter' as const }, ...messageOperationFilter.filter((item) => item.value !== 'mine')];
+
+    const updateFilter = (key: 'filter' | 'status', value: string) => {
+        router.get(
+            route('app.messages.index'),
+            {
+                ...currentQuery,
+                page: undefined,
+                [key]: value === 'all' ? undefined : value,
+            },
+            {
+                preserveState: true,
+                replace: true,
+            },
+        );
+    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -58,7 +82,32 @@ export default function Messages({ messages, search }: any) {
                 </div>
                 <div className="flex w-full flex-col gap-2 md:flex-row lg:w-auto lg:shrink-0">
                     <div className="w-full md:w-56">
-                        <SelectFilter dataStatus={messageStatusFilter} specialFilters={messageOperationFilter} url="app.messages.index" noOrder />
+                        <Select value={currentFilter} onValueChange={(value) => updateFilter('filter', value)}>
+                            <SelectTrigger className="w-full">
+                                <span>{operationFilters.find((item) => item.value === currentFilter)?.label ?? 'Todas'}</span>
+                            </SelectTrigger>
+                            <SelectContent>
+                                {operationFilters.map((item) => (
+                                    <SelectItem key={item.value} value={item.value}>
+                                        {item.label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="w-full md:w-48">
+                        <Select value={currentStatus} onValueChange={(value) => updateFilter('status', value)}>
+                            <SelectTrigger className="w-full">
+                                <span>{messageStatusFilter.find((item) => item.value === currentStatus)?.label ?? 'Todos os status'}</span>
+                            </SelectTrigger>
+                            <SelectContent>
+                                {messageStatusFilter.map((item) => (
+                                    <SelectItem key={item.value} value={item.value}>
+                                        {item.label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
                 <div className="flex w-full flex-col gap-2 md:flex-row lg:w-auto lg:shrink-0 lg:justify-end">
@@ -139,7 +188,7 @@ export default function Messages({ messages, search }: any) {
                                                     <ActionDelete title={'esta mensagem'} url={'app.messages.destroy'} param={message.id} />
                                                 </div>
                                             ) : (
-                                                <AppLoadMessage message={message} />
+                                                <AppLoadMessage message={message} canMarkRead={Number(message.recipient_id) === Number(auth.user.id)} />
                                             )}
                                         </TableCell>
                                     </TableRow>
