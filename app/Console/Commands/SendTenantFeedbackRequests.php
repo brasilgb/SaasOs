@@ -11,7 +11,7 @@ use Illuminate\Support\Str;
 
 class SendTenantFeedbackRequests extends Command
 {
-    protected $signature = 'sigmaos:send-tenant-feedback-requests {--force : Reenvia e recria mesmo que ja exista um feedback onboarding_7d}';
+    protected $signature = 'vetoros:send-tenant-feedback-requests {--force : Reenvia e recria mesmo que ja exista um feedback onboarding_7d}';
 
     protected $description = 'Cria e envia pedidos de feedback para clientes SaaS elegiveis';
 

@@ -181,7 +181,7 @@ class AdminFocusNfeService
             );
         }
 
-        return 'Assinatura SigmaOS'.($tenant->plan?->name ? ' - '.$tenant->plan->name : '');
+        return 'Assinatura VetorOS'.($tenant->plan?->name ? ' - '.$tenant->plan->name : '');
     }
 
     private function post(string $endpoint, string $reference, array $payload, AdminFiscalSetting $setting): Response

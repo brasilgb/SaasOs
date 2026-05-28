@@ -17,7 +17,7 @@ export default function SubscriptionPaymentSuccess({ open, onContinue }: Subscri
                     </div>
                     <DialogTitle>Pagamento confirmado</DialogTitle>
                     <DialogDescription>
-                        Obrigado pelo pagamento. Sua conta foi liberada e o SigmaOS já está pronto para uso. Bom trabalho!
+                        Obrigado pelo pagamento. Sua conta foi liberada e o VetorOS já está pronto para uso. Bom trabalho!
                     </DialogDescription>
                 </DialogHeader>
 

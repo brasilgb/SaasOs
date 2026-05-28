@@ -46,7 +46,7 @@ export default function TenantsIndex({ tenants, filters }: any) {
             route('admin.fiscal-documents.tenants.issue', tenant.id),
             {
                 amount: amount ?? undefined,
-                description: tenant.plan?.name ? `Assinatura SigmaOS - ${tenant.plan.name}` : undefined,
+                description: tenant.plan?.name ? `Assinatura VetorOS - ${tenant.plan.name}` : undefined,
             },
             { preserveScroll: true },
         );

@@ -30,16 +30,16 @@ const operatingHighlights = [
 
 export function OnboardingShowcase() {
     return (
-        <section id="como-funciona" className="relative overflow-hidden bg-[#081223] py-20 text-white sm:py-28">
+        <section id="como-funciona" className="relative overflow-hidden bg-[#0B1220] py-20 text-white sm:py-28">
             <div className="absolute inset-0">
-                <div className="absolute top-20 left-[10%] h-56 w-56 rounded-full bg-[#f1b555]/12 blur-3xl" />
-                <div className="absolute right-[8%] bottom-12 h-64 w-64 rounded-full bg-[#1c8f88]/14 blur-3xl" />
-                <div className="absolute inset-0 bg-linear-to-b from-[#081223] via-[#09182d] to-[#060d18]" />
+                <div className="absolute top-20 left-[10%] h-56 w-56 rounded-full bg-[#00E59B]/12 blur-3xl" />
+                <div className="absolute right-[8%] bottom-12 h-64 w-64 rounded-full bg-[#00E59B]/14 blur-3xl" />
+                <div className="absolute inset-0 bg-linear-to-b from-[#0B1220] via-[#0D47A1] to-[#08101d]" />
             </div>
 
             <div className="relative mx-auto grid max-w-7xl gap-12 px-4 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
                 <div>
-                    <span className="inline-flex rounded-full border border-white/12 bg-white/6 px-4 py-1 text-[0.7rem] font-semibold tracking-[0.26em] text-[#ffd6a3] uppercase">
+                    <span className="inline-flex rounded-full border border-white/12 bg-white/6 px-4 py-1 text-[0.7rem] font-semibold tracking-[0.26em] text-[#7ee7ff] uppercase">
                         Como funciona na prática
                     </span>
 
@@ -48,7 +48,7 @@ export function OnboardingShowcase() {
                     </h2>
 
                     <p className="mt-5 max-w-2xl text-lg leading-relaxed text-white/72">
-                        Em vez de prometer treinamento em vídeo que ainda não existe, o SigmaOS mostra o produto real: telas operacionais, fluxo da
+                        Em vez de prometer treinamento em vídeo que ainda não existe, o VetorOS mostra o produto real: telas operacionais, fluxo da
                         rotina e um manual navegável para a equipe aprender com autonomia.
                     </p>
 
@@ -58,8 +58,8 @@ export function OnboardingShowcase() {
                                 key={step.title}
                                 className="rounded-2xl border border-white/10 bg-white/[0.045] p-5 shadow-[0_14px_42px_rgba(0,0,0,0.18)] backdrop-blur-sm"
                             >
-                                <div className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-xl border border-[#f1b555]/24 bg-[#f1b555]/10">
-                                    <step.icon className="h-5 w-5 text-[#ffd191]" />
+                                <div className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-xl border border-[#00E59B]/24 bg-[#00E59B]/10">
+                                    <step.icon className="h-5 w-5 text-[#00B4FF]" />
                                 </div>
 
                                 <h3 className="text-lg font-semibold text-white">{step.title}</h3>
@@ -68,13 +68,13 @@ export function OnboardingShowcase() {
                         ))}
                     </div>
 
-                    <div className="mt-8 rounded-2xl border border-[#f1b555]/18 bg-[#f1b555]/8 p-6">
-                        <p className="text-sm font-semibold tracking-[0.22em] text-[#ffd6a3] uppercase">O que sua equipe encontra</p>
+                    <div className="mt-8 rounded-2xl border border-[#00E59B]/18 bg-[#00E59B]/8 p-6">
+                        <p className="text-sm font-semibold tracking-[0.22em] text-[#7ee7ff] uppercase">O que sua equipe encontra</p>
 
                         <ul className="mt-4 space-y-3">
                             {operatingHighlights.map((item) => (
                                 <li key={item} className="flex items-start gap-3 text-sm leading-relaxed text-white/82">
-                                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#ffd191]" />
+                                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#00B4FF]" />
                                     <span>{item}</span>
                                 </li>
                             ))}
@@ -82,12 +82,12 @@ export function OnboardingShowcase() {
 
                         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                             <Button variant="outline" className="border-white/16 bg-white/8 text-white hover:bg-white/14 hover:text-white" asChild>
-                                <a href="/documentation/doc-sigmaos.html" target="_blank" rel="noopener noreferrer">
+                                <a href="/documentation/doc-vetoros.html" target="_blank" rel="noopener noreferrer">
                                     Abrir manual navegável
                                 </a>
                             </Button>
 
-                            <Button className="bg-[#f1b555] text-slate-950 hover:bg-[#f5c06c]" asChild>
+                            <Button className="bg-[#00E59B] text-slate-950 hover:bg-[#2ff0b1]" asChild>
                                 <a href="#precos">Ver planos</a>
                             </Button>
                         </div>

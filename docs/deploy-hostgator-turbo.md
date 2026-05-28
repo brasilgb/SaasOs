@@ -8,7 +8,7 @@ Este guia assume o cenário já informado:
 - banco MySQL ativo
 - acesso por cPanel/SSH
 
-O objetivo aqui é padronizar deploys seguros para o SigmaOS nesse ambiente.
+O objetivo aqui é padronizar deploys seguros para o VetorOS nesse ambiente.
 
 ## 1. Premissas
 

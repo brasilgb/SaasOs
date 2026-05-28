@@ -91,15 +91,15 @@ const features = [
 
 export function Features() {
     return (
-        <section id="recursos" className="relative overflow-hidden bg-[#07111f] py-20 text-white sm:py-32">
+        <section id="recursos" className="relative overflow-hidden bg-[#0B1220] py-20 text-white sm:py-32">
             <div className="absolute inset-0">
-                <div className="absolute top-0 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-[#f1b555]/12 blur-3xl" />
-                <div className="absolute inset-0 bg-linear-to-b from-[#0d1c33] via-[#081223] to-[#060d18]" />
+                <div className="absolute top-0 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-[#00E59B]/12 blur-3xl" />
+                <div className="absolute inset-0 bg-linear-to-b from-[#0d1c33] via-[#0B1220] to-[#08101d]" />
             </div>
 
             <div className="relative mx-auto max-w-7xl px-4">
                 <div className="mx-auto mb-16 max-w-2xl text-center">
-                    <span className="inline-flex rounded-full border border-white/12 bg-white/6 px-4 py-1 text-[0.7rem] font-semibold tracking-[0.26em] text-[#ffd6a3] uppercase">
+                    <span className="inline-flex rounded-full border border-white/12 bg-white/6 px-4 py-1 text-[0.7rem] font-semibold tracking-[0.26em] text-[#7ee7ff] uppercase">
                         Recursos essenciais
                     </span>
 
@@ -108,7 +108,7 @@ export function Features() {
                     </h2>
 
                     <p className="mt-4 text-lg leading-relaxed text-white/72">
-                        Da entrada do equipamento ao fechamento do caixa, o SigmaOS reúne os módulos mais importantes da rotina em uma única
+                        Da entrada do equipamento ao fechamento do caixa, o VetorOS reúne os módulos mais importantes da rotina em uma única
                         plataforma.
                     </p>
                     <p className="mt-3 text-xs text-white/45">
@@ -120,11 +120,11 @@ export function Features() {
                     {features.map((feature, index) => (
                         <Card
                             key={index}
-                            className="border-white/10 bg-white/[0.045] text-white shadow-[0_18px_60px_rgba(0,0,0,0.2)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#f1b555]/30 hover:bg-white/[0.07]"
+                            className="border-white/10 bg-white/[0.045] text-white shadow-[0_18px_60px_rgba(0,0,0,0.2)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#00E59B]/30 hover:bg-white/[0.07]"
                         >
                             <CardHeader>
-                                <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl border border-[#f1b555]/20 bg-[#f1b555]/10 ring-1 ring-[#f1b555]/12">
-                                    <feature.icon className="h-6 w-6 text-[#ffc980]" />
+                                <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl border border-[#00E59B]/20 bg-[#00E59B]/10 ring-1 ring-[#00E59B]/12">
+                                    <feature.icon className="h-6 w-6 text-[#00B4FF]" />
                                 </div>
 
                                 <CardTitle className="text-lg text-white">{feature.title}</CardTitle>

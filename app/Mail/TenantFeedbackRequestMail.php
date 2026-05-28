@@ -25,7 +25,7 @@ class TenantFeedbackRequestMail extends Mailable
         TenantMailConfig::applySystemDefault();
 
         return new Envelope(
-            subject: 'Como esta sua experiencia com o SigmaOS?',
+            subject: 'Como esta sua experiencia com o VetorOS?',
         );
     }
 

@@ -39,7 +39,7 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
             }
 
             toast.message('Nova mensagem interna', {
-                id: 'sigmaos:internal-messages:unread',
+                id: 'vetoros:internal-messages:unread',
                 description:
                     unreadMessages === 1
                         ? 'Você tem 1 mensagem não lida.'

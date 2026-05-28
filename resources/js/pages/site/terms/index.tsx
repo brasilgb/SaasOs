@@ -49,12 +49,12 @@ export default function Terms() {
                 {/* CONTEÚDO */}
 
                 <article className="text-muted-foreground max-w-[72ch] text-[15px] leading-7 [&>p]:mb-6 [&>ul]:mb-8 [&>ul]:space-y-2">
-                    <h1 className="text-foreground mb-6 text-3xl font-semibold tracking-tight">Termos de Uso – SigmaOS</h1>
+                    <h1 className="text-foreground mb-6 text-3xl font-semibold tracking-tight">Termos de Uso – VetorOS</h1>
 
                     <p className="text-muted-foreground mb-10 text-sm">Última atualização: 12 de março de 2026</p>
 
                     <p>
-                        Estes Termos de Uso regulam a utilização da plataforma SigmaOS. Ao utilizar o sistema, o usuário declara que leu, compreendeu
+                        Estes Termos de Uso regulam a utilização da plataforma VetorOS. Ao utilizar o sistema, o usuário declara que leu, compreendeu
                         e concorda com os presentes termos.
                     </p>
 
@@ -65,7 +65,7 @@ export default function Terms() {
                     </h2>
 
                     <p>
-                        O SigmaOS é uma plataforma online de gestão operacional destinada a empresas de assistência técnica, manutenção e serviços
+                        O VetorOS é uma plataforma online de gestão operacional destinada a empresas de assistência técnica, manutenção e serviços
                         recorrentes.
                     </p>
 
@@ -123,7 +123,7 @@ export default function Terms() {
                     </h2>
 
                     <p>
-                        O SigmaOS é uma plataforma de gestão operacional e não realiza a emissão direta de documentos fiscais como Nota Fiscal de
+                        O VetorOS é uma plataforma de gestão operacional e não realiza a emissão direta de documentos fiscais como Nota Fiscal de
                         Serviço (NFS-e) ou Nota Fiscal Eletrônica (NF-e).
                     </p>
 
@@ -160,7 +160,7 @@ export default function Terms() {
                     </h2>
 
                     <p>
-                        Todo o conteúdo da plataforma, incluindo software, design, logotipo e funcionalidades, é propriedade do SigmaOS e protegido
+                        Todo o conteúdo da plataforma, incluindo software, design, logotipo e funcionalidades, é propriedade do VetorOS e protegido
                         por leis de propriedade intelectual.
                     </p>
 
@@ -220,8 +220,8 @@ export default function Terms() {
 
                     <p>
                         Email:{' '}
-                        <a href="mailto:suporte@sigmaos.com.br" className="text-primary hover:underline">
-                            suporte@sigmaos.com.br
+                        <a href="mailto:suporte@vetoros.com.br" className="text-primary hover:underline">
+                            suporte@vetoros.com.br
                         </a>
                     </p>
                 </article>

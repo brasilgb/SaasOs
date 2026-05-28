@@ -47,12 +47,12 @@ export default function Privacy() {
                 {/* CONTEÚDO */}
 
                 <article className="text-muted-foreground max-w-[72ch] text-base leading-relaxed">
-                    <h1 className="text-foreground mb-6 text-3xl font-semibold tracking-tight">Política de Privacidade – SigmaOS</h1>
+                    <h1 className="text-foreground mb-6 text-3xl font-semibold tracking-tight">Política de Privacidade – VetorOS</h1>
 
                     <p className="text-muted-foreground mb-10 text-sm">Última atualização: 12 de março de 2026</p>
 
                     <p className="mb-6">
-                        Esta Política de Privacidade descreve como o SigmaOS coleta, utiliza, armazena e protege os dados pessoais dos usuários que
+                        Esta Política de Privacidade descreve como o VetorOS coleta, utiliza, armazena e protege os dados pessoais dos usuários que
                         utilizam nossa plataforma.
                     </p>
 
@@ -116,7 +116,7 @@ export default function Privacy() {
                         3. Compartilhamento de dados
                     </h2>
 
-                    <p className="mb-4">O SigmaOS não vende dados pessoais.</p>
+                    <p className="mb-4">O VetorOS não vende dados pessoais.</p>
 
                     <ul className="mb-10 list-disc space-y-1 pl-6">
                         <li>Prestadores de serviço necessários para operação da plataforma</li>
@@ -189,8 +189,8 @@ export default function Privacy() {
 
                     <p>
                         Email:{' '}
-                        <a href="mailto:suporte@sigmaos.com.br" className="text-primary hover:underline">
-                            suporte@sigmaos.com.br
+                        <a href="mailto:suporte@vetoros.com.br" className="text-primary hover:underline">
+                            suporte@vetoros.com.br
                         </a>
                     </p>
                 </article>

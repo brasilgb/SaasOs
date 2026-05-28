@@ -40,7 +40,7 @@ class SendBudgetFollowUpsCommandTest extends TestCase
             'mail_password' => Crypt::encryptString('secret'),
             'mail_encryption' => 'tls',
             'mail_from_address' => 'noreply@example.com',
-            'mail_from_name' => 'Sigma OS',
+            'mail_from_name' => 'VetorOS',
             'communication_follow_up_cooldown_days' => 2,
             'automatic_follow_ups_enabled' => true,
         ]);
@@ -52,7 +52,7 @@ class SendBudgetFollowUpsCommandTest extends TestCase
             'updated_at' => now()->subDays(3),
         ]);
 
-        $this->artisan('sigmaos:send-budget-followups')
+        $this->artisan('vetoros:send-budget-followups')
             ->expectsOutputToContain('Processadas: 1 | Enviadas: 1 | Ignoradas: 0')
             ->assertExitCode(0);
 
@@ -87,7 +87,7 @@ class SendBudgetFollowUpsCommandTest extends TestCase
             'mail_password' => Crypt::encryptString('secret'),
             'mail_encryption' => 'tls',
             'mail_from_address' => 'noreply@example.com',
-            'mail_from_name' => 'Sigma OS',
+            'mail_from_name' => 'VetorOS',
             'communication_follow_up_cooldown_days' => 3,
             'automatic_follow_ups_enabled' => true,
         ]);
@@ -106,7 +106,7 @@ class SendBudgetFollowUpsCommandTest extends TestCase
             'created_at' => now()->subDay(),
         ]);
 
-        $this->artisan('sigmaos:send-budget-followups')
+        $this->artisan('vetoros:send-budget-followups')
             ->expectsOutputToContain('Processadas: 1 | Enviadas: 0 | Ignoradas: 1')
             ->assertExitCode(0);
 
@@ -132,7 +132,7 @@ class SendBudgetFollowUpsCommandTest extends TestCase
             'mail_password' => Crypt::encryptString('secret'),
             'mail_encryption' => 'tls',
             'mail_from_address' => 'noreply@example.com',
-            'mail_from_name' => 'Sigma OS',
+            'mail_from_name' => 'VetorOS',
             'communication_follow_up_cooldown_days' => 2,
             'automatic_follow_ups_enabled' => true,
         ]);
@@ -146,7 +146,7 @@ class SendBudgetFollowUpsCommandTest extends TestCase
             'budget_follow_up_pause_reason' => 'Cliente pediu contato só no próximo mês.',
         ]);
 
-        $this->artisan('sigmaos:send-budget-followups')
+        $this->artisan('vetoros:send-budget-followups')
             ->expectsOutputToContain('Processadas: 1 | Enviadas: 0 | Ignoradas: 1')
             ->assertExitCode(0);
 
@@ -177,7 +177,7 @@ class SendBudgetFollowUpsCommandTest extends TestCase
             'mail_password' => Crypt::encryptString('secret'),
             'mail_encryption' => 'tls',
             'mail_from_address' => 'noreply@example.com',
-            'mail_from_name' => 'Sigma OS',
+            'mail_from_name' => 'VetorOS',
             'automatic_follow_ups_enabled' => true,
         ]);
 

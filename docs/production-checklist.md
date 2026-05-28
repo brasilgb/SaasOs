@@ -1,6 +1,6 @@
 # Checklist de Produção
 
-Este checklist foi pensado para o momento de publicar o SigmaOS com segurança em ambiente real.
+Este checklist foi pensado para o momento de publicar o VetorOS com segurança em ambiente real.
 
 ## 1. Pré-deploy
 
@@ -53,9 +53,9 @@ Este checklist foi pensado para o momento de publicar o SigmaOS com segurança e
 ```
 
 - Confirmar execução dos comandos agendados:
-  - `sigmaos:send-payment-followups`
-  - `sigmaos:send-budget-followups`
-  - `sigmaos:send-subscription-status-notifications`
+  - `vetoros:send-payment-followups`
+  - `vetoros:send-budget-followups`
+  - `vetoros:send-subscription-status-notifications`
 
 ## 6. Billing e assinatura
 

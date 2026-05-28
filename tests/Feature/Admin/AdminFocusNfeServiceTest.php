@@ -36,14 +36,14 @@ class AdminFocusNfeServiceTest extends TestCase
             'provider' => 'focus_nfe',
             'environment' => 'sandbox',
             'api_token' => 'admin-focus-token',
-            'legal_name' => 'SigmaOS Tecnologia Ltda',
-            'trade_name' => 'SigmaOS',
+            'legal_name' => 'VetorOS Tecnologia Ltda',
+            'trade_name' => 'VetorOS',
             'cnpj' => '11222333000181',
             'municipal_registration' => '12345678',
             'service_city_code' => '3550308',
             'service_list_item' => '01.05',
             'default_iss_rate' => 2.0,
-            'default_service_description' => 'Assinatura SigmaOS - {{ plano }} para {{ empresa }}',
+            'default_service_description' => 'Assinatura VetorOS - {{ plano }} para {{ empresa }}',
         ]);
     }
 
@@ -111,7 +111,7 @@ class AdminFocusNfeServiceTest extends TestCase
                 && $payload['tomador']['razao_social'] === 'Cliente SaaS Ltda'
                 && $payload['servico']['item_lista_servico'] === '01.05'
                 && $payload['servico']['valor_servicos'] === 149.90
-                && $payload['servico']['discriminacao'] === 'Assinatura SigmaOS - Mensal para Cliente SaaS Ltda';
+                && $payload['servico']['discriminacao'] === 'Assinatura VetorOS - Mensal para Cliente SaaS Ltda';
         });
     }
 

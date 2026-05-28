@@ -75,26 +75,26 @@ export default function TenantExperienceFeedback({ feedback }: TenantFeedbackPag
 
     return (
         <>
-            <Head title="Sua experiência com o SigmaOS" />
+            <Head title="Sua experiência com o VetorOS" />
             <Toaster theme="dark" richColors />
 
-            <main className="min-h-screen bg-[#07111f] px-4 py-10 text-white sm:px-6 sm:py-16">
+            <main className="min-h-screen bg-[#0B1220] px-4 py-10 text-white sm:px-6 sm:py-16">
                 <div className="mx-auto max-w-3xl">
                     <div className="rounded-[2rem] border border-white/10 bg-white/[0.045] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.26)] backdrop-blur-sm sm:p-10">
-                        <span className="inline-flex rounded-full border border-white/12 bg-white/6 px-4 py-1 text-[0.7rem] font-semibold tracking-[0.26em] text-[#ffd6a3] uppercase">
-                            Experiência SigmaOS
+                        <span className="inline-flex rounded-full border border-white/12 bg-white/6 px-4 py-1 text-[0.7rem] font-semibold tracking-[0.26em] text-[#7ee7ff] uppercase">
+                            Experiência VetorOS
                         </span>
 
                         <h1 className="mt-5 text-3xl font-bold tracking-tight sm:text-4xl">Como está sua experiência com a plataforma?</h1>
 
                         <p className="mt-4 text-base leading-relaxed text-white/72 sm:text-lg">
-                            Sua resposta ajuda nossa equipe a entender a experiência de quem usa o SigmaOS no dia a dia e melhorar o suporte,
+                            Sua resposta ajuda nossa equipe a entender a experiência de quem usa o VetorOS no dia a dia e melhorar o suporte,
                             onboarding e evolução do produto.
                         </p>
 
-                        <div className="mt-6 rounded-2xl border border-white/10 bg-[#0b1830] px-5 py-4 text-sm text-white/74">
+                        <div className="mt-6 rounded-2xl border border-white/10 bg-[#0D47A1] px-5 py-4 text-sm text-white/74">
                             <strong className="block text-white">Conta avaliada</strong>
-                            <span>{feedback.tenant?.company || feedback.tenant?.name || 'Cliente SigmaOS'}</span>
+                            <span>{feedback.tenant?.company || feedback.tenant?.name || 'Cliente VetorOS'}</span>
                         </div>
 
                         {alreadySubmitted ? (
@@ -105,7 +105,7 @@ export default function TenantExperienceFeedback({ feedback }: TenantFeedbackPag
                                 </div>
 
                                 <p className="mt-3 text-sm leading-relaxed text-white/74">
-                                    Sua avaliação já foi registrada. Obrigado por compartilhar sua experiência com o SigmaOS.
+                                    Sua avaliação já foi registrada. Obrigado por compartilhar sua experiência com o VetorOS.
                                 </p>
 
                                 {feedback.feedback_rating ? (
@@ -119,7 +119,7 @@ export default function TenantExperienceFeedback({ feedback }: TenantFeedbackPag
                         ) : (
                             <form onSubmit={submit} className="mt-8 space-y-6">
                                 <div>
-                                    <p className="text-sm font-semibold tracking-[0.2em] text-[#ffd6a3] uppercase">Sua nota</p>
+                                    <p className="text-sm font-semibold tracking-[0.2em] text-[#7ee7ff] uppercase">Sua nota</p>
                                     <div className="mt-4 flex flex-wrap gap-3">
                                         {[1, 2, 3, 4, 5].map((rating) => {
                                             const selected = form.data.rating === rating;
@@ -131,7 +131,7 @@ export default function TenantExperienceFeedback({ feedback }: TenantFeedbackPag
                                                     onClick={() => form.setData('rating', rating)}
                                                     className={`inline-flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold transition ${
                                                         selected
-                                                            ? 'border-[#f1b555] bg-[#f1b555]/14 text-[#ffd89a]'
+                                                            ? 'border-[#00E59B] bg-[#00E59B]/14 text-[#9ff3d8]'
                                                             : 'border-white/12 bg-white/[0.04] text-white/74 hover:bg-white/[0.08]'
                                                     }`}
                                                 >
@@ -146,7 +146,7 @@ export default function TenantExperienceFeedback({ feedback }: TenantFeedbackPag
                                 </div>
 
                                 <div>
-                                    <label htmlFor="comment" className="text-sm font-semibold tracking-[0.2em] text-[#ffd6a3] uppercase">
+                                    <label htmlFor="comment" className="text-sm font-semibold tracking-[0.2em] text-[#7ee7ff] uppercase">
                                         Deixe sua avaliação
                                     </label>
                                     <textarea
@@ -155,7 +155,7 @@ export default function TenantExperienceFeedback({ feedback }: TenantFeedbackPag
                                         onChange={(event) => form.setData('comment', event.target.value)}
                                         rows={5}
                                         maxLength={500}
-                                        className="mt-4 w-full rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-3 text-sm text-white transition outline-none placeholder:text-white/35 focus:border-[#f1b555]/40"
+                                        className="mt-4 w-full rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-3 text-sm text-white transition outline-none placeholder:text-white/35 focus:border-[#00E59B]/40"
                                         placeholder="Escreva sua avaliação aqui."
                                     />
                                     <p className="mt-1 text-right text-xs text-white/45">{form.data.comment.length}/500</p>
@@ -163,7 +163,7 @@ export default function TenantExperienceFeedback({ feedback }: TenantFeedbackPag
                                 </div>
 
                                 {form.data.rating >= 4 ? (
-                                    <div className="rounded-2xl border border-[#f1b555]/18 bg-[#f1b555]/8 p-5">
+                                    <div className="rounded-2xl border border-[#00E59B]/18 bg-[#00E59B]/8 p-5">
                                         <label className="flex items-start gap-3 text-sm leading-relaxed text-white/82">
                                             <input
                                                 type="checkbox"
@@ -172,14 +172,14 @@ export default function TenantExperienceFeedback({ feedback }: TenantFeedbackPag
                                                 className="mt-1 h-4 w-4 rounded border-white/20 bg-white/10"
                                             />
                                             <span>
-                                                Autorizo que meu comentário seja avaliado para possível uso como depoimento na página do SigmaOS.
+                                                Autorizo que meu comentário seja avaliado para possível uso como depoimento na página do VetorOS.
                                             </span>
                                         </label>
 
                                         {form.data.allow_testimonial ? (
                                             <div className="mt-4 grid gap-4 sm:grid-cols-2">
                                                 <div>
-                                                    <label htmlFor="testimonial_public_name" className="text-sm font-semibold text-[#ffe2b8]">
+                                                    <label htmlFor="testimonial_public_name" className="text-sm font-semibold text-[#9ff3d8]">
                                                         Nome público
                                                     </label>
                                                     <input
@@ -192,7 +192,7 @@ export default function TenantExperienceFeedback({ feedback }: TenantFeedbackPag
                                                 </div>
 
                                                 <div>
-                                                    <label htmlFor="testimonial_public_role" className="text-sm font-semibold text-[#ffe2b8]">
+                                                    <label htmlFor="testimonial_public_role" className="text-sm font-semibold text-[#9ff3d8]">
                                                         Cargo ou contexto
                                                     </label>
                                                     <input
@@ -213,7 +213,7 @@ export default function TenantExperienceFeedback({ feedback }: TenantFeedbackPag
                                 <Button
                                     type="submit"
                                     disabled={form.processing}
-                                    className="h-12 rounded-xl bg-[#f1b555] px-8 font-semibold text-slate-950 hover:bg-[#f5c06c]"
+                                    className="h-12 rounded-xl bg-[#00E59B] px-8 font-semibold text-slate-950 hover:bg-[#2ff0b1]"
                                 >
                                     {form.processing ? 'Enviando...' : 'Enviar avaliação'}
                                 </Button>

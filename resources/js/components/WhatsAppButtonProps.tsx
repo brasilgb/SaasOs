@@ -40,7 +40,7 @@ const normalizeStatus = (status?: string | number) => Number(status ?? 0);
 const buildTrackingUrl = (trackingToken?: string) => {
     if (!trackingToken) return '';
 
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://sigmaos.com.br';
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://vetoros.com.br';
     return `${origin}/os/${trackingToken}?preview=whatsapp`;
 };
 

@@ -1,13 +1,13 @@
 @php
     $meta = $meta ?? [];
-    $metaTitle = $meta['title'] ?? 'SigmaOS - Sistema de Ordem de Serviço para Assistência Técnica';
+    $metaTitle = $meta['title'] ?? 'VetorOS - Sistema de Ordem de Serviço para Assistência Técnica';
     $metaDescription =
         $meta['description'] ??
         'Sistema de ordem de serviço para assistência técnica de celulares, informática e eletrônica. Controle clientes, equipamentos, estoque e atendimentos com aplicativo para técnicos.';
     $metaUrl = $meta['url'] ?? rtrim(config('app.url', url('/')), '/');
     $metaImage = $meta['image'] ?? rtrim(config('app.url', url('/')), '/') . '/images/banner-social.jpg';
-    $metaImageAlt = $meta['imageAlt'] ?? 'Banner do SigmaOS com destaque para o sistema de ordem de serviço.';
-    $metaSiteName = $meta['siteName'] ?? 'SigmaOS';
+    $metaImageAlt = $meta['imageAlt'] ?? 'Banner do VetorOS com destaque para o sistema de ordem de serviço.';
+    $metaSiteName = $meta['siteName'] ?? 'VetorOS';
     $metaRobots = $meta['robots'] ?? 'index, follow, max-image-preview:large';
 @endphp
 <!DOCTYPE html>
@@ -30,20 +30,22 @@
     <link rel="canonical" href="{{ $metaUrl }}">
     <link rel="alternate" hreflang="pt-BR" href="{{ rtrim(config('app.url', url('/')), '/') }}">
 
-    <meta name="theme-color" content="#0f172a">
+    <meta name="theme-color" content="#0B1220">
 
-    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
+    <link rel="icon" type="image/png" href="{{ asset('images/vetor.png') }}" sizes="any">
     <link rel="icon" type="image/png" href="{{ asset('favicon-48x48.png') }}" sizes="48x48">
     <link rel="icon" type="image/png" href="{{ asset('favicon-96x96.png') }}" sizes="96x96">
     <link rel="icon" type="image/png" href="{{ asset('favicon-192x192.png') }}" sizes="192x192">
     <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
 
     {{-- Performance --}}
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link rel="dns-prefetch" href="//fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    <link rel="dns-prefetch" href="//fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@700&display=swap" rel="stylesheet">
 
-    <link rel="preload" href="{{ asset('logos/logo-light.png') }}" as="image">
+    <link rel="preload" href="{{ asset('images/vetor.png') }}" as="image">
 
     {{-- Open Graph --}}
     <meta property="og:type" content="website">
@@ -106,7 +108,7 @@
         $schemaData = [
             '@context' => 'https://schema.org',
             '@type' => 'SoftwareApplication',
-            'name' => 'SigmaOS',
+            'name' => 'VetorOS',
             'applicationCategory' => 'BusinessApplication',
             'operatingSystem' => 'Web, Android',
             'url' => rtrim(config('app.url', url('/')), '/'),

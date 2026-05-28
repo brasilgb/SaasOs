@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Mail;
 
 class SendSubscriptionStatusNotifications extends Command
 {
-    protected $signature = 'sigmaos:send-subscription-status-notifications {--force : Reenvia mesmo se o aviso atual ja tiver sido enviado}';
+    protected $signature = 'vetoros:send-subscription-status-notifications {--force : Reenvia mesmo se o aviso atual ja tiver sido enviado}';
 
     protected $description = 'Envia avisos de assinatura para tenants com vencimento proximo, carencia ou bloqueio';
 

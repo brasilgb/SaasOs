@@ -12,7 +12,7 @@ import {
 import { mainAdminAdjustmentItems, mainAdminItems, mainPlansItems } from '@/Utils/navLinks';
 import { Link } from '@inertiajs/react';
 import { MessageSquareMore } from 'lucide-react';
-import { SigmaOSPanelLogo } from './sigma-os-logo';
+import { BrandPanelLogo } from './brand-logo';
 
 export function AppSidebarAdmin() {
     return (
@@ -22,7 +22,7 @@ export function AppSidebarAdmin() {
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
                             <Link href="/" prefetch>
-                                <SigmaOSPanelLogo />
+                                <BrandPanelLogo />
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>

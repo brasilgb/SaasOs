@@ -172,7 +172,7 @@ export default function TenantImprovementRequestsIndex({ requests, feedbacks, re
                 <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(360px,0.75fr)]">
                     <div className="rounded-3xl border bg-card p-5 shadow-sm sm:p-6">
                         <div className="space-y-2">
-                            <h3 className="text-lg font-semibold">Envie uma sugestão para o SigmaOS</h3>
+                            <h3 className="text-lg font-semibold">Envie uma sugestão para o VetorOS</h3>
                             <p className="text-muted-foreground text-sm">
                                 Use este espaço para pedir ajustes na rotina atual ou sugerir melhorias para a evolução do sistema.
                             </p>
@@ -234,7 +234,7 @@ export default function TenantImprovementRequestsIndex({ requests, feedbacks, re
                             <div className="space-y-2">
                                 <h3 className="text-lg font-semibold">Avaliação e testemunho</h3>
                                 <p className="text-muted-foreground text-sm">
-                                    Registre sua avaliação sobre o SigmaOS e autorize o uso como depoimento quando fizer sentido.
+                                    Registre sua avaliação sobre o VetorOS e autorize o uso como depoimento quando fizer sentido.
                                 </p>
                             </div>
                         </div>
@@ -292,7 +292,7 @@ export default function TenantImprovementRequestsIndex({ requests, feedbacks, re
                                             onChange={(event) => feedbackForm.setData('allow_testimonial', event.target.checked)}
                                             className="mt-1 h-4 w-4 rounded border-input"
                                         />
-                                        <span>Autorizo que minha avaliação seja analisada para possível uso como testemunho público do SigmaOS.</span>
+                                        <span>Autorizo que minha avaliação seja analisada para possível uso como testemunho público do VetorOS.</span>
                                     </label>
 
                                     {feedbackForm.data.allow_testimonial ? (

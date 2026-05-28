@@ -1,14 +1,14 @@
-import { SigmaOSHorizontalLogo } from '@/components/sigma-os-logo';
+import { BrandHorizontalLogo } from '@/components/brand-logo';
 import { Link } from '@inertiajs/react';
 
 export default function LegalLayout({ children }: { children: React.ReactNode }) {
     return (
         <div className="bg-background flex min-h-screen min-w-0 flex-col overflow-x-hidden">
             {/* Header */}
-            <header className="border-border border-b">
+            <header className="border-b border-white/10 bg-[#0B1220] text-white">
                 <div className="mx-auto flex max-w-5xl min-w-0 items-center justify-between px-4 py-4">
                     <Link href="/" className="flex items-center gap-2">
-                        <SigmaOSHorizontalLogo />
+                        <BrandHorizontalLogo />
                     </Link>
                 </div>
             </header>
@@ -21,7 +21,7 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
             {/* Footer */}
             <footer className="border-border border-t">
                 <div className="text-muted-foreground mx-auto flex max-w-5xl min-w-0 flex-col justify-between gap-3 px-4 py-6 text-sm sm:flex-row">
-                    <p>© {new Date().getFullYear()} SigmaOS</p>
+                    <p>© {new Date().getFullYear()} VetorOS</p>
 
                     <div className="flex gap-6">
                         <Link href="/privacidade">Privacidade</Link>

@@ -1,21 +1,16 @@
+import { BrandHorizontalLogo } from '@/components/brand-logo';
 import { Link } from '@inertiajs/react';
 import { MessageCircle } from 'lucide-react';
 
 export function Footer() {
     return (
-        <footer id="contato" className="border-t border-white/10 bg-[#050a13] py-16 text-white">
+        <footer id="contato" className="border-t border-white/10 bg-[#0B1220] py-16 text-white">
             <div className="mx-auto max-w-7xl px-4">
                 <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
                     {/* Logo + descrição */}
                     <div className="space-y-4">
                         <div className="flex items-center gap-2">
-                            <img
-                                src="/logos/sigmaos-horizontal-dark.png"
-                                alt="SigmaOS - Sistema de Ordens de Serviço"
-                                width={150}
-                                height={38}
-                                className="transition-all duration-300"
-                            />
+                            <BrandHorizontalLogo />
                         </div>
 
                         <p className="text-sm leading-relaxed text-white/58">
@@ -26,7 +21,7 @@ export function Footer() {
 
                     {/* Produto */}
                     <div>
-                        <h3 className="mb-4 font-semibold text-[#ffd6a3]">Produto</h3>
+                        <h3 className="mb-4 font-semibold text-[#7ee7ff]">Produto</h3>
 
                         <ul className="space-y-3 text-sm">
                             <li>
@@ -51,7 +46,7 @@ export function Footer() {
 
                     {/* Empresa */}
                     <div>
-                        <h3 className="mb-4 font-semibold text-[#ffd6a3]">Empresa</h3>
+                        <h3 className="mb-4 font-semibold text-[#7ee7ff]">Empresa</h3>
 
                         <ul className="space-y-3 text-sm">
                             <li>
@@ -76,7 +71,7 @@ export function Footer() {
 
                     {/* Suporte */}
                     <div>
-                        <h3 className="mb-4 font-semibold text-[#ffd6a3]">Contato</h3>
+                        <h3 className="mb-4 font-semibold text-[#7ee7ff]">Contato</h3>
 
                         <p className="mb-4 text-sm leading-relaxed text-white/58">
                             Fale com nossa equipe comercial ou tire dúvidas sobre o teste grátis.
@@ -85,7 +80,7 @@ export function Footer() {
                         <ul className="space-y-3 text-sm">
                             <li>
                                 <a
-                                    href="https://wa.me/5551998931325?text=Quero%20mais%20informações%20sobre%20SigmaOs"
+                                    href="https://wa.me/5551998931325?text=Quero%20mais%20informações%20sobre%20VetorOS"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="flex items-center gap-2 text-white/58 transition-colors hover:text-white"
@@ -96,8 +91,8 @@ export function Footer() {
                             </li>
 
                             <li>
-                                <a href="mailto:suporte@sigmaos.com.br" className="text-white/58 transition-colors hover:text-white">
-                                    suporte@sigmaos.com.br
+                                <a href="mailto:suporte@vetoros.com.br" className="text-white/58 transition-colors hover:text-white">
+                                    suporte@vetoros.com.br
                                 </a>
                             </li>
                         </ul>
@@ -106,7 +101,7 @@ export function Footer() {
 
                 {/* Bottom */}
                 <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-6 sm:flex-row">
-                    <p className="text-sm text-white/42">© {new Date().getFullYear()} SigmaOS. Todos os direitos reservados.</p>
+                    <p className="text-sm text-white/42">© {new Date().getFullYear()} VetorOS. Todos os direitos reservados.</p>
 
                     <div className="flex gap-6 text-sm">
                         <a href="/privacidade" className="text-white/42 transition-colors hover:text-white">

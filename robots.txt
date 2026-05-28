@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://sigmaos.com.br/sitemap.xml
+Sitemap: https://vetoros.com.br/sitemap.xml

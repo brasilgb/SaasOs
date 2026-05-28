@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Hash;
 
 class CreateRootUser extends Command
 {
-    protected $signature = 'sigmaos:create-root';
+    protected $signature = 'vetoros:create-root';
 
     protected $description = 'Create root system user';
 

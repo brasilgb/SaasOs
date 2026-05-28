@@ -22,7 +22,7 @@ class HomeController extends Controller
                 ->map(fn (TenantFeedback $feedback) => [
                     'id' => $feedback->id,
                     'excerpt' => $feedback->testimonial_excerpt,
-                    'public_name' => $feedback->testimonial_public_name ?: ($feedback->tenant?->company ?? 'Cliente SigmaOS'),
+                    'public_name' => $feedback->testimonial_public_name ?: ($feedback->tenant?->company ?? 'Cliente VetorOS'),
                     'public_role' => $feedback->testimonial_public_role,
                     'company' => $feedback->tenant?->company,
                     'rating' => (int) ($feedback->feedback_rating ?? 5),

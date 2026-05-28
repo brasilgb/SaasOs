@@ -4,17 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nova solicitacao de ajuste no SigmaOS</title>
+    <title>Nova solicitacao de ajuste no VetorOS</title>
 </head>
 
 <body style="margin:0;padding:0;background:#f3f4f6;font-family:Arial,Helvetica,sans-serif;">
     @php
-        $registeredLogoPath = public_path('logos/sigmaos-horizontal-dark.png');
-        $registeredLogoUrl = file_exists($registeredLogoPath) ? asset('logos/sigmaos-horizontal-dark.png') : null;
+        $registeredLogoPath = public_path('images/vetor.png');
+        $registeredLogoUrl = file_exists($registeredLogoPath) ? asset('images/vetor.png') : null;
     @endphp
 
     <div style="display:none;max-height:0;overflow:hidden;opacity:0;">
-        Uma nova solicitacao de melhoria ou ajuste foi enviada por um cliente do SigmaOS.
+        Uma nova solicitacao de melhoria ou ajuste foi enviada por um cliente do VetorOS.
     </div>
 
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#f3f4f6;padding:40px 0;">
@@ -24,9 +24,9 @@
                     <tr>
                         <td align="center" style="background:#020817;padding:30px 20px;">
                             @if (!empty($registeredLogoUrl))
-                                <img src="{{ $registeredLogoUrl }}" alt="SigmaOS" style="display:block;margin:0 auto 14px auto;max-width:220px;height:auto;">
+                                <img src="{{ $registeredLogoUrl }}" alt="VetorOS" style="display:block;margin:0 auto 14px auto;width:84px;max-width:84px;height:auto;">
                             @else
-                                <p style="margin:0 0 14px 0;color:#ffffff;font-size:24px;font-weight:bold;letter-spacing:1px;">SigmaOS</p>
+                                <p style="margin:0 0 14px 0;color:#ffffff;font-size:24px;font-weight:bold;letter-spacing:1px;"><span style="color:#ffffff;">Vetor</span><span style="color:#00B4FF;">OS</span></p>
                             @endif
                             <p style="margin:6px 0 0 0;color:#cbd5f5;font-size:13px;">Nova solicitacao recebida</p>
                         </td>
@@ -56,7 +56,7 @@
                     </tr>
                     <tr>
                         <td style="background:#f9fafb;text-align:center;padding:24px;font-size:12px;color:#6b7280;">
-                            <p style="margin:0;">© {{ date('Y') }} SigmaOS</p>
+                            <p style="margin:0;">© {{ date('Y') }} VetorOS</p>
                             <p style="margin:6px 0;">Todos os direitos reservados</p>
                             <p style="margin:6px 0;">
                                 <a href="{{ config('app.url') }}" style="color:#2563eb;text-decoration:none;">

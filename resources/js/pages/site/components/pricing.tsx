@@ -62,15 +62,15 @@ const plans = [
 
 export function Pricing() {
     return (
-        <section id="precos" className="relative overflow-hidden bg-[#060d18] py-20 text-white sm:py-32">
+        <section id="precos" className="relative overflow-hidden bg-[#08101d] py-20 text-white sm:py-32">
             <div className="absolute inset-0">
-                <div className="absolute top-16 right-0 h-80 w-80 rounded-full bg-[#f1b555]/10 blur-3xl" />
-                <div className="absolute inset-0 bg-linear-to-b from-[#07111f] via-[#081223] to-[#050a13]" />
+                <div className="absolute top-16 right-0 h-80 w-80 rounded-full bg-[#00E59B]/10 blur-3xl" />
+                <div className="absolute inset-0 bg-linear-to-b from-[#0B1220] via-[#0B1220] to-[#0B1220]" />
             </div>
 
             <div className="relative mx-auto max-w-7xl px-4">
                 <div className="mx-auto mb-16 max-w-2xl text-center">
-                    <span className="inline-flex rounded-full border border-white/12 bg-white/6 px-4 py-1 text-[0.7rem] font-semibold tracking-[0.26em] text-[#ffd6a3] uppercase">
+                    <span className="inline-flex rounded-full border border-white/12 bg-white/6 px-4 py-1 text-[0.7rem] font-semibold tracking-[0.26em] text-[#7ee7ff] uppercase">
                         Planos transparentes
                     </span>
 
@@ -86,13 +86,13 @@ export function Pricing() {
                     {plans.map((plan, index) => (
                         <Card
                             key={index}
-                            className={`relative border-white/10 bg-white/[0.045] text-white shadow-[0_18px_60px_rgba(0,0,0,0.22)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#f1b555]/30 hover:bg-white/[0.07] hover:shadow-[0_22px_70px_rgba(0,0,0,0.28)] ${
-                                plan.popular ? 'scale-105 border-2 border-[#f1b555]/50 bg-[#f1b555]/[0.08] shadow-[0_28px_90px_rgba(0,0,0,0.34)]' : ''
+                            className={`relative border-white/10 bg-white/[0.045] text-white shadow-[0_18px_60px_rgba(0,0,0,0.22)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#00E59B]/30 hover:bg-white/[0.07] hover:shadow-[0_22px_70px_rgba(0,0,0,0.28)] ${
+                                plan.popular ? 'scale-105 border-2 border-[#00E59B]/50 bg-[#00E59B]/[0.08] shadow-[0_28px_90px_rgba(0,0,0,0.34)]' : ''
                             }`}
                         >
                             {plan.popular && (
                                 <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                                    <span className="rounded-full bg-[#f1b555] px-4 py-1 text-sm font-semibold text-slate-950 shadow">
+                                    <span className="rounded-full bg-[#00E59B] px-4 py-1 text-sm font-semibold text-slate-950 shadow">
                                         Mais popular
                                     </span>
                                 </div>
@@ -112,7 +112,7 @@ export function Pricing() {
 
                                     {plan.savings && (
                                         <div className="mt-3">
-                                            <span className="rounded-md border border-[#f1b555]/18 bg-[#f1b555]/10 px-2 py-1 text-xs font-medium text-[#ffd899]">
+                                            <span className="rounded-md border border-[#00E59B]/18 bg-[#00E59B]/10 px-2 py-1 text-xs font-medium text-[#ffd899]">
                                                 {plan.savings}
                                             </span>
                                         </div>
@@ -126,7 +126,7 @@ export function Pricing() {
                                 </div>
                                 {plan.features.map((feature, featureIndex) => (
                                     <div key={featureIndex} className="flex items-start gap-3">
-                                        <Check className="mt-0.5 h-5 w-5 shrink-0 text-[#ffc980]" />
+                                        <Check className="mt-0.5 h-5 w-5 shrink-0 text-[#00B4FF]" />
 
                                         <span className="text-sm leading-relaxed text-white/84">{feature}</span>
                                     </div>
@@ -137,7 +137,7 @@ export function Pricing() {
                                 <Link href={route('register')} className="w-full">
                                     <Button
                                         size="lg"
-                                        className="w-full rounded-xl bg-[#f1b555] font-semibold text-slate-950 hover:bg-[#f5c06c]"
+                                        className="w-full rounded-xl bg-[#00E59B] font-semibold text-slate-950 hover:bg-[#2ff0b1]"
                                     >
                                         {plan.cta}
                                     </Button>

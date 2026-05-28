@@ -27,7 +27,7 @@
                             @endif
                             
                             <h1 style="margin:0;color:#ffffff;font-size:24px;letter-spacing:1px;">
-                                {{ $order->tenant?->company ?? 'SigmaOS' }}
+                                {{ $order->tenant?->company ?? 'VetorOS' }}
                             </h1>
                             <p style="margin:6px 0 0 0;color:#cbd5f5;font-size:13px;">
                                 Acompanhamento da sua ordem de serviço
@@ -86,7 +86,7 @@
 
                     <tr>
                         <td style="background:#f9fafb;text-align:center;padding:24px;font-size:12px;color:#6b7280;">
-                            <p style="margin:0;">© {{ date('Y') }} SigmaOS</p>
+                            <p style="margin:0;">© {{ date('Y') }} VetorOS</p>
                             <p style="margin:6px 0;">Todos os direitos reservados</p>
                             <p style="margin:6px 0;">
                                 <a href="{{ config('app.url') }}" style="color:#2563eb;text-decoration:none;">

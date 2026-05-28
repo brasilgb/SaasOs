@@ -30,7 +30,7 @@ class TenantImprovementRequestControllerTest extends TestCase
     {
         $response = $this->post(route('app.improvement-requests.feedback.store'), [
             'rating' => 5,
-            'comment' => 'O SigmaOS agilizou nossa rotina.',
+            'comment' => 'O VetorOS agilizou nossa rotina.',
             'allow_testimonial' => true,
             'testimonial_public_name' => 'Anderson',
             'testimonial_public_role' => 'Proprietario',
@@ -43,12 +43,12 @@ class TenantImprovementRequestControllerTest extends TestCase
             'feedback_source' => 'app_manual',
             'feedback_status' => 'submitted',
             'feedback_rating' => 5,
-            'feedback_comment' => 'O SigmaOS agilizou nossa rotina.',
+            'feedback_comment' => 'O VetorOS agilizou nossa rotina.',
             'feedback_recovery_status' => null,
             'testimonial_status' => 'pending',
             'testimonial_public_name' => 'Anderson',
             'testimonial_public_role' => 'Proprietario',
-            'testimonial_excerpt' => 'O SigmaOS agilizou nossa rotina.',
+            'testimonial_excerpt' => 'O VetorOS agilizou nossa rotina.',
         ]);
     }
 

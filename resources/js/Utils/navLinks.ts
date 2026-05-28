@@ -352,7 +352,7 @@ const mainPlansItems: NavItem[] = [
 const footerNavItems: NavItem[] = [
     {
         title: 'Documentação',
-        href: import.meta.env.VITE_APP_URL + '/documentation/doc-sigmaos.html',
+        href: import.meta.env.VITE_APP_URL + '/documentation/doc-vetoros.html',
         icon: BookOpenText,
         external: true,
     },

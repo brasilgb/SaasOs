@@ -11,7 +11,7 @@ use Illuminate\Console\Command;
 
 class SendBudgetFollowUps extends Command
 {
-    protected $signature = 'sigmaos:send-budget-followups {--tenant=} {--dry-run}';
+    protected $signature = 'vetoros:send-budget-followups {--tenant=} {--dry-run}';
 
     protected $description = 'Envia acompanhamento automático para orçamentos parados';
 

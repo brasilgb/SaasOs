@@ -41,7 +41,7 @@ class SendPaymentFollowUpsCommandTest extends TestCase
             'mail_password' => Crypt::encryptString('secret'),
             'mail_encryption' => 'tls',
             'mail_from_address' => 'noreply@example.com',
-            'mail_from_name' => 'Sigma OS',
+            'mail_from_name' => 'VetorOS',
             'automatic_follow_ups_enabled' => true,
             'enable_finance' => true,
         ]);
@@ -62,7 +62,7 @@ class SendPaymentFollowUpsCommandTest extends TestCase
             'paid_at' => now()->subDays(3),
         ]);
 
-        $this->artisan('sigmaos:send-payment-followups')
+        $this->artisan('vetoros:send-payment-followups')
             ->expectsOutputToContain('Processadas: 1 | Enviadas: 1 | Ignoradas: 0')
             ->assertExitCode(0);
 
@@ -97,7 +97,7 @@ class SendPaymentFollowUpsCommandTest extends TestCase
             'mail_password' => Crypt::encryptString('secret'),
             'mail_encryption' => 'tls',
             'mail_from_address' => 'noreply@example.com',
-            'mail_from_name' => 'Sigma OS',
+            'mail_from_name' => 'VetorOS',
             'automatic_follow_ups_enabled' => true,
             'enable_finance' => true,
         ]);
@@ -118,7 +118,7 @@ class SendPaymentFollowUpsCommandTest extends TestCase
             'created_at' => now()->subDay(),
         ]);
 
-        $this->artisan('sigmaos:send-payment-followups')
+        $this->artisan('vetoros:send-payment-followups')
             ->expectsOutputToContain('Processadas: 1 | Enviadas: 0 | Ignoradas: 1')
             ->assertExitCode(0);
 
@@ -144,7 +144,7 @@ class SendPaymentFollowUpsCommandTest extends TestCase
             'mail_password' => Crypt::encryptString('secret'),
             'mail_encryption' => 'tls',
             'mail_from_address' => 'noreply@example.com',
-            'mail_from_name' => 'Sigma OS',
+            'mail_from_name' => 'VetorOS',
             'automatic_follow_ups_enabled' => true,
             'enable_finance' => false,
         ]);
@@ -165,7 +165,7 @@ class SendPaymentFollowUpsCommandTest extends TestCase
             'paid_at' => now()->subDays(3),
         ]);
 
-        $this->artisan('sigmaos:send-payment-followups')
+        $this->artisan('vetoros:send-payment-followups')
             ->expectsOutputToContain('Processadas: 1 | Enviadas: 0 | Ignoradas: 1')
             ->assertExitCode(0);
 
@@ -191,7 +191,7 @@ class SendPaymentFollowUpsCommandTest extends TestCase
             'mail_password' => Crypt::encryptString('secret'),
             'mail_encryption' => 'tls',
             'mail_from_address' => 'noreply@example.com',
-            'mail_from_name' => 'Sigma OS',
+            'mail_from_name' => 'VetorOS',
             'automatic_follow_ups_enabled' => true,
             'enable_finance' => true,
         ]);
@@ -214,7 +214,7 @@ class SendPaymentFollowUpsCommandTest extends TestCase
             'paid_at' => now()->subDays(3),
         ]);
 
-        $this->artisan('sigmaos:send-payment-followups')
+        $this->artisan('vetoros:send-payment-followups')
             ->expectsOutputToContain('Processadas: 1 | Enviadas: 0 | Ignoradas: 1')
             ->assertExitCode(0);
 
@@ -245,7 +245,7 @@ class SendPaymentFollowUpsCommandTest extends TestCase
             'mail_password' => Crypt::encryptString('secret'),
             'mail_encryption' => 'tls',
             'mail_from_address' => 'noreply@example.com',
-            'mail_from_name' => 'Sigma OS',
+            'mail_from_name' => 'VetorOS',
             'automatic_follow_ups_enabled' => true,
             'enable_finance' => true,
         ]);

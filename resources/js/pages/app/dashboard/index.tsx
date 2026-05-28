@@ -135,7 +135,7 @@ export default function Dashboard({
                             <div className="flex items-center gap-3">
                                 <MessageSquareHeart className="h-5 w-5 text-amber-900" />
                                 <div className="text-sm text-amber-900">
-                                    Queremos ouvir sua experiência com o SigmaOS.
+                                    Queremos ouvir sua experiência com o VetorOS.
                                     <Badge variant="secondary" className="ml-2 bg-white text-amber-900">
                                         Leva menos de 1 minuto
                                     </Badge>

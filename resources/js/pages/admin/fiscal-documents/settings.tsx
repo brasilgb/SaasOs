@@ -75,7 +75,7 @@ export default function AdminFiscalDocumentSettings({ fiscalSetting }: { fiscalS
         street: fiscalSetting.street ?? '',
         number: fiscalSetting.number ?? '',
         complement: fiscalSetting.complement ?? '',
-        default_service_description: fiscalSetting.default_service_description ?? 'Assinatura SigmaOS - {{ plano }}',
+        default_service_description: fiscalSetting.default_service_description ?? 'Assinatura VetorOS - {{ plano }}',
     });
 
     const handleSubmit = (e: FormEvent) => {
@@ -173,7 +173,7 @@ export default function AdminFiscalDocumentSettings({ fiscalSetting }: { fiscalS
                 <Card>
                     <CardHeader>
                         <CardTitle>Emitente</CardTitle>
-                        <CardDescription>Dados fiscais da empresa dona do SigmaOS.</CardDescription>
+                        <CardDescription>Dados fiscais da empresa dona do VetorOS.</CardDescription>
                     </CardHeader>
                     <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                         <div className="grid gap-2 xl:col-span-2">

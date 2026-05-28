@@ -54,7 +54,7 @@ class OsController extends Controller
 
     private function orderMeta(Order $order, ?Company $company, ?string $url = null): array
     {
-        $companyName = $company?->shortname ?: $company?->companyname ?: config('app.name', 'SigmaOS');
+        $companyName = $company?->shortname ?: $company?->companyname ?: config('app.name', 'VetorOS');
         $description = 'Acompanhe o andamento da ordem de serviço';
         $url ??= route('os.token', $order->tracking_token);
         $logoPath = $company?->logo ? public_path('storage/logos/'.$company->logo) : null;

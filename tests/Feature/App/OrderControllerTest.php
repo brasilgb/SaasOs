@@ -1024,7 +1024,7 @@ class OrderControllerTest extends TestCase
             'mail_password' => Crypt::encryptString('secret'),
             'mail_encryption' => 'tls',
             'mail_from_address' => 'noreply@example.com',
-            'mail_from_name' => 'Sigma OS',
+            'mail_from_name' => 'VetorOS',
         ]);
 
         $response = $this->post(route('app.orders.payments.reminder', $order));
@@ -1065,7 +1065,7 @@ class OrderControllerTest extends TestCase
             'mail_password' => Crypt::encryptString('secret'),
             'mail_encryption' => 'tls',
             'mail_from_address' => 'noreply@example.com',
-            'mail_from_name' => 'Sigma OS',
+            'mail_from_name' => 'VetorOS',
         ]);
 
         $response = $this->post(route('app.orders.budget-follow-up', $order));

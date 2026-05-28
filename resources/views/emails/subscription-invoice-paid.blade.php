@@ -4,13 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fatura SigmaOS paga</title>
+    <title>Fatura VetorOS paga</title>
 </head>
 
 <body style="margin:0;padding:0;background:#f3f4f6;font-family:Arial,Helvetica,sans-serif;">
     @php
-        $logoPath = public_path('logos/sigmaos-horizontal-dark.png');
-        $logoUrl = file_exists($logoPath) ? asset('logos/sigmaos-horizontal-dark.png') : null;
+        $logoPath = public_path('images/vetor.png');
+        $logoUrl = file_exists($logoPath) ? asset('images/vetor.png') : null;
         $paidAt = $payment->updated_at ?? now();
         $paymentStatusLabel = [
             'approved' => 'Aprovado',
@@ -23,7 +23,7 @@
     @endphp
 
     <div style="display:none;max-height:0;overflow:hidden;opacity:0;">
-        Recebemos o pagamento PIX da sua assinatura SigmaOS.
+        Recebemos o pagamento PIX da sua assinatura VetorOS.
     </div>
 
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#f3f4f6;padding:40px 0;">
@@ -34,9 +34,9 @@
                     <tr>
                         <td align="center" style="background:#020817;padding:30px 20px;">
                             @if (!empty($logoUrl))
-                                <img src="{{ $logoUrl }}" alt="SigmaOS" style="display:block;margin:0 auto 14px auto;max-width:220px;height:auto;">
+                                <img src="{{ $logoUrl }}" alt="VetorOS" style="display:block;margin:0 auto 14px auto;width:84px;max-width:84px;height:auto;">
                             @else
-                                <p style="margin:0 0 14px 0;color:#ffffff;font-size:24px;font-weight:bold;letter-spacing:1px;">SigmaOS</p>
+                                <p style="margin:0 0 14px 0;color:#ffffff;font-size:24px;font-weight:bold;letter-spacing:1px;"><span style="color:#ffffff;">Vetor</span><span style="color:#00B4FF;">OS</span></p>
                             @endif
                             <p style="margin:6px 0 0 0;color:#cbd5f5;font-size:13px;">Fatura de assinatura</p>
                         </td>
@@ -48,7 +48,7 @@
 
                             <p style="font-size:15px;line-height:1.6;margin:14px 0;">
                                 Olá, {{ $tenant->name }}. Recebemos o pagamento PIX da assinatura do
-                                <strong>SigmaOS</strong> e o acesso da empresa foi liberado/renovado.
+                                <strong>VetorOS</strong> e o acesso da empresa foi liberado/renovado.
                             </p>
 
                             <table width="100%" cellpadding="0" cellspacing="0"
@@ -100,7 +100,7 @@
 
                             <p style="font-size:14px;line-height:1.6;color:#6b7280;">
                                 Guarde este e-mail como comprovante da fatura paga. Em caso de dúvidas, acesse
-                                <a href="https://sigmaos.com.br" target="_blank" style="color:#2563eb;text-decoration:none;">sigmaos.com.br</a>
+                                <a href="https://vetoros.com.br" target="_blank" style="color:#2563eb;text-decoration:none;">VetorOS</a>
                                 e use um de nossos canais de atendimento.
                             </p>
                         </td>

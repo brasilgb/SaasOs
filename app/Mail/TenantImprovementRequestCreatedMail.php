@@ -23,7 +23,7 @@ class TenantImprovementRequestCreatedMail extends Mailable
         TenantMailConfig::applySystemDefault();
 
         return new Envelope(
-            subject: 'Nova solicitacao de ajuste no SigmaOS',
+            subject: 'Nova solicitacao de ajuste no VetorOS',
         );
     }
 

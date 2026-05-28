@@ -201,7 +201,7 @@ export default function FiscalDocumentSettings({ fiscalSetting }: { fiscalSettin
                                 <div className="grid gap-2 md:col-span-2">
                                     <FieldLabel
                                         htmlFor="webhook_secret"
-                                        help="Segredo usado para validar notificações enviadas pela Focus NFe ao SigmaOS. Não é necessário para a sincronização manual por consulta."
+                                        help="Segredo usado para validar notificações enviadas pela Focus NFe ao VetorOS. Não é necessário para a sincronização manual por consulta."
                                     >
                                         Segredo de webhook
                                     </FieldLabel>

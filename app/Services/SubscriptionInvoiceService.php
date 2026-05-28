@@ -67,7 +67,7 @@ class SubscriptionInvoiceService
             $document = $this->adminFocusNfeService->issueTenantSubscriptionNfse(
                 $tenant->loadMissing('plan'),
                 (float) $payment->amount,
-                'Assinatura SigmaOS - '.$plan->name,
+                'Assinatura VetorOS - '.$plan->name,
                 $payment
             );
 

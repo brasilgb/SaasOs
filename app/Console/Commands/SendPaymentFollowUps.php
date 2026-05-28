@@ -12,7 +12,7 @@ use Illuminate\Support\Carbon;
 
 class SendPaymentFollowUps extends Command
 {
-    protected $signature = 'sigmaos:send-payment-followups {--tenant=} {--dry-run}';
+    protected $signature = 'vetoros:send-payment-followups {--tenant=} {--dry-run}';
 
     protected $description = 'Envia lembretes automáticos de cobrança para ordens elegíveis';
 

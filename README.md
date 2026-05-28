@@ -1,4 +1,4 @@
-# SigmaOS
+# VetorOS
 
 Plataforma web para assistências técnicas com gestão de atendimento, clientes, ordens, follow-ups, cobranças, indicadores, financeiro e portal público do cliente.
 
@@ -228,4 +228,4 @@ Observação: hoje os seeders já foram ajustados para o estado atual do produto
 
 ## Licença
 
-Uso interno do projeto SigmaOS. Ajuste este trecho se houver política formal de licenciamento.
+Uso interno do projeto VetorOS. Ajuste este trecho se houver política formal de licenciamento.

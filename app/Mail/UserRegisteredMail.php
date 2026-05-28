@@ -33,7 +33,7 @@ class UserRegisteredMail extends Mailable
         TenantMailConfig::applySystemDefault();
 
         return new Envelope(
-            subject: 'Bem-vindo ao SigmaOS'
+            subject: 'Bem-vindo ao VetorOS'
         );
     }
 

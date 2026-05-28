@@ -34,7 +34,7 @@ class FiscalDocumentController extends Controller
         $setting = AdminFiscalSetting::query()->firstOrCreate([], [
             'provider' => 'focus_nfe',
             'environment' => 'sandbox',
-            'default_service_description' => 'Assinatura SigmaOS - {{ plano }}',
+            'default_service_description' => 'Assinatura VetorOS - {{ plano }}',
         ]);
 
         return Inertia::render('admin/fiscal-documents/settings', [

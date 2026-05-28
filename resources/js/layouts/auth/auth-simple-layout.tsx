@@ -1,4 +1,4 @@
-import { SigmaOSLoginLogo } from '@/components/sigma-os-logo';
+import { BrandLoginLogo } from '@/components/brand-logo';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import authImage from '@/images/auth-images.jpg';
 import { cn } from '@/lib/utils';
@@ -30,7 +30,7 @@ export default function AuthSimpleLayout({ children, title, description, width =
                 <div className="top-8 left-8 z-10 flex min-w-0 flex-col items-center gap-3 px-3 sm:px-6">
                     <Link href={route('home')} className="flex flex-col items-center gap-2 font-medium">
                         <div className="mb-2 flex items-center justify-center rounded-md">
-                            <SigmaOSLoginLogo />
+                            <BrandLoginLogo />
                         </div>
                         <span className="sr-only">{title}</span>
                     </Link>

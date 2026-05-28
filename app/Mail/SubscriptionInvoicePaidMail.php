@@ -29,7 +29,7 @@ class SubscriptionInvoicePaidMail extends Mailable
         TenantMailConfig::applySystemDefault();
 
         return new Envelope(
-            subject: 'Fatura SigmaOS paga - '.$this->plan->name,
+            subject: 'Fatura VetorOS paga - '.$this->plan->name,
         );
     }
 

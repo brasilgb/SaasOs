@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { BrandHorizontalLogo } from '@/components/brand-logo';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
@@ -13,19 +14,13 @@ export function Header() {
     const handleLinkClick = () => setIsMenuOpen(false);
 
     return (
-        <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#07111f] text-white shadow-sm">
+        <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#0B1220] text-white shadow-sm">
             <Head title="Início" />
 
             <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-2">
-                    <img
-                        src="/logos/sigmaos-horizontal-dark.png"
-                        alt="SigmaOS - Sistema de Ordens de Serviço"
-                        width={150}
-                        height={38}
-                        className="transition-all duration-300"
-                    />
+                    <BrandHorizontalLogo />
                 </Link>
 
                 {/* Menu Desktop */}
@@ -68,7 +63,7 @@ export function Header() {
                             </Link>
 
                             <Link href={route('register')}>
-                                <Button className="bg-[#f1b555] font-semibold text-slate-950 hover:bg-[#f5c06c]">Começar Grátis</Button>
+                                <Button className="bg-[#00E59B] font-semibold text-slate-950 hover:bg-[#2ff0b1]">Começar Grátis</Button>
                             </Link>
                         </>
                     )}
@@ -131,7 +126,7 @@ export function Header() {
                                 </Link>
 
                                 <Link href={route('register')} onClick={handleLinkClick}>
-                                    <Button className="w-full bg-[#f1b555] font-semibold text-slate-950 hover:bg-[#f5c06c]">Começar Grátis</Button>
+                                    <Button className="w-full bg-[#00E59B] font-semibold text-slate-950 hover:bg-[#2ff0b1]">Começar Grátis</Button>
                                 </Link>
                             </>
                         )}

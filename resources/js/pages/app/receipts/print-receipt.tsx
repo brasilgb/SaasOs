@@ -214,7 +214,7 @@ function ReceiptCopy({
                     <div className="flex items-center justify-start gap-2 text-[10px]">
                         <span>
                             Acompanhe o status de sua ordem de serviço em{' '}
-                            <span className="text-red-500">https://sigmaos.com.br/os/{order?.tracking_token}</span>
+                            <span className="text-red-500">https://vetoros.com.br/os/{order?.tracking_token}</span>
                         </span>
                     </div>
                 )}

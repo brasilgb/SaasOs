@@ -1,4 +1,4 @@
-PASSO A PASSO OPERACIONAL DO SIGMAOS
+PASSO A PASSO OPERACIONAL DO VETOROS.COM.BR
 
 1. Dashboard
 
@@ -112,9 +112,9 @@ Em Outras Configuracoes, e possivel ajustar preferencias gerais do sistema, ativ
 
 26. Solicitar Ajustes
 
-Em Solicitar Ajustes, o usuario pode enviar sugestoes de melhoria ou solicitacoes para evolucao do sistema, ajudando a adaptar o SigmaOS as necessidades da empresa.
+Em Solicitar Ajustes, o usuario pode enviar sugestoes de melhoria ou solicitacoes para evolucao do sistema, ajudando a adaptar o VetorOS as necessidades da empresa.
 
 RESUMO COMERCIAL
 
-O SigmaOS permite controlar toda a operacao em um unico sistema: clientes, ordens de servico, orcamentos, agenda, mensagens, produtos, vendas, despesas, caixa, notas fiscais, relatorios, usuarios e configuracoes.
+O VetorOS permite controlar toda a operacao em um unico sistema: clientes, ordens de servico, orcamentos, agenda, mensagens, produtos, vendas, despesas, caixa, notas fiscais, relatorios, usuarios e configuracoes.
 Com isso, a empresa ganha organizacao, agilidade no atendimento, melhor controle financeiro e uma comunicacao mais profissional com seus clientes.
