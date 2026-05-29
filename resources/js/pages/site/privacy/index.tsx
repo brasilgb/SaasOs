@@ -189,8 +189,8 @@ export default function Privacy() {
 
                     <p>
                         Email:{' '}
-                        <a href="mailto:suporte@vetoros.com.br" className="text-primary hover:underline">
-                            suporte@vetoros.com.br
+                        <a href="mailto:contato@vetoros.com.br" className="text-primary hover:underline">
+                            contato@vetoros.com.br
                         </a>
                     </p>
                 </article>

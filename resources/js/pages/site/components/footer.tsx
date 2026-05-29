@@ -91,8 +91,8 @@ export function Footer() {
                             </li>
 
                             <li>
-                                <a href="mailto:suporte@vetoros.com.br" className="text-white/58 transition-colors hover:text-white">
-                                    suporte@vetoros.com.br
+                                <a href="mailto:contato@vetoros.com.br" className="text-white/58 transition-colors hover:text-white">
+                                    contato@vetoros.com.br
                                 </a>
                             </li>
                         </ul>

@@ -29,11 +29,8 @@
                             @if (!empty($registeredLogoUrl))
                                 <img src="{{ $registeredLogoUrl }}" alt="VetorOS"
                                     style="display:block;margin:0 auto 14px auto;width:84px;max-width:84px;height:auto;">
-                            @else
-                                <p style="margin:0 0 14px 0;color:#ffffff;font-size:24px;font-weight:bold;letter-spacing:1px;">
-                                    <span style="color:#ffffff;">Vetor</span><span style="color:#00B4FF;">OS</span>
-                                </p>
                             @endif
+                            @include('emails.partials.brand-title')
 
                             <p style="margin:6px 0 0 0;color:#cbd5f5;font-size:13px;">
                                 Sistema inteligente de ordens de serviço
@@ -147,10 +144,10 @@ Acessar o sistema
                             </p>
 
                             <p style="margin-top:6px;">
-                                <a href="{{ asset('apk/sigmaup-image-upload.apk') }}"
-                                    download="sigmaup-image-upload.apk"
+                                <a href="{{ asset('apk/vetorup-image-upload.apk') }}"
+                                    download="vetorup-image-upload.apk"
                                     style="color:#2563eb;font-size:14px;text-decoration:none;">
-                                    Baixar aplicativo SigmaUp
+                                    Baixar aplicativo VetorUP
                                 </a>
                             </p>
 

@@ -35,9 +35,8 @@
                         <td align="center" style="background:#020817;padding:30px 20px;">
                             @if (!empty($logoUrl))
                                 <img src="{{ $logoUrl }}" alt="VetorOS" style="display:block;margin:0 auto 14px auto;width:84px;max-width:84px;height:auto;">
-                            @else
-                                <p style="margin:0 0 14px 0;color:#ffffff;font-size:24px;font-weight:bold;letter-spacing:1px;"><span style="color:#ffffff;">Vetor</span><span style="color:#00B4FF;">OS</span></p>
                             @endif
+                            @include('emails.partials.brand-title')
                             <p style="margin:6px 0 0 0;color:#cbd5f5;font-size:13px;">Fatura de assinatura</p>
                         </td>
                     </tr>

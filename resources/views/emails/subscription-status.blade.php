@@ -28,11 +28,8 @@
                             @if (!empty($registeredLogoUrl))
                                 <img src="{{ $registeredLogoUrl }}" alt="VetorOS"
                                     style="display:block;margin:0 auto 14px auto;width:84px;max-width:84px;height:auto;">
-                            @else
-                                <h1 style="margin:0;color:#ffffff;font-size:24px;letter-spacing:0.5px;">
-                                    <span style="color:#ffffff;">Vetor</span><span style="color:#00B4FF;">OS</span>
-                                </h1>
                             @endif
+                            @include('emails.partials.brand-title')
                             <p style="margin:6px 0 0 0;color:#cbd5f5;font-size:13px;">
                                 Comunicação de assinatura
                             </p>

@@ -3,7 +3,6 @@
 namespace App\Mail;
 
 use App\Mail\Concerns\AppliesTenantMailConfig;
-use App\Models\App\Company;
 use App\Models\App\Order;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
@@ -28,7 +27,7 @@ class OrderBudgetFollowUpMail extends Mailable
         $this->order = $order;
         $this->daysPending = $daysPending;
         $this->tenantId = $order->tenant_id ? (int) $order->tenant_id : null;
-        $this->logoUrl = $this->resolveLogoUrl($order);
+        $this->logoUrl = $this->resolveLogoUrl();
     }
 
     public function envelope(): Envelope
@@ -57,16 +56,8 @@ class OrderBudgetFollowUpMail extends Mailable
         return [];
     }
 
-    private function resolveLogoUrl(Order $order): ?string
+    private function resolveLogoUrl(): ?string
     {
-        $companyLogo = Company::query()
-            ->where('tenant_id', $order->tenant_id)
-            ->value('logo');
-
-        if (! empty($companyLogo) && file_exists(public_path('storage/logos/'.$companyLogo))) {
-            return asset('storage/logos/'.$companyLogo);
-        }
-
-        return null;
+        return file_exists(public_path('images/vetor.png')) ? asset('images/vetor.png') : null;
     }
 }

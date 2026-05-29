@@ -22,13 +22,10 @@
                     <tr>
                         <td align="center" style="background:#0f172a;padding:30px 20px;">
                             @if (!empty($logoUrl))
-                                <img src="{{ $logoUrl }}" alt="Logo da empresa"
-                                    style="display:block;margin:0 auto 14px auto;max-width:130px;max-height:52px;height:auto;width:auto;">
+                                <img src="{{ $logoUrl }}" alt="VetorOS"
+                                    style="display:block;margin:0 auto 14px auto;width:84px;max-width:84px;height:auto;">
                             @endif
-                            
-                            <h1 style="margin:0;color:#ffffff;font-size:24px;letter-spacing:1px;">
-                                {{ $order->tenant?->company ?? 'VetorOS' }}
-                            </h1>
+                            @include('emails.partials.brand-title')
                             <p style="margin:6px 0 0 0;color:#cbd5f5;font-size:13px;">
                                 Acompanhamento da sua ordem de serviço
                             </p>
