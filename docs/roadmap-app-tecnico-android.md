@@ -152,6 +152,111 @@ POST /api/tecnico/ordens/{order}/fotos
 POST /api/tecnico/ordens/{order}/pagamento-local
 ```
 
+### Endpoints Iniciais Implementados
+
+#### Listar agendamentos do técnico
+
+```http
+GET /api/tecnico/agendamentos
+```
+
+Filtros opcionais:
+
+- `period=today`
+- `period=tomorrow`
+- `period=week`
+- `period=pending`
+- `period=completed`
+- `per_page=50`
+
+Regras:
+
+- somente técnico autenticado;
+- somente agendamentos do próprio `user_id`;
+- somente agendamentos com `send_to_technician = true`;
+- somente agendamentos vinculados a `order_id`.
+
+#### Detalhar agendamento
+
+```http
+GET /api/tecnico/agendamentos/{schedule}
+```
+
+Retorna:
+
+- agendamento;
+- cliente;
+- endereço;
+- ordem de serviço;
+- equipamento;
+- técnico responsável.
+
+#### Atualizar status do agendamento
+
+```http
+POST /api/tecnico/agendamentos/{schedule}/status
+```
+
+Payload:
+
+```json
+{
+  "status": 2
+}
+```
+
+Status aceitos nesta primeira etapa:
+
+- `1`: Aberta;
+- `2`: Em atendimento;
+- `3`: Fechada.
+
+#### Registrar check-in
+
+```http
+POST /api/tecnico/agendamentos/{schedule}/check-in
+```
+
+Payload:
+
+```json
+{
+  "latitude": -30.034647,
+  "longitude": -51.217658,
+  "observations": "Cliente confirmou chegada."
+}
+```
+
+Efeito:
+
+- registra `check_in_at`;
+- registra GPS quando enviado;
+- registra observação opcional;
+- altera o agendamento para status `2` (`Em atendimento`).
+
+#### Registrar check-out
+
+```http
+POST /api/tecnico/agendamentos/{schedule}/check-out
+```
+
+Payload:
+
+```json
+{
+  "latitude": -30.035,
+  "longitude": -51.218,
+  "observations": "Atendimento finalizado."
+}
+```
+
+Efeito:
+
+- registra `check_out_at`;
+- registra GPS quando enviado;
+- registra observação opcional;
+- altera o agendamento para status `3` (`Fechada`).
+
 ## Backend Necessário
 
 ### Agendamentos

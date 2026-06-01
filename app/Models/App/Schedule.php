@@ -14,6 +14,12 @@ class Schedule extends Model
 
     protected $casts = [
         'send_to_technician' => 'boolean',
+        'check_in_at' => 'datetime',
+        'check_in_latitude' => 'decimal:7',
+        'check_in_longitude' => 'decimal:7',
+        'check_out_at' => 'datetime',
+        'check_out_latitude' => 'decimal:7',
+        'check_out_longitude' => 'decimal:7',
     ];
 
     public function customer(): BelongsTo

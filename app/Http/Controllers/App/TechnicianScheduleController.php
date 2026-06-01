@@ -1,0 +1,256 @@
+<?php
+
+namespace App\Http\Controllers\App;
+
+use App\Http\Controllers\Controller;
+use App\Models\App\Schedule;
+use App\Models\User;
+use Illuminate\Http\Request;
+
+class TechnicianScheduleController extends Controller
+{
+    private function technician(Request $request): User
+    {
+        $user = $request->user();
+
+        abort_unless($user instanceof User && $user->isTechnician(), 403);
+
+        return $user;
+    }
+
+    private function schedulesQuery(User $technician)
+    {
+        return Schedule::query()
+            ->with([
+                'customer:id,name,email,phone,whatsapp,zipcode,state,city,district,street,number,complement,observations',
+                'order:id,customer_id,equipment_id,user_id,order_number,tracking_token,model,defect,state_conservation,accessories,budget_description,budget_value,service_status,observations,services_performed,service_cost,delivery_forecast,delivery_date',
+                'order.equipment:id,equipment_number,equipment',
+                'user:id,name,email,telephone,whatsapp,avatar',
+            ])
+            ->where('user_id', $technician->id)
+            ->where('send_to_technician', true)
+            ->whereNotNull('order_id');
+    }
+
+    public function index(Request $request)
+    {
+        $technician = $this->technician($request);
+        $data = $request->validate([
+            'period' => ['nullable', 'string', 'in:today,tomorrow,week,pending,completed'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+        ]);
+
+        $query = $this->schedulesQuery($technician)
+            ->when(($data['period'] ?? null) === 'today', fn ($query) => $query->whereDate('schedules', today()))
+            ->when(($data['period'] ?? null) === 'tomorrow', fn ($query) => $query->whereDate('schedules', today()->addDay()))
+            ->when(($data['period'] ?? null) === 'week', fn ($query) => $query->whereBetween('schedules', [now()->startOfDay(), now()->addDays(7)->endOfDay()]))
+            ->when(($data['period'] ?? null) === 'pending', fn ($query) => $query->whereIn('status', [1, 2]))
+            ->when(($data['period'] ?? null) === 'completed', fn ($query) => $query->where('status', 3))
+            ->orderBy('schedules')
+            ->orderBy('id');
+
+        $schedules = $query
+            ->paginate((int) ($data['per_page'] ?? 50))
+            ->through(fn (Schedule $schedule) => $this->schedulePayload($schedule));
+
+        return response()->json([
+            'success' => true,
+            'result' => $schedules,
+        ]);
+    }
+
+    public function show(Request $request, Schedule $schedule)
+    {
+        $technician = $this->technician($request);
+        $schedule = $this->schedulesQuery($technician)
+            ->whereKey($schedule->id)
+            ->firstOrFail();
+
+        return response()->json([
+            'success' => true,
+            'result' => $this->schedulePayload($schedule),
+        ]);
+    }
+
+    public function updateStatus(Request $request, Schedule $schedule)
+    {
+        $technician = $this->technician($request);
+        $data = $request->validate([
+            'status' => ['required', 'integer', 'in:1,2,3'],
+        ]);
+
+        $schedule = $this->schedulesQuery($technician)
+            ->whereKey($schedule->id)
+            ->firstOrFail();
+
+        $schedule->update([
+            'status' => $data['status'],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'result' => $this->schedulePayload($schedule->refresh()->loadMissing([
+                'customer',
+                'order',
+                'order.equipment',
+                'user',
+            ])),
+        ]);
+    }
+
+    public function checkIn(Request $request, Schedule $schedule)
+    {
+        $technician = $this->technician($request);
+        $data = $request->validate([
+            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
+            'observations' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $schedule = $this->schedulesQuery($technician)
+            ->whereKey($schedule->id)
+            ->firstOrFail();
+
+        $schedule->update([
+            'status' => 2,
+            'check_in_at' => now(),
+            'check_in_latitude' => $data['latitude'] ?? null,
+            'check_in_longitude' => $data['longitude'] ?? null,
+            'check_in_observations' => $data['observations'] ?? null,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'result' => $this->freshSchedulePayload($schedule),
+        ]);
+    }
+
+    public function checkOut(Request $request, Schedule $schedule)
+    {
+        $technician = $this->technician($request);
+        $data = $request->validate([
+            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
+            'observations' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $schedule = $this->schedulesQuery($technician)
+            ->whereKey($schedule->id)
+            ->firstOrFail();
+
+        $schedule->update([
+            'status' => 3,
+            'check_out_at' => now(),
+            'check_out_latitude' => $data['latitude'] ?? null,
+            'check_out_longitude' => $data['longitude'] ?? null,
+            'check_out_observations' => $data['observations'] ?? null,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'result' => $this->freshSchedulePayload($schedule),
+        ]);
+    }
+
+    private function freshSchedulePayload(Schedule $schedule): array
+    {
+        return $this->schedulePayload($schedule->refresh()->loadMissing([
+            'customer',
+            'order',
+            'order.equipment',
+            'user',
+        ]));
+    }
+
+    private function schedulePayload(Schedule $schedule): array
+    {
+        $customer = $schedule->customer;
+        $order = $schedule->order;
+        $equipment = $order?->equipment;
+
+        return [
+            'id' => $schedule->id,
+            'tenant_id' => $schedule->tenant_id,
+            'schedules_number' => $schedule->schedules_number,
+            'schedules' => $schedule->schedules,
+            'service' => $schedule->service,
+            'details' => $schedule->details,
+            'status' => $schedule->status,
+            'status_label' => $this->statusLabel((int) $schedule->status),
+            'observations' => $schedule->observations,
+            'send_to_technician' => (bool) $schedule->send_to_technician,
+            'check_in' => [
+                'at' => $schedule->check_in_at,
+                'latitude' => $schedule->check_in_latitude,
+                'longitude' => $schedule->check_in_longitude,
+                'observations' => $schedule->check_in_observations,
+            ],
+            'check_out' => [
+                'at' => $schedule->check_out_at,
+                'latitude' => $schedule->check_out_latitude,
+                'longitude' => $schedule->check_out_longitude,
+                'observations' => $schedule->check_out_observations,
+            ],
+            'customer' => $customer ? [
+                'id' => $customer->id,
+                'name' => $customer->name,
+                'email' => $customer->email,
+                'phone' => $customer->phone,
+                'whatsapp' => $customer->whatsapp,
+                'address' => [
+                    'zipcode' => $customer->zipcode,
+                    'state' => $customer->state,
+                    'city' => $customer->city,
+                    'district' => $customer->district,
+                    'street' => $customer->street,
+                    'number' => $customer->number,
+                    'complement' => $customer->complement,
+                ],
+                'observations' => $customer->observations,
+            ] : null,
+            'order' => $order ? [
+                'id' => $order->id,
+                'order_number' => $order->order_number,
+                'tracking_token' => $order->tracking_token,
+                'model' => $order->model,
+                'defect' => $order->defect,
+                'state_conservation' => $order->state_conservation,
+                'accessories' => $order->accessories,
+                'budget_description' => $order->budget_description,
+                'budget_value' => $order->budget_value,
+                'service_status' => $order->service_status,
+                'observations' => $order->observations,
+                'services_performed' => $order->services_performed,
+                'service_cost' => $order->service_cost,
+                'delivery_forecast' => $order->delivery_forecast,
+                'delivery_date' => $order->delivery_date,
+                'equipment' => $equipment ? [
+                    'id' => $equipment->id,
+                    'equipment_number' => $equipment->equipment_number,
+                    'equipment' => $equipment->equipment,
+                ] : null,
+            ] : null,
+            'technician' => $schedule->user ? [
+                'id' => $schedule->user->id,
+                'name' => $schedule->user->name,
+                'email' => $schedule->user->email,
+                'telephone' => $schedule->user->telephone,
+                'whatsapp' => $schedule->user->whatsapp,
+                'avatar' => $schedule->user->avatar,
+                'avatar_url' => $schedule->user->avatar ? asset(ltrim($schedule->user->avatar, '/')) : null,
+            ] : null,
+            'created_at' => $schedule->created_at,
+            'updated_at' => $schedule->updated_at,
+        ];
+    }
+
+    private function statusLabel(int $status): string
+    {
+        return match ($status) {
+            1 => 'Aberta',
+            2 => 'Em atendimento',
+            3 => 'Fechada',
+            default => 'Desconhecido',
+        };
+    }
+}
