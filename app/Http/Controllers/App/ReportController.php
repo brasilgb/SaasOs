@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
-use App\Models\App\Customer;
 use App\Models\App\CashSession;
+use App\Models\App\Customer;
+use App\Models\App\Equipment;
 use App\Models\App\Expense;
 use App\Models\App\FiscalDocument;
 use App\Models\App\FiscalSetting;
@@ -13,6 +14,7 @@ use App\Models\App\Other;
 use App\Models\App\Part;
 use App\Models\App\Sale;
 use App\Models\App\Schedule;
+use App\Support\OrderStatus;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -87,6 +89,115 @@ class ReportController extends Controller
         Gate::authorize('reports.view');
 
         return Inertia::render('app/reports/index');
+    }
+
+    public function equipmentFilters()
+    {
+        Gate::authorize('reports.view');
+
+        $equipments = Equipment::query()
+            ->orderBy('equipment')
+            ->get(['id', 'equipment_number', 'equipment']);
+
+        $models = Order::query()
+            ->select('equipment_id', 'model')
+            ->whereNotNull('model')
+            ->where('model', '!=', '')
+            ->distinct()
+            ->orderBy('model')
+            ->get()
+            ->groupBy('equipment_id')
+            ->map(fn ($items) => $items
+                ->pluck('model')
+                ->filter()
+                ->unique()
+                ->values()
+                ->all()
+            );
+
+        return response()->json([
+            'success' => true,
+            'result' => [
+                'equipments' => $equipments,
+                'models_by_equipment' => $models,
+                'models' => $models->flatten()->unique()->values(),
+                'statuses' => OrderStatus::labels(),
+            ],
+        ]);
+    }
+
+    public function equipmentReport(Request $request)
+    {
+        Gate::authorize('reports.view');
+
+        $data = $request->validate([
+            'equipment_id' => ['nullable', 'integer'],
+            'model' => ['nullable', 'string', 'max:50'],
+            'brand' => ['nullable', 'string', 'max:50'],
+            'status' => ['nullable', 'integer', 'in:'.implode(',', OrderStatus::values())],
+            'from' => ['nullable', 'date'],
+            'to' => ['nullable', 'date'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+        ]);
+
+        if (! empty($data['equipment_id'])) {
+            Equipment::query()->whereKey($data['equipment_id'])->firstOrFail();
+        }
+
+        $model = trim((string) ($data['model'] ?? $data['brand'] ?? ''));
+        $perPage = (int) ($data['per_page'] ?? 50);
+
+        $query = Order::query()
+            ->with([
+                'customer:id,name,phone,whatsapp,email',
+                'equipment:id,equipment',
+                'user:id,name',
+            ])
+            ->when(! empty($data['equipment_id']), fn ($query) => $query->where('equipment_id', $data['equipment_id']))
+            ->when($model !== '', fn ($query) => $query->where('model', $model))
+            ->when(isset($data['status']), fn ($query) => $query->where('service_status', $data['status']))
+            ->when(! empty($data['from']), fn ($query) => $query->where('created_at', '>=', Carbon::parse($data['from'])->startOfDay()))
+            ->when(! empty($data['to']), fn ($query) => $query->where('created_at', '<=', Carbon::parse($data['to'])->endOfDay()))
+            ->orderByDesc('created_at');
+
+        $summaryQuery = clone $query;
+        $orders = $query->paginate($perPage);
+
+        return response()->json([
+            'success' => true,
+            'result' => [
+                'filters' => [
+                    'equipment_id' => $data['equipment_id'] ?? null,
+                    'model' => $model !== '' ? $model : null,
+                    'status' => $data['status'] ?? null,
+                    'from' => $data['from'] ?? null,
+                    'to' => $data['to'] ?? null,
+                ],
+                'summary' => [
+                    'orders_count' => (clone $summaryQuery)->count(),
+                    'service_cost_total' => (float) (clone $summaryQuery)->sum('service_cost'),
+                    'budget_value_total' => (float) (clone $summaryQuery)->sum('budget_value'),
+                    'warranty_returns' => (clone $summaryQuery)->where('is_warranty_return', true)->count(),
+                ],
+                'orders' => $orders->through(fn (Order $order) => [
+                    'id' => $order->id,
+                    'order_number' => $order->order_number,
+                    'tracking_token' => $order->tracking_token,
+                    'customer' => $order->customer,
+                    'equipment' => $order->equipment,
+                    'model' => $order->model,
+                    'defect' => $order->defect,
+                    'service_status' => $order->service_status,
+                    'service_status_label' => OrderStatus::label($order->service_status),
+                    'budget_value' => (float) ($order->budget_value ?? 0),
+                    'service_cost' => (float) ($order->service_cost ?? 0),
+                    'delivery_forecast' => $order->delivery_forecast,
+                    'delivery_date' => $order->delivery_date?->toIso8601String(),
+                    'created_at' => $order->created_at?->toIso8601String(),
+                    'technician' => $order->user,
+                ]),
+            ],
+        ]);
     }
 
     public function store(Request $request)

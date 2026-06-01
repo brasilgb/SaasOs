@@ -369,6 +369,43 @@ class CustomerController extends Controller
         ];
     }
 
+    public function preRegister(Request $request)
+    {
+        abort_unless(
+            Auth::user()?->hasPermission('customers') || Auth::user()?->hasPermission('orders'),
+            403
+        );
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'cpfcnpj' => ['nullable', 'string', 'max:50'],
+            'birth' => ['nullable', 'date'],
+            'email' => ['nullable', 'email', 'max:50'],
+            'zipcode' => ['nullable', 'string', 'max:20'],
+            'state' => ['nullable', 'string', 'max:20'],
+            'city' => ['nullable', 'string', 'max:50'],
+            'district' => ['nullable', 'string', 'max:50'],
+            'street' => ['nullable', 'string', 'max:80'],
+            'complement' => ['nullable', 'string', 'max:80'],
+            'number' => ['nullable', 'integer'],
+            'phone' => ['nullable', 'string', 'max:20'],
+            'contactname' => ['nullable', 'string', 'max:50'],
+            'whatsapp' => ['nullable', 'string', 'max:255'],
+            'contactphone' => ['nullable', 'string', 'max:20'],
+            'observations' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $data['customer_number'] = TenantSequence::next(Customer::class, 'customer_number');
+
+        $customer = Customer::create($data);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pré-cadastro realizado com sucesso.',
+            'result' => $customer,
+        ], 201);
+    }
+
     /**
      * Display a listing of the resource.
      */
