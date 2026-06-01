@@ -24,12 +24,14 @@ class ScheduleRequest extends FormRequest
     {
         return [
             'customer_id' => 'required',
+            'order_id' => 'required',
             'user_id' => 'required',
             'schedules' => 'required',
             'service' => 'required|string|max:500',
             'details' => 'required|string|max:500',
             'observations' => 'nullable|string|max:500',
             'status' => 'required',
+            'send_to_technician' => 'boolean',
         ];
     }
 
@@ -37,11 +39,13 @@ class ScheduleRequest extends FormRequest
     {
         return [
             'customer_id' => 'cliente',
+            'order_id' => 'ordem de serviço',
             'user_id' => 'técnico',
             'schedules' => 'horário da visita',
             'service' => 'serviço',
             'details' => 'detalhes',
             'status' => 'status do agendamento',
+            'send_to_technician' => 'enviar ao técnico',
         ];
     }
 }

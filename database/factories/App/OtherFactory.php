@@ -24,6 +24,7 @@ class OtherFactory extends Factory
             'show_commercial_performance_menu' => false,
             'show_quality_menu' => false,
             'automatic_follow_ups_enabled' => false,
+            'enable_technician_schedule_notifications' => false,
         ];
     }
 

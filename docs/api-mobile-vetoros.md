@@ -99,6 +99,8 @@ Sucesso `200`:
     "user_number": 1,
     "name": "Usuario",
     "email": "usuario@example.com",
+    "avatar": "/storage/avatars/user.png",
+    "avatar_url": "https://seu-dominio.com.br/storage/avatars/user.png",
     "roles": 2,
     "status": 1
   },
@@ -415,8 +417,8 @@ Sucesso `200`:
         "part_value": "250.00",
         "labor_value": "200.00",
         "total_value": "450.00",
-        "warranty": "90 dias",
-        "validity": 10,
+        "warranty": 3,
+        "validity": 48,
         "obs": null,
         "created_at": "2026-06-01T12:00:00.000000Z",
         "updated_at": "2026-06-01T12:00:00.000000Z"
@@ -534,34 +536,33 @@ Campos usados nos filtros:
 
 | Campo | Uso |
 |---|---|
-| `id` | ID para filtrar relatorio |
+| `id` | ID para filtrar orcamentos |
 | `tenant_id` | Tenant dono do equipamento |
 | `equipment_number` | Numero sequencial por tenant |
 | `equipment` | Nome do equipamento, ex: Notebook |
 | `chart` | Define uso em graficos internos |
 | `created_at`, `updated_at` | Controle de sincronizacao |
 
-### `orders`
+### `budgets`
 
-Campos usados no relatorio:
+Campos usados no fluxo de orcamentos:
 
 | Campo | Uso |
 |---|---|
-| `id` | Identificador da OS |
-| `tenant_id` | Tenant dono da OS |
-| `customer_id` | Cliente |
+| `id` | Identificador do orcamento |
+| `tenant_id` | Tenant dono do orcamento |
+| `budget_number` | Numero sequencial por tenant |
 | `equipment_id` | Equipamento |
-| `user_id` | Tecnico/usuario vinculado |
-| `order_number` | Numero sequencial por tenant |
-| `tracking_token` | Token publico de acompanhamento |
-| `model` | Marca/modelo digitado na OS |
-| `defect` | Defeito relatado |
-| `service_status` | Status numerico |
-| `budget_value` | Valor de orcamento |
-| `service_cost` | Valor final/custo da OS |
-| `delivery_forecast` | Previsao de entrega |
-| `delivery_date` | Data de entrega |
-| `is_warranty_return` | Indica retorno em garantia |
+| `model` | Modelo selecionado apos equipamento |
+| `service` | Tipo de servico selecionado apos modelo |
+| `description` | Descricao do orcamento/servico |
+| `estimated_time` | Tempo estimado descritivo |
+| `part_value` | Valor de pecas |
+| `labor_value` | Valor de mao de obra |
+| `total_value` | Valor total |
+| `warranty` | Garantia em meses |
+| `validity` | Prazo em horas |
+| `obs` | Observacoes adicionais |
 | `created_at`, `updated_at` | Controle de sincronizacao |
 
 ## Roteiro de Gravacao por Tenant no App

@@ -5,6 +5,8 @@ namespace App\Http\Controllers\App;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ScheduleRequest;
 use App\Models\App\Customer;
+use App\Models\App\Order;
+use App\Models\App\Other;
 use App\Models\App\Schedule;
 use App\Models\User;
 use App\Support\TenantSequence;
@@ -15,6 +17,11 @@ use Inertia\Inertia;
 
 class ScheduleController extends Controller
 {
+    private function currentTenantId(): ?int
+    {
+        return Auth::user()?->tenant_id ? (int) Auth::user()->tenant_id : null;
+    }
+
     private function scopeSchedulesQuery($query)
     {
         $user = Auth::user();
@@ -52,7 +59,7 @@ class ScheduleController extends Controller
                     });
             });
         }
-        $schedules = $query->with('user', 'customer')->paginate(11)->withQueryString();
+        $schedules = $query->with('user', 'customer', 'order')->paginate(11)->withQueryString();
 
         return Inertia::render('app/schedules/index', [
             'schedules' => $schedules,
@@ -69,11 +76,20 @@ class ScheduleController extends Controller
         $this->authorize('create', Schedule::class);
 
         $customers = Customer::get();
+        $orders = Order::query()
+            ->orderByDesc('id')
+            ->get(['id', 'customer_id', 'order_number', 'model', 'defect', 'service_status']);
+        $enableTechnicianScheduleNotifications = Other::technicianScheduleNotificationsEnabled($this->currentTenantId());
         $technicals = User::whereIn('roles', [User::ROLE_TECHNICIAN, User::ROLE_ADMIN])
             ->where('status', 1)
             ->get();
 
-        return Inertia::render('app/schedules/create-schedule', ['customers' => $customers, 'technicals' => $technicals]);
+        return Inertia::render('app/schedules/create-schedule', [
+            'customers' => $customers,
+            'orders' => $orders,
+            'technicals' => $technicals,
+            'enableTechnicianScheduleNotifications' => $enableTechnicianScheduleNotifications,
+        ]);
     }
 
     /**
@@ -86,7 +102,14 @@ class ScheduleController extends Controller
         $data = $request->all();
         $request->validated();
         Customer::query()->whereKey($data['customer_id'])->firstOrFail();
+        Order::query()
+            ->whereKey($data['order_id'])
+            ->where('customer_id', $data['customer_id'])
+            ->firstOrFail();
         User::query()->whereKey($data['user_id'])->firstOrFail();
+        if (! Other::technicianScheduleNotificationsEnabled($this->currentTenantId())) {
+            $data['send_to_technician'] = false;
+        }
         $data['schedules_number'] = TenantSequence::next(Schedule::class, 'schedules_number');
         Schedule::create($data);
 
@@ -101,6 +124,10 @@ class ScheduleController extends Controller
         $this->authorize('view', $schedule);
 
         $customers = Customer::get();
+        $orders = Order::query()
+            ->orderByDesc('id')
+            ->get(['id', 'customer_id', 'order_number', 'model', 'defect', 'service_status']);
+        $enableTechnicianScheduleNotifications = Other::technicianScheduleNotificationsEnabled($this->currentTenantId());
         $technicals = User::whereIn('roles', [User::ROLE_TECHNICIAN, User::ROLE_ADMIN])
             ->where('status', 1)
             ->get();
@@ -108,7 +135,9 @@ class ScheduleController extends Controller
         return Inertia::render('app/schedules/edit-schedule', [
             'schedule' => $schedule,
             'customers' => $customers,
+            'orders' => $orders,
             'technicals' => $technicals,
+            'enableTechnicianScheduleNotifications' => $enableTechnicianScheduleNotifications,
             'page' => $request->page,
             'search' => $request->search,
         ]);
@@ -138,7 +167,14 @@ class ScheduleController extends Controller
         $data = $request->all();
         $request->validated();
         Customer::query()->whereKey($data['customer_id'])->firstOrFail();
+        Order::query()
+            ->whereKey($data['order_id'])
+            ->where('customer_id', $data['customer_id'])
+            ->firstOrFail();
         User::query()->whereKey($data['user_id'])->firstOrFail();
+        if (! Other::technicianScheduleNotificationsEnabled($this->currentTenantId())) {
+            $data['send_to_technician'] = false;
+        }
         $schedule->update($data);
 
         return redirect()->route('app.schedules.show', ['schedule' => $schedule->id])->with('success', 'Agenda editada com sucesso');

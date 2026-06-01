@@ -39,6 +39,7 @@ class OtherController extends Controller
             'show_quality_menu' => false,
             'print_label_button_after_order_create' => false,
             'automatic_follow_ups_enabled' => false,
+            'enable_technician_schedule_notifications' => false,
         ]);
         $company = Company::query()
             ->where('tenant_id', $tenantId)
@@ -70,6 +71,8 @@ class OtherController extends Controller
                 ?? Other::communicationFollowUpCooldownDays($tenantId),
             'automatic_follow_ups_enabled' => $othersettings->automatic_follow_ups_enabled
                 ?? Other::automaticFollowUpsEnabled($tenantId),
+            'enable_technician_schedule_notifications' => $othersettings->enable_technician_schedule_notifications
+                ?? Other::technicianScheduleNotificationsEnabled($tenantId),
             'customer_feedback_request_delay_days' => $othersettings->customer_feedback_request_delay_days
                 ?? Other::customerFeedbackRequestDelayDays($tenantId),
             'budget_conversion_target' => $othersettings->budget_conversion_target
@@ -118,6 +121,7 @@ class OtherController extends Controller
             'warranty_return_alert_threshold' => 'nullable|numeric|min:0|max:100',
             'communication_follow_up_cooldown_days' => 'nullable|integer|min:1|max:30',
             'automatic_follow_ups_enabled' => 'sometimes|boolean',
+            'enable_technician_schedule_notifications' => 'sometimes|boolean',
             'customer_feedback_request_delay_days' => 'nullable|integer|min:1|max:30',
             'budget_conversion_target' => 'nullable|numeric|min:0|max:100',
             'payment_recovery_target' => 'nullable|numeric|min:0|max:100',

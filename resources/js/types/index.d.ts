@@ -50,6 +50,7 @@ export interface SharedData {
         show_tasks_menu?: boolean;
         show_commercial_performance_menu?: boolean;
         show_quality_menu?: boolean;
+        enable_technician_schedule_notifications?: boolean;
     };
     [key: string]: unknown;
 }
@@ -110,6 +111,7 @@ export interface Scheduler {
     id: number;
     user_id: number;
     customer_id: number;
+    order_id: number;
     service: string;
     details: string;
     status: number;
@@ -117,8 +119,10 @@ export interface Scheduler {
     created_at: string;
     updated_at: string;
     customer: Customer;
+    order: Order;
     user: User;
     observations: string;
+    send_to_technician: boolean;
 }
 
 export interface Message {

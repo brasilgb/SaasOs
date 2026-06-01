@@ -74,7 +74,7 @@ const mainNavGroups: NavGroup[] = [
                 permission: 'budgets',
             },
             {
-                title: 'Agenda',
+                title: 'Agendamentos',
                 href: route('app.schedules.index'),
                 icon: Calendar,
                 active: 'app.schedules.*',

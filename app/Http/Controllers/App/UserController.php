@@ -231,11 +231,13 @@ class UserController extends Controller
 
         $companyName = $company?->shortname ?: $company?->companyname ?: $tenant?->company ?: $tenant?->name;
         $companyLogo = $company?->logo;
+        $result = $user->toArray();
+        $result['avatar_url'] = $user->avatar ? asset(ltrim($user->avatar, '/')) : null;
 
         return response()->json([
             'success' => true,
             'access_token' => $token,
-            'result' => $user,
+            'result' => $result,
             'company' => [
                 'name' => $companyName,
                 'logo' => $companyLogo,

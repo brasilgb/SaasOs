@@ -22,7 +22,7 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: route('app.dashboard'),
     },
     {
-        title: 'Agenda',
+        title: 'Agendamentos',
         href: '#',
     },
 ];
@@ -56,11 +56,11 @@ export default function Schedules({ schedules, search, status }: any) {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Agenda" />
+            <Head title="Agendamentos" />
             <div className="flex min-h-16 flex-col justify-center gap-1 px-4 py-3">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={Calendar} className="h-8 w-8" />
-                    <h2 className="text-xl font-semibold tracking-tight">Agenda</h2>
+                    <h2 className="text-xl font-semibold tracking-tight">Agendamentos</h2>
                 </div>
             </div>
 

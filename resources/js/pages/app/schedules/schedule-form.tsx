@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Customer, Scheduler, User } from '@/types';
 import { statusAgenda } from '@/Utils/dataSelect';
@@ -16,14 +17,22 @@ import Select from 'react-select';
 interface ScheduleFormProps {
     initialData?: Scheduler;
     customers: Customer[];
+    orders: any[];
     technicals: User[];
+    enableTechnicianScheduleNotifications: boolean;
 }
-export default function ScheduleForm({ customers, initialData, technicals }: ScheduleFormProps) {
+export default function ScheduleForm({ customers, orders, initialData, technicals, enableTechnicianScheduleNotifications }: ScheduleFormProps) {
     const isEdit = !!initialData;
 
     const optionsCustomer = customers.map((customer: any) => ({
         value: customer.id,
         label: customer.name,
+    }));
+
+    const orderOptions = orders.map((order: any) => ({
+        value: order.id,
+        customer_id: order.customer_id,
+        label: `OS #${order.order_number}${order.model ? ` - ${order.model}` : ''}${order.defect ? ` - ${order.defect}` : ''}`,
     }));
 
     const optionsTechnical = technicals.map((technical: any) => ({
@@ -33,16 +42,23 @@ export default function ScheduleForm({ customers, initialData, technicals }: Sch
 
     const { data, setData, post, patch, progress, processing, reset, errors } = useForm({
         customer_id: initialData?.customer_id ?? '',
+        order_id: initialData?.order_id ?? '',
         schedules: initialData?.schedules ?? '',
         service: initialData?.service ?? '',
         details: initialData?.details ?? '',
         user_id: initialData?.user_id ?? '',
         status: initialData?.status ?? '',
         observations: initialData?.observations ?? '',
+        send_to_technician: enableTechnicianScheduleNotifications ? (initialData?.send_to_technician ?? false) : false,
     });
 
     const changeCustomer = (selected: any) => {
         setData('customer_id', selected?.value || '');
+        setData('order_id', '');
+    };
+
+    const changeOrder = (selected: any) => {
+        setData('order_id', selected?.value || '');
     };
 
     const handleSubmit = (e: any) => {
@@ -74,6 +90,8 @@ export default function ScheduleForm({ customers, initialData, technicals }: Sch
     const defaultCustomer = optionsCustomer
         ?.filter((o: any) => o.value == initialData?.customer_id)
         .map((opt: any) => ({ value: opt.value, label: opt.label }));
+    const filteredOrderOptions = orderOptions.filter((order: any) => order.customer_id == data.customer_id);
+    const defaultOrder = orderOptions.find((order: any) => order.value == data.order_id) ?? null;
     const statusDefault = statusAgenda
         ?.filter((o: any) => o.value == initialData?.status)
         .map((opt: any) => ({ value: opt.value, label: opt.label }));
@@ -86,7 +104,7 @@ export default function ScheduleForm({ customers, initialData, technicals }: Sch
             <Card>
                 <CardTitle className="border-b px-6 pb-4">Agendamento</CardTitle>
                 <CardContent className="pt-6">
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 lg:grid-cols-3">
                 <div className="grid gap-2">
                     <Label htmlFor="customer_id">Cliente</Label>
                     <Select
@@ -99,6 +117,22 @@ export default function ScheduleForm({ customers, initialData, technicals }: Sch
                         styles={selectStyles}
                     />
                     <InputError className="mt-2" message={errors.customer_id} />
+                </div>
+
+                <div className="grid gap-2">
+                    <Label htmlFor="order_id">Ordem de serviço</Label>
+                    <Select
+                        key={`order-${data.customer_id}-${data.order_id}`}
+                        menuPosition="fixed"
+                        value={defaultOrder}
+                        options={filteredOrderOptions}
+                        onChange={changeOrder}
+                        placeholder={data.customer_id ? 'Selecione a ordem de serviço' : 'Selecione o cliente primeiro'}
+                        isDisabled={!data.customer_id}
+                        className="min-w-0"
+                        styles={selectStyles}
+                    />
+                    <InputError className="mt-2" message={errors.order_id} />
                 </div>
 
                 <div className="grid gap-2">
@@ -132,7 +166,7 @@ export default function ScheduleForm({ customers, initialData, technicals }: Sch
             <Card>
                 <CardTitle className="border-b px-6 pb-4">Acompanhamento</CardTitle>
                 <CardContent className="space-y-4 pt-6">
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 lg:grid-cols-3">
                 <div className="grid gap-2">
                     <Label htmlFor="service_status">Técnico responsável</Label>
                     <Select
@@ -159,6 +193,16 @@ export default function ScheduleForm({ customers, initialData, technicals }: Sch
                         styles={selectStyles}
                     />
                     <InputError className="mt-2" message={errors.status} />
+                </div>
+
+                <div className="flex items-center justify-between gap-4 rounded-md border px-4 py-3 lg:mt-6">
+                    <Label htmlFor="send_to_technician">Enviar ao técnico</Label>
+                    <Switch
+                        id="send_to_technician"
+                        checked={Boolean(data.send_to_technician)}
+                        disabled={!enableTechnicianScheduleNotifications}
+                        onCheckedChange={(checked) => setData('send_to_technician', checked)}
+                    />
                 </div>
             </div>
 

@@ -23,6 +23,7 @@ class Other extends Model
         'warranty_return_alert_threshold' => 'float',
         'communication_follow_up_cooldown_days' => 'integer',
         'automatic_follow_ups_enabled' => 'boolean',
+        'enable_technician_schedule_notifications' => 'boolean',
         'customer_feedback_request_delay_days' => 'integer',
         'budget_conversion_target' => 'float',
         'payment_recovery_target' => 'float',
@@ -71,6 +72,17 @@ class Other extends Model
         }
 
         return false;
+    }
+
+    public static function technicianScheduleNotificationsEnabled(?int $tenantId = null): bool
+    {
+        $query = static::query();
+
+        if ($tenantId) {
+            $query->where('tenant_id', $tenantId);
+        }
+
+        return (bool) ($query->value('enable_technician_schedule_notifications') ?? false);
     }
 
     public static function financeEnabled(?int $tenantId = null): bool

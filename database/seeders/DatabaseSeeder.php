@@ -216,6 +216,7 @@ class DatabaseSeeder extends Seeder
             'warranty_return_alert_threshold' => 8,
             'communication_follow_up_cooldown_days' => 2,
             'automatic_follow_ups_enabled' => true,
+            'enable_technician_schedule_notifications' => true,
             'customer_feedback_request_delay_days' => 5,
             'budget_conversion_target' => 65,
             'payment_recovery_target' => 75,

@@ -12,9 +12,18 @@ class Schedule extends Model
 {
     use HasFactory, Tenantable;
 
+    protected $casts = [
+        'send_to_technician' => 'boolean',
+    ];
+
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    public function order(): BelongsTo
+    {
+        return $this->belongsTo(Order::class);
     }
 
     public function user(): BelongsTo

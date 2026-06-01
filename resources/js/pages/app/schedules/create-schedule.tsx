@@ -12,7 +12,7 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: route('app.dashboard'),
     },
     {
-        title: 'Agenda',
+        title: 'Agendamentos',
         href: route('app.schedules.index'),
     },
     {
@@ -21,14 +21,14 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function CreateSchedule({ customers, technicals }: any) {
+export default function CreateSchedule({ customers, orders, technicals, enableTechnicianScheduleNotifications }: any) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Agenda" />
+            <Head title="Agendamentos" />
             <div className="flex min-h-16 flex-col justify-center gap-1 px-4 py-3">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={Calendar} className="h-8 w-8" />
-                    <h2 className="text-xl font-semibold tracking-tight">Agenda</h2>
+                    <h2 className="text-xl font-semibold tracking-tight">Agendamentos</h2>
                 </div>
             </div>
 
@@ -46,7 +46,12 @@ export default function CreateSchedule({ customers, technicals }: any) {
 
             <div className="p-4">
                 <div className="rounded-lg border p-2">
-                    <ScheduleForm customers={customers} technicals={technicals} />
+                    <ScheduleForm
+                        customers={customers}
+                        orders={orders}
+                        technicals={technicals}
+                        enableTechnicianScheduleNotifications={enableTechnicianScheduleNotifications}
+                    />
                 </div>
             </div>
         </AppLayout>

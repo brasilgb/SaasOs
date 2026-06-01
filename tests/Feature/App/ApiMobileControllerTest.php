@@ -31,6 +31,8 @@ class ApiMobileControllerTest extends TestCase
 
     public function test_login_returns_company_name_and_logo(): void
     {
+        $this->user->update(['avatar' => '/storage/avatars/user.png']);
+
         Company::factory()->forTenant($this->tenant->id)->create([
             'shortname' => 'Vetor Assistencia',
             'companyname' => 'Vetor Assistencia Tecnica Ltda',
@@ -46,6 +48,8 @@ class ApiMobileControllerTest extends TestCase
             ->assertOk()
             ->assertJsonPath('success', true)
             ->assertJsonPath('result.id', $this->user->id)
+            ->assertJsonPath('result.avatar', '/storage/avatars/user.png')
+            ->assertJsonPath('result.avatar_url', asset('storage/avatars/user.png'))
             ->assertJsonPath('company.name', 'Vetor Assistencia')
             ->assertJsonPath('company.logo', 'vetor-logo.png')
             ->assertJsonPath('company.logo_url', asset('storage/logos/vetor-logo.png'));

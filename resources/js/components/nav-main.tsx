@@ -24,6 +24,7 @@ type NavMainPageProps = {
         show_tasks_menu?: boolean;
         show_commercial_performance_menu?: boolean;
         show_quality_menu?: boolean;
+        enable_technician_schedule_notifications?: boolean;
     };
     auth: {
         role?: string;

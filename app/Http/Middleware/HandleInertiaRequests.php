@@ -312,6 +312,7 @@ class HandleInertiaRequests extends Middleware
                 'show_quality_menu' => false,
                 'print_label_button_after_order_create' => false,
                 'automatic_follow_ups_enabled' => false,
+                'enable_technician_schedule_notifications' => false,
             ]);
             $openCashSession = CashSession::query()
                 ->where('status', 'open')
@@ -370,6 +371,7 @@ class HandleInertiaRequests extends Middleware
                 'show_commercial_performance_menu' => $otherSetting->show_commercial_performance_menu ?? false,
                 'show_quality_menu' => $otherSetting->show_quality_menu ?? false,
                 'print_label_button_after_order_create' => $otherSetting->print_label_button_after_order_create ?? false,
+                'enable_technician_schedule_notifications' => $otherSetting->enable_technician_schedule_notifications ?? false,
             ] : null,
             'cashier' => $user ? [
                 'isOpen' => (bool) $openCashSession,

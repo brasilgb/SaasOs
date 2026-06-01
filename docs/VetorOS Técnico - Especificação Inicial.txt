@@ -1,0 +1,223 @@
+VetorOS Técnico - Especificação Inicial do Aplicativo de Campo
+Objetivo
+O aplicativo VetorOS Técnico tem como objetivo permitir que técnicos externos realizem atendimentos em campo com total autonomia, recebendo notificações, atualizando ordens de serviço, registrando evidências e mantendo a empresa informada em tempo real.
+
+Dashboard Inicial
+Informações Principais
+* Serviços agendados para hoje
+* Próximo atendimento
+* Quantidade de atendimentos pendentes
+* Quantidade de atendimentos concluídos
+* Distância até o próximo cliente
+* Indicador de sincronização
+* Botão “Iniciar Rota”
+
+Agenda de Atendimentos
+Lista de Agendamentos
+Exibir:
+* Data e hora
+* Cliente
+* Endereço
+* Tipo de serviço
+* Status
+* Prioridade
+Filtros
+* Hoje
+* Amanhã
+* Semana
+* Pendentes
+* Concluídos
+
+Detalhes do Atendimento
+Dados do Cliente
+* Nome
+* Telefone
+* WhatsApp
+* E-mail
+* Endereço completo
+* Localização GPS
+Dados do Equipamento
+* Marca
+* Modelo
+* Número de série
+* Categoria
+* Problema relatado
+Observações
+* Observações da recepção
+* Histórico de atendimentos anteriores
+* Fotos enviadas pelo cliente
+
+Controle de Status
+O técnico poderá atualizar o status da visita:
+* Agendado
+* A caminho
+* Cheguei ao local
+* Em atendimento
+* Aguardando peça
+* Aguardando aprovação
+* Retorno necessário
+* Concluído
+* Cancelado
+Cada alteração deverá registrar:
+* Data
+* Hora
+* Usuário responsável
+* Localização GPS
+
+Check-in e Check-out
+Check-in
+Ao chegar ao local:
+* Registrar horário
+* Capturar GPS
+* Tirar foto opcional
+Check-out
+Ao finalizar:
+* Registrar horário de saída
+* Capturar GPS
+* Assinatura do cliente
+
+Ordem de Serviço Mobile
+Permitir:
+* Visualizar OS completa
+* Registrar diagnóstico
+* Registrar solução aplicada
+* Inserir observações
+* Alterar status
+* Encerrar atendimento
+
+Registro Fotográfico
+Antes do Serviço
+* Fotos iniciais
+Durante o Serviço
+* Fotos intermediárias
+Após o Serviço
+* Fotos finais
+Todas as imagens devem ser vinculadas à Ordem de Serviço.
+
+Vídeos
+Permitir gravação de vídeos curtos para:
+* Evidências técnicas
+* Demonstração de defeitos
+* Comprovação de conclusão
+
+Assinatura Digital
+Captura da assinatura do cliente contendo:
+* Nome
+* Data
+* Hora
+* Assinatura
+Anexada automaticamente à Ordem de Serviço.
+
+Pagamentos no Local
+Formas de Pagamento
+* Pix
+* Dinheiro
+* Cartão
+* Transferência
+* Boleto
+Recursos
+* Registrar pagamento
+* Registrar valor recebido
+* Gerar comprovante
+* Informar pagamento pendente
+
+Integração WhatsApp
+Ações rápidas:
+* Ligar para cliente
+* Abrir conversa WhatsApp
+* Enviar orçamento
+* Enviar comprovante
+* Enviar relatório de atendimento
+
+Checklist de Atendimento
+Exemplo
+Instalação
+* Equipamento instalado
+* Equipamento configurado
+* Equipamento testado
+* Cliente orientado
+* Manual entregue
+Manutenção
+* Defeito identificado
+* Defeito corrigido
+* Testes realizados
+* Cliente aprovado
+
+Controle de Estoque do Técnico
+Estoque Individual
+Cada técnico poderá visualizar:
+* Produtos disponíveis
+* Quantidade
+* Reservas
+Movimentações
+* Transferência da empresa para técnico
+* Devolução
+* Baixa automática por utilização
+
+Roteirização
+Mapa Integrado
+Exibir:
+* Todos os atendimentos do dia
+* Melhor sequência de visitas
+* Distância total
+* Tempo estimado
+Integração com:
+* Google Maps
+* Waze
+
+Funcionamento Offline
+Recursos Offline
+* Consultar agenda
+* Consultar OS
+* Registrar atendimento
+* Tirar fotos
+* Registrar assinatura
+Sincronização
+Quando houver internet:
+* Enviar alterações pendentes
+* Atualizar informações automaticamente
+
+Notificações Push
+Enviar notificações para:
+* Novo agendamento
+* Alteração de horário
+* Cancelamento
+* Nova Ordem de Serviço
+* Aprovação de orçamento
+* Mensagens da empresa
+
+Assistente IA Integrado
+Objetivo
+Auxiliar o técnico durante o atendimento.
+Exemplos
+Pergunta:
+“Equipamento não liga após troca da fonte.”
+Resposta:
+* Possíveis causas
+* Procedimentos de teste
+* Soluções recomendadas
+* Casos semelhantes
+
+Painel de Desempenho do Técnico
+Indicadores:
+* Atendimentos realizados
+* Tempo médio por atendimento
+* Faturamento gerado
+* Avaliação dos clientes
+* Taxa de retorno
+* Serviços concluídos
+
+Diferenciais Estratégicos
+* Aplicativo nativo para técnicos externos
+* Funcionamento offline
+* Controle de estoque móvel
+* Assinatura digital
+* Pagamento integrado
+* GPS e rastreabilidade
+* Fotos e vídeos vinculados à OS
+* Assistente IA para suporte técnico
+* Comunicação integrada com WhatsApp
+* Atualização em tempo real para a central
+
+Visão de Futuro
+O VetorOS Técnico deverá se tornar uma plataforma completa para operações externas, permitindo que o técnico execute todo o ciclo de atendimento sem necessidade de contato telefônico com a empresa, aumentando produtividade, controle e qualidade dos serviços prestados.

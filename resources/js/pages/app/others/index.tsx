@@ -52,6 +52,7 @@ export default function Others({ othersettings, company, time_remaining, mailSet
         warranty_return_alert_threshold: businessMetrics?.warranty_return_alert_threshold ?? 10,
         communication_follow_up_cooldown_days: businessMetrics?.communication_follow_up_cooldown_days ?? 2,
         automatic_follow_ups_enabled: businessMetrics?.automatic_follow_ups_enabled ?? false,
+        enable_technician_schedule_notifications: businessMetrics?.enable_technician_schedule_notifications ?? false,
         customer_feedback_request_delay_days: businessMetrics?.customer_feedback_request_delay_days ?? 7,
         budget_conversion_target: businessMetrics?.budget_conversion_target ?? 60,
         payment_recovery_target: businessMetrics?.payment_recovery_target ?? 70,
@@ -120,6 +121,33 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                             </TabsList>
 
                             <TabsContent value="system" className="w-full space-y-8">
+                                <div className="space-y-6 rounded-2xl border p-5">
+                                    <HeadingSmall
+                                        title="Notificações de agendamento"
+                                        description="Habilite quando a empresa for usar o app de assistência agendada para notificar o técnico responsável."
+                                    />
+
+                                    <div className="bg-card text-card-foreground flex items-center justify-between gap-4 rounded-2xl border p-4 shadow-sm">
+                                        <div>
+                                            <p className="font-medium">Envio de notificação ao técnico</p>
+                                            <p className="text-muted-foreground text-sm">
+                                                Libera a opção Enviar ao técnico nos agendamentos para uso com o app de assistência agendada.
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <Switch
+                                                id="enable_technician_schedule_notifications"
+                                                checked={data.enable_technician_schedule_notifications}
+                                                disabled={!canManageOtherSettings}
+                                                onCheckedChange={(checked) => setData('enable_technician_schedule_notifications', checked)}
+                                            />
+                                            <span className="text-muted-foreground text-sm">
+                                                {data.enable_technician_schedule_notifications ? 'Habilitado' : 'Desabilitado'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div className="space-y-6 rounded-2xl border p-5">
                                     <HeadingSmall
                                         title="Módulos financeiros"
