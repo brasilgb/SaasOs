@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\App;
 
+use App\Models\App\Budget;
+use App\Models\App\Company;
 use App\Models\App\Customer;
 use App\Models\App\Equipment;
 use App\Models\App\Order;
@@ -25,6 +27,99 @@ class ApiMobileControllerTest extends TestCase
 
         $this->tenant = Tenant::factory()->create();
         $this->user = User::factory()->forTenant($this->tenant->id)->create();
+    }
+
+    public function test_login_returns_company_name_and_logo(): void
+    {
+        Company::factory()->forTenant($this->tenant->id)->create([
+            'shortname' => 'Vetor Assistencia',
+            'companyname' => 'Vetor Assistencia Tecnica Ltda',
+            'logo' => 'vetor-logo.png',
+        ]);
+
+        $response = $this->postJson(route('loginuser'), [
+            'email' => $this->user->email,
+            'password' => 'password',
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('result.id', $this->user->id)
+            ->assertJsonPath('company.name', 'Vetor Assistencia')
+            ->assertJsonPath('company.logo', 'vetor-logo.png')
+            ->assertJsonPath('company.logo_url', asset('storage/logos/vetor-logo.png'));
+    }
+
+    public function test_it_filters_mobile_budgets_by_equipment_model_and_service(): void
+    {
+        $notebook = Equipment::factory()->forTenant($this->tenant->id)->create([
+            'equipment' => 'Notebook',
+        ]);
+        $desktop = Equipment::factory()->forTenant($this->tenant->id)->create([
+            'equipment' => 'Desktop',
+        ]);
+
+        $matched = Budget::factory()->forTenant($this->tenant->id)->create([
+            'equipment_id' => $notebook->id,
+            'model' => 'Dell Inspiron',
+            'service' => 'Troca de tela',
+            'description' => 'Substituicao completa da tela',
+            'total_value' => 450,
+        ]);
+        Budget::factory()->forTenant($this->tenant->id)->create([
+            'equipment_id' => $notebook->id,
+            'model' => 'Dell Inspiron',
+            'service' => 'Limpeza interna',
+        ]);
+        Budget::factory()->forTenant($this->tenant->id)->create([
+            'equipment_id' => $desktop->id,
+            'model' => 'Dell Inspiron',
+            'service' => 'Troca de tela',
+        ]);
+
+        $filters = $this->actingAs($this->user, 'sanctum')->getJson(route('api.budgets.filters'));
+
+        $filters
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonFragment(['id' => $notebook->id, 'equipment' => 'Notebook'])
+            ->assertJsonFragment(['id' => $desktop->id, 'equipment' => 'Desktop']);
+
+        $models = $this->actingAs($this->user, 'sanctum')->getJson(route('api.budgets.models', [
+            'equipment_id' => $notebook->id,
+        ]));
+
+        $models
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('result.models.0', 'Dell Inspiron');
+
+        $services = $this->actingAs($this->user, 'sanctum')->getJson(route('api.budgets.services', [
+            'equipment_id' => $notebook->id,
+            'model' => 'Dell Inspiron',
+        ]));
+
+        $services
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('result.services.0', 'Limpeza interna')
+            ->assertJsonPath('result.services.1', 'Troca de tela');
+
+        $response = $this->actingAs($this->user, 'sanctum')->getJson(route('api.budgets.show', [
+            'equipment_id' => $notebook->id,
+            'model' => 'Dell Inspiron',
+            'service' => 'Troca de tela',
+        ]));
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('result.budgets.0.id', $matched->id)
+            ->assertJsonPath('result.budgets.0.equipment.equipment', 'Notebook')
+            ->assertJsonPath('result.budgets.0.model', 'Dell Inspiron')
+            ->assertJsonPath('result.budgets.0.service', 'Troca de tela')
+            ->assertJsonPath('result.budgets.0.description', 'Substituicao completa da tela');
     }
 
     public function test_it_pre_registers_customer_from_api(): void

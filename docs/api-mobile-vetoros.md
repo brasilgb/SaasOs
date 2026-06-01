@@ -29,13 +29,17 @@ O tenant nao deve ser enviado manualmente pelo app. A API identifica o tenant pe
 ## Fluxo Recomendado
 
 1. Fazer login em `POST /loginuser`.
-2. Salvar localmente `access_token` e o usuario retornado.
+2. Salvar localmente `access_token`, usuario retornado e dados da empresa (`company`).
 3. Usar `result.tenant_id` como chave local de cache/sincronizacao.
 4. Buscar listas auxiliares:
    - `GET /clientes`
-   - `GET /relatorios/equipamentos/filtros`
+   - `GET /orcamentos/filtros`
 5. Para pre-cadastro, enviar `POST /clientes/pre-cadastro`.
-6. Para relatorio por equipamento/marca/modelo, chamar `GET /relatorios/equipamentos`.
+6. Para orcamento, seguir o fluxo:
+   - selecionar equipamento em `GET /orcamentos/filtros`
+   - buscar modelos em `GET /orcamentos/modelos?equipment_id={id}`
+   - buscar servicos em `GET /orcamentos/servicos?equipment_id={id}&model={modelo}`
+   - buscar dados finais em `GET /orcamentos?equipment_id={id}&model={modelo}&service={servico}`
 7. Ao trocar usuario ou tenant, limpar o cache local do tenant anterior.
 
 Sugestao de estrutura local no app:
@@ -48,6 +52,11 @@ Sugestao de estrutura local no app:
       "id": 10,
       "tenant_id": 3,
       "name": "Usuario"
+    },
+    "company": {
+      "name": "Minha Empresa",
+      "logo": "1717000000.png",
+      "logo_url": "https://seu-dominio.com.br/storage/logos/1717000000.png"
     }
   },
   "tenants": {
@@ -92,6 +101,11 @@ Sucesso `200`:
     "email": "usuario@example.com",
     "roles": 2,
     "status": 1
+  },
+  "company": {
+    "name": "Minha Empresa",
+    "logo": "1717000000.png",
+    "logo_url": "https://seu-dominio.com.br/storage/logos/1717000000.png"
   }
 }
 ```
@@ -270,27 +284,26 @@ Erro de validacao `422`:
 }
 ```
 
-## Relatorio por Equipamento, Marca e Modelo
+## Orcamentos por Equipamento, Modelo e Servico
 
 No banco atual:
 
 | Conceito no app | Origem no banco |
 |---|---|
 | Equipamento | `equipment.id` e `equipment.equipment` |
-| Marca/modelo | `orders.model` |
-| Relatorio | dados de `orders` filtrados por `equipment_id` e `model` |
+| Modelo | `budgets.model` |
+| Servico | `budgets.service` |
+| Orcamento | dados de `budgets` filtrados por `equipment_id`, `model` e `service` |
 
-Nao existe tabela separada de marca/modelo. O app deve listar os modelos distintos vindos das ordens ja cadastradas.
+Este fluxo nao usa ordens de servico. Os selects do app devem ser preenchidos a partir de `equipment` e `budgets`.
 
-### Listar Filtros
+### 1. Listar Equipamentos
 
 Endpoint:
 
 ```http
-GET /api/relatorios/equipamentos/filtros
+GET /api/orcamentos/filtros
 ```
-
-Permissao necessaria: `reports`.
 
 Sucesso `200`:
 
@@ -305,57 +318,16 @@ Sucesso `200`:
         "equipment": "Notebook"
       }
     ],
-    "models_by_equipment": {
-      "1": ["Dell Inspiron", "Lenovo Ideapad"]
-    },
-    "models": ["Dell Inspiron", "Lenovo Ideapad"],
-    "statuses": {
-      "1": "Ordem Aberta",
-      "2": "Ordem Cancelada",
-      "3": "Orçamento Gerado",
-      "4": "Orçamento Aprovado",
-      "5": "Orçamento reprovado",
-      "6": "Reparo em andamento",
-      "7": "Serviço concluído",
-      "8": "Serviço não executado",
-      "9": "Cliente avisado / aguardando retirada",
-      "10": "Entregue ao cliente"
-    }
   }
 }
 ```
 
-Uso no app:
-
-1. Renderize `equipments` no primeiro seletor.
-2. Ao selecionar um equipamento, busque `models_by_equipment[equipment_id]`.
-3. Use `models` como fallback quando quiser mostrar todos os modelos.
-4. Use `statuses` para filtros de status.
-
-### Consultar Relatorio
+### 2. Listar Modelos do Equipamento
 
 Endpoint:
 
 ```http
-GET /api/relatorios/equipamentos
-```
-
-Query params:
-
-| Parametro | Obrigatorio | Tipo | Observacao |
-|---|---:|---|---|
-| `equipment_id` | Nao | integer | ID de `equipment` |
-| `model` | Nao | string, max 50 | Valor exato de `orders.model` |
-| `brand` | Nao | string, max 50 | Alias de `model`, para compatibilidade com app |
-| `status` | Nao | integer | Um dos status de `statuses` |
-| `from` | Nao | date | Data inicial `YYYY-MM-DD` em `orders.created_at` |
-| `to` | Nao | date | Data final `YYYY-MM-DD` em `orders.created_at` |
-| `per_page` | Nao | integer, 1-100 | Padrao 50 |
-
-Exemplo:
-
-```http
-GET /api/relatorios/equipamentos?equipment_id=1&model=Dell%20Inspiron&from=2026-06-01&to=2026-06-30&per_page=50
+GET /api/orcamentos/modelos?equipment_id=1
 ```
 
 Sucesso `200`:
@@ -364,64 +336,92 @@ Sucesso `200`:
 {
   "success": true,
   "result": {
+    "equipment_id": 1,
+    "models": ["Dell Inspiron", "Lenovo Ideapad"]
+  }
+}
+```
+
+### 3. Listar Servicos do Modelo
+
+Endpoint:
+
+```http
+GET /api/orcamentos/servicos?equipment_id=1&model=Dell%20Inspiron
+```
+
+Sucesso `200`:
+
+```json
+{
+  "success": true,
+  "result": {
+    "equipment_id": 1,
+    "model": "Dell Inspiron",
+    "services": ["Limpeza interna", "Troca de tela"]
+  }
+}
+```
+
+### 4. Consultar Orcamento
+
+Endpoint:
+
+```http
+GET /api/orcamentos
+```
+
+Query params:
+
+| Parametro | Obrigatorio | Tipo | Observacao |
+|---|---:|---|---|
+| `equipment_id` | Sim | integer | ID de `equipment` |
+| `model` | Sim | string, max 255 | Valor exato de `budgets.model` |
+| `service` | Sim | string, max 150 | Valor exato de `budgets.service` |
+
+Exemplo:
+
+```http
+GET /api/orcamentos?equipment_id=1&model=Dell%20Inspiron&service=Troca%20de%20tela
+```
+
+Sucesso `200`:
+
+```json
+{
+  "success": true,
+  "status": true,
+  "result": {
     "filters": {
       "equipment_id": 1,
       "model": "Dell Inspiron",
-      "status": null,
-      "from": "2026-06-01",
-      "to": "2026-06-30"
+      "service": "Troca de tela"
     },
-    "summary": {
-      "orders_count": 1,
-      "service_cost_total": 300,
-      "budget_value_total": 300,
-      "warranty_returns": 0
-    },
-    "orders": {
-      "current_page": 1,
-      "data": [
-        {
-          "id": 10,
-          "order_number": 5,
-          "tracking_token": "ABC123",
-          "customer": {
-            "id": 15,
-            "name": "Cliente",
-            "phone": "51999990000",
-            "whatsapp": "51999990000",
-            "email": "cliente@example.com"
-          },
-          "equipment": {
-            "id": 1,
-            "equipment": "Notebook"
-          },
-          "model": "Dell Inspiron",
-          "defect": "Nao liga",
-          "service_status": 10,
-          "service_status_label": "Entregue ao cliente",
-          "budget_value": 300,
-          "service_cost": 300,
-          "delivery_forecast": "2026-06-10",
-          "delivery_date": "2026-06-09T18:00:00+00:00",
-          "created_at": "2026-06-01T12:00:00+00:00",
-          "technician": {
-            "id": 2,
-            "name": "Tecnico"
-          }
-        }
-      ],
-      "first_page_url": "...",
-      "from": 1,
-      "last_page": 1,
-      "last_page_url": "...",
-      "links": [],
-      "next_page_url": null,
-      "path": "...",
-      "per_page": 50,
-      "prev_page_url": null,
-      "to": 1,
-      "total": 1
-    }
+    "budgets": [
+      {
+        "id": 10,
+        "tenant_id": 3,
+        "budget_number": 5,
+        "equipment_id": 1,
+        "equipment": {
+          "id": 1,
+          "equipment_number": 1,
+          "equipment": "Notebook"
+        },
+        "model": "Dell Inspiron",
+        "service": "Troca de tela",
+        "description": "Substituicao completa da tela",
+        "estimated_time": "2 dias",
+        "part_value": "250.00",
+        "labor_value": "200.00",
+        "total_value": "450.00",
+        "warranty": "90 dias",
+        "validity": 10,
+        "obs": null,
+        "created_at": "2026-06-01T12:00:00.000000Z",
+        "updated_at": "2026-06-01T12:00:00.000000Z"
+      }
+    ]
   }
 }
 ```
@@ -571,6 +571,8 @@ Campos usados no relatorio:
    - `user.id`
    - `user.tenant_id`
    - `user.roles`
+   - `company.name`
+   - `company.logo_url`
 2. Crie uma area local por `tenant_id`.
 3. Toda resposta `success: true` deve ser gravada dentro da area do tenant atual.
 4. Para listas, grave tambem `updated_at` local da sincronizacao.

@@ -7,7 +7,6 @@ use App\Http\Requests\BudgetsRequest;
 use App\Models\App\Budget;
 use App\Models\App\Company;
 use App\Models\App\Equipment;
-use App\Models\App\Service;
 use App\Support\TenantSequence;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -24,28 +23,127 @@ class BudgetController extends Controller
 
     public function getOrcamentos(Request $request)
     {
-        if (! $request->marca && ! $request->modelo) {
-            $orcamento = Budget::where('servico', $request->servico)->first();
-            $marcas = [];
-            $modelos = [];
-        } else {
-            $orcamento = Budget::where('servico', $request->servico)->where('brand', $request->brand)->where('eqmodel', $request->eqmodel)->first();
-        }
+        $data = $request->validate([
+            'equipment_id' => ['required', 'integer'],
+            'model' => ['required', 'string', 'max:255'],
+            'service' => ['required', 'string', 'max:150'],
+        ]);
 
-        $servicos = Service::where('id', $request->servico)->first();
+        Equipment::query()->whereKey($data['equipment_id'])->firstOrFail();
+
+        $budgets = Budget::query()
+            ->with('equipment:id,equipment_number,equipment')
+            ->where('equipment_id', $data['equipment_id'])
+            ->where('model', $data['model'])
+            ->where('service', $data['service'])
+            ->orderBy('id')
+            ->get()
+            ->map(fn (Budget $budget) => $this->budgetPayload($budget))
+            ->values();
 
         return response()->json([
+            'success' => true,
             'status' => true,
-            'data' => [
-                'id' => $orcamento->id,
-                'servico' => $servicos->servico,
-                'marca' => $marcas ? $marcas->marca : null,
-                'modelo' => $modelos ? $modelos->modelo : null,
-                'descricao' => $orcamento->descricao,
-                'valor' => $orcamento->valor,
-                'created_at' => $orcamento->created_at,
+            'result' => [
+                'filters' => $data,
+                'budgets' => $budgets,
             ],
+            'data' => $budgets,
         ], 200);
+    }
+
+    public function budgetFilters()
+    {
+        $equipments = Equipment::query()
+            ->orderBy('equipment')
+            ->get(['id', 'equipment_number', 'equipment']);
+
+        return response()->json([
+            'success' => true,
+            'result' => [
+                'equipments' => $equipments,
+            ],
+        ]);
+    }
+
+    public function budgetModels(Request $request)
+    {
+        $data = $request->validate([
+            'equipment_id' => ['required', 'integer'],
+        ]);
+
+        Equipment::query()->whereKey($data['equipment_id'])->firstOrFail();
+
+        $models = Budget::query()
+            ->where('equipment_id', $data['equipment_id'])
+            ->whereNotNull('model')
+            ->where('model', '!=', '')
+            ->distinct()
+            ->orderBy('model')
+            ->pluck('model')
+            ->values();
+
+        return response()->json([
+            'success' => true,
+            'result' => [
+                'equipment_id' => (int) $data['equipment_id'],
+                'models' => $models,
+            ],
+        ]);
+    }
+
+    public function budgetServices(Request $request)
+    {
+        $data = $request->validate([
+            'equipment_id' => ['required', 'integer'],
+            'model' => ['required', 'string', 'max:255'],
+        ]);
+
+        Equipment::query()->whereKey($data['equipment_id'])->firstOrFail();
+
+        $services = Budget::query()
+            ->where('equipment_id', $data['equipment_id'])
+            ->where('model', $data['model'])
+            ->distinct()
+            ->orderBy('service')
+            ->pluck('service')
+            ->values();
+
+        return response()->json([
+            'success' => true,
+            'result' => [
+                'equipment_id' => (int) $data['equipment_id'],
+                'model' => $data['model'],
+                'services' => $services,
+            ],
+        ]);
+    }
+
+    private function budgetPayload(Budget $budget): array
+    {
+        return [
+            'id' => $budget->id,
+            'tenant_id' => $budget->tenant_id,
+            'budget_number' => $budget->budget_number,
+            'equipment_id' => $budget->equipment_id,
+            'equipment' => $budget->equipment ? [
+                'id' => $budget->equipment->id,
+                'equipment_number' => $budget->equipment->equipment_number,
+                'equipment' => $budget->equipment->equipment,
+            ] : null,
+            'model' => $budget->model,
+            'service' => $budget->service,
+            'description' => $budget->description,
+            'estimated_time' => $budget->estimated_time,
+            'part_value' => $budget->part_value,
+            'labor_value' => $budget->labor_value,
+            'total_value' => $budget->total_value,
+            'warranty' => $budget->warranty,
+            'validity' => $budget->validity,
+            'obs' => $budget->obs,
+            'created_at' => $budget->created_at,
+            'updated_at' => $budget->updated_at,
+        ];
     }
 
     /**

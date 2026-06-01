@@ -4,7 +4,10 @@ namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserRequest;
+use App\Models\App\Company;
+use App\Models\Tenant;
 use App\Models\User;
+use App\Support\TenantSequence;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -12,7 +15,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use App\Support\TenantSequence;
 use Inertia\Inertia;
 
 class UserController extends Controller
@@ -215,11 +217,30 @@ class UserController extends Controller
             ], 401);
         }
         $token = $user->createToken($user->name.'-AuthToken')->plainTextToken;
+        $company = $user->tenant_id
+            ? Company::query()
+                ->withoutGlobalScopes()
+                ->where('tenant_id', $user->tenant_id)
+                ->first(['shortname', 'companyname', 'logo'])
+            : null;
+        $tenant = $user->tenant_id
+            ? Tenant::query()
+                ->whereKey($user->tenant_id)
+                ->first(['name', 'company'])
+            : null;
+
+        $companyName = $company?->shortname ?: $company?->companyname ?: $tenant?->company ?: $tenant?->name;
+        $companyLogo = $company?->logo;
 
         return response()->json([
             'success' => true,
             'access_token' => $token,
             'result' => $user,
+            'company' => [
+                'name' => $companyName,
+                'logo' => $companyLogo,
+                'logo_url' => $companyLogo ? asset('storage/logos/'.$companyLogo) : asset('images/default.png'),
+            ],
         ]);
     }
 

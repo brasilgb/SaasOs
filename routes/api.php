@@ -34,6 +34,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/clientes/pre-cadastro', [CustomerController::class, 'preRegister'])->name('api.customers.pre-register');
     Route::get('/relatorios/equipamentos/filtros', [ReportController::class, 'equipmentFilters'])->name('api.reports.equipment-filters');
     Route::get('/relatorios/equipamentos', [ReportController::class, 'equipmentReport'])->name('api.reports.equipment');
+    Route::get('/orcamentos/filtros', [BudgetController::class, 'budgetFilters'])->name('api.budgets.filters');
+    Route::get('/orcamentos/modelos', [BudgetController::class, 'budgetModels'])->name('api.budgets.models');
+    Route::get('/orcamentos/servicos', [BudgetController::class, 'budgetServices'])->name('api.budgets.services');
+    Route::get('/orcamentos', [BudgetController::class, 'getOrcamentos'])->name('api.budgets.show');
     Route::post('/orcamentos', [BudgetController::class, 'getOrcamentos']);
     Route::post('/servicos', [ServiceController::class, 'getServicos']);
     Route::get('/empresa', [CompanyController::class, 'getEmpresaInfo']);
