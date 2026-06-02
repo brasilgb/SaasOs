@@ -33,3 +33,4 @@ yarn-error.log*
 .env.development
 .env.productionbackup/*.sql
 backup/
+vetor-atendimento
