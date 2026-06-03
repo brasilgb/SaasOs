@@ -4,6 +4,7 @@ namespace Tests\Feature\App;
 
 use App\Models\App\Customer;
 use App\Models\App\CashSession;
+use App\Models\App\Checklist;
 use App\Models\App\Equipment;
 use App\Models\App\Image;
 use App\Models\App\Order;
@@ -117,6 +118,8 @@ class TechnicianScheduleApiTest extends TestCase
         $order = Order::factory()->forTenant($this->tenant->id)->create([
             'customer_id' => $customer->id,
             'user_id' => $this->technician->id,
+            'technician_diagnosis' => 'Falha identificada.',
+            'technician_solution' => 'Servico concluido.',
         ]);
         $nextSchedule = Schedule::factory()->forTenant($this->tenant->id)->create([
             'customer_id' => $customer->id,
@@ -162,6 +165,8 @@ class TechnicianScheduleApiTest extends TestCase
         $order = Order::factory()->forTenant($this->tenant->id)->create([
             'customer_id' => $customer->id,
             'user_id' => $this->technician->id,
+            'technician_diagnosis' => 'Falha identificada.',
+            'technician_solution' => 'Servico concluido.',
         ]);
         $schedule = Schedule::factory()->forTenant($this->tenant->id)->create([
             'customer_id' => $customer->id,
@@ -186,6 +191,82 @@ class TechnicianScheduleApiTest extends TestCase
             'id' => $schedule->id,
             'status' => 2,
         ]);
+    }
+
+    public function test_technician_schedule_payload_includes_equipment_checklist_items(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+        Checklist::factory()->forTenant($this->tenant->id)->create([
+            'equipment_id' => $equipment->id,
+            'checklist' => 'Equipamento instalado, Equipamento testado, Cliente orientado',
+        ]);
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'user_id' => $this->technician->id,
+        ]);
+        $schedule = Schedule::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'order_id' => $order->id,
+            'user_id' => $this->technician->id,
+            'send_to_technician' => true,
+        ]);
+
+        $response = $this->actingAs($this->technician, 'sanctum')
+            ->getJson(route('api.technician.schedules.show', $schedule));
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('result.order.equipment.checklist_items.0', 'Equipamento instalado')
+            ->assertJsonPath('result.order.equipment.checklist_items.1', 'Equipamento testado')
+            ->assertJsonPath('result.order.equipment.checklist_items.2', 'Cliente orientado');
+    }
+
+    public function test_technician_updates_order_checklist_for_owned_schedule(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+        Checklist::factory()->forTenant($this->tenant->id)->create([
+            'equipment_id' => $equipment->id,
+            'checklist' => 'Equipamento instalado, Equipamento testado, Cliente orientado',
+        ]);
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'user_id' => $this->technician->id,
+        ]);
+        $schedule = Schedule::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'order_id' => $order->id,
+            'user_id' => $this->technician->id,
+            'send_to_technician' => true,
+        ]);
+
+        $response = $this->actingAs($this->technician, 'sanctum')
+            ->postJson(route('api.technician.schedules.checklist', $schedule), [
+                'items' => [
+                    'Equipamento instalado',
+                    'Cliente orientado',
+                    'Item fora do cadastro',
+                ],
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('result.order.technician_checklist_items.0', 'Equipamento instalado')
+            ->assertJsonPath('result.order.technician_checklist_items.1', 'Cliente orientado');
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+        ]);
+
+        $this->assertSame([
+            'Equipamento instalado',
+            'Cliente orientado',
+        ], $order->refresh()->technician_checklist_items);
+        $this->assertNotNull($order->technician_checklist_completed_at);
     }
 
     public function test_technician_can_revert_started_schedule_before_check_in(): void
@@ -295,6 +376,8 @@ class TechnicianScheduleApiTest extends TestCase
         $order = Order::factory()->forTenant($this->tenant->id)->create([
             'customer_id' => $customer->id,
             'user_id' => $this->technician->id,
+            'technician_diagnosis' => 'Falha identificada.',
+            'technician_solution' => 'Servico concluido.',
         ]);
         $schedule = Schedule::factory()->forTenant($this->tenant->id)->create([
             'customer_id' => $customer->id,
@@ -326,6 +409,83 @@ class TechnicianScheduleApiTest extends TestCase
             'check_out_latitude' => -30.035000,
             'check_out_longitude' => -51.218000,
             'check_out_observations' => 'Atendimento finalizado.',
+        ]);
+    }
+
+    public function test_technician_cannot_check_out_without_saved_report(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'user_id' => $this->technician->id,
+            'technician_diagnosis' => null,
+            'technician_solution' => null,
+        ]);
+        $schedule = Schedule::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'order_id' => $order->id,
+            'user_id' => $this->technician->id,
+            'send_to_technician' => true,
+            'status' => 2,
+            'check_in_at' => now()->subMinutes(20),
+        ]);
+
+        $response = $this->actingAs($this->technician, 'sanctum')
+            ->postJson(route('api.technician.schedules.check-out', $schedule), [
+                'latitude' => -30.03,
+                'longitude' => -51.23,
+            ]);
+
+        $response
+            ->assertStatus(422)
+            ->assertJsonPath('message', 'Salve o diagnostico e a solucao antes de finalizar o atendimento.');
+
+        $this->assertDatabaseHas('schedules', [
+            'id' => $schedule->id,
+            'status' => 2,
+            'check_out_at' => null,
+        ]);
+    }
+
+    public function test_technician_cannot_check_out_with_pending_required_checklist(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+        Checklist::factory()->forTenant($this->tenant->id)->create([
+            'equipment_id' => $equipment->id,
+            'checklist' => 'Equipamento instalado, Equipamento testado',
+        ]);
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'user_id' => $this->technician->id,
+            'technician_checklist_items' => ['Equipamento instalado'],
+            'technician_diagnosis' => 'Falha identificada.',
+            'technician_solution' => 'Servico concluido.',
+        ]);
+        $schedule = Schedule::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'order_id' => $order->id,
+            'user_id' => $this->technician->id,
+            'send_to_technician' => true,
+            'status' => 2,
+            'check_in_at' => now()->subMinutes(20),
+        ]);
+
+        $response = $this->actingAs($this->technician, 'sanctum')
+            ->postJson(route('api.technician.schedules.check-out', $schedule), [
+                'latitude' => -30.03,
+                'longitude' => -51.23,
+            ]);
+
+        $response
+            ->assertStatus(422)
+            ->assertJsonPath('message', 'Conclua e salve o checklist antes de finalizar o atendimento.');
+
+        $this->assertDatabaseHas('schedules', [
+            'id' => $schedule->id,
+            'status' => 2,
+            'check_out_at' => null,
         ]);
     }
 

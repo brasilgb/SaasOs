@@ -30,6 +30,8 @@ class Order extends Model
         'payment_follow_up_snoozed_until' => 'datetime',
         'budget_follow_up_response_at' => 'datetime',
         'payment_follow_up_response_at' => 'datetime',
+        'technician_checklist_items' => 'array',
+        'technician_checklist_completed_at' => 'datetime',
     ];
 
     public function customer(): BelongsTo

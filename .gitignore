@@ -34,3 +34,5 @@ yarn-error.log*
 .env.productionbackup/*.sql
 backup/
 vetor-atendimento
+vetor-tecnico
+vetor-imagem

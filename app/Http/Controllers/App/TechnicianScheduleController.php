@@ -27,9 +27,10 @@ class TechnicianScheduleController extends Controller
         return Schedule::query()
             ->with([
                 'customer:id,name,email,phone,whatsapp,zipcode,state,city,district,street,number,complement,observations',
-                'order:id,customer_id,equipment_id,user_id,order_number,tracking_token,model,defect,state_conservation,accessories,budget_description,budget_value,service_status,observations,services_performed,technician_diagnosis,technician_solution,technician_observations,technician_attended_at,technician_local_payment_received,technician_local_payment_amount,technician_local_payment_method,technician_local_payment_notes,technician_local_payment_received_at,technician_local_payment_user_id,service_cost,delivery_forecast,delivery_date',
+                'order:id,customer_id,equipment_id,user_id,order_number,tracking_token,model,defect,state_conservation,accessories,budget_description,budget_value,service_status,observations,services_performed,technician_diagnosis,technician_solution,technician_observations,technician_checklist_items,technician_checklist_completed_at,technician_attended_at,technician_local_payment_received,technician_local_payment_amount,technician_local_payment_method,technician_local_payment_notes,technician_local_payment_received_at,technician_local_payment_user_id,service_cost,delivery_forecast,delivery_date',
                 'order.orderPayments:id,order_id,amount,payment_method,paid_at,notes',
                 'order.equipment:id,equipment_number,equipment',
+                'order.equipment.checklists:id,equipment_id,checklist',
                 'user:id,name,email,telephone,whatsapp,avatar',
             ])
             ->where('user_id', $technician->id)
@@ -182,6 +183,29 @@ class TechnicianScheduleController extends Controller
         abort_if((int) $schedule->status === 3 || $schedule->check_out_at, 422, 'Atendimento ja finalizado.');
         abort_unless($schedule->check_in_at, 422, 'Registre o check-in antes do check-out.');
 
+        $checklistItems = $schedule->order?->equipment?->checklists
+            ->flatMap(fn ($checklist) => collect(explode(',', (string) $checklist->checklist))
+                ->map(fn ($item) => trim($item))
+                ->filter())
+            ->values()
+            ->all() ?? [];
+
+        if ($checklistItems !== []) {
+            $completedItems = $schedule->order?->technician_checklist_items ?? [];
+
+            abort_unless(
+                empty(array_diff($checklistItems, $completedItems)),
+                422,
+                'Conclua e salve o checklist antes de finalizar o atendimento.'
+            );
+        }
+
+        abort_unless(
+            filled($schedule->order?->technician_diagnosis) && filled($schedule->order?->technician_solution),
+            422,
+            'Salve o diagnostico e a solucao antes de finalizar o atendimento.'
+        );
+
         $schedule->update([
             'status' => 3,
             'check_out_at' => now(),
@@ -217,6 +241,47 @@ class TechnicianScheduleController extends Controller
             'technician_solution' => $data['technician_solution'] ?? null,
             'technician_observations' => $data['technician_observations'] ?? null,
             'technician_attended_at' => $order->technician_attended_at ?? now(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'result' => $this->freshSchedulePayload($schedule),
+        ]);
+    }
+
+    public function updateChecklist(Request $request, Schedule $schedule)
+    {
+        $technician = $this->technician($request);
+        $data = $request->validate([
+            'items' => ['present', 'array'],
+            'items.*' => ['string', 'max:500'],
+        ]);
+
+        $schedule = $this->schedulesQuery($technician)
+            ->whereKey($schedule->id)
+            ->firstOrFail();
+
+        $order = $schedule->order;
+        abort_unless($order, 404);
+
+        $availableItems = $order->equipment?->checklists
+            ->flatMap(fn ($checklist) => collect(explode(',', (string) $checklist->checklist))
+                ->map(fn ($item) => trim($item))
+                ->filter())
+            ->values()
+            ->all() ?? [];
+
+        $items = collect($data['items'])
+            ->map(fn ($item) => trim((string) $item))
+            ->filter()
+            ->unique()
+            ->when($availableItems !== [], fn ($items) => $items->intersect($availableItems))
+            ->values()
+            ->all();
+
+        $order->update([
+            'technician_checklist_items' => $items,
+            'technician_checklist_completed_at' => count($items) > 0 ? now() : null,
         ]);
 
         return response()->json([
@@ -343,6 +408,8 @@ class TechnicianScheduleController extends Controller
                 'technician_diagnosis' => $order->technician_diagnosis,
                 'technician_solution' => $order->technician_solution,
                 'technician_observations' => $order->technician_observations,
+                'technician_checklist_items' => $order->technician_checklist_items ?? [],
+                'technician_checklist_completed_at' => $order->technician_checklist_completed_at,
                 'technician_attended_at' => $order->technician_attended_at,
                 'technician_local_payment_received' => (bool) $order->technician_local_payment_received,
                 'technician_local_payment_amount' => $order->technician_local_payment_amount,
@@ -363,6 +430,11 @@ class TechnicianScheduleController extends Controller
                     'id' => $equipment->id,
                     'equipment_number' => $equipment->equipment_number,
                     'equipment' => $equipment->equipment,
+                    'checklist_items' => $equipment->checklists
+                        ->flatMap(fn ($checklist) => collect(explode(',', (string) $checklist->checklist))
+                            ->map(fn ($item) => trim($item))
+                            ->filter())
+                        ->values(),
                 ] : null,
             ] : null,
             'technician' => $schedule->user ? [
