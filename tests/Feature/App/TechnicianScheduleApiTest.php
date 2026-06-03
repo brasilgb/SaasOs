@@ -4,11 +4,13 @@ namespace Tests\Feature\App;
 
 use App\Models\App\Customer;
 use App\Models\App\Equipment;
+use App\Models\App\Image;
 use App\Models\App\Order;
 use App\Models\App\Schedule;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\File;
 use Tests\TestCase;
 
 class TechnicianScheduleApiTest extends TestCase
@@ -184,6 +186,68 @@ class TechnicianScheduleApiTest extends TestCase
         ]);
     }
 
+    public function test_technician_can_revert_started_schedule_before_check_in(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'user_id' => $this->technician->id,
+        ]);
+        $schedule = Schedule::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'order_id' => $order->id,
+            'user_id' => $this->technician->id,
+            'send_to_technician' => true,
+            'status' => 2,
+            'check_in_at' => null,
+        ]);
+
+        $response = $this->actingAs($this->technician, 'sanctum')
+            ->postJson(route('api.technician.schedules.status', $schedule), [
+                'status' => 1,
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('result.status', 1)
+            ->assertJsonPath('result.status_label', 'Aberta');
+
+        $this->assertDatabaseHas('schedules', [
+            'id' => $schedule->id,
+            'status' => 1,
+            'check_in_at' => null,
+        ]);
+    }
+
+    public function test_technician_cannot_revert_schedule_after_check_in(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'user_id' => $this->technician->id,
+        ]);
+        $schedule = Schedule::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'order_id' => $order->id,
+            'user_id' => $this->technician->id,
+            'send_to_technician' => true,
+            'status' => 2,
+            'check_in_at' => now(),
+        ]);
+
+        $this->actingAs($this->technician, 'sanctum')
+            ->postJson(route('api.technician.schedules.status', $schedule), [
+                'status' => 1,
+            ])
+            ->assertUnprocessable();
+
+        $this->assertDatabaseHas('schedules', [
+            'id' => $schedule->id,
+            'status' => 2,
+        ]);
+    }
+
     public function test_technician_registers_check_in_with_gps(): void
     {
         $customer = Customer::factory()->forTenant($this->tenant->id)->create();
@@ -236,6 +300,7 @@ class TechnicianScheduleApiTest extends TestCase
             'user_id' => $this->technician->id,
             'send_to_technician' => true,
             'status' => 2,
+            'check_in_at' => now()->subMinutes(20),
         ]);
 
         $response = $this->actingAs($this->technician, 'sanctum')
@@ -260,5 +325,68 @@ class TechnicianScheduleApiTest extends TestCase
             'check_out_longitude' => -51.218000,
             'check_out_observations' => 'Atendimento finalizado.',
         ]);
+    }
+
+    public function test_technician_cannot_check_out_before_check_in(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'user_id' => $this->technician->id,
+        ]);
+        $schedule = Schedule::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'order_id' => $order->id,
+            'user_id' => $this->technician->id,
+            'send_to_technician' => true,
+            'status' => 2,
+            'check_in_at' => null,
+        ]);
+
+        $this->actingAs($this->technician, 'sanctum')
+            ->postJson(route('api.technician.schedules.check-out', $schedule), [
+                'observations' => 'Tentativa sem chegada.',
+            ])
+            ->assertUnprocessable();
+
+        $this->assertDatabaseHas('schedules', [
+            'id' => $schedule->id,
+            'status' => 2,
+            'check_out_at' => null,
+        ]);
+    }
+
+    public function test_technician_uploads_image_for_owned_schedule_order(): void
+    {
+        $this->app->usePublicPath(storage_path('framework/testing/public'));
+        File::deleteDirectory(public_path());
+
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'user_id' => $this->technician->id,
+        ]);
+        Schedule::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'order_id' => $order->id,
+            'user_id' => $this->technician->id,
+            'send_to_technician' => true,
+        ]);
+
+        $this->actingAs($this->technician, 'sanctum')
+            ->postJson(route('upload'), [
+                'order_number' => $order->order_number,
+                'filename' => base64_encode('technical-image'),
+            ])
+            ->assertOk()
+            ->assertJson([
+                'success' => true,
+                'message' => 'Imagem salva com sucesso',
+            ]);
+
+        $image = Image::query()->where('order_id', $order->id)->firstOrFail();
+
+        $this->assertSame($this->tenant->id, $image->tenant_id);
+        $this->assertFileExists(public_path('storage/orders/'.$order->order_number.'/'.$image->filename));
     }
 }

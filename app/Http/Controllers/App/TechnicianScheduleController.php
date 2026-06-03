@@ -108,6 +108,14 @@ class TechnicianScheduleController extends Controller
             ->whereKey($schedule->id)
             ->firstOrFail();
 
+        if ((int) $data['status'] === 1) {
+            abort_if($schedule->check_in_at, 422, 'Nao e possivel reverter um atendimento com check-in registrado.');
+        }
+
+        if ((int) $data['status'] === 3) {
+            abort_unless($schedule->check_in_at, 422, 'Registre o check-in antes de finalizar o atendimento.');
+        }
+
         $schedule->update([
             'status' => $data['status'],
         ]);
@@ -136,6 +144,9 @@ class TechnicianScheduleController extends Controller
             ->whereKey($schedule->id)
             ->firstOrFail();
 
+        abort_if((int) $schedule->status === 3 || $schedule->check_out_at, 422, 'Atendimento ja finalizado.');
+        abort_if($schedule->check_in_at, 422, 'Check-in ja registrado para este atendimento.');
+
         $schedule->update([
             'status' => 2,
             'check_in_at' => now(),
@@ -162,6 +173,9 @@ class TechnicianScheduleController extends Controller
         $schedule = $this->schedulesQuery($technician)
             ->whereKey($schedule->id)
             ->firstOrFail();
+
+        abort_if((int) $schedule->status === 3 || $schedule->check_out_at, 422, 'Atendimento ja finalizado.');
+        abort_unless($schedule->check_in_at, 422, 'Registre o check-in antes do check-out.');
 
         $schedule->update([
             'status' => 3,
