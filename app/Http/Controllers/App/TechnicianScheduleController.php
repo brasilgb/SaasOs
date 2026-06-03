@@ -2,13 +2,17 @@
 
 namespace App\Http\Controllers\App;
 
+use App\Events\OrderPaymentRegistered;
 use App\Http\Controllers\Controller;
 use App\Models\App\Schedule;
 use App\Models\User;
+use App\Services\OrderPaymentService;
 use Illuminate\Http\Request;
 
 class TechnicianScheduleController extends Controller
 {
+    public function __construct(private readonly OrderPaymentService $orderPaymentService) {}
+
     private function technician(Request $request): User
     {
         $user = $request->user();
@@ -23,7 +27,8 @@ class TechnicianScheduleController extends Controller
         return Schedule::query()
             ->with([
                 'customer:id,name,email,phone,whatsapp,zipcode,state,city,district,street,number,complement,observations',
-                'order:id,customer_id,equipment_id,user_id,order_number,tracking_token,model,defect,state_conservation,accessories,budget_description,budget_value,service_status,observations,services_performed,service_cost,delivery_forecast,delivery_date',
+                'order:id,customer_id,equipment_id,user_id,order_number,tracking_token,model,defect,state_conservation,accessories,budget_description,budget_value,service_status,observations,services_performed,technician_diagnosis,technician_solution,technician_observations,technician_attended_at,technician_local_payment_received,technician_local_payment_amount,technician_local_payment_method,technician_local_payment_notes,technician_local_payment_received_at,technician_local_payment_user_id,service_cost,delivery_forecast,delivery_date',
+                'order.orderPayments:id,order_id,amount,payment_method,paid_at,notes',
                 'order.equipment:id,equipment_number,equipment',
                 'user:id,name,email,telephone,whatsapp,avatar',
             ])
@@ -191,6 +196,81 @@ class TechnicianScheduleController extends Controller
         ]);
     }
 
+    public function updateReport(Request $request, Schedule $schedule)
+    {
+        $technician = $this->technician($request);
+        $data = $request->validate([
+            'technician_diagnosis' => ['nullable', 'string', 'max:2000'],
+            'technician_solution' => ['nullable', 'string', 'max:2000'],
+            'technician_observations' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $schedule = $this->schedulesQuery($technician)
+            ->whereKey($schedule->id)
+            ->firstOrFail();
+
+        $order = $schedule->order;
+        abort_unless($order, 404);
+
+        $order->update([
+            'technician_diagnosis' => $data['technician_diagnosis'] ?? null,
+            'technician_solution' => $data['technician_solution'] ?? null,
+            'technician_observations' => $data['technician_observations'] ?? null,
+            'technician_attended_at' => $order->technician_attended_at ?? now(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'result' => $this->freshSchedulePayload($schedule),
+        ]);
+    }
+
+    public function recordPayment(Request $request, Schedule $schedule)
+    {
+        $technician = $this->technician($request);
+        $data = $request->validate([
+            'amount' => ['required', 'numeric', 'min:0.01'],
+            'payment_method' => ['required', 'string', 'in:pix,cartao,dinheiro,transferencia'],
+            'notes' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $schedule = $this->schedulesQuery($technician)
+            ->whereKey($schedule->id)
+            ->firstOrFail();
+
+        $order = $schedule->order;
+        abort_unless($order, 404);
+
+        $payment = $this->orderPaymentService->register($order, [
+            'amount' => round((float) $data['amount'], 2),
+            'payment_method' => $data['payment_method'],
+            'paid_at' => now(),
+            'notes' => $data['notes'] ?? null,
+        ]);
+
+        $order->update([
+            'technician_local_payment_received' => true,
+            'technician_local_payment_amount' => $payment->amount,
+            'technician_local_payment_method' => $payment->payment_method,
+            'technician_local_payment_notes' => $payment->notes,
+            'technician_local_payment_received_at' => $payment->paid_at,
+            'technician_local_payment_user_id' => $technician->id,
+        ]);
+
+        event(new OrderPaymentRegistered($order->id, $technician->id, [
+            'payment_id' => $payment->id,
+            'cash_session_id' => $payment->cash_session_id,
+            'amount' => (float) $payment->amount,
+            'payment_method' => $payment->payment_method,
+            'paid_at' => $payment->paid_at?->toDateTimeString(),
+        ]));
+
+        return response()->json([
+            'success' => true,
+            'result' => $this->freshSchedulePayload($schedule),
+        ]);
+    }
+
     private function freshSchedulePayload(Schedule $schedule): array
     {
         return $this->schedulePayload($schedule->refresh()->loadMissing([
@@ -260,9 +340,25 @@ class TechnicianScheduleController extends Controller
                 'service_status' => $order->service_status,
                 'observations' => $order->observations,
                 'services_performed' => $order->services_performed,
+                'technician_diagnosis' => $order->technician_diagnosis,
+                'technician_solution' => $order->technician_solution,
+                'technician_observations' => $order->technician_observations,
+                'technician_attended_at' => $order->technician_attended_at,
+                'technician_local_payment_received' => (bool) $order->technician_local_payment_received,
+                'technician_local_payment_amount' => $order->technician_local_payment_amount,
+                'technician_local_payment_method' => $order->technician_local_payment_method,
+                'technician_local_payment_notes' => $order->technician_local_payment_notes,
+                'technician_local_payment_received_at' => $order->technician_local_payment_received_at,
                 'service_cost' => $order->service_cost,
                 'delivery_forecast' => $order->delivery_forecast,
                 'delivery_date' => $order->delivery_date,
+                'order_payments' => $order->orderPayments->map(fn ($payment) => [
+                    'id' => $payment->id,
+                    'amount' => $payment->amount,
+                    'payment_method' => $payment->payment_method,
+                    'paid_at' => $payment->paid_at,
+                    'notes' => $payment->notes,
+                ])->values(),
                 'equipment' => $equipment ? [
                     'id' => $equipment->id,
                     'equipment_number' => $equipment->equipment_number,

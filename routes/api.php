@@ -47,6 +47,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/tecnico/agendamentos/{schedule}/status', [TechnicianScheduleController::class, 'updateStatus'])->name('api.technician.schedules.status');
     Route::post('/tecnico/agendamentos/{schedule}/check-in', [TechnicianScheduleController::class, 'checkIn'])->name('api.technician.schedules.check-in');
     Route::post('/tecnico/agendamentos/{schedule}/check-out', [TechnicianScheduleController::class, 'checkOut'])->name('api.technician.schedules.check-out');
+    Route::post('/tecnico/agendamentos/{schedule}/relatorio', [TechnicianScheduleController::class, 'updateReport'])->name('api.technician.schedules.report');
+    Route::post('/tecnico/agendamentos/{schedule}/pagamento', [TechnicianScheduleController::class, 'recordPayment'])->name('api.technician.schedules.payment');
     Route::get('/empresa', [CompanyController::class, 'getEmpresaInfo']);
     Route::delete('/deleteimage/{aimage}', [ImageController::class, 'deleteImageOrder'])->name('deleteimage');
     Route::get('/images/{order}', [ImageController::class, 'getImages'])->name('images');
