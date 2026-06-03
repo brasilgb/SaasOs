@@ -105,6 +105,53 @@ class TechnicianScheduleApiTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_technician_dashboard_returns_summary_and_next_schedule(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create([
+            'name' => 'Cliente Prioritario',
+        ]);
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'user_id' => $this->technician->id,
+        ]);
+        $nextSchedule = Schedule::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'order_id' => $order->id,
+            'user_id' => $this->technician->id,
+            'send_to_technician' => true,
+            'schedules' => now()->addHour(),
+            'status' => 1,
+        ]);
+        Schedule::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'order_id' => $order->id,
+            'user_id' => $this->technician->id,
+            'send_to_technician' => true,
+            'schedules' => now()->addHours(2),
+            'status' => 2,
+        ]);
+        Schedule::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'order_id' => $order->id,
+            'user_id' => $this->technician->id,
+            'send_to_technician' => true,
+            'schedules' => now()->subHour(),
+            'status' => 3,
+        ]);
+
+        $response = $this->actingAs($this->technician, 'sanctum')
+            ->getJson(route('api.technician.dashboard'));
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('result.summary.today', 3)
+            ->assertJsonPath('result.summary.pending', 2)
+            ->assertJsonPath('result.summary.completed', 1)
+            ->assertJsonPath('result.next_schedule.id', $nextSchedule->id)
+            ->assertJsonPath('result.next_schedule.customer.name', 'Cliente Prioritario');
+    }
+
     public function test_technician_updates_schedule_status(): void
     {
         $customer = Customer::factory()->forTenant($this->tenant->id)->create();

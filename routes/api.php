@@ -41,6 +41,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orcamentos', [BudgetController::class, 'getOrcamentos'])->name('api.budgets.show');
     Route::post('/orcamentos', [BudgetController::class, 'getOrcamentos']);
     Route::post('/servicos', [ServiceController::class, 'getServicos']);
+    Route::get('/tecnico/dashboard', [TechnicianScheduleController::class, 'dashboard'])->name('api.technician.dashboard');
     Route::get('/tecnico/agendamentos', [TechnicianScheduleController::class, 'index'])->name('api.technician.schedules.index');
     Route::get('/tecnico/agendamentos/{schedule}', [TechnicianScheduleController::class, 'show'])->name('api.technician.schedules.show');
     Route::post('/tecnico/agendamentos/{schedule}/status', [TechnicianScheduleController::class, 'updateStatus'])->name('api.technician.schedules.status');

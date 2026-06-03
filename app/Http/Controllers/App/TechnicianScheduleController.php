@@ -59,6 +59,31 @@ class TechnicianScheduleController extends Controller
         ]);
     }
 
+    public function dashboard(Request $request)
+    {
+        $technician = $this->technician($request);
+        $baseQuery = $this->schedulesQuery($technician);
+
+        $nextSchedule = (clone $baseQuery)
+            ->whereIn('status', [1, 2])
+            ->where('schedules', '>=', now()->startOfDay())
+            ->orderBy('schedules')
+            ->orderBy('id')
+            ->first();
+
+        return response()->json([
+            'success' => true,
+            'result' => [
+                'summary' => [
+                    'today' => (clone $baseQuery)->whereDate('schedules', today())->count(),
+                    'pending' => (clone $baseQuery)->whereIn('status', [1, 2])->count(),
+                    'completed' => (clone $baseQuery)->where('status', 3)->count(),
+                ],
+                'next_schedule' => $nextSchedule ? $this->schedulePayload($nextSchedule) : null,
+            ],
+        ]);
+    }
+
     public function show(Request $request, Schedule $schedule)
     {
         $technician = $this->technician($request);
