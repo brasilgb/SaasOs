@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { connectBackend } from '@/Utils/connectApi';
 import { Link } from '@inertiajs/react';
-import { Calendar, Check, MemoryStickIcon, MessageSquareMore, ShieldAlert, Star, Users, Wrench } from 'lucide-react';
+import { AlertTriangle, Calendar, Check, Clock, MemoryStickIcon, MessageSquareMore, ShieldAlert, Star, Users, Wrench } from 'lucide-react';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
 
@@ -85,6 +85,10 @@ export default function OrderDashboard({
     const feedbackDelayLabel = `${Number(feedbackDelay || 7)} ${Number(feedbackDelay || 7) === 1 ? 'dia' : 'dias'}`;
     const operationLinkClass =
         'inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-md bg-slate-200 px-4 py-2 text-sm font-medium whitespace-nowrap text-slate-900 shadow-xs transition-all hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-50 dark:hover:bg-slate-600';
+    const inProgressLinkClass =
+        'inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-md bg-sky-100 px-4 py-2 text-sm font-medium whitespace-nowrap text-sky-900 shadow-xs transition-all hover:bg-sky-200 dark:bg-sky-500/25 dark:text-sky-100 dark:hover:bg-sky-500/35';
+    const overdueLinkClass =
+        'inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-md bg-red-100 px-4 py-2 text-sm font-medium whitespace-nowrap text-red-900 shadow-xs transition-all hover:bg-red-200 dark:bg-red-500/25 dark:text-red-100 dark:hover:bg-red-500/35';
     const warrantyLinkClass =
         'inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-md bg-amber-100 px-4 py-2 text-sm font-medium whitespace-nowrap text-amber-900 shadow-xs transition-all hover:bg-amber-200 dark:bg-amber-500/25 dark:text-amber-100 dark:hover:bg-amber-500/35';
 
@@ -111,7 +115,19 @@ export default function OrderDashboard({
                         title="Agenda"
                         value={acount?.numshed ?? 0}
                         icon={<Calendar className="h-10 w-10" />}
-                        description={periodKpiDescription(metrics?.schedules ?? 0)}
+                        description={
+                            <span className="flex min-w-0 flex-wrap items-center gap-1">
+                                <span className="bg-primary/10 text-primary rounded-md px-1.5 py-0.5 font-semibold tabular-nums">
+                                    Abertos {acount?.numshed_open ?? 0}
+                                </span>
+                                <span className="rounded-md bg-sky-100 px-1.5 py-0.5 font-semibold text-sky-700 tabular-nums">
+                                    Em atendimento {acount?.numshed_in_progress ?? 0}
+                                </span>
+                                <span className="rounded-md bg-red-100 px-1.5 py-0.5 font-semibold text-red-700 tabular-nums">
+                                    Atrasados {acount?.numshed_overdue ?? 0}
+                                </span>
+                            </span>
+                        }
                     />
                     <KpiDashboard
                         link={route('app.messages.index')}
@@ -211,8 +227,18 @@ export default function OrderDashboard({
                                 <div className="w-full overflow-x-auto">
                                     <TabsList className="w-max min-w-full flex-nowrap">
                                         <TabsTrigger className="px-2 whitespace-nowrap" value="va">
-                                            Agenda
+                                            Agenda aberta
                                             <Badge className="ml-1 text-xs">{orders?.agendados.length}</Badge>
+                                        </TabsTrigger>
+
+                                        <TabsTrigger className="px-2 whitespace-nowrap" value="ea">
+                                            Em atendimento
+                                            <Badge className="ml-1 text-xs">{orders?.em_atendimento.length}</Badge>
+                                        </TabsTrigger>
+
+                                        <TabsTrigger className="px-2 whitespace-nowrap" value="aa">
+                                            Atrasados
+                                            <Badge className="ml-1 text-xs">{orders?.atrasados.length}</Badge>
                                         </TabsTrigger>
 
                                         <TabsTrigger className="px-2 whitespace-nowrap" value="og">
@@ -246,7 +272,7 @@ export default function OrderDashboard({
                                         </TabsTrigger>
                                     </TabsList>
                                     <TabsContent value="va" className="max-h-48 overflow-y-auto">
-                                        <div className="py-1 text-xs font-semibold">Visitas agendadas pelo número do agendamento</div>
+                                        <div className="py-1 text-xs font-semibold">Visitas abertas pelo número do agendamento</div>
                                         <div className="flex flex-wrap gap-2 border-t py-2">
                                             {orders?.agendados.map((age: any, index: number) => (
                                                 <Link
@@ -254,6 +280,36 @@ export default function OrderDashboard({
                                                     href={route('app.schedules.index', { search: age.schedules_number, init: true })}
                                                     className={operationLinkClass}
                                                 >
+                                                    {age.schedules_number}
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    </TabsContent>
+                                    <TabsContent value="ea" className="max-h-48 overflow-y-auto">
+                                        <div className="py-1 text-xs font-semibold">Atendimentos iniciados pelo app técnico</div>
+                                        <div className="flex flex-wrap gap-2 border-t py-2">
+                                            {orders?.em_atendimento.map((age: any, index: number) => (
+                                                <Link
+                                                    key={`ea-${age.schedules_number ?? index}`}
+                                                    href={route('app.schedules.index', { search: age.schedules_number, init: true })}
+                                                    className={inProgressLinkClass}
+                                                >
+                                                    <Clock className="h-4 w-4" />
+                                                    {age.schedules_number}
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    </TabsContent>
+                                    <TabsContent value="aa" className="max-h-48 overflow-y-auto">
+                                        <div className="py-1 text-xs font-semibold">Visitas abertas ou em atendimento com data anterior a hoje</div>
+                                        <div className="flex flex-wrap gap-2 border-t py-2">
+                                            {orders?.atrasados.map((age: any, index: number) => (
+                                                <Link
+                                                    key={`aa-${age.schedules_number ?? index}`}
+                                                    href={route('app.schedules.index', { search: age.schedules_number, init: true })}
+                                                    className={overdueLinkClass}
+                                                >
+                                                    <AlertTriangle className="h-4 w-4" />
                                                     {age.schedules_number}
                                                 </Link>
                                             ))}

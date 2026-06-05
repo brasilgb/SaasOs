@@ -4,6 +4,7 @@ namespace App\Http\Controllers\App;
 
 use App\Events\OrderPaymentRegistered;
 use App\Http\Controllers\Controller;
+use App\Models\App\Image as OrderImage;
 use App\Models\App\Schedule;
 use App\Models\User;
 use App\Services\OrderPaymentService;
@@ -17,7 +18,7 @@ class TechnicianScheduleController extends Controller
     {
         $user = $request->user();
 
-        abort_unless($user instanceof User && $user->isTechnician(), 403);
+        abort_unless($user instanceof User && $user->canUseTechnicianApp(), 403);
 
         return $user;
     }
@@ -42,7 +43,7 @@ class TechnicianScheduleController extends Controller
     {
         $technician = $this->technician($request);
         $data = $request->validate([
-            'period' => ['nullable', 'string', 'in:today,tomorrow,week,pending,completed'],
+            'period' => ['nullable', 'string', 'in:today,tomorrow,week,pending,overdue,completed'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ]);
 
@@ -51,6 +52,7 @@ class TechnicianScheduleController extends Controller
             ->when(($data['period'] ?? null) === 'tomorrow', fn ($query) => $query->whereDate('schedules', today()->addDay()))
             ->when(($data['period'] ?? null) === 'week', fn ($query) => $query->whereBetween('schedules', [now()->startOfDay(), now()->addDays(7)->endOfDay()]))
             ->when(($data['period'] ?? null) === 'pending', fn ($query) => $query->whereIn('status', [1, 2]))
+            ->when(($data['period'] ?? null) === 'overdue', fn ($query) => $query->whereIn('status', [1, 2])->where('schedules', '<', now()->startOfDay()))
             ->when(($data['period'] ?? null) === 'completed', fn ($query) => $query->where('status', 3))
             ->orderBy('schedules')
             ->orderBy('id');
@@ -71,8 +73,14 @@ class TechnicianScheduleController extends Controller
         $baseQuery = $this->schedulesQuery($technician);
 
         $nextSchedule = (clone $baseQuery)
-            ->whereIn('status', [1, 2])
+            ->where('status', 1)
             ->where('schedules', '>=', now()->startOfDay())
+            ->orderBy('schedules')
+            ->orderBy('id')
+            ->first();
+
+        $currentSchedule = (clone $baseQuery)
+            ->where('status', 2)
             ->orderBy('schedules')
             ->orderBy('id')
             ->first();
@@ -83,8 +91,11 @@ class TechnicianScheduleController extends Controller
                 'summary' => [
                     'today' => (clone $baseQuery)->whereDate('schedules', today())->count(),
                     'pending' => (clone $baseQuery)->whereIn('status', [1, 2])->count(),
+                    'in_progress' => (clone $baseQuery)->where('status', 2)->count(),
+                    'overdue' => (clone $baseQuery)->whereIn('status', [1, 2])->where('schedules', '<', now()->startOfDay())->count(),
                     'completed' => (clone $baseQuery)->where('status', 3)->count(),
                 ],
+                'current_schedule' => $currentSchedule ? $this->schedulePayload($currentSchedule) : null,
                 'next_schedule' => $nextSchedule ? $this->schedulePayload($nextSchedule) : null,
             ],
         ]);
@@ -115,7 +126,7 @@ class TechnicianScheduleController extends Controller
             ->firstOrFail();
 
         if ((int) $data['status'] === 1) {
-            abort_if($schedule->check_in_at, 422, 'Nao e possivel reverter um atendimento com check-in registrado.');
+            abort_if($schedule->check_in_at, 422, 'Não é possível reverter um atendimento com check-in registrado.');
         }
 
         if ((int) $data['status'] === 3) {
@@ -203,7 +214,7 @@ class TechnicianScheduleController extends Controller
         abort_unless(
             filled($schedule->order?->technician_diagnosis) && filled($schedule->order?->technician_solution),
             422,
-            'Salve o diagnostico e a solucao antes de finalizar o atendimento.'
+            'Salve o diagnóstico e a solução antes de finalizar o atendimento.'
         );
 
         $schedule->update([
@@ -351,6 +362,17 @@ class TechnicianScheduleController extends Controller
         $customer = $schedule->customer;
         $order = $schedule->order;
         $equipment = $order?->equipment;
+        $address = $customer ? collect([
+            $customer->street,
+            $customer->number,
+            $customer->district,
+            $customer->city,
+            $customer->state,
+        ])->filter(fn ($item) => filled($item))->implode(', ') : null;
+        $phoneDigits = $customer ? preg_replace('/\D+/', '', (string) $customer->phone) : '';
+        $whatsappDigits = $customer ? preg_replace('/\D+/', '', (string) $customer->whatsapp) : '';
+        $whatsappNumber = $whatsappDigits && strlen($whatsappDigits) <= 11 ? '55'.$whatsappDigits : $whatsappDigits;
+        $imagesCount = $order ? OrderImage::where('order_id', $order->id)->count() : 0;
 
         return [
             'id' => $schedule->id,
@@ -363,6 +385,17 @@ class TechnicianScheduleController extends Controller
             'status_label' => $this->statusLabel((int) $schedule->status),
             'observations' => $schedule->observations,
             'send_to_technician' => (bool) $schedule->send_to_technician,
+            'available_actions' => [
+                'can_update_status' => (int) $schedule->status !== 3,
+                'can_check_in' => (int) $schedule->status !== 3 && ! $schedule->check_in_at,
+                'can_check_out' => (int) $schedule->status !== 3 && filled($schedule->check_in_at) && ! $schedule->check_out_at,
+                'can_finish' => (int) $schedule->status !== 3 && filled($schedule->check_in_at) && ! $schedule->check_out_at,
+                'can_cancel' => false,
+                'can_edit_service' => (bool) $order,
+                'can_record_local_payment' => (bool) $order,
+                'can_upload_images' => (bool) $order && $imagesCount < 4,
+                'remaining_images' => max(0, 4 - $imagesCount),
+            ],
             'check_in' => [
                 'at' => $schedule->check_in_at,
                 'latitude' => $schedule->check_in_latitude,
@@ -391,6 +424,11 @@ class TechnicianScheduleController extends Controller
                     'complement' => $customer->complement,
                 ],
                 'observations' => $customer->observations,
+                'quick_actions' => [
+                    'phone_url' => $phoneDigits ? 'tel:'.$phoneDigits : null,
+                    'whatsapp_url' => $whatsappNumber ? 'https://wa.me/'.$whatsappNumber : null,
+                    'maps_url' => $address ? 'https://www.google.com/maps/search/?api=1&query='.urlencode($address) : null,
+                ],
             ] : null,
             'order' => $order ? [
                 'id' => $order->id,

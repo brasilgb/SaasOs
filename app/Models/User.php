@@ -120,6 +120,11 @@ class User extends Authenticatable
         return $this->roles === self::ROLE_TECHNICIAN;
     }
 
+    public function canUseTechnicianApp(): bool
+    {
+        return $this->isTechnician() || $this->isAdministrator();
+    }
+
     public function canViewAllOrders(): bool
     {
         return ! $this->isTechnician() || (bool) $this->can_view_all_orders;

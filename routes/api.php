@@ -8,6 +8,7 @@ use App\Http\Controllers\App\OrderController;
 use App\Http\Controllers\App\PartController;
 use App\Http\Controllers\App\ReportController;
 use App\Http\Controllers\App\ServiceController;
+use App\Http\Controllers\App\TechnicianPushTokenController;
 use App\Http\Controllers\App\TechnicianScheduleController;
 use App\Http\Controllers\App\UserController;
 use App\Http\Controllers\App\WebhookController;
@@ -41,6 +42,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orcamentos', [BudgetController::class, 'getOrcamentos'])->name('api.budgets.show');
     Route::post('/orcamentos', [BudgetController::class, 'getOrcamentos']);
     Route::post('/servicos', [ServiceController::class, 'getServicos']);
+    Route::post('/tecnico/push-token', [TechnicianPushTokenController::class, 'store'])->name('api.technician.push-token.store');
+    Route::delete('/tecnico/push-token', [TechnicianPushTokenController::class, 'destroy'])->name('api.technician.push-token.destroy');
     Route::get('/tecnico/dashboard', [TechnicianScheduleController::class, 'dashboard'])->name('api.technician.dashboard');
     Route::get('/tecnico/agendamentos', [TechnicianScheduleController::class, 'index'])->name('api.technician.schedules.index');
     Route::get('/tecnico/agendamentos/{schedule}', [TechnicianScheduleController::class, 'show'])->name('api.technician.schedules.show');

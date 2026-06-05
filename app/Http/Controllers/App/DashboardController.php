@@ -37,6 +37,17 @@ class DashboardController extends Controller
         return $query;
     }
 
+    private function scopeSchedulesQuery($query)
+    {
+        $user = auth()->user();
+
+        if ($user instanceof User && $user->isTechnician()) {
+            $query->where('user_id', $user->id);
+        }
+
+        return $query;
+    }
+
     private function warrantyReturnIndicator(int $totalOrders, int $warrantyReturns): array
     {
         $threshold = Other::warrantyReturnAlertThreshold();
@@ -61,6 +72,10 @@ class DashboardController extends Controller
             ->whereNotIn('service_status', [OrderStatus::CANCELLED, OrderStatus::SERVICE_NOT_EXECUTED, OrderStatus::DELIVERED]);
 
         $ordersQuery = $this->scopeOrdersQuery(Order::query());
+        $schedulesQuery = $this->scopeSchedulesQuery(Schedule::query());
+        $overdueSchedulesQuery = (clone $schedulesQuery)
+            ->whereIn('status', [1, 2])
+            ->where('schedules', '<', $today->copy()->startOfDay());
 
         $acount = [
             'numuser' => User::count(),
@@ -69,13 +84,18 @@ class DashboardController extends Controller
             'numorde_warranty_return' => (clone $ordersQuery)->where('is_warranty_return', true)->count(),
             'numorde_due_today' => (clone $pendingOrdersQuery)->whereDate('delivery_forecast', $today)->count(),
             'numorde_due_tomorrow' => (clone $pendingOrdersQuery)->whereDate('delivery_forecast', $tomorrow)->count(),
-            'numshed' => Schedule::count(),
+            'numshed' => (clone $schedulesQuery)->count(),
+            'numshed_open' => (clone $schedulesQuery)->where('status', 1)->count(),
+            'numshed_in_progress' => (clone $schedulesQuery)->where('status', 2)->count(),
+            'numshed_overdue' => (clone $overdueSchedulesQuery)->count(),
             'nummess' => Message::count(),
             'numparts' => Part::where('type', 'part')->count(),
             'numproducts' => Part::where('type', 'product')->count(),
         ];
         $orders = [
-            'agendados' => Schedule::where('status', 1)->get(['id', 'schedules_number']),
+            'agendados' => (clone $schedulesQuery)->where('status', 1)->orderBy('schedules')->get(['id', 'schedules_number']),
+            'em_atendimento' => (clone $schedulesQuery)->where('status', 2)->orderBy('schedules')->get(['id', 'schedules_number']),
+            'atrasados' => (clone $overdueSchedulesQuery)->orderBy('schedules')->get(['id', 'schedules_number']),
             'gerados' => (clone $ordersQuery)->where('service_status', OrderStatus::BUDGET_GENERATED)->get(['id', 'order_number']),
             'aprovados' => (clone $ordersQuery)->where('service_status', OrderStatus::BUDGET_APPROVED)->get(['id', 'order_number']),
             'concluidosca' => (clone $ordersQuery)->where('service_status', OrderStatus::CUSTOMER_NOTIFIED)->get(['id', 'order_number']),
@@ -87,7 +107,7 @@ class DashboardController extends Controller
                 ->whereNull('customer_feedback_submitted_at')
                 ->get(['id', 'order_number']),
         ];
-        $listSchedules = Schedule::with('user', 'customer')->get();
+        $listSchedules = $this->scopeSchedulesQuery(Schedule::with('user', 'customer'))->get();
         $parts = Part::where('is_sellable', true)->get();
         $customers = Customer::get();
         $others = Other::query()
