@@ -299,6 +299,67 @@ class OrderControllerTest extends TestCase
         ]);
     }
 
+    public function test_operator_confirms_mobile_payment_into_open_cash_session(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'user_id' => $this->user->id,
+            'service_cost' => 200,
+            'parts_value' => 0,
+            'service_value' => 200,
+            'technician_local_payment_received' => true,
+            'technician_local_payment_status' => 'pending',
+            'technician_local_payment_amount' => 80,
+            'technician_local_payment_method' => 'dinheiro',
+            'technician_local_payment_notes' => 'Cliente informou pagamento no app.',
+            'technician_local_payment_received_at' => now()->subMinutes(10),
+            'technician_local_payment_user_id' => $this->user->id,
+        ]);
+
+        CashSession::create([
+            'tenant_id' => $this->tenant->id,
+            'opened_by' => $this->user->id,
+            'opened_at' => now(),
+            'opening_balance' => 0,
+            'status' => 'open',
+        ]);
+
+        $response = $this->post(route('app.orders.payments.mobile-confirm', $order));
+
+        $response->assertSessionHas('success', 'Pagamento conferido e inserido no caixa.');
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'technician_local_payment_status' => 'confirmed',
+        ]);
+
+        $this->assertDatabaseHas('order_payments', [
+            'order_id' => $order->id,
+            'amount' => 80,
+            'payment_method' => 'dinheiro',
+            'notes' => 'Cliente informou pagamento no app.',
+        ]);
+
+        $this->assertDatabaseHas('accounts_receivable', [
+            'tenant_id' => $this->tenant->id,
+            'customer_id' => $customer->id,
+            'source_type' => 'order',
+            'source_id' => $order->id,
+            'paid_amount' => 80,
+            'balance_amount' => 120,
+            'status' => 'partial',
+        ]);
+
+        $this->assertDatabaseHas('order_logs', [
+            'order_id' => $order->id,
+            'user_id' => $this->user->id,
+            'action' => 'payment_registered',
+        ]);
+    }
+
     public function test_it_allows_flexible_order_status_transition(): void
     {
         $customer = Customer::factory()->forTenant($this->tenant->id)->create();

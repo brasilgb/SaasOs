@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { maskMoney, maskMoneyDot } from '@/Utils/mask';
 import { Link, router, useForm, usePage } from '@inertiajs/react';
-import { FileTextIcon, HandCoins, Mail } from 'lucide-react';
+import { CheckCircle2, FileTextIcon, HandCoins, Mail } from 'lucide-react';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
 
@@ -26,6 +26,7 @@ export default function OrderPaymentsModal({
     const [openInvoiceSummary, setOpenInvoiceSummary] = useState(false);
     const [loading, setLoading] = useState(false);
     const [localPayments, setLocalPayments] = useState<any[]>(orderPayments || []);
+    const [pendingMobilePayment, setPendingMobilePayment] = useState<any | null>(null);
     const [localSummary, setLocalSummary] = useState<any>(
         paymentSummary || { parts_value: 0, service_value: 0, total_order: 0, total_paid: 0, remaining: 0 },
     );
@@ -37,6 +38,7 @@ export default function OrderPaymentsModal({
         notes: '',
     });
     const reminderForm = useForm({});
+    const confirmMobilePaymentForm = useForm({});
 
     const remaining = Number(localSummary?.remaining || 0);
     const totalOrder = Number(localSummary?.total_order || 0);
@@ -85,6 +87,7 @@ export default function OrderPaymentsModal({
                 order.can_send_payment_reminder = payload.order.can_send_payment_reminder;
             }
             setLocalPayments(payload?.orderPayments || []);
+            setPendingMobilePayment(payload?.pendingMobilePayment || null);
             setLocalSummary(
                 payload?.paymentSummary || {
                     parts_value: 0,
@@ -147,6 +150,18 @@ export default function OrderPaymentsModal({
         reminderForm.post(route('app.orders.payments.reminder', order.id), {
             preserveScroll: true,
             onSuccess: () => {
+                loadPaymentsData();
+            },
+        });
+    };
+
+    const handleConfirmMobilePayment = () => {
+        confirmMobilePaymentForm.post(route('app.orders.payments.mobile-confirm', order.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                loadPaymentsData();
+            },
+            onError: () => {
                 loadPaymentsData();
             },
         });
@@ -253,6 +268,32 @@ export default function OrderPaymentsModal({
                         </CardContent>
                     </Card>
                 </div>
+
+                {pendingMobilePayment && (
+                    <div className="rounded-lg border border-sky-200 bg-sky-50 p-3 text-sm text-sky-950">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <div className="font-medium">Pagamento enviado pelo app aguardando conferência</div>
+                                <div className="mt-1 text-xs">
+                                    {maskMoney(String(pendingMobilePayment.amount ?? 0))} • {pendingMobilePayment.payment_method || 'Não informado'} •{' '}
+                                    {pendingMobilePayment.received_at ? moment(pendingMobilePayment.received_at).format('DD/MM/YYYY HH:mm') : '-'}
+                                </div>
+                                {pendingMobilePayment.notes ? <div className="mt-1 text-xs">{pendingMobilePayment.notes}</div> : null}
+                            </div>
+                            <Button
+                                type="button"
+                                size="sm"
+                                className="w-full bg-sky-700 text-white hover:bg-sky-800 sm:w-auto"
+                                disabled={!isCashierOpen || confirmMobilePaymentForm.processing}
+                                onClick={handleConfirmMobilePayment}
+                            >
+                                <CheckCircle2 className="mr-1 h-4 w-4" />
+                                {confirmMobilePaymentForm.processing ? 'Inserindo...' : 'Inserir ao caixa'}
+                            </Button>
+                        </div>
+                        {!isCashierOpen && <div className="mt-2 text-xs">Abra o caixa antes de confirmar este pagamento.</div>}
+                    </div>
+                )}
 
                 <form onSubmit={handlePaymentSubmit} className="grid gap-4 md:grid-cols-2">
                     <div className="grid gap-2">

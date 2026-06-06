@@ -70,6 +70,13 @@ class OrderController extends Controller
         return Other::financeEnabled($this->currentUser()?->tenant_id);
     }
 
+    private function canConfirmMobilePayment(): bool
+    {
+        $user = $this->currentUser();
+
+        return $user && ($user->isRoot() || $user->isAdministrator() || $user->isOperator());
+    }
+
     private function appendPaymentReminderAvailability(Order $order): Order
     {
         $order->setAttribute(
@@ -994,6 +1001,26 @@ class OrderController extends Controller
         return back()->with('success', 'Pagamento removido com sucesso.');
     }
 
+    public function confirmMobilePayment(Order $order): RedirectResponse
+    {
+        $this->authorize('update', $order);
+        abort_unless($this->financeEnabled() && $this->canConfirmMobilePayment(), 403);
+
+        $payment = $this->orderPaymentService->confirmMobilePayment($order);
+
+        $paymentEventData = [
+            'payment_id' => $payment->id,
+            'cash_session_id' => $payment->cash_session_id,
+            'amount' => (float) $payment->amount,
+            'payment_method' => $payment->payment_method,
+            'paid_at' => $payment->paid_at?->toDateTimeString(),
+            'source' => 'mobile_app_confirmation',
+        ];
+        event(new OrderPaymentRegistered($order->id, $this->currentUser()?->id, $paymentEventData));
+
+        return back()->with('success', 'Pagamento conferido e inserido no caixa.');
+    }
+
     public function paymentsData(Order $order)
     {
         $this->authorize('view', $order);
@@ -1012,6 +1039,16 @@ class OrderController extends Controller
             ],
             'orderPayments' => $orderPayments,
             'paymentSummary' => $paymentSummary,
+            'pendingMobilePayment' => $order->technician_local_payment_received
+                && $order->technician_local_payment_status === OrderPaymentService::MOBILE_PAYMENT_PENDING
+                ? [
+                    'amount' => $order->technician_local_payment_amount,
+                    'payment_method' => $order->technician_local_payment_method,
+                    'notes' => $order->technician_local_payment_notes,
+                    'received_at' => $order->technician_local_payment_received_at,
+                    'user_id' => $order->technician_local_payment_user_id,
+                ]
+                : null,
         ]);
     }
 

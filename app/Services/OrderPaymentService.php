@@ -10,7 +10,56 @@ use RuntimeException;
 
 class OrderPaymentService
 {
+    public const MOBILE_PAYMENT_PENDING = 'pending';
+    public const MOBILE_PAYMENT_CONFIRMED = 'confirmed';
+
     public function __construct(private readonly FinancialReceivableService $financialReceivableService) {}
+
+    public function reportMobilePayment(Order $order, array $data, int $userId): void
+    {
+        $order->loadMissing('orderPayments');
+
+        $amount = round((float) $data['amount'], 2);
+        $remaining = $this->remainingAmount($order);
+
+        if ($amount > $remaining) {
+            throw ValidationException::withMessages([
+                'amount' => 'O valor informado é maior que o saldo restante da ordem.',
+            ]);
+        }
+
+        $order->update([
+            'technician_local_payment_received' => true,
+            'technician_local_payment_status' => self::MOBILE_PAYMENT_PENDING,
+            'technician_local_payment_amount' => $amount,
+            'technician_local_payment_method' => $data['payment_method'],
+            'technician_local_payment_notes' => $data['notes'] ?? null,
+            'technician_local_payment_received_at' => $data['paid_at'] ?? now(),
+            'technician_local_payment_user_id' => $userId,
+        ]);
+    }
+
+    public function confirmMobilePayment(Order $order): OrderPayment
+    {
+        if (! $order->technician_local_payment_received || $order->technician_local_payment_status !== self::MOBILE_PAYMENT_PENDING) {
+            throw ValidationException::withMessages([
+                'amount' => 'Não há pagamento enviado pelo app aguardando conferência.',
+            ]);
+        }
+
+        $payment = $this->register($order, [
+            'amount' => (float) $order->technician_local_payment_amount,
+            'payment_method' => $order->technician_local_payment_method,
+            'paid_at' => $order->technician_local_payment_received_at ?? now(),
+            'notes' => $order->technician_local_payment_notes,
+        ]);
+
+        $order->update([
+            'technician_local_payment_status' => self::MOBILE_PAYMENT_CONFIRMED,
+        ]);
+
+        return $payment;
+    }
 
     public function register(Order $order, array $data): OrderPayment
     {

@@ -3,12 +3,10 @@
 namespace Tests\Feature\App;
 
 use App\Models\App\Customer;
-use App\Models\App\CashSession;
 use App\Models\App\Checklist;
 use App\Models\App\Equipment;
 use App\Models\App\Image;
 use App\Models\App\Order;
-use App\Models\App\OrderPayment;
 use App\Models\App\Schedule;
 use App\Models\Tenant;
 use App\Models\User;
@@ -518,6 +516,44 @@ class TechnicianScheduleApiTest extends TestCase
         ]);
     }
 
+    public function test_technician_cannot_check_out_without_gps_coordinates(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'user_id' => $this->technician->id,
+            'technician_diagnosis' => 'Falha identificada.',
+            'technician_solution' => 'Servico concluido.',
+        ]);
+        $schedule = Schedule::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'order_id' => $order->id,
+            'user_id' => $this->technician->id,
+            'send_to_technician' => true,
+            'status' => 2,
+            'check_in_at' => now()->subMinutes(20),
+            'check_in_latitude' => -30.034647,
+            'check_in_longitude' => -51.217658,
+        ]);
+
+        $response = $this->actingAs($this->technician, 'sanctum')
+            ->postJson(route('api.technician.schedules.check-out', $schedule), [
+                'observations' => 'Tentativa sem GPS.',
+            ]);
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['latitude', 'longitude']);
+
+        $this->assertDatabaseHas('schedules', [
+            'id' => $schedule->id,
+            'status' => 2,
+            'check_out_at' => null,
+            'check_out_latitude' => null,
+            'check_out_longitude' => null,
+        ]);
+    }
+
     public function test_technician_uploads_image_for_owned_schedule_order(): void
     {
         $this->app->usePublicPath(storage_path('framework/testing/public'));
@@ -592,14 +628,6 @@ class TechnicianScheduleApiTest extends TestCase
 
     public function test_technician_records_local_payment_for_owned_schedule_order(): void
     {
-        CashSession::create([
-            'tenant_id' => $this->tenant->id,
-            'opened_by' => $this->technician->id,
-            'opened_at' => now()->subHour(),
-            'opening_balance' => 0,
-            'status' => 'open',
-        ]);
-
         $customer = Customer::factory()->forTenant($this->tenant->id)->create();
         $order = Order::factory()->forTenant($this->tenant->id)->create([
             'customer_id' => $customer->id,
@@ -624,24 +652,23 @@ class TechnicianScheduleApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('success', true)
             ->assertJsonPath('result.order.technician_local_payment_received', true)
+            ->assertJsonPath('result.order.technician_local_payment_status', 'pending')
             ->assertJsonPath('result.order.technician_local_payment_method', 'pix')
-            ->assertJsonPath('result.order.order_payments.0.payment_method', 'pix');
+            ->assertJsonPath('result.order.order_payments', []);
 
         $this->assertDatabaseHas('orders', [
             'id' => $order->id,
             'technician_local_payment_received' => true,
+            'technician_local_payment_status' => 'pending',
             'technician_local_payment_method' => 'pix',
             'technician_local_payment_notes' => 'Recebido no local.',
             'technician_local_payment_user_id' => $this->technician->id,
         ]);
 
-        $this->assertDatabaseHas('order_payments', [
+        $this->assertDatabaseMissing('order_payments', [
             'order_id' => $order->id,
-            'amount' => 120.50,
             'payment_method' => 'pix',
             'notes' => 'Recebido no local.',
         ]);
-
-        $this->assertSame(1, OrderPayment::query()->where('order_id', $order->id)->count());
     }
 }

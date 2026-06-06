@@ -4,10 +4,8 @@ namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CustomerRequest;
+use App\Models\App\AccountReceivable;
 use App\Models\App\Customer;
-use App\Models\App\Order;
-use App\Models\App\OrderPayment;
-use App\Support\OrderStatus;
 use App\Support\TenantSequence;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -416,28 +414,24 @@ class CustomerController extends Controller
         $search = $request->search;
         $pending = $request->get('pending');
 
-        $ordersTotalsSub = Order::query()
-            ->selectRaw('customer_id, COALESCE(SUM(service_cost), 0) as total_order_amount')
-            ->where('service_status', OrderStatus::DELIVERED)
+        $receivableTotalsSub = AccountReceivable::query()
+            ->selectRaw('customer_id, COALESCE(SUM(total_amount), 0) as total_order_amount')
+            ->selectRaw('COALESCE(SUM(paid_amount), 0) as total_paid_amount')
+            ->selectRaw('COALESCE(SUM(balance_amount), 0) as pending_amount')
+            ->whereIn('status', [
+                AccountReceivable::STATUS_PENDING,
+                AccountReceivable::STATUS_PARTIAL,
+            ])
             ->groupBy('customer_id');
 
-        $paymentsTotalsSub = OrderPayment::query()
-            ->join('orders', 'orders.id', '=', 'order_payments.order_id')
-            ->selectRaw('orders.customer_id as customer_id, COALESCE(SUM(order_payments.amount), 0) as total_paid_amount')
-            ->where('orders.service_status', OrderStatus::DELIVERED)
-            ->groupBy('orders.customer_id');
-
         $query = Customer::query()
-            ->leftJoinSub($ordersTotalsSub, 'order_totals', function ($join) {
-                $join->on('order_totals.customer_id', '=', 'customers.id');
-            })
-            ->leftJoinSub($paymentsTotalsSub, 'payment_totals', function ($join) {
-                $join->on('payment_totals.customer_id', '=', 'customers.id');
+            ->leftJoinSub($receivableTotalsSub, 'receivable_totals', function ($join) {
+                $join->on('receivable_totals.customer_id', '=', 'customers.id');
             })
             ->select('customers.*')
-            ->selectRaw('COALESCE(order_totals.total_order_amount, 0) as total_order_amount')
-            ->selectRaw('COALESCE(payment_totals.total_paid_amount, 0) as total_paid_amount')
-            ->selectRaw('(COALESCE(order_totals.total_order_amount, 0) - COALESCE(payment_totals.total_paid_amount, 0)) as pending_amount')
+            ->selectRaw('COALESCE(receivable_totals.total_order_amount, 0) as total_order_amount')
+            ->selectRaw('COALESCE(receivable_totals.total_paid_amount, 0) as total_paid_amount')
+            ->selectRaw('COALESCE(receivable_totals.pending_amount, 0) as pending_amount')
             ->orderBy('customers.id', 'DESC');
 
         if ($search) {
@@ -448,7 +442,7 @@ class CustomerController extends Controller
         }
 
         if ($pending === '1') {
-            $query->whereRaw('(COALESCE(order_totals.total_order_amount, 0) - COALESCE(payment_totals.total_paid_amount, 0)) > 0.009');
+            $query->whereRaw('COALESCE(receivable_totals.pending_amount, 0) > 0.009');
         }
 
         $customers = $query->paginate(11)->withQueryString();
