@@ -11,3 +11,9 @@ export function toastWarning(message: string, description?: string) {
         description,
     });
 }
+
+export function toastError(message: string, description?: string) {
+    toast.error(message, {
+        description,
+    });
+}

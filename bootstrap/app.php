@@ -10,8 +10,9 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
-use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
+use Symfony\Component\HttpFoundation\Response;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -63,10 +64,46 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->respond(function (Response $response, Throwable $exception, $request) {
+            $status = $response->getStatusCode();
+
+            if ($request->expectsJson()) {
+                return $response;
+            }
+
             if ($response->getStatusCode() === 403 && ! $request->expectsJson()) {
                 return redirect()
                     ->back()
                     ->with('authorization_error', 'Esta ação não é autorizada.');
+            }
+
+            if ($status === 419) {
+                return redirect()
+                    ->back()
+                    ->withInput($request->except(['password', 'password_confirmation', 'current_password']))
+                    ->with('error', 'Sua sessão expirou. Atualize a página e tente novamente.');
+            }
+
+            if (! $request->isMethod('GET') && $status === 404) {
+                return redirect()
+                    ->back()
+                    ->withInput($request->except(['password', 'password_confirmation', 'current_password']))
+                    ->with('error', 'Não foi possível encontrar o registro desta operação. Atualize a tela e tente novamente.');
+            }
+
+            if (! $request->isMethod('GET') && $status >= 500) {
+                Log::error('Erro não tratado em operação web.', [
+                    'status' => $status,
+                    'url' => $request->fullUrl(),
+                    'method' => $request->method(),
+                    'exception' => $exception::class,
+                    'message' => $exception->getMessage(),
+                    'user_id' => $request->user()?->id,
+                ]);
+
+                return redirect()
+                    ->back()
+                    ->withInput($request->except(['password', 'password_confirmation', 'current_password']))
+                    ->with('error', 'Não foi possível concluir esta operação agora. Verifique sua conexão e tente novamente.');
             }
 
             return $response;

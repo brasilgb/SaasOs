@@ -24,7 +24,7 @@ export function Hero() {
                         variant="outline"
                         className="mb-5 inline-flex max-w-full rounded-full border-white/20 bg-white/8 px-3 py-1.5 text-[0.62rem] font-semibold tracking-[0.2em] text-[#7ee7ff] uppercase backdrop-blur-sm sm:mb-6 sm:px-5 sm:py-2 sm:text-[0.7rem] sm:tracking-[0.28em]"
                     >
-                        Estrutura completa para sua assistência
+                        Plataforma web + apps móveis para sua assistência
                     </Badge>
 
                     <h1 className="max-w-3xl text-balance text-4xl font-semibold tracking-tight sm:text-5xl lg:text-7xl">
@@ -34,8 +34,8 @@ export function Hero() {
                     </h1>
 
                     <p className="mt-5 max-w-2xl text-sm leading-relaxed text-white/72 sm:mt-6 sm:text-lg lg:text-xl">
-                        Centralize atendimento, ordens, clientes, estoque, vendas, financeiro e acompanhamento do cliente em uma operação mais
-                        rápida, previsível e profissional.
+                        Centralize atendimento, ordens, clientes, estoque, vendas, financeiro e acompanhamento do cliente, com apps para balcão,
+                        imagens e técnico em campo.
                     </p>
 
                     <div className="mt-8 flex flex-col gap-3 sm:mt-10 sm:flex-row sm:gap-4">
@@ -61,7 +61,7 @@ export function Hero() {
                     </div>
 
                     <p className="mt-4 max-w-2xl text-sm leading-relaxed text-white/55 sm:mt-5 sm:text-base">
-                        Teste por 14 dias, sem cartão de crédito, e veja como a rotina da equipe fica mais clara desde o primeiro acesso.
+                        Teste por 14 dias, sem cartão de crédito, e veja como a rotina da equipe fica mais clara no sistema web e nos apps de apoio.
                     </p>
                 </div>
             </div>

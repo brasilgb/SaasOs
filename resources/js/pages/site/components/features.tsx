@@ -1,6 +1,9 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     BarChart3,
+    Bell,
+    CalendarCheck,
+    Camera,
     ChartLine,
     CheckCircle,
     ClipboardList,
@@ -14,7 +17,26 @@ import {
     ShoppingCart,
     Smartphone,
     Users,
+    Wrench,
 } from 'lucide-react';
+
+const appFeatures = [
+    {
+        icon: Smartphone,
+        title: 'App Autoatendimento',
+        description: 'Cadastro rápido de clientes e consulta de orçamentos para agilizar recepção, balcão e atendimentos simples pelo celular.',
+    },
+    {
+        icon: Wrench,
+        title: 'App Técnico',
+        description: 'Agenda em campo com check-in, check-out, checklist, relatório técnico, imagens e pagamento local.',
+    },
+    {
+        icon: Camera,
+        title: 'App Imagens',
+        description: 'Upload de fotos da ordem direto pelo celular para documentar entrada, defeito, reparo e entrega.',
+    },
+];
 
 const features = [
     {
@@ -60,17 +82,22 @@ const features = [
     {
         icon: MessageSquare,
         title: 'Comunicação Automática',
-        description: 'Envie e-mails, WhatsApp e lembretes de pagamento para manter o cliente atualizado em cada etapa.',
+        description: 'Envie e-mails, WhatsApp e lembretes de pagamento com mensagens claras para cada etapa da operação.',
+    },
+    {
+        icon: Bell,
+        title: 'Alertas e Mensagens Amigáveis',
+        description: 'Oriente o usuário em falhas de rede, sessão expirada, falta de permissão e erros temporários sem telas técnicas.',
+    },
+    {
+        icon: CalendarCheck,
+        title: 'Agenda Técnica em Campo',
+        description: 'Envie atendimentos ao técnico, acompanhe status da visita e mantenha o histórico conectado à ordem de serviço.',
     },
     {
         icon: ChartLine,
         title: 'Indicadores Comerciais',
         description: 'Acompanhe conversão de orçamentos, recuperação de cobrança e desempenho da operação.',
-    },
-    {
-        icon: Smartphone,
-        title: 'Aplicativo Android',
-        description: 'Registre fotos de equipamentos direto pelo celular.',
     },
     {
         icon: Printer,
@@ -104,16 +131,35 @@ export function Features() {
                     </span>
 
                     <h2 className="mt-5 text-3xl font-bold tracking-tight sm:text-4xl">
-                        Plataforma de gestão operacional para atendimento técnico, financeiro, relacionamento com clientes e mais controle da rotina
+                        Plataforma web e apps móveis para atendimento técnico, financeiro, campo e relacionamento com clientes
                     </h2>
 
                     <p className="mt-4 text-lg leading-relaxed text-white/72">
                         Da entrada do equipamento ao fechamento do caixa, o VetorOS reúne os módulos mais importantes da rotina em uma única
-                        plataforma.
+                        plataforma, com apps auxiliares para atendimento, imagens e equipe técnica.
                     </p>
                     <p className="mt-3 text-xs text-white/45">
                         Emissão fiscal opcional via integração Focus NFe, mediante contratação e credenciais do serviço de notas da sua empresa.
                     </p>
+                </div>
+
+                <div className="mb-12 grid gap-6 md:grid-cols-3">
+                    {appFeatures.map((app) => (
+                        <Card
+                            key={app.title}
+                            className="border-[#00E59B]/20 bg-[#00E59B]/8 text-white shadow-[0_18px_60px_rgba(0,0,0,0.2)] backdrop-blur-sm"
+                        >
+                            <CardHeader>
+                                <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl border border-[#00E59B]/24 bg-[#00E59B]/12">
+                                    <app.icon className="h-6 w-6 text-[#00B4FF]" />
+                                </div>
+                                <CardTitle className="text-lg text-white">{app.title}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <CardDescription className="text-sm leading-relaxed text-white/72">{app.description}</CardDescription>
+                            </CardContent>
+                        </Card>
+                    ))}
                 </div>
 
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

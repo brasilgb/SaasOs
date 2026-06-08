@@ -1,6 +1,6 @@
 import { Quote, Star } from 'lucide-react';
 
-interface TestimonialItem {
+export interface TestimonialItem {
     id: number;
     excerpt: string;
     public_name: string;

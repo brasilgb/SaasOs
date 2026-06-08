@@ -461,8 +461,8 @@
             <p>Manual do cliente com foco operacional, financeiro e de configuração do sistema.</p>
 
             <div class="meta">
-                <div><strong>Versão do manual</strong>1.7</div>
-                <div><strong>Atualizado em</strong>Maio de 2026</div>
+                <div><strong>Versão do manual</strong>1.8</div>
+                <div><strong>Atualizado em</strong>Junho de 2026</div>
                 <div><strong>Formato</strong>HTML navegável</div>
             </div>
 
@@ -527,7 +527,8 @@
                 <div class="callout">
                     Atualizações recentes para usuários SaaS: perfil com imagem, troca de senha pelo menu Perfil,
                     regras de visibilidade entre perfis, liberação de Técnico master para visualizar todas as ordens,
-                    avisos amigáveis para ações não autorizadas e confirmação visual após pagamento de assinatura.
+                    app técnico para atendimento em campo, notificações de agendamento, mensagens amigáveis em falhas
+                    de operação e confirmação visual após pagamento de assinatura.
                 </div>
 
                 <section id="introducao">
@@ -569,7 +570,8 @@
                         </div>
                         <div class="card">
                             <strong>Comunicação</strong>
-                            WhatsApp, e-mails automáticos por status, lembretes de cobrança e teste SMTP.
+                            WhatsApp, e-mails automáticos por status, lembretes de cobrança, notificações do app técnico
+                            e teste SMTP.
                         </div>
                     </div>
                 </section>
@@ -621,6 +623,13 @@
                         <li>Configurar Focus NFe, ambiente fiscal e tipos de emissão quando a empresa emitir notas pelo sistema.</li>
                         <li>Revisar metas, prazo de avaliação e intervalo de acompanhamento automático.</li>
                     </ol>
+                    <h4>3.11 App técnico e atendimento em campo</h4>
+                    <p>Quando a empresa usa atendimento externo, configure os usuários técnicos, confira se o técnico
+                        está ativo e cadastre agendamentos vinculados a uma ordem de serviço. Para que a agenda apareça
+                        no app técnico, o agendamento precisa estar marcado para envio ao técnico.</p>
+                    <p>O app técnico usa o mesmo login do sistema e mostra somente os atendimentos permitidos para o
+                        usuário autenticado. Técnicos comuns veem a própria agenda; técnicos com liberação master podem
+                        ter visibilidade ampliada conforme a configuração da empresa.</p>
                 </section>
 
                 <section id="dashboard">
@@ -717,6 +726,10 @@
                     <h4>5.5 Importação em lote</h4>
                     <p>Quando a empresa já possui uma base anterior, a importação por CSV ajuda a acelerar a
                         implantação e reduzir retrabalho de cadastro manual.</p>
+                    <h4>5.6 App Autoatendimento</h4>
+                    <p>O app de autoatendimento foi pensado para ações rápidas fora da tela principal do sistema, como
+                        cadastrar clientes e consultar orçamentos. Ele usa o mesmo ambiente do VetorOS e ajuda a equipe
+                        de recepção a reduzir tempo em tarefas simples da rotina.</p>
                 </section>
 
                 <section id="ordens">
@@ -937,6 +950,10 @@
                     <p>No formulário de orçamento, campos como cliente, equipamento, garantia, marca e modelo usam seleção
                         pesquisável. Digite parte do nome ou do modelo para localizar opções cadastradas sem precisar
                         percorrer listas longas.</p>
+                    <h4>8.4 Consulta de orçamentos no app autoatendimento</h4>
+                    <p>Quando a empresa usa o app de autoatendimento, a equipe pode consultar informações de orçamento pelo
+                        celular. Esse recurso ajuda em atendimentos rápidos, principalmente quando o colaborador precisa
+                        localizar uma referência sem abrir a tela completa do sistema web.</p>
                 </section>
 
                 <section id="agendamentos">
@@ -946,6 +963,7 @@
                         <li>Vincular cliente e técnico.</li>
                         <li>Acompanhar status do agendamento.</li>
                         <li>Enviar mensagem ao técnico por WhatsApp.</li>
+                        <li>Enviar o atendimento para o app técnico quando a empresa usa equipe em campo.</li>
                     </ul>
                     <p>Os status usuais do agendamento são aberto, em atendimento e fechado.</p>
                     <p>Esse módulo é útil para assistência externa, coleta, entrega técnica e visitas programadas.</p>
@@ -959,6 +977,45 @@
                         <li><strong>Editar:</strong> corrige data, técnico, observações ou endereço.</li>
                         <li><strong>Excluir:</strong> remove o compromisso quando ele não será mais realizado.</li>
                         <li><strong>WhatsApp do técnico:</strong> acelera a comunicação da equipe em campo.</li>
+                    </ul>
+                    <h4>9.2 Envio para o app técnico</h4>
+                    <p>Ao marcar um agendamento para envio ao técnico, ele passa a ficar disponível no app técnico do
+                        usuário responsável. O app mostra a agenda pendente, dados do cliente, endereço, telefone,
+                        WhatsApp, dados da ordem, equipamento, defeito informado e observações relevantes para o
+                        atendimento.</p>
+                    <p>O app técnico respeita o usuário logado. Isso significa que cada técnico visualiza apenas os
+                        atendimentos atribuídos a ele, salvo quando a empresa liberar visibilidade ampliada para o
+                        perfil técnico.</p>
+                    <h4>9.3 Fluxo recomendado no app técnico</h4>
+                    <ol>
+                        <li>O atendente cria ou edita o agendamento no sistema e marca o envio ao técnico.</li>
+                        <li>O técnico abre o app, confere os atendimentos pendentes e acessa os detalhes da visita.</li>
+                        <li>Ao chegar no local, registra o <strong>check-in</strong>. Quando permitido pelo aparelho,
+                            o app também registra a localização.</li>
+                        <li>Durante o atendimento, preenche checklist, diagnóstico, solução e observações técnicas.</li>
+                        <li>Se necessário, anexa imagens da ordem para documentar o serviço.</li>
+                        <li>Quando houver recebimento no local, registra o pagamento com valor, forma e observação.</li>
+                        <li>Ao finalizar, registra o <strong>check-out</strong>. O sistema exige check-in antes do
+                            encerramento e pode exigir relatório/checklist salvo antes de finalizar.</li>
+                    </ol>
+                    <h4>9.4 Notificações de agendamento</h4>
+                    <p>Quando as notificações estiverem permitidas no aparelho, o app técnico pode avisar o usuário
+                        sobre novos atendimentos enviados. A permissão de notificação é solicitada pelo próprio sistema
+                        operacional do celular.</p>
+                    <p>Se a notificação não puder ser registrada por falta de internet, permissão negada ou configuração
+                        do aparelho, o atendimento ainda pode ser consultado ao abrir o app e atualizar a agenda.</p>
+                    <h4>9.5 Trabalho sem conexão</h4>
+                    <p>O app técnico mantém dados recentes em cache para consulta quando a conexão estiver instável.
+                        Alterações como relatório e checklist podem ser guardadas para sincronização posterior. Mesmo
+                        assim, ações que dependem de confirmação imediata do servidor, como envio de imagem, pagamento
+                        e encerramento, devem ser conferidas quando a internet voltar.</p>
+                    <h4>9.6 Boas práticas para atendimento externo</h4>
+                    <ul>
+                        <li>Enviar ao técnico apenas agendamentos confirmados e vinculados à ordem correta.</li>
+                        <li>Conferir telefone, WhatsApp e endereço do cliente antes da visita.</li>
+                        <li>Orientar a equipe a registrar check-in e check-out no momento real do atendimento.</li>
+                        <li>Salvar diagnóstico e solução antes de finalizar para manter histórico técnico completo.</li>
+                        <li>Usar imagens somente quando elas ajudam a comprovar estado, defeito ou serviço realizado.</li>
                     </ul>
                 </section>
 
@@ -1401,6 +1458,50 @@
                     <p>Quando um usuário tentar executar uma ação para a qual não possui permissão, o sistema exibe um
                         aviso na tela informando que a ação não é autorizada. Esse comportamento evita telas técnicas de
                         erro e ajuda o usuário a entender que a limitação está relacionada ao perfil de acesso.</p>
+                    <h4>19.8 Mensagens amigáveis em falhas de operação</h4>
+                    <p>Durante operações como cadastrar, editar, excluir, salvar pagamento, enviar e-mail ou concluir
+                        uma ação, o sistema pode identificar falhas de conexão, sessão expirada, registro não encontrado,
+                        falta de permissão ou erro temporário do servidor. Nesses casos, o VetorOS exibe uma mensagem
+                        simples para o usuário, sem mostrar detalhes técnicos do Laravel.</p>
+                    <table class="status-table">
+                        <thead>
+                            <tr>
+                                <th>Situação</th>
+                                <th>Mensagem esperada</th>
+                                <th>O que fazer</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Internet instável ou servidor indisponível</td>
+                                <td>Operação não concluída ou sem conexão com o servidor.</td>
+                                <td>Verificar conexão e tentar novamente.</td>
+                            </tr>
+                            <tr>
+                                <td>Sessão expirada</td>
+                                <td>Sua sessão expirou.</td>
+                                <td>Atualizar a página, entrar novamente se necessário e repetir a ação.</td>
+                            </tr>
+                            <tr>
+                                <td>Sem permissão</td>
+                                <td>Esta ação não é autorizada.</td>
+                                <td>Solicitar liberação ao administrador se a ação fizer parte da função do usuário.</td>
+                            </tr>
+                            <tr>
+                                <td>Registro removido ou não encontrado</td>
+                                <td>Não foi possível encontrar o registro desta operação.</td>
+                                <td>Atualizar a tela e conferir se outro usuário alterou ou removeu o item.</td>
+                            </tr>
+                            <tr>
+                                <td>Falha ao enviar e-mail</td>
+                                <td>Não foi possível enviar o e-mail agora.</td>
+                                <td>Verificar internet, SMTP e usar o teste de e-mail nas configurações.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p>Os detalhes técnicos continuam sendo registrados nos logs do sistema para análise do suporte ou
+                        da equipe técnica. O objetivo é proteger o usuário de mensagens internas difíceis de entender e
+                        orientar a próxima ação com clareza.</p>
                 </section>
 
                 <section id="usuarios">
@@ -1449,11 +1550,24 @@
                         de upload. Esse recurso é útil para documentar o estado de entrada, o defeito e as evidências do
                         serviço executado.</p>
                     <p>Há limite máximo de imagens por ordem, o que ajuda a manter o cadastro organizado.</p>
+                    <p>No app técnico, as imagens podem ser anexadas diretamente no atendimento, respeitando o mesmo
+                        limite da ordem. O técnico deve usar esse recurso para evidências realmente úteis, como estado
+                        do equipamento, peça substituída, local de instalação ou comprovante visual do serviço.</p>
+                    <p>O app de imagens continua disponível para equipes que desejam um fluxo dedicado apenas ao envio
+                        de fotos da ordem pelo celular. Ele é útil quando a operação separa recepção, bancada e registro
+                        visual do atendimento.</p>
                     <h4>21.1 Quando usar imagens</h4>
                     <ul>
                         <li><strong>Entrada do equipamento:</strong> para documentar avarias, acessórios e estado físico.</li>
                         <li><strong>Durante o reparo:</strong> para registrar peças trocadas e pontos técnicos relevantes.</li>
                         <li><strong>Saída:</strong> para reforçar a evidência do serviço entregue.</li>
+                    </ul>
+                    <h4>21.2 Cuidados no envio pelo app técnico</h4>
+                    <ul>
+                        <li>Enviar imagens somente quando houver conexão suficiente para concluir o upload.</li>
+                        <li>Evitar fotos repetidas ou sem relação com a ordem.</li>
+                        <li>Conferir se a imagem foi exibida na lista após o envio.</li>
+                        <li>Remover imagens enviadas por engano quando a permissão do usuário permitir.</li>
                     </ul>
                 </section>
 
@@ -1591,6 +1705,24 @@
                                 <td>Valida SMTP da sua empresa.</td>
                                 <td>Tentativa real de envio com as credenciais configuradas.</td>
                             </tr>
+                            <tr>
+                                <td>Enviar ao técnico</td>
+                                <td>Agendamentos</td>
+                                <td>Disponibiliza a visita no app técnico do responsável.</td>
+                                <td>Agenda vinculada ao técnico, à ordem e à empresa.</td>
+                            </tr>
+                            <tr>
+                                <td>Check-in / Check-out</td>
+                                <td>App técnico</td>
+                                <td>Registra início e final do atendimento em campo.</td>
+                                <td>Data, hora, observações e localização quando permitida.</td>
+                            </tr>
+                            <tr>
+                                <td>Salvar relatório técnico</td>
+                                <td>App técnico</td>
+                                <td>Grava diagnóstico, solução e observações do atendimento.</td>
+                                <td>Informações técnicas vinculadas à ordem de serviço.</td>
+                            </tr>
                         </tbody>
                     </table>
                 </section>
@@ -1611,6 +1743,10 @@
                         <li>Usar relatórios para acompanhar desempenho, faturamento e pendências.</li>
                         <li>Revisar diariamente Acompanhamentos, Tarefas e Garantia/Avaliações.</li>
                         <li>Validar o portal do cliente com alguns atendimentos antes de divulgar em massa.</li>
+                        <li>Orientar a equipe sobre o papel de cada app: Autoatendimento para cadastros rápidos e orçamentos,
+                            Técnico para agenda em campo e Imagens para documentação visual da OS.</li>
+                        <li>Quando aparecer uma mensagem amigável de falha, repetir a ação apenas depois de conferir
+                            conexão, sessão e dados informados.</li>
                     </ul>
                 </section>
 

@@ -14,10 +14,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
+use Throwable;
 
 class RegisteredUserController extends Controller
 {
@@ -86,7 +88,22 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        Mail::to($user->email)->send(new UserRegisteredMail($user));
+        try {
+            Mail::to($user->email)->send(new UserRegisteredMail($user));
+        } catch (Throwable $exception) {
+            Log::warning('Falha ao enviar e-mail de boas-vindas no cadastro.', [
+                'user_id' => $user->id,
+                'tenant_id' => $user->tenant_id,
+                'email' => $user->email,
+                'exception' => $exception::class,
+                'message' => $exception->getMessage(),
+            ]);
+
+            return redirect()
+                ->route('app.dashboard')
+                ->with('success', 'Conta criada com sucesso! Você possui 14 dias de acesso grátis para testes.')
+                ->with('error', 'Não foi possível enviar o e-mail de confirmação agora. Verifique a conexão ou a configuração SMTP e tente novamente mais tarde.');
+        }
 
         return redirect()
             ->route('app.dashboard')

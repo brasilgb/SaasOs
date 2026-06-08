@@ -19,8 +19,8 @@ export function CTA() {
                     <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Pronto para transformar sua gestão?</h2>
 
                     <p className="mt-6 text-lg leading-relaxed text-white/76">
-                        Centralize atendimento, ordens, estoque, financeiro, vendas e relacionamento com clientes em uma única plataforma. Teste o
-                        VetorOS gratuitamente por 14 dias.
+                        Centralize atendimento, ordens, estoque, financeiro, vendas, campo técnico e relacionamento com clientes em uma plataforma
+                        conectada aos apps da operação. Teste o VetorOS gratuitamente por 14 dias.
                     </p>
 
                     <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">

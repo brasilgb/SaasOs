@@ -11,17 +11,20 @@ const onboardingSteps = [
     {
         icon: BookOpen,
         title: 'Manual navegável',
-        description: 'O sistema já entrega um manual em HTML com busca interna, explicação de botões, status, e-mails e rotinas operacionais.',
+        description: 'O sistema entrega um manual em HTML com busca interna, explicação de botões, status, e-mails, apps e rotinas operacionais.',
     },
     {
         icon: LifeBuoy,
-        title: 'Apoio na implantação',
-        description: 'Sua equipe consegue aprender a usar o fluxo principal sem depender de vídeos, com suporte e documentação prática.',
+        title: 'Operação orientada',
+        description: 'Mensagens amigáveis ajudam a equipe a entender falhas de rede, sessão expirada, permissão e erros temporários sem telas técnicas.',
     },
 ];
 
 const operatingHighlights = [
     'Fluxo completo de OS, orçamento, cobrança e retirada',
+    'App Autoatendimento para cadastro rápido de clientes e consulta de orçamentos',
+    'App Técnico com agenda, check-in, check-out, relatório, imagens e pagamento local',
+    'App Imagens para documentar ordens direto pelo celular',
     'Área pública do cliente com acompanhamento online',
     'Acompanhamentos, garantia, avaliações e métricas comerciais',
     'Financeiro, caixa, despesas, estoque e vendas no mesmo ambiente',
@@ -44,12 +47,12 @@ export function OnboardingShowcase() {
                     </span>
 
                     <h2 className="mt-5 max-w-2xl text-3xl font-bold tracking-tight sm:text-4xl">
-                        Uma landing mais honesta, com onboarding real e manual acessível desde o início
+                        Uma experiência conectada para web, balcão, imagens e técnico em campo
                     </h2>
 
                     <p className="mt-5 max-w-2xl text-lg leading-relaxed text-white/72">
-                        Em vez de prometer treinamento em vídeo que ainda não existe, o VetorOS mostra o produto real: telas operacionais, fluxo da
-                        rotina e um manual navegável para a equipe aprender com autonomia.
+                        O VetorOS mostra o produto real: telas operacionais, apps de apoio, fluxo da rotina e um manual navegável para a equipe
+                        aprender com autonomia.
                     </p>
 
                     <div className="mt-8 grid gap-4">

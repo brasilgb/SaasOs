@@ -5,9 +5,9 @@ import { Footer } from '../components/footer';
 import { Header } from '../components/header';
 import { Hero } from '../components/hero';
 import { Pricing } from '../components/pricing';
-import { Testimonials } from '../components/testimonials';
+import { Testimonials, type TestimonialItem } from '../components/testimonials';
 
-export default function Home({ testimonials = [] }: { testimonials?: any[] }) {
+export default function Home({ testimonials = [] }: { testimonials?: TestimonialItem[] }) {
     return (
         <main className="min-h-screen">
             <Header />

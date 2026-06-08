@@ -4,20 +4,20 @@ const audiences = [
     {
         icon: Smartphone,
         title: 'Celulares e Mobile',
-        description: 'Para assistências que precisam acompanhar entrada, diagnóstico, aprovação, entrega e comunicação com o cliente.',
-        support: 'Manual completo em português para apoiar a rotina da equipe.',
+        description: 'Para assistências que precisam acompanhar entrada, diagnóstico, fotos, aprovação, entrega e comunicação com o cliente.',
+        support: 'Apps de atendimento e imagens ajudam a reduzir retrabalho na recepção e na documentação da OS.',
     },
     {
         icon: Laptop,
         title: 'Informática',
-        description: 'Ideal para operações com notebooks, desktops e periféricos que exigem histórico técnico, organização e controle diário.',
-        support: 'Manual completo em português para facilitar treinamento e consulta.',
+        description: 'Ideal para operações com notebooks, desktops e periféricos que exigem histórico técnico, agenda e controle diário.',
+        support: 'O app técnico apoia visitas externas, check-in, checklist e relatório do serviço executado.',
     },
     {
         icon: Tv,
         title: 'Eletrônicos',
         description: 'Perfeito para quem atende eletrônicos em geral e quer mais previsibilidade no atendimento, financeiro e pós-serviço.',
-        support: 'Manual completo em português com orientação prática para o uso da plataforma.',
+        support: 'A plataforma web conecta OS, financeiro, imagens, área do cliente e rotina da equipe em campo.',
     },
 ];
 
@@ -31,7 +31,7 @@ export function AudienceStrip() {
                     </span>
                     <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">Para quem o VetorOS foi feito</h2>
                     <p className="mt-4 text-base leading-relaxed text-white/72 sm:text-lg">
-                        Uma plataforma pensada para assistências técnicas que precisam de mais organização operacional, controle financeiro e
+                        Uma plataforma pensada para assistências técnicas que precisam organizar recepção, bancada, campo, financeiro e
                         relacionamento com clientes.
                     </p>
                 </div>
