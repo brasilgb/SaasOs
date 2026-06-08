@@ -270,6 +270,22 @@ class ScheduleController extends Controller
     {
         $this->authorize('delete', $schedule);
 
+        $schedule->loadMissing('order.orderPayments');
+
+        $order = $schedule->order;
+        if ($order && (
+            $order->orderPayments->isNotEmpty()
+            || $order->technician_local_payment_received
+            || $order->technician_attended_at
+            || $schedule->check_in_at
+            || $schedule->check_out_at
+        )) {
+            return redirect()->route('app.schedules.index')->with(
+                'error',
+                'Não é possível excluir este agendamento porque ele possui atendimento técnico ou pagamento registrado na OS vinculada.'
+            );
+        }
+
         $schedule->delete();
 
         return redirect()->route('app.schedules.index')->with('success', 'Agenda excluida com sucesso');

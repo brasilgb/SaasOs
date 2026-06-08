@@ -4,6 +4,7 @@ namespace Tests\Feature\App;
 
 use App\Models\App\Customer;
 use App\Models\App\Order;
+use App\Models\App\OrderPayment;
 use App\Models\App\Other;
 use App\Models\App\Schedule;
 use App\Models\Tenant;
@@ -117,6 +118,39 @@ class ScheduleControllerTest extends TestCase
             'tenant_id' => $this->tenant->id,
             'order_id' => $order->id,
             'send_to_technician' => false,
+        ]);
+    }
+
+    public function test_it_blocks_schedule_deletion_when_linked_order_has_payment(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'user_id' => $this->user->id,
+        ]);
+        $schedule = Schedule::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'order_id' => $order->id,
+            'user_id' => $this->user->id,
+        ]);
+
+        OrderPayment::create([
+            'order_id' => $order->id,
+            'amount' => 100,
+            'payment_method' => 'pix',
+            'paid_at' => now(),
+        ]);
+
+        $response = $this->delete(route('app.schedules.destroy', $schedule));
+
+        $response->assertRedirect(route('app.schedules.index'));
+        $response->assertSessionHas(
+            'error',
+            'Não é possível excluir este agendamento porque ele possui atendimento técnico ou pagamento registrado na OS vinculada.'
+        );
+
+        $this->assertDatabaseHas('schedules', [
+            'id' => $schedule->id,
         ]);
     }
 }

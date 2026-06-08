@@ -63,6 +63,7 @@ Route::patch('messages/{message}/read', [MessageController::class, 'read'])->nam
 Route::patch('orders/{order}/feedback', [OrderController::class, 'markFeedback'])->name('orders.feedback');
 Route::resource('orders', OrderController::class);
 Route::post('orders/{order}/payments', [OrderController::class, 'storePayment'])->name('orders.payments.store');
+Route::post('orders/{order}/payments/mobile-confirm', [OrderController::class, 'confirmMobilePayment'])->name('orders.payments.mobile-confirm');
 Route::post('orders/{order}/payments/reminder', [OrderController::class, 'sendPaymentReminder'])->name('orders.payments.reminder');
 Route::post('orders/{order}/budget-follow-up', [OrderController::class, 'sendBudgetFollowUp'])->name('orders.budget-follow-up');
 Route::delete('orders/{order}/payments/{payment}', [OrderController::class, 'destroyPayment'])->name('orders.payments.destroy');

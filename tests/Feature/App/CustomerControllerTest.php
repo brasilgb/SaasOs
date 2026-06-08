@@ -2,13 +2,12 @@
 
 namespace Tests\Feature\App;
 
+use App\Models\App\AccountReceivable;
 use App\Models\App\Customer;
 use App\Models\App\Equipment;
 use App\Models\App\Order;
-use App\Models\App\OrderPayment;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Support\OrderStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -54,33 +53,32 @@ class CustomerControllerTest extends TestCase
         ]);
     }
 
-    public function test_it_counts_pending_balance_only_from_delivered_orders(): void
+    public function test_it_counts_pending_balance_from_open_receivables(): void
     {
         $customer = Customer::factory()->forTenant($this->tenant->id)->create();
-        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
 
-        Order::factory()->forTenant($this->tenant->id)->create([
+        AccountReceivable::create([
+            'tenant_id' => $this->tenant->id,
             'customer_id' => $customer->id,
-            'equipment_id' => $equipment->id,
-            'user_id' => $this->user->id,
-            'service_status' => OrderStatus::BUDGET_GENERATED,
-            'service_cost' => 500,
+            'source_type' => AccountReceivable::SOURCE_ORDER,
+            'source_id' => 10,
+            'description' => 'OS 10',
+            'total_amount' => 300,
+            'paid_amount' => 100,
+            'balance_amount' => 200,
+            'status' => AccountReceivable::STATUS_PARTIAL,
         ]);
 
-        $deliveredOrder = Order::factory()->forTenant($this->tenant->id)->create([
+        AccountReceivable::create([
+            'tenant_id' => $this->tenant->id,
             'customer_id' => $customer->id,
-            'equipment_id' => $equipment->id,
-            'user_id' => $this->user->id,
-            'service_status' => OrderStatus::DELIVERED,
-            'service_cost' => 300,
-            'delivery_date' => now()->subDay(),
-        ]);
-
-        OrderPayment::create([
-            'order_id' => $deliveredOrder->id,
-            'amount' => 100,
-            'payment_method' => 'pix',
-            'paid_at' => now(),
+            'source_type' => AccountReceivable::SOURCE_SALE,
+            'source_id' => 20,
+            'description' => 'Venda 20',
+            'total_amount' => 80,
+            'paid_amount' => 80,
+            'balance_amount' => 0,
+            'status' => AccountReceivable::STATUS_PAID,
         ]);
 
         $response = $this->get(route('app.customers.index'));
@@ -94,17 +92,20 @@ class CustomerControllerTest extends TestCase
             });
     }
 
-    public function test_pending_filter_ignores_non_delivered_orders(): void
+    public function test_pending_filter_uses_open_receivables(): void
     {
         $customer = Customer::factory()->forTenant($this->tenant->id)->create();
-        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
 
-        Order::factory()->forTenant($this->tenant->id)->create([
+        AccountReceivable::create([
+            'tenant_id' => $this->tenant->id,
             'customer_id' => $customer->id,
-            'equipment_id' => $equipment->id,
-            'user_id' => $this->user->id,
-            'service_status' => OrderStatus::BUDGET_GENERATED,
-            'service_cost' => 500,
+            'source_type' => AccountReceivable::SOURCE_ORDER,
+            'source_id' => 10,
+            'description' => 'OS 10',
+            'total_amount' => 500,
+            'paid_amount' => 500,
+            'balance_amount' => 0,
+            'status' => AccountReceivable::STATUS_PAID,
         ]);
 
         $response = $this->get(route('app.customers.index', ['pending' => 1]));

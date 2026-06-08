@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\App;
 
-use App\Events\OrderPaymentRegistered;
 use App\Http\Controllers\Controller;
 use App\Models\App\Image as OrderImage;
 use App\Models\App\Schedule;
@@ -28,7 +27,7 @@ class TechnicianScheduleController extends Controller
         return Schedule::query()
             ->with([
                 'customer:id,name,email,phone,whatsapp,zipcode,state,city,district,street,number,complement,observations',
-                'order:id,customer_id,equipment_id,user_id,order_number,tracking_token,model,defect,state_conservation,accessories,budget_description,budget_value,service_status,observations,services_performed,technician_diagnosis,technician_solution,technician_observations,technician_checklist_items,technician_checklist_completed_at,technician_attended_at,technician_local_payment_received,technician_local_payment_amount,technician_local_payment_method,technician_local_payment_notes,technician_local_payment_received_at,technician_local_payment_user_id,service_cost,delivery_forecast,delivery_date',
+                'order:id,customer_id,equipment_id,user_id,order_number,tracking_token,model,defect,state_conservation,accessories,budget_description,budget_value,service_status,observations,services_performed,technician_diagnosis,technician_solution,technician_observations,technician_checklist_items,technician_checklist_completed_at,technician_attended_at,technician_local_payment_received,technician_local_payment_status,technician_local_payment_amount,technician_local_payment_method,technician_local_payment_notes,technician_local_payment_received_at,technician_local_payment_user_id,service_cost,delivery_forecast,delivery_date',
                 'order.orderPayments:id,order_id,amount,payment_method,paid_at,notes',
                 'order.equipment:id,equipment_number,equipment',
                 'order.equipment.checklists:id,equipment_id,checklist',
@@ -152,8 +151,8 @@ class TechnicianScheduleController extends Controller
     {
         $technician = $this->technician($request);
         $data = $request->validate([
-            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
-            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
+            'latitude' => ['required', 'numeric', 'between:-90,90'],
+            'longitude' => ['required', 'numeric', 'between:-180,180'],
             'observations' => ['nullable', 'string', 'max:1000'],
         ]);
 
@@ -182,8 +181,8 @@ class TechnicianScheduleController extends Controller
     {
         $technician = $this->technician($request);
         $data = $request->validate([
-            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
-            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
+            'latitude' => ['required', 'numeric', 'between:-90,90'],
+            'longitude' => ['required', 'numeric', 'between:-180,180'],
             'observations' => ['nullable', 'string', 'max:1000'],
         ]);
 
@@ -214,7 +213,7 @@ class TechnicianScheduleController extends Controller
         abort_unless(
             filled($schedule->order?->technician_diagnosis) && filled($schedule->order?->technician_solution),
             422,
-            'Salve o diagnóstico e a solução antes de finalizar o atendimento.'
+            'Salve o diagnostico e a solucao antes de finalizar o atendimento.'
         );
 
         $schedule->update([
@@ -317,29 +316,12 @@ class TechnicianScheduleController extends Controller
         $order = $schedule->order;
         abort_unless($order, 404);
 
-        $payment = $this->orderPaymentService->register($order, [
+        $this->orderPaymentService->reportMobilePayment($order, [
             'amount' => round((float) $data['amount'], 2),
             'payment_method' => $data['payment_method'],
             'paid_at' => now(),
             'notes' => $data['notes'] ?? null,
-        ]);
-
-        $order->update([
-            'technician_local_payment_received' => true,
-            'technician_local_payment_amount' => $payment->amount,
-            'technician_local_payment_method' => $payment->payment_method,
-            'technician_local_payment_notes' => $payment->notes,
-            'technician_local_payment_received_at' => $payment->paid_at,
-            'technician_local_payment_user_id' => $technician->id,
-        ]);
-
-        event(new OrderPaymentRegistered($order->id, $technician->id, [
-            'payment_id' => $payment->id,
-            'cash_session_id' => $payment->cash_session_id,
-            'amount' => (float) $payment->amount,
-            'payment_method' => $payment->payment_method,
-            'paid_at' => $payment->paid_at?->toDateTimeString(),
-        ]));
+        ], $technician->id);
 
         return response()->json([
             'success' => true,
@@ -352,6 +334,7 @@ class TechnicianScheduleController extends Controller
         return $this->schedulePayload($schedule->refresh()->loadMissing([
             'customer',
             'order',
+            'order.orderPayments',
             'order.equipment',
             'user',
         ]));
@@ -450,6 +433,7 @@ class TechnicianScheduleController extends Controller
                 'technician_checklist_completed_at' => $order->technician_checklist_completed_at,
                 'technician_attended_at' => $order->technician_attended_at,
                 'technician_local_payment_received' => (bool) $order->technician_local_payment_received,
+                'technician_local_payment_status' => $order->technician_local_payment_status,
                 'technician_local_payment_amount' => $order->technician_local_payment_amount,
                 'technician_local_payment_method' => $order->technician_local_payment_method,
                 'technician_local_payment_notes' => $order->technician_local_payment_notes,
