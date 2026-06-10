@@ -1,6 +1,5 @@
 import ActionDelete from '@/components/action-delete';
 import AppPagination from '@/components/app-pagination';
-import { toastSuccess, toastWarning } from '@/components/app-toast-messages';
 import { Icon } from '@/components/icon';
 import InputSearch from '@/components/inputSearch';
 import { Badge } from '@/components/ui/badge';
@@ -12,7 +11,7 @@ import { maskCpfCnpj, maskPhone, normalizeWhatsappPhone, unMask } from '@/Utils/
 import { Head, Link, usePage } from '@inertiajs/react';
 import { Calendar, Edit, Plus, Upload, Users2, Wrench } from 'lucide-react';
 import moment from 'moment';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import ImportCustomersModal from './import-customers-modal';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -36,27 +35,9 @@ function getWhatsappGreeting(name: string) {
 }
 
 export default function Customers({ customers, search, pending }: any) {
-    const { flash, auth } = usePage().props as any;
+    const { auth } = usePage().props as any;
     const [modalAberto, setModalAberto] = useState(false);
     const canManageCustomers = auth?.permissions?.includes('customers');
-
-    useEffect(() => {
-        if (flash.import_success) {
-            toastSuccess('Importação concluída', String(flash.import_success));
-        }
-
-        if (flash.import_error) {
-            toastWarning('Falha na importação', String(flash.import_error));
-        }
-
-        if (flash.success) {
-            toastSuccess('Sucesso', String(flash.success));
-        }
-
-        if (flash.error) {
-            toastWarning('Erro', String(flash.error));
-        }
-    }, [flash]);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>

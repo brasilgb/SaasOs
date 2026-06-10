@@ -158,8 +158,19 @@ class CashSessionControllerTest extends TestCase
             'notes' => 'Pagamento balcão',
         ]);
 
+        CashSessionMovement::create([
+            'tenant_id' => $this->tenant->id,
+            'cash_session_id' => $cashSession->id,
+            'user_id' => $this->user->id,
+            'type' => CashSessionMovement::TYPE_ENTRY,
+            'amount' => 40,
+            'description' => 'Atendimento do agendamento #10',
+            'source_type' => 'schedule',
+            'source_id' => 10,
+        ]);
+
         $response = $this->post(route('app.cashier.close', $cashSession), [
-            'closing_balance' => '360,00',
+            'closing_balance' => '400,00',
             'manual_entries' => '20,00',
             'manual_exits' => '10,00',
             'closing_notes' => 'Fechamento conferido',
@@ -170,7 +181,7 @@ class CashSessionControllerTest extends TestCase
         $cashSession->refresh();
 
         $this->assertSame('closed', $cashSession->status);
-        $this->assertEquals(360.0, (float) $cashSession->expected_balance);
+        $this->assertEquals(400.0, (float) $cashSession->expected_balance);
         $this->assertEquals(0.0, (float) $cashSession->difference);
         $this->assertEquals(200.0, (float) $cashSession->total_completed_sales);
         $this->assertEquals(80.0, (float) $cashSession->total_cancelled_sales);

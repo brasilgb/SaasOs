@@ -3,12 +3,15 @@
 namespace Tests\Feature\App;
 
 use App\Models\App\Customer;
+use App\Models\App\CashSession;
+use App\Models\App\CashSessionMovement;
 use App\Models\App\Order;
 use App\Models\App\OrderPayment;
 use App\Models\App\Other;
 use App\Models\App\Schedule;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\OrderStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -40,6 +43,8 @@ class ScheduleControllerTest extends TestCase
         $order = Order::factory()->forTenant($this->tenant->id)->create([
             'customer_id' => $customer->id,
             'user_id' => $this->user->id,
+            'defect' => 'Instalação em campo',
+            'service_status' => OrderStatus::OPEN,
         ]);
 
         $response = $this->post(route('app.schedules.store'), [
@@ -47,8 +52,7 @@ class ScheduleControllerTest extends TestCase
             'order_id' => $order->id,
             'user_id' => $this->user->id,
             'schedules' => now()->addDay()->format('Y-m-d H:i:s'),
-            'service' => 'Visita tecnica',
-            'details' => 'Verificar equipamento do cliente',
+            'service' => 'Visita técnica externa',
             'status' => 1,
             'send_to_technician' => true,
         ]);
@@ -60,8 +64,91 @@ class ScheduleControllerTest extends TestCase
             'customer_id' => $customer->id,
             'order_id' => $order->id,
             'user_id' => $this->user->id,
-            'service' => 'Visita tecnica',
             'send_to_technician' => true,
+        ]);
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'service_status' => OrderStatus::SCHEDULE_OPEN,
+        ]);
+        $this->assertDatabaseHas('order_status_history', [
+            'order_id' => $order->id,
+            'status' => OrderStatus::SCHEDULE_OPEN,
+        ]);
+    }
+
+    public function test_it_creates_schedule_without_linked_order(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+
+        $response = $this->post(route('app.schedules.store'), [
+            'customer_id' => $customer->id,
+            'order_id' => null,
+            'user_id' => $this->user->id,
+            'schedules' => now()->addDay()->format('Y-m-d H:i:s'),
+            'service' => 'Retirada de equipamento no cliente',
+            'details' => 'Cliente informou que o equipamento está embalado na recepção.',
+            'material_checklist' => [
+                ['name' => 'Etiqueta de identificação', 'quantity' => 2],
+                ['name' => 'Fonte de teste', 'quantity' => 1],
+                'Lacre',
+            ],
+            'status' => 1,
+            'send_to_technician' => false,
+        ]);
+
+        $response->assertRedirect(route('app.schedules.index'));
+
+        $this->assertDatabaseHas('schedules', [
+            'tenant_id' => $this->tenant->id,
+            'customer_id' => $customer->id,
+            'order_id' => null,
+            'user_id' => $this->user->id,
+            'service' => 'Retirada de equipamento no cliente',
+            'details' => 'Cliente informou que o equipamento está embalado na recepção.',
+        ]);
+
+        $schedule = Schedule::query()->firstOrFail();
+        $this->assertSame([
+            ['name' => 'Etiqueta de identificação', 'quantity' => 2, 'part_id' => null, 'used' => false],
+            ['name' => 'Fonte de teste', 'quantity' => 1, 'part_id' => null, 'used' => false],
+            ['name' => 'Lacre', 'quantity' => 1, 'part_id' => null, 'used' => false],
+        ], $schedule->material_checklist);
+    }
+
+    public function test_it_marks_linked_order_as_schedule_completed_when_schedule_is_closed(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'user_id' => $this->user->id,
+            'service_status' => OrderStatus::SCHEDULE_OPEN,
+        ]);
+        $schedule = Schedule::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'order_id' => $order->id,
+            'user_id' => $this->user->id,
+            'status' => 1,
+        ]);
+
+        $response = $this->patch(route('app.schedules.update', $schedule), [
+            'customer_id' => $customer->id,
+            'order_id' => $order->id,
+            'user_id' => $this->user->id,
+            'schedules' => now()->addDay()->format('Y-m-d H:i:s'),
+            'service' => 'Retorno técnico externo',
+            'status' => 3,
+            'send_to_technician' => false,
+        ]);
+
+        $response->assertRedirect(route('app.schedules.show', ['schedule' => $schedule->id]));
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'service_status' => OrderStatus::SCHEDULE_COMPLETED,
+        ]);
+        $this->assertDatabaseHas('order_status_history', [
+            'order_id' => $order->id,
+            'status' => OrderStatus::SCHEDULE_COMPLETED,
         ]);
     }
 
@@ -79,13 +166,12 @@ class ScheduleControllerTest extends TestCase
             'order_id' => $otherOrder->id,
             'user_id' => $this->user->id,
             'schedules' => now()->addDay()->format('Y-m-d H:i:s'),
-            'service' => 'Visita tecnica',
-            'details' => 'Verificar equipamento do cliente',
+            'service' => 'Visita técnica externa',
             'status' => 1,
             'send_to_technician' => false,
         ]);
 
-        $response->assertNotFound();
+        $response->assertRedirect(config('app.url'));
         $this->assertDatabaseCount('schedules', 0);
     }
 
@@ -106,8 +192,7 @@ class ScheduleControllerTest extends TestCase
             'order_id' => $order->id,
             'user_id' => $this->user->id,
             'schedules' => now()->addDay()->format('Y-m-d H:i:s'),
-            'service' => 'Visita tecnica',
-            'details' => 'Verificar equipamento do cliente',
+            'service' => 'Visita técnica externa',
             'status' => 1,
             'send_to_technician' => true,
         ]);
@@ -146,11 +231,56 @@ class ScheduleControllerTest extends TestCase
         $response->assertRedirect(route('app.schedules.index'));
         $response->assertSessionHas(
             'error',
-            'Não é possível excluir este agendamento porque ele possui atendimento técnico ou pagamento registrado na OS vinculada.'
+            'Não é possível excluir este agendamento porque ele possui atendimento técnico ou pagamento registrado.'
         );
 
         $this->assertDatabaseHas('schedules', [
             'id' => $schedule->id,
         ]);
+    }
+
+    public function test_it_registers_schedule_local_payment_into_open_cashier(): void
+    {
+        $cashSession = CashSession::create([
+            'tenant_id' => $this->tenant->id,
+            'opened_by' => $this->user->id,
+            'opened_at' => now()->subHour(),
+            'opening_balance' => 100,
+            'status' => 'open',
+        ]);
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $schedule = Schedule::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'order_id' => null,
+            'user_id' => $this->user->id,
+            'local_payment_received' => true,
+            'local_payment_amount' => 180.50,
+            'local_payment_received_at' => now(),
+            'local_payment_user_id' => $this->user->id,
+        ]);
+
+        $response = $this->post(route('app.schedules.local-payment-cashier', $schedule));
+
+        $response->assertSessionHas('success', 'Pagamento do atendimento inserido no caixa.');
+
+        $this->assertDatabaseHas('cash_session_movements', [
+            'tenant_id' => $this->tenant->id,
+            'cash_session_id' => $cashSession->id,
+            'user_id' => $this->user->id,
+            'type' => CashSessionMovement::TYPE_ENTRY,
+            'amount' => 180.50,
+            'description' => 'Atendimento do agendamento #'.$schedule->schedules_number,
+            'source_type' => 'schedule',
+            'source_id' => $schedule->id,
+        ]);
+
+        $schedule->refresh();
+        $this->assertSame($cashSession->id, (int) $schedule->local_payment_cash_session_id);
+        $this->assertNotNull($schedule->local_payment_cash_registered_at);
+
+        $this->post(route('app.schedules.local-payment-cashier', $schedule))
+            ->assertSessionHas('error', 'Este pagamento local já foi inserido no caixa.');
+
+        $this->assertSame(1, CashSessionMovement::query()->where('source_type', 'schedule')->where('source_id', $schedule->id)->count());
     }
 }

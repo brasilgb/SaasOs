@@ -11,6 +11,7 @@ use App\Models\App\Order;
 use App\Models\App\OrderPayment;
 use App\Models\App\Other;
 use App\Models\App\Part;
+use App\Models\App\Schedule;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Support\OrderStatus;
@@ -80,6 +81,71 @@ class OrderControllerTest extends TestCase
             'entity_type' => 'order',
             'entity_id' => $order->id,
             'action' => 'order_created',
+        ]);
+    }
+
+    public function test_it_links_created_order_to_source_schedule(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+        $schedule = Schedule::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'order_id' => null,
+            'user_id' => $this->user->id,
+        ]);
+
+        $response = $this->post(route('app.orders.store'), [
+            'schedule_id' => $schedule->id,
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'model' => 'Notebook Dell Inspiron',
+            'defect' => 'Não liga',
+            'service_status' => OrderStatus::OPEN,
+            'user_id' => $this->user->id,
+        ]);
+
+        $order = Order::query()->firstOrFail();
+
+        $response->assertRedirect(route('app.schedules.show', ['schedule' => $schedule->id]));
+        $response->assertSessionHas('success', 'Ordem cadastrada com sucesso e vinculada ao agendamento.');
+
+        $this->assertDatabaseHas('schedules', [
+            'id' => $schedule->id,
+            'order_id' => $order->id,
+        ]);
+    }
+
+    public function test_it_creates_external_service_order_without_equipment_fields(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+
+        $response = $this->post(route('app.orders.store'), [
+            'order_type' => Order::TYPE_EXTERNAL_SERVICE,
+            'customer_id' => $customer->id,
+            'service_type' => 'Instalação solar',
+            'service_details' => 'Instalação de inversor solar e vistoria do quadro elétrico',
+            'materials_used' => 'Cabos, conectores MC4 e disjuntores',
+            'service_status' => OrderStatus::SCHEDULE_OPEN,
+            'service_value' => '350,00',
+        ]);
+
+        $response->assertRedirect(route('app.orders.index'));
+
+        $order = Order::query()->firstOrFail();
+
+        $this->assertSame(Order::TYPE_EXTERNAL_SERVICE, $order->order_type);
+        $this->assertSame('Instalação solar', $order->defect);
+        $this->assertSame('Instalação solar', $order->service_type);
+        $this->assertSame('Instalação de inversor solar e vistoria do quadro elétrico', $order->service_details);
+        $this->assertSame('Cabos, conectores MC4 e disjuntores', $order->materials_used);
+        $this->assertNull($order->equipment_id);
+        $this->assertNull($order->model);
+        $this->assertNull($order->password);
+        $this->assertSame(OrderStatus::SCHEDULE_OPEN, (int) $order->service_status);
+
+        $this->assertDatabaseHas('order_status_history', [
+            'order_id' => $order->id,
+            'status' => OrderStatus::SCHEDULE_OPEN,
         ]);
     }
 
@@ -1179,12 +1245,16 @@ class OrderControllerTest extends TestCase
     private function orderUpdatePayload(Order $order, Customer $customer, Equipment $equipment, array $overrides = []): array
     {
         return array_merge([
+            'order_type' => $order->order_type ?? Order::TYPE_EQUIPMENT,
             'customer_id' => $customer->id,
             'equipment_id' => $equipment->id,
             'user_id' => $this->user->id,
             'model' => $order->model ?? 'Modelo teste',
             'password' => $order->password,
             'defect' => mb_substr($order->defect ?? 'Defeito teste', 0, 500),
+            'service_type' => $order->service_type,
+            'service_details' => $order->service_details,
+            'materials_used' => $order->materials_used,
             'state_conservation' => mb_substr($order->state_conservation ?? 'Usado', 0, 500),
             'accessories' => mb_substr($order->accessories ?? 'Sem acessórios', 0, 500),
             'budget_description' => $order->budget_description ? mb_substr($order->budget_description, 0, 500) : null,

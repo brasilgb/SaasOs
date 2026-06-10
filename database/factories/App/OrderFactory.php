@@ -29,11 +29,15 @@ class OrderFactory extends Factory
         $serviceCost = round($partsValue + $serviceValue, 2);
 
         return [
+            'order_type' => Order::TYPE_EQUIPMENT,
             'order_number' => $this->faker->unique()->numberBetween(1, 999999),
             'tracking_token' => Str::upper(Str::random(20)),
             'model' => $this->faker->randomElement(['Notebook Dell', 'PC Gamer', 'Macbook Pro', 'Celular Samsung']),
             'password' => $this->faker->optional()->password(6, 10),
             'defect' => $this->faker->sentence(6),
+            'service_type' => null,
+            'service_details' => null,
+            'materials_used' => null,
             'state_conservation' => $this->faker->randomElement(['bom estado', 'com avarias', 'nao liga']),
             'accessories' => $this->faker->randomElement(['carregador', 'mouse', 'teclado', 'nenhum']),
             'budget_description' => $this->faker->optional()->paragraph(),

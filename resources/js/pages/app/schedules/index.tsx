@@ -31,6 +31,29 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+function formatMaterialChecklist(materials: any): string {
+    if (!Array.isArray(materials)) return '';
+
+    return materials
+        .map((item: any) => {
+            if (typeof item === 'string') return item;
+
+            const name = String(item?.name || item?.label || item?.item || '').trim();
+            const quantity = Math.max(1, parseInt(String(item?.quantity ?? 1), 10) || 1);
+
+            return name ? `${quantity}x ${name}` : '';
+        })
+        .filter(Boolean)
+        .join(', ');
+}
+
+function formatCurrency(value: any) {
+    return Number(value || 0).toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+    });
+}
+
 function getTechnicianWhatsappMessage(schedule: any) {
     const visitDate = moment(schedule.schedules).format('DD/MM/YYYY HH:mm');
     const greetingHour = new Date().getHours();
@@ -44,13 +67,16 @@ function getTechnicianWhatsappMessage(schedule: any) {
         schedule.customer?.city,
     ].filter(Boolean);
 
+    const materialChecklist = formatMaterialChecklist(schedule.material_checklist);
+
     return [
         `${greeting}, ${schedule.user?.name}!`,
         `Visita agendada para ${visitDate}.`,
-        `Serviço: ${schedule.service}.`,
+        schedule.service ? `Serviço: ${schedule.service}.` : 'Serviço ainda não informado.',
+        materialChecklist ? `Materiais: ${materialChecklist}.` : null,
         `Cliente: ${schedule.customer?.name}.`,
         `Endereço: ${addressParts.join(', ')}.`,
-    ].join('\n');
+    ].filter(Boolean).join('\n');
 }
 
 function getMobileStage(schedule: any) {
@@ -75,11 +101,7 @@ function getScheduleShowHref(schedule: any, page?: number, search?: string, hash
     return `${route('app.schedules.show', { schedule: schedule.id, page, search })}${hash}`;
 }
 
-function getOrderImagesHref(schedule: any) {
-    return schedule.order?.id ? route('app.images.index', { or: schedule.order.id }) : null;
-}
-
-function TechnicianMobileSummary({ schedule, scheduleHref, imagesHref }: { schedule: any; scheduleHref: string; imagesHref?: string | null }) {
+function TechnicianMobileSummary({ schedule, scheduleHref }: { schedule: any; scheduleHref: string }) {
     const summary = schedule.mobile_summary;
     const stage = getMobileStage(schedule);
 
@@ -110,20 +132,14 @@ function TechnicianMobileSummary({ schedule, scheduleHref, imagesHref }: { sched
                     Checklist
                 </Badge>
             )}
-            {summary?.images_count > 0 &&
-                (imagesHref ? (
-                    <Badge asChild variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
-                        <Link href={imagesHref}>
-                            <Camera className="h-3 w-3" />
-                            {summary.images_count} foto{summary.images_count > 1 ? 's' : ''}
-                        </Link>
-                    </Badge>
-                ) : (
-                    <Badge variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
+            {summary?.images_count > 0 && (
+                <Badge asChild variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
+                    <Link href={scheduleHref}>
                         <Camera className="h-3 w-3" />
                         {summary.images_count} foto{summary.images_count > 1 ? 's' : ''}
-                    </Badge>
-                ))}
+                    </Link>
+                </Badge>
+            )}
             {summary?.local_payment_received && (
                 <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
                     <CreditCard className="h-3 w-3" />
@@ -139,7 +155,7 @@ function TechnicianMobileTable({ schedules, pagination, canManageSchedules }: { 
     const selectedSummary = selectedSchedule?.mobile_summary;
     const selectedStage = selectedSchedule ? getMobileStage(selectedSchedule) : null;
     const selectedReportHref = selectedSchedule ? getScheduleShowHref(selectedSchedule, undefined, undefined, '#technician-report') : '#';
-    const selectedImagesHref = selectedSchedule ? getOrderImagesHref(selectedSchedule) : null;
+    const selectedImages = selectedSummary?.images || selectedSchedule?.images || [];
 
     if (!schedules?.length) {
         return (
@@ -244,15 +260,31 @@ function TechnicianMobileTable({ schedules, pagination, canManageSchedules }: { 
                                     </div>
                                     <div className="rounded-md border p-3">
                                         <div className="text-muted-foreground">Fotos</div>
-                                        {selectedImagesHref ? (
-                                            <Link href={selectedImagesHref} className="text-primary mt-1 block font-medium hover:underline">
-                                                {selectedSummary?.images_count || 0}
-                                            </Link>
-                                        ) : (
-                                            <div className="mt-1 font-medium">{selectedSummary?.images_count || 0}</div>
-                                        )}
+                                        <Link href={selectedReportHref} className="text-primary mt-1 block font-medium hover:underline">
+                                            {selectedSummary?.images_count || 0}
+                                        </Link>
                                     </div>
                                 </div>
+
+                                {selectedImages.length > 0 && (
+                                    <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-4">
+                                        {selectedImages.map((image: any) => (
+                                            <a
+                                                key={image.id}
+                                                href={image.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="group block overflow-hidden rounded-md border bg-muted"
+                                            >
+                                                <img
+                                                    src={image.url}
+                                                    alt={`Foto do agendamento ${selectedSchedule.schedules_number}`}
+                                                    className="aspect-square w-full object-cover transition-transform group-hover:scale-105"
+                                                />
+                                            </a>
+                                        ))}
+                                    </div>
+                                )}
 
                                 <div className="flex flex-wrap gap-1.5">
                                     {selectedSummary?.has_checklist && (
@@ -271,7 +303,7 @@ function TechnicianMobileTable({ schedules, pagination, canManageSchedules }: { 
                                     {selectedSummary?.local_payment_received && (
                                         <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
                                             <CreditCard className="h-3 w-3" />
-                                            Pagamento local
+                                            Pagamento local {formatCurrency(selectedSummary?.local_payment_amount ?? selectedSchedule?.local_payment_amount)}
                                         </Badge>
                                     )}
                                     {selectedSummary?.sent_to_technician && (
@@ -391,7 +423,20 @@ export default function Schedules({ schedules, search, status, tab }: any) {
                                                         </div>
                                                     </div>
                                                 </TableCell>
-                                                <TableCell>{schedule.service}</TableCell>
+                                                <TableCell>
+                                                    <div className="max-w-[280px] space-y-1">
+                                                        <div className="font-medium">
+                                                            {schedule.service || (
+                                                                <span className="text-muted-foreground text-sm font-normal">Serviço não informado</span>
+                                                            )}
+                                                        </div>
+                                                        {formatMaterialChecklist(schedule.material_checklist) && (
+                                                            <div className="text-muted-foreground truncate text-xs">
+                                                                Materiais: {formatMaterialChecklist(schedule.material_checklist)}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </TableCell>
                                                 <TableCell>
                                                     <div className="space-y-1">
                                                         <div className="font-medium">{schedule.user.name}</div>
@@ -410,7 +455,6 @@ export default function Schedules({ schedules, search, status, tab }: any) {
                                                             search,
                                                             '#technician-report',
                                                         )}
-                                                        imagesHref={getOrderImagesHref(schedule)}
                                                     />
                                                 </TableCell>
                                                 <TableCell className="min-w-[140px]">

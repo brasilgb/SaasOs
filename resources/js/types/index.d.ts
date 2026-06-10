@@ -96,9 +96,13 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
 };
 export interface Order {
     id: number;
+    order_type?: 'equipment' | 'external_service' | string;
     customer_id: number;
     equipment_id: number;
     model: string;
+    service_type?: string | null;
+    service_details?: string | null;
+    materials_used?: string | null;
     service_status: number;
     created_at: string;
     updated_at: string;
@@ -107,13 +111,21 @@ export interface Order {
     delivery_date: string;
 }
 
+export interface ScheduleMaterialChecklistItem {
+    name: string;
+    quantity: number;
+    part_id?: number | null;
+    used?: boolean;
+}
+
 export interface Scheduler {
     id: number;
     user_id: number;
     customer_id: number;
-    order_id: number;
-    service: string;
-    details: string;
+    order_id?: number | null;
+    service?: string | null;
+    details?: string | null;
+    material_checklist?: Array<string | ScheduleMaterialChecklistItem> | null;
     status: number;
     schedules: string;
     created_at: string;
@@ -123,6 +135,9 @@ export interface Scheduler {
     user: User;
     observations: string;
     send_to_technician: boolean;
+    local_payment_received?: boolean;
+    local_payment_amount?: number | string | null;
+    local_payment_received_at?: string | null;
 }
 
 export interface Message {

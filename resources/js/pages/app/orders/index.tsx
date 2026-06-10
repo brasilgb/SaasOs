@@ -391,6 +391,8 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                         isFeedbackWindowOpen,
                                         hasCustomerFeedback,
                                     });
+                                    const equipmentTitle = order.equipment?.equipment ?? 'Equipamento não informado';
+                                    const equipmentSubtitle = order.model || 'Modelo não informado';
 
                                     return (
                                         <TableRow key={order.id} className={rowClassName}>
@@ -424,8 +426,11 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                             </TableCell>
                                             <TableCell>
                                                 <div className="space-y-1">
-                                                    <div className="font-medium">{order.equipment.equipment}</div>
-                                                    <div className="text-muted-foreground text-xs">{order.model || 'Modelo não informado'}</div>
+                                                    <div className="font-medium">{equipmentTitle}</div>
+                                                    <div className="text-muted-foreground text-xs">{equipmentSubtitle}</div>
+                                                    <div className="text-muted-foreground text-xs">
+                                                        Senha: {order.password || '-'}
+                                                    </div>
                                                 </div>
                                             </TableCell>
                                             <TableCell>
@@ -433,6 +438,10 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                     <div>
                                                         <span className="text-muted-foreground">Entrada:</span>{' '}
                                                         {moment(order.created_at).format('DD/MM/YYYY')}
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-muted-foreground">Previsão:</span>{' '}
+                                                        {order.delivery_forecast ? moment(order.delivery_forecast).format('DD/MM/YYYY') : '-'}
                                                     </div>
                                                     <div>
                                                         <span className="text-muted-foreground">Entrega:</span>{' '}

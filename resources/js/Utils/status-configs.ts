@@ -10,6 +10,8 @@ export const APP_STATUS_CONFIGS = {
         8: { label: 'Serviço não executado', color: 'bg-red-600 text-white border-red-400' },
         9: { label: 'Cliente avisado / aguardando retirada', color: 'bg-teal-100 text-teal-700 border-teal-200' },
         10: { label: 'Entregue ao cliente', color: 'bg-green-600 text-white border-green-700' },
+        11: { label: 'Agendamento aberto', color: 'bg-cyan-100 text-cyan-700 border-cyan-200' },
+        12: { label: 'Agendamento concluído', color: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
     },
     userStatus: {
         0: { label: 'Inativo', color: 'bg-red-100 text-red-700 border-red-200' },

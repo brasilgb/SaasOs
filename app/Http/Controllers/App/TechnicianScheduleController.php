@@ -3,15 +3,75 @@
 namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
-use App\Models\App\Image as OrderImage;
+use App\Models\App\Part;
+use App\Models\App\PartMovement;
 use App\Models\App\Schedule;
+use App\Models\App\ScheduleImage;
 use App\Models\User;
-use App\Services\OrderPaymentService;
+use App\Services\OrderStatusService;
+use App\Support\OrderStatus;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Validation\ValidationException;
 
 class TechnicianScheduleController extends Controller
 {
-    public function __construct(private readonly OrderPaymentService $orderPaymentService) {}
+    private const MAX_IMAGES_PER_SCHEDULE = 4;
+
+    public function __construct(
+        private readonly OrderStatusService $orderStatusService,
+    ) {}
+
+    private function syncScheduleOrderStatus(Schedule $schedule, ?int $changedBy = null): void
+    {
+        $order = $schedule->order;
+
+        if (! $order) {
+            return;
+        }
+
+        $targetStatus = (int) $schedule->status === 3
+            ? OrderStatus::SCHEDULE_COMPLETED
+            : OrderStatus::SCHEDULE_OPEN;
+
+        $this->orderStatusService->transition(
+            $order,
+            $targetStatus,
+            $changedBy,
+            'Status atualizado pelo agendamento #'.$schedule->schedules_number
+        );
+    }
+
+    private function orderScheduleService($order): ?string
+    {
+        if (! $order) {
+            return null;
+        }
+
+        $service = $order->order_type === \App\Models\App\Order::TYPE_EXTERNAL_SERVICE
+            ? ($order->service_type ?: $order->defect)
+            : $order->defect;
+
+        return mb_substr(trim((string) $service), 0, 500) ?: 'Atendimento da OS #'.$order->order_number;
+    }
+
+    private function orderScheduleDetails($order): ?string
+    {
+        if (! $order) {
+            return null;
+        }
+
+        $details = collect([
+            $order->service_details,
+            $order->materials_used ? 'Materiais utilizados: '.$order->materials_used : null,
+            $order->budget_description,
+            $order->observations,
+            $order->services_performed,
+        ])->filter(fn ($value) => filled($value))->implode("\n\n");
+
+        return mb_substr($details ?: $this->orderScheduleService($order), 0, 500);
+    }
 
     private function technician(Request $request): User
     {
@@ -27,15 +87,132 @@ class TechnicianScheduleController extends Controller
         return Schedule::query()
             ->with([
                 'customer:id,name,email,phone,whatsapp,zipcode,state,city,district,street,number,complement,observations',
-                'order:id,customer_id,equipment_id,user_id,order_number,tracking_token,model,defect,state_conservation,accessories,budget_description,budget_value,service_status,observations,services_performed,technician_diagnosis,technician_solution,technician_observations,technician_checklist_items,technician_checklist_completed_at,technician_attended_at,technician_local_payment_received,technician_local_payment_status,technician_local_payment_amount,technician_local_payment_method,technician_local_payment_notes,technician_local_payment_received_at,technician_local_payment_user_id,service_cost,delivery_forecast,delivery_date',
+                'order:id,customer_id,equipment_id,user_id,order_number,order_type,tracking_token,model,defect,service_type,service_details,materials_used,state_conservation,accessories,budget_description,budget_value,service_status,observations,services_performed,technician_diagnosis,technician_solution,technician_observations,technician_checklist_items,technician_checklist_completed_at,technician_attended_at,technician_local_payment_received,technician_local_payment_status,technician_local_payment_amount,technician_local_payment_method,technician_local_payment_notes,technician_local_payment_received_at,technician_local_payment_user_id,service_cost,delivery_forecast,delivery_date',
                 'order.orderPayments:id,order_id,amount,payment_method,paid_at,notes',
                 'order.equipment:id,equipment_number,equipment',
                 'order.equipment.checklists:id,equipment_id,checklist',
                 'user:id,name,email,telephone,whatsapp,avatar',
             ])
             ->where('user_id', $technician->id)
-            ->where('send_to_technician', true)
-            ->whereNotNull('order_id');
+            ->where('send_to_technician', true);
+    }
+
+    private function scheduleService(Schedule $schedule): ?string
+    {
+        if (filled($schedule->service)) {
+            return (string) $schedule->service;
+        }
+
+        return $this->orderScheduleService($schedule->order);
+    }
+
+    private function scheduleDetails(Schedule $schedule): ?string
+    {
+        if (filled($schedule->details)) {
+            return (string) $schedule->details;
+        }
+
+        return $this->orderScheduleDetails($schedule->order);
+    }
+
+    private function materialUsageSnapshot(array $items): array
+    {
+        return collect($items)
+            ->filter(fn (array $item): bool => (bool) ($item['used'] ?? false) && filled($item['part_id'] ?? null))
+            ->groupBy(fn (array $item): int => (int) $item['part_id'])
+            ->map(fn ($items): int => $items->sum(fn (array $item): int => max(1, (int) ($item['quantity'] ?? 1))))
+            ->filter(fn (int $quantity): bool => $quantity > 0)
+            ->toArray();
+    }
+
+    private function syncMaterialChecklistStock(Schedule $schedule, array $nextItems, int $userId): void
+    {
+        $previousUsage = $this->materialUsageSnapshot($schedule->normalizedMaterialChecklist());
+        $nextUsage = $this->materialUsageSnapshot($nextItems);
+        $partIds = array_values(array_unique(array_merge(array_keys($previousUsage), array_keys($nextUsage))));
+
+        if ($partIds === []) {
+            return;
+        }
+
+        $parts = Part::query()
+            ->where('tenant_id', $schedule->tenant_id)
+            ->whereIn('id', $partIds)
+            ->lockForUpdate()
+            ->get()
+            ->keyBy('id');
+
+        foreach ($partIds as $partId) {
+            $previousQuantity = (int) ($previousUsage[$partId] ?? 0);
+            $nextQuantity = (int) ($nextUsage[$partId] ?? 0);
+            $quantityDiff = $nextQuantity - $previousQuantity;
+
+            if ($quantityDiff === 0) {
+                continue;
+            }
+
+            $part = $parts->get($partId);
+
+            if (! $part) {
+                throw ValidationException::withMessages([
+                    'materials' => 'Uma das peças informadas não foi encontrada.',
+                ]);
+            }
+
+            if ($quantityDiff > 0) {
+                if ((int) $part->quantity < $quantityDiff) {
+                    throw ValidationException::withMessages([
+                        'materials' => "Estoque insuficiente para {$part->name}.",
+                    ]);
+                }
+
+                $part->decrement('quantity', $quantityDiff);
+                $movementType = PartMovement::TYPE_ORDER_USE;
+                $movementQuantity = $quantityDiff;
+                $movementReason = 'Uso no agendamento #'.$schedule->schedules_number;
+            } else {
+                $movementQuantity = abs($quantityDiff);
+                $part->increment('quantity', $movementQuantity);
+                $movementType = PartMovement::TYPE_RETURN;
+                $movementReason = 'Devolução de peça do agendamento #'.$schedule->schedules_number;
+            }
+
+            PartMovement::create([
+                'part_id' => $part->id,
+                'order_id' => null,
+                'user_id' => $userId,
+                'movement_type' => $movementType,
+                'quantity' => $movementQuantity,
+                'reason' => $movementReason,
+            ]);
+        }
+    }
+
+    private function scheduleImagesPath(Schedule $schedule): string
+    {
+        return public_path('storage/schedules/'.$schedule->id);
+    }
+
+    private function scheduleImagePayload(ScheduleImage $image): array
+    {
+        return [
+            'id' => $image->id,
+            'tenant_id' => $image->tenant_id,
+            'schedule_id' => $image->schedule_id,
+            'user_id' => $image->user_id,
+            'filename' => $image->filename,
+            'created_at' => $image->created_at,
+            'updated_at' => $image->updated_at,
+        ];
+    }
+
+    private function deleteScheduleImageFile(Schedule $schedule, ScheduleImage $image): void
+    {
+        $path = $this->scheduleImagesPath($schedule).DIRECTORY_SEPARATOR.$image->filename;
+
+        if (file_exists($path)) {
+            unlink($path);
+        }
     }
 
     public function index(Request $request)
@@ -113,6 +290,37 @@ class TechnicianScheduleController extends Controller
         ]);
     }
 
+    public function materials(Request $request)
+    {
+        $technician = $this->technician($request);
+        $data = $request->validate([
+            'search' => ['nullable', 'string', 'max:100'],
+            'limit' => ['nullable', 'integer', 'min:1', 'max:100'],
+        ]);
+
+        $parts = Part::query()
+            ->where('tenant_id', $technician->tenant_id)
+            ->where('type', 'part')
+            ->where('status', true)
+            ->when(filled($data['search'] ?? null), function ($query) use ($data) {
+                $search = $data['search'];
+
+                $query->where(function ($subQuery) use ($search) {
+                    $subQuery->where('name', 'like', '%'.$search.'%')
+                        ->orWhere('part_number', 'like', '%'.$search.'%')
+                        ->orWhere('reference_number', 'like', '%'.$search.'%');
+                });
+            })
+            ->orderBy('name')
+            ->limit((int) ($data['limit'] ?? 50))
+            ->get(['id', 'name', 'part_number', 'reference_number', 'quantity', 'location']);
+
+        return response()->json([
+            'success' => true,
+            'result' => $parts,
+        ]);
+    }
+
     public function updateStatus(Request $request, Schedule $schedule)
     {
         $technician = $this->technician($request);
@@ -135,6 +343,7 @@ class TechnicianScheduleController extends Controller
         $schedule->update([
             'status' => $data['status'],
         ]);
+        $this->syncScheduleOrderStatus($schedule->loadMissing('order'), $technician->id);
 
         return response()->json([
             'success' => true,
@@ -170,6 +379,7 @@ class TechnicianScheduleController extends Controller
             'check_in_longitude' => $data['longitude'] ?? null,
             'check_in_observations' => $data['observations'] ?? null,
         ]);
+        $this->syncScheduleOrderStatus($schedule->loadMissing('order'), $technician->id);
 
         return response()->json([
             'success' => true,
@@ -210,11 +420,13 @@ class TechnicianScheduleController extends Controller
             );
         }
 
-        abort_unless(
-            filled($schedule->order?->technician_diagnosis) && filled($schedule->order?->technician_solution),
-            422,
-            'Salve o diagnostico e a solucao antes de finalizar o atendimento.'
-        );
+        if ($schedule->order) {
+            abort_unless(
+                filled($schedule->order->technician_diagnosis) && filled($schedule->order->technician_solution),
+                422,
+                'Salve o diagnostico e a solucao antes de finalizar o atendimento.'
+            );
+        }
 
         $schedule->update([
             'status' => 3,
@@ -223,6 +435,7 @@ class TechnicianScheduleController extends Controller
             'check_out_longitude' => $data['longitude'] ?? null,
             'check_out_observations' => $data['observations'] ?? null,
         ]);
+        $this->syncScheduleOrderStatus($schedule->loadMissing('order'), $technician->id);
 
         return response()->json([
             'success' => true,
@@ -263,8 +476,10 @@ class TechnicianScheduleController extends Controller
     {
         $technician = $this->technician($request);
         $data = $request->validate([
-            'items' => ['present', 'array'],
+            'items' => ['sometimes', 'array'],
             'items.*' => ['string', 'max:500'],
+            'material_checklist' => ['sometimes', 'array'],
+            'materials' => ['sometimes', 'array'],
         ]);
 
         $schedule = $this->schedulesQuery($technician)
@@ -272,7 +487,38 @@ class TechnicianScheduleController extends Controller
             ->firstOrFail();
 
         $order = $schedule->order;
-        abort_unless($order, 404);
+        $materialChecklist = $data['material_checklist'] ?? $data['materials'] ?? null;
+
+        if (is_array($materialChecklist)) {
+            $nextMaterialChecklist = Schedule::normalizeMaterialChecklist($materialChecklist);
+
+            DB::transaction(function () use ($schedule, $nextMaterialChecklist, $technician): void {
+                $lockedSchedule = Schedule::query()
+                    ->whereKey($schedule->id)
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+                $this->syncMaterialChecklistStock($lockedSchedule, $nextMaterialChecklist, $technician->id);
+
+                $lockedSchedule->update([
+                    'material_checklist' => $nextMaterialChecklist,
+                ]);
+            });
+        }
+
+        if (! $order) {
+            return response()->json([
+                'success' => true,
+                'result' => $this->freshSchedulePayload($schedule),
+            ]);
+        }
+
+        if (! array_key_exists('items', $data)) {
+            return response()->json([
+                'success' => true,
+                'result' => $this->freshSchedulePayload($schedule),
+            ]);
+        }
 
         $availableItems = $order->equipment?->checklists
             ->flatMap(fn ($checklist) => collect(explode(',', (string) $checklist->checklist))
@@ -281,7 +527,7 @@ class TechnicianScheduleController extends Controller
             ->values()
             ->all() ?? [];
 
-        $items = collect($data['items'])
+        $items = collect($data['items'] ?? [])
             ->map(fn ($item) => trim((string) $item))
             ->filter()
             ->unique()
@@ -305,27 +551,110 @@ class TechnicianScheduleController extends Controller
         $technician = $this->technician($request);
         $data = $request->validate([
             'amount' => ['required', 'numeric', 'min:0.01'],
-            'payment_method' => ['required', 'string', 'in:pix,cartao,dinheiro,transferencia'],
-            'notes' => ['nullable', 'string', 'max:500'],
+            'paid' => ['nullable', 'boolean'],
         ]);
 
         $schedule = $this->schedulesQuery($technician)
             ->whereKey($schedule->id)
             ->firstOrFail();
 
-        $order = $schedule->order;
-        abort_unless($order, 404);
-
-        $this->orderPaymentService->reportMobilePayment($order, [
-            'amount' => round((float) $data['amount'], 2),
-            'payment_method' => $data['payment_method'],
-            'paid_at' => now(),
-            'notes' => $data['notes'] ?? null,
-        ], $technician->id);
+        $schedule->update([
+            'local_payment_received' => (bool) ($data['paid'] ?? true),
+            'local_payment_amount' => round((float) $data['amount'], 2),
+            'local_payment_received_at' => now(),
+            'local_payment_user_id' => $technician->id,
+        ]);
 
         return response()->json([
             'success' => true,
             'result' => $this->freshSchedulePayload($schedule),
+        ]);
+    }
+
+    public function images(Request $request, Schedule $schedule)
+    {
+        $technician = $this->technician($request);
+        $schedule = $this->schedulesQuery($technician)
+            ->whereKey($schedule->id)
+            ->firstOrFail();
+
+        $images = ScheduleImage::query()
+            ->where('tenant_id', $schedule->tenant_id)
+            ->where('schedule_id', $schedule->id)
+            ->latest('id')
+            ->get()
+            ->map(fn (ScheduleImage $image): array => $this->scheduleImagePayload($image))
+            ->values();
+
+        return response()->json([
+            'success' => true,
+            'result' => $images,
+        ]);
+    }
+
+    public function uploadImage(Request $request, Schedule $schedule)
+    {
+        $technician = $this->technician($request);
+        $data = $request->validate([
+            'filename' => ['required', 'string'],
+        ]);
+
+        $schedule = $this->schedulesQuery($technician)
+            ->whereKey($schedule->id)
+            ->firstOrFail();
+
+        if (ScheduleImage::query()->where('tenant_id', $schedule->tenant_id)->where('schedule_id', $schedule->id)->count() >= self::MAX_IMAGES_PER_SCHEDULE) {
+            throw ValidationException::withMessages([
+                'filename' => 'Este atendimento pode ter no máximo '.self::MAX_IMAGES_PER_SCHEDULE.' imagens no total.',
+            ]);
+        }
+
+        $imageContent = base64_decode($data['filename'], true);
+
+        if ($imageContent === false) {
+            throw ValidationException::withMessages([
+                'filename' => 'Imagem inválida.',
+            ]);
+        }
+
+        $storePath = $this->scheduleImagesPath($schedule);
+
+        if (! file_exists($storePath)) {
+            mkdir($storePath, 0777, true);
+        }
+
+        $filename = time().rand(1, 50).'.png';
+        File::put($storePath.DIRECTORY_SEPARATOR.$filename, $imageContent);
+
+        $image = ScheduleImage::create([
+            'tenant_id' => $schedule->tenant_id,
+            'schedule_id' => $schedule->id,
+            'user_id' => $technician->id,
+            'filename' => $filename,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Imagem salva com sucesso',
+            'result' => $this->scheduleImagePayload($image),
+        ]);
+    }
+
+    public function deleteImage(Request $request, Schedule $schedule, ScheduleImage $image)
+    {
+        $technician = $this->technician($request);
+        $schedule = $this->schedulesQuery($technician)
+            ->whereKey($schedule->id)
+            ->firstOrFail();
+
+        abort_unless((int) $image->tenant_id === (int) $schedule->tenant_id && (int) $image->schedule_id === (int) $schedule->id, 404);
+
+        $this->deleteScheduleImageFile($schedule, $image);
+        $image->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Imagem deletada com sucesso!',
         ]);
     }
 
@@ -355,15 +684,20 @@ class TechnicianScheduleController extends Controller
         $phoneDigits = $customer ? preg_replace('/\D+/', '', (string) $customer->phone) : '';
         $whatsappDigits = $customer ? preg_replace('/\D+/', '', (string) $customer->whatsapp) : '';
         $whatsappNumber = $whatsappDigits && strlen($whatsappDigits) <= 11 ? '55'.$whatsappDigits : $whatsappDigits;
-        $imagesCount = $order ? OrderImage::where('order_id', $order->id)->count() : 0;
+        $imagesCount = ScheduleImage::query()
+            ->where('tenant_id', $schedule->tenant_id)
+            ->where('schedule_id', $schedule->id)
+            ->count();
 
         return [
             'id' => $schedule->id,
             'tenant_id' => $schedule->tenant_id,
             'schedules_number' => $schedule->schedules_number,
             'schedules' => $schedule->schedules,
-            'service' => $schedule->service,
-            'details' => $schedule->details,
+            'service' => $this->scheduleService($schedule),
+            'details' => $this->scheduleDetails($schedule),
+            'material_checklist' => $schedule->normalizedMaterialChecklist(),
+            'material_checklist_labels' => $schedule->materialChecklistLabels(),
             'status' => $schedule->status,
             'status_label' => $this->statusLabel((int) $schedule->status),
             'observations' => $schedule->observations,
@@ -375,9 +709,15 @@ class TechnicianScheduleController extends Controller
                 'can_finish' => (int) $schedule->status !== 3 && filled($schedule->check_in_at) && ! $schedule->check_out_at,
                 'can_cancel' => false,
                 'can_edit_service' => (bool) $order,
-                'can_record_local_payment' => (bool) $order,
-                'can_upload_images' => (bool) $order && $imagesCount < 4,
-                'remaining_images' => max(0, 4 - $imagesCount),
+                'can_record_local_payment' => true,
+                'can_upload_images' => $imagesCount < self::MAX_IMAGES_PER_SCHEDULE,
+                'remaining_images' => max(0, self::MAX_IMAGES_PER_SCHEDULE - $imagesCount),
+            ],
+            'local_payment' => [
+                'received' => (bool) $schedule->local_payment_received,
+                'amount' => $schedule->local_payment_amount,
+                'received_at' => $schedule->local_payment_received_at,
+                'user_id' => $schedule->local_payment_user_id,
             ],
             'check_in' => [
                 'at' => $schedule->check_in_at,
@@ -415,15 +755,20 @@ class TechnicianScheduleController extends Controller
             ] : null,
             'order' => $order ? [
                 'id' => $order->id,
+                'order_type' => $order->order_type,
                 'order_number' => $order->order_number,
                 'tracking_token' => $order->tracking_token,
                 'model' => $order->model,
                 'defect' => $order->defect,
+                'service_type' => $order->service_type,
+                'service_details' => $order->service_details,
+                'materials_used' => $order->materials_used,
                 'state_conservation' => $order->state_conservation,
                 'accessories' => $order->accessories,
                 'budget_description' => $order->budget_description,
                 'budget_value' => $order->budget_value,
                 'service_status' => $order->service_status,
+                'service_status_label' => OrderStatus::label($order->service_status),
                 'observations' => $order->observations,
                 'services_performed' => $order->services_performed,
                 'technician_diagnosis' => $order->technician_diagnosis,

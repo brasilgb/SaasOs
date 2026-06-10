@@ -9,7 +9,7 @@ import { MemoryStickIcon, Trash2, WrenchIcon } from 'lucide-react';
 import { useState } from 'react';
 import Select from 'react-select';
 
-export default function AddPartsModal({ onSubmit, parts }: any) {
+export default function AddPartsModal({ onSubmit, parts, submitLabel = 'Inserir na ordem' }: any) {
     const toMoneyNumber = (value: unknown): number => {
         if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
         const raw = String(value ?? '').trim();
@@ -39,8 +39,7 @@ export default function AddPartsModal({ onSubmit, parts }: any) {
         name: '',
     });
 
-    const handleSubmit = (e: any) => {
-        e.preventDefault();
+    const handleSubmit = () => {
         onSubmit(addedParts);
         setOpen(false);
     };
@@ -100,7 +99,7 @@ export default function AddPartsModal({ onSubmit, parts }: any) {
                     <DialogHeader>
                         <DialogTitle>Selecionar Peças</DialogTitle>
                     </DialogHeader>
-                    <form onSubmit={handleSubmit} autoComplete="off">
+                    <div>
                         <div className="grid gap-4 py-4">
                             <div className="grid gap-2 md:col-span-2">
                                 <Label htmlFor="customer_id">Peças</Label>
@@ -138,12 +137,12 @@ export default function AddPartsModal({ onSubmit, parts }: any) {
                             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                                 Cancelar
                             </Button>
-                            <Button type="submit" disabled={processing}>
+                            <Button type="button" disabled={processing} onClick={handleSubmit}>
                                 <WrenchIcon className="h-4 w-4" />
-                                Inserir na ordem
+                                {submitLabel}
                             </Button>
                         </DialogFooter>
-                    </form>
+                    </div>
                 </DialogContent>
             </Dialog>
         </div>

@@ -591,8 +591,6 @@ class DatabaseSeeder extends Seeder
                 'user_id' => $users['technician'],
                 'schedules_number' => $i,
                 'schedules' => $now->copy()->addDays(($i % 45) - 15)->setTime(8 + ($i % 9), 0),
-                'service' => 'Agendamento teste '.$i,
-                'details' => 'Detalhes do agendamento de teste.',
                 'status' => ($i % 4) + 1,
                 'observations' => 'Observacao de teste.',
                 'responsible_technician' => 'Tecnico Teste',

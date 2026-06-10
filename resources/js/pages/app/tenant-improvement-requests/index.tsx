@@ -1,5 +1,5 @@
 import AppPagination from '@/components/app-pagination';
-import { toastSuccess, toastWarning } from '@/components/app-toast-messages';
+import { toastWarning } from '@/components/app-toast-messages';
 import { Icon } from '@/components/icon';
 import { SlaTooltip } from '@/components/sla-tooltip';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,7 @@ import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import { Lightbulb, MessageSquareQuote, Star } from 'lucide-react';
-import { useEffect, type FormEvent } from 'react';
+import { type FormEvent } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -109,7 +109,7 @@ function formatDateTime(value?: string | null) {
     return new Date(value).toLocaleString('pt-BR');
 }
 
-export default function TenantImprovementRequestsIndex({ requests, feedbacks, requestTypes, flash }: any) {
+export default function TenantImprovementRequestsIndex({ requests, feedbacks, requestTypes }: any) {
     const requestForm = useForm({
         request_type: requestTypes?.[0] ?? 'improvement',
         title: '',
@@ -123,16 +123,6 @@ export default function TenantImprovementRequestsIndex({ requests, feedbacks, re
         testimonial_public_name: '',
         testimonial_public_role: '',
     });
-
-    useEffect(() => {
-        if (flash?.message) {
-            toastSuccess('Sucesso', flash.message);
-        }
-
-        if (flash?.error) {
-            toastWarning('Erro', flash.error);
-        }
-    }, [flash?.error, flash?.message]);
 
     const submit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();

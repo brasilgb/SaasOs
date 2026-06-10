@@ -41,6 +41,7 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
     const completedSales = Number(openTotals?.completed_sales || 0);
     const cancelledSales = Number(openTotals?.cancelled_sales || 0);
     const orderPayments = Number(openTotals?.order_payments || 0);
+    const cashEntries = Number(openTotals?.cash_entries || 0);
     const totalReceived = Number(openTotals?.total_received || 0);
     const withdrawalsTotal = Number(openTotals?.withdrawals || 0);
     const currentExpectedBalance = Number(openTotals?.current_expected_balance ?? openingBalance + totalReceived - withdrawalsTotal);
@@ -173,6 +174,10 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
                                 <div>
                                     <div className="text-muted-foreground">Pagamentos de OS</div>
                                     <div>{money(orderPayments)}</div>
+                                </div>
+                                <div>
+                                    <div className="text-muted-foreground">Atendimentos</div>
+                                    <div>{money(cashEntries)}</div>
                                 </div>
                                 <div>
                                     <div className="text-muted-foreground">Vendas canceladas</div>

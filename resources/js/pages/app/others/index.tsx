@@ -1,4 +1,3 @@
-import { toastSuccess, toastWarning } from '@/components/app-toast-messages';
 import AppearanceTabs from '@/components/appearance-tabs';
 import HeadingSmall from '@/components/heading-small';
 import { Icon } from '@/components/icon';
@@ -12,7 +11,6 @@ import { BreadcrumbItem } from '@/types';
 import { maskCpfCnpj } from '@/Utils/mask';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { CogIcon, Save } from 'lucide-react';
-import { useEffect } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -26,7 +24,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Others({ othersettings, company, time_remaining, mailSettings, businessMetrics }: any) {
-    const { auth, flash } = usePage().props as any;
+    const { auth } = usePage().props as any;
     const canManageOtherSettings = auth?.permissions?.includes('other_settings');
     const initialTab =
         typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('tab') === 'operational' ? 'operational' : 'system';
@@ -60,11 +58,7 @@ export default function Others({ othersettings, company, time_remaining, mailSet
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
-        put(route('app.other-settings.update', othersettings?.id), {
-            onSuccess: () => {
-                toastSuccess('Sucesso', 'Configuração ajustada com sucesso');
-            },
-        });
+        put(route('app.other-settings.update', othersettings?.id));
     };
 
     const handleSendTestMail = () => {
@@ -76,16 +70,6 @@ export default function Others({ othersettings, company, time_remaining, mailSet
             },
         );
     };
-
-    useEffect(() => {
-        if (flash?.message) {
-            toastSuccess('Sucesso', flash.message);
-        }
-
-        if (flash?.error) {
-            toastWarning('Erro', flash.error);
-        }
-    }, [flash?.message, flash?.error]);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>

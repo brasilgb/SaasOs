@@ -14,6 +14,8 @@ final class OrderStatus
     public const SERVICE_NOT_EXECUTED = 8;
     public const CUSTOMER_NOTIFIED = 9;
     public const DELIVERED = 10;
+    public const SCHEDULE_OPEN = 11;
+    public const SCHEDULE_COMPLETED = 12;
 
     /**
      * @return array<int, string>
@@ -31,6 +33,8 @@ final class OrderStatus
             self::SERVICE_NOT_EXECUTED => 'Serviço não executado',
             self::CUSTOMER_NOTIFIED => 'Cliente avisado / aguardando retirada',
             self::DELIVERED => 'Entregue ao cliente',
+            self::SCHEDULE_OPEN => 'Agendamento aberto',
+            self::SCHEDULE_COMPLETED => 'Agendamento concluído',
         ];
     }
 
@@ -53,12 +57,17 @@ final class OrderStatus
 
     public static function canTransition(int|string|null $from, int|string|null $to): bool
     {
-        if ($from === null || $to === null || $from === '' || $to === '') {
+        if ($to === null || $to === '') {
             return false;
         }
 
-        $fromStatus = (int) $from;
         $toStatus = (int) $to;
+
+        if ($from === null || $from === '') {
+            return in_array($toStatus, self::values(), true);
+        }
+
+        $fromStatus = (int) $from;
 
         if ($fromStatus === $toStatus) {
             return true;

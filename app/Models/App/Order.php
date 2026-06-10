@@ -14,6 +14,9 @@ class Order extends Model
 {
     use HasFactory, Tenantable;
 
+    public const TYPE_EQUIPMENT = 'equipment';
+    public const TYPE_EXTERNAL_SERVICE = 'external_service';
+
     protected $guarded = ['allparts'];
 
     protected $casts = [

@@ -2,11 +2,19 @@
 
 namespace App\Http\Requests;
 
+use App\Models\App\Schedule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ScheduleRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'material_checklist' => Schedule::normalizeMaterialChecklist($this->input('material_checklist', [])),
+        ]);
+    }
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -24,11 +32,16 @@ class ScheduleRequest extends FormRequest
     {
         return [
             'customer_id' => 'required',
-            'order_id' => 'required',
+            'order_id' => 'nullable|exists:orders,id',
             'user_id' => 'required',
             'schedules' => 'required',
             'service' => 'required|string|max:500',
-            'details' => 'required|string|max:500',
+            'details' => 'nullable|string|max:500',
+            'material_checklist' => 'nullable|array',
+            'material_checklist.*.name' => 'required|string|max:150',
+            'material_checklist.*.quantity' => 'required|integer|min:1|max:999',
+            'material_checklist.*.part_id' => 'nullable|integer|exists:parts,id',
+            'material_checklist.*.used' => 'boolean',
             'observations' => 'nullable|string|max:500',
             'status' => 'required',
             'send_to_technician' => 'boolean',
@@ -39,11 +52,11 @@ class ScheduleRequest extends FormRequest
     {
         return [
             'customer_id' => 'cliente',
-            'order_id' => 'ordem de serviço',
             'user_id' => 'técnico',
             'schedules' => 'horário da visita',
             'service' => 'serviço',
-            'details' => 'detalhes',
+            'details' => 'detalhes do serviço',
+            'material_checklist' => 'checklist de material',
             'status' => 'status do agendamento',
             'send_to_technician' => 'enviar ao técnico',
         ];

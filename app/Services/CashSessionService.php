@@ -54,8 +54,9 @@ class CashSessionService
 
         $manualEntries = (float) ($data['manual_entries'] ?? 0);
         $manualExits = (float) ($data['manual_exits'] ?? 0);
+        $cashEntries = $this->totalEntries($cashSession);
         $withdrawals = $this->totalWithdrawals($cashSession);
-        $expectedBalance = (float) $cashSession->opening_balance + $totalCompletedSales + $totalOrderPayments + $manualEntries - $manualExits - $withdrawals;
+        $expectedBalance = (float) $cashSession->opening_balance + $totalCompletedSales + $totalOrderPayments + $cashEntries + $manualEntries - $manualExits - $withdrawals;
         $closingBalance = (float) $data['closing_balance'];
         $difference = $closingBalance - $expectedBalance;
 
@@ -75,6 +76,29 @@ class CashSessionService
         ]);
 
         return $cashSession->fresh();
+    }
+
+    public function registerEntry(CashSession $cashSession, array $data, int $userId): CashSessionMovement
+    {
+        if ($cashSession->status !== 'open') {
+            throw new RuntimeException('Este caixa já está fechado.');
+        }
+
+        $amount = (float) $data['amount'];
+
+        if ($amount <= 0) {
+            throw new RuntimeException('Informe um valor maior que zero para registrar a entrada.');
+        }
+
+        return CashSessionMovement::create([
+            'cash_session_id' => $cashSession->id,
+            'user_id' => $userId,
+            'type' => CashSessionMovement::TYPE_ENTRY,
+            'amount' => $amount,
+            'description' => $data['description'] ?? null,
+            'source_type' => $data['source_type'] ?? null,
+            'source_id' => $data['source_id'] ?? null,
+        ]);
     }
 
     public function registerWithdrawal(CashSession $cashSession, array $data, int $userId): CashSessionMovement
@@ -156,7 +180,16 @@ class CashSessionService
             ->where('cash_session_id', $cashSession->id)
             ->sum('amount');
 
-        return (float) $cashSession->opening_balance + $totalCompletedSales + $totalOrderPayments - $this->totalWithdrawals($cashSession);
+        return (float) $cashSession->opening_balance + $totalCompletedSales + $totalOrderPayments + $this->totalEntries($cashSession) - $this->totalWithdrawals($cashSession);
+    }
+
+    public function totalEntries(CashSession $cashSession): float
+    {
+        return (float) CashSessionMovement::query()
+            ->where('cash_session_id', $cashSession->id)
+            ->where('type', CashSessionMovement::TYPE_ENTRY)
+            ->whereNull('cancelled_at')
+            ->sum('amount');
     }
 
     public function totalWithdrawals(CashSession $cashSession): float

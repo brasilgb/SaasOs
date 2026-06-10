@@ -18,8 +18,8 @@ return new class extends Migration
             $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
             $table->integer('schedules_number');
             $table->dateTime('schedules');
-            $table->string('service');
-            $table->text('details');
+            $table->string('service', 500)->nullable();
+            $table->text('details')->nullable();
             $table->tinyInteger('status')->default(1);
             $table->text('observations')->nullable();
             $table->string('responsible_technician', 50)->nullable(); // tecnico

@@ -229,9 +229,14 @@ class ReportController extends Controller
 
             case 'schedules':
                 abort_unless(Auth::user()?->hasPermission('schedules'), 403);
-                $data = Schedule::with(['customer', 'user'])
+                $data = Schedule::with(['customer', 'user', 'order'])
                     ->whereBetween('created_at', [$from, $to])
-                    ->get();
+                    ->get()
+                    ->map(function (Schedule $schedule) {
+                        $schedule->setAttribute('service', $schedule->order?->service_type ?: $schedule->order?->defect);
+
+                        return $schedule;
+                    });
                 break;
 
             case 'sales':

@@ -29,8 +29,9 @@ class ScheduleFactory extends Factory
         return [
             'schedules_number' => $this->faker->unique()->numberBetween(1, 10000),
             'schedules' => $scheduledAt,
-            'service' => $this->faker->sentence(3),
-            'details' => $this->faker->paragraph(),
+            'service' => $this->faker->sentence(4),
+            'details' => $this->faker->sentence(8),
+            'material_checklist' => [],
             'status' => $this->faker->numberBetween(1, 4),
             'observations' => $this->faker->optional()->sentence(),
             'responsible_technician' => $this->faker->name(),

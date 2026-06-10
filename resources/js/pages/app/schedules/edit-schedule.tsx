@@ -21,7 +21,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function EditSchedule({ customers, orders, schedule, technicals, page, search, enableTechnicianScheduleNotifications }: any) {
+export default function EditSchedule({ customers, parts, schedule, technicals, page, search, enableTechnicianScheduleNotifications }: any) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Agendamentos" />
@@ -48,7 +48,7 @@ export default function EditSchedule({ customers, orders, schedule, technicals, 
                 <div className="rounded-lg border p-2">
                     <ScheduleForm
                         customers={customers}
-                        orders={orders}
+                        parts={parts}
                         initialData={schedule}
                         technicals={technicals}
                         enableTechnicianScheduleNotifications={enableTechnicianScheduleNotifications}

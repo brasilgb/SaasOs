@@ -99,7 +99,10 @@ class DashboardController extends Controller
             'gerados' => (clone $ordersQuery)->where('service_status', OrderStatus::BUDGET_GENERATED)->get(['id', 'order_number']),
             'aprovados' => (clone $ordersQuery)->where('service_status', OrderStatus::BUDGET_APPROVED)->get(['id', 'order_number']),
             'concluidosca' => (clone $ordersQuery)->where('service_status', OrderStatus::CUSTOMER_NOTIFIED)->get(['id', 'order_number']),
-            'concluidoscn' => (clone $ordersQuery)->where('service_status', OrderStatus::SERVICE_COMPLETED)->get(['id', 'order_number']),
+            'concluidoscn' => (clone $ordersQuery)->whereIn('service_status', [
+                OrderStatus::SERVICE_COMPLETED,
+                OrderStatus::SCHEDULE_COMPLETED,
+            ])->get(['id', 'order_number']),
             'garantia' => (clone $ordersQuery)->where('is_warranty_return', true)->get(['id', 'order_number']),
             'feedback' => (clone $ordersQuery)->where('service_status', OrderStatus::DELIVERED)
                 ->whereNotNull('delivery_date')
@@ -265,7 +268,7 @@ class DashboardController extends Controller
         $orders = $this->scopeOrdersQuery(Order::query())->selectRaw('
             DATE(created_at) as date,
             COUNT(*) as entradas,
-            SUM(CASE WHEN service_status IN (7,9) THEN 1 ELSE 0 END) as concluidos,
+            SUM(CASE WHEN service_status IN (7,9,12) THEN 1 ELSE 0 END) as concluidos,
             SUM(CASE WHEN service_status = 10 THEN 1 ELSE 0 END) as entregues
         ')
             ->whereBetween('created_at', [$start, $end])

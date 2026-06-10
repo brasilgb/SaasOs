@@ -416,7 +416,10 @@ class OrderController extends Controller
             'numgerados' => $this->scopeOrdersQuery(Order::where('service_status', OrderStatus::BUDGET_GENERATED))->count(),
             'numaprovados' => $this->scopeOrdersQuery(Order::where('service_status', OrderStatus::BUDGET_APPROVED))->count(),
             'numconcluidosca' => $this->scopeOrdersQuery(Order::where('service_status', OrderStatus::CUSTOMER_NOTIFIED))->count(),
-            'numconcluidoscn' => $this->scopeOrdersQuery(Order::where('service_status', OrderStatus::SERVICE_COMPLETED))->count(),
+            'numconcluidoscn' => $this->scopeOrdersQuery(Order::whereIn('service_status', [
+                OrderStatus::SERVICE_COMPLETED,
+                OrderStatus::SCHEDULE_COMPLETED,
+            ]))->count(),
         ];
 
         return [
@@ -555,15 +558,28 @@ class OrderController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
         $this->authorize('create', Order::class);
 
         $equipments = Equipment::get();
         $customers = Customer::get();
         $models = Order::distinct()->pluck('model');
+        $sourceSchedule = null;
 
-        return Inertia::render('app/orders/create-order', ['customers' => $customers, 'equipments' => $equipments, 'models' => $models]);
+        if ($request->filled('schedule_id')) {
+            $sourceSchedule = \App\Models\App\Schedule::query()
+                ->with(['customer:id,name', 'user:id,name'])
+                ->findOrFail($request->integer('schedule_id'));
+            $this->authorize('view', $sourceSchedule);
+        }
+
+        return Inertia::render('app/orders/create-order', [
+            'customers' => $customers,
+            'equipments' => $equipments,
+            'models' => $models,
+            'sourceSchedule' => $sourceSchedule,
+        ]);
     }
 
     /**
@@ -574,21 +590,53 @@ class OrderController extends Controller
         $this->authorize('create', Order::class);
 
         $data = $request->validated();
+        $sourceScheduleId = $data['schedule_id'] ?? null;
+        unset($data['schedule_id']);
+
         Customer::query()->whereKey($data['customer_id'])->firstOrFail();
-        Equipment::query()->whereKey($data['equipment_id'])->firstOrFail();
+        $sourceSchedule = null;
+        if ($sourceScheduleId) {
+            $sourceSchedule = \App\Models\App\Schedule::query()
+                ->whereKey($sourceScheduleId)
+                ->where('customer_id', $data['customer_id'])
+                ->first();
+            abort_unless($sourceSchedule, 404);
+            $this->authorize('update', $sourceSchedule);
+        }
+
+        if (($data['order_type'] ?? Order::TYPE_EQUIPMENT) === Order::TYPE_EQUIPMENT) {
+            Equipment::query()->whereKey($data['equipment_id'])->firstOrFail();
+        }
         $tenantId = (int) ($this->currentUser()?->tenant_id ?? 0);
         $data['order_number'] = TenantSequence::next(Order::class, 'order_number', $tenantId);
         $data['tracking_token'] = Str::uuid();
         $data['warranty_days'] = isset($data['warranty_days']) && $data['warranty_days'] !== '' ? max(0, (int) $data['warranty_days']) : null;
         $data = $this->normalizeDeliveryDateForStatus($data);
-        $warrantySourceOrder = $this->detectWarrantyReturn(
+        $isEquipmentOrder = ($data['order_type'] ?? Order::TYPE_EQUIPMENT) === Order::TYPE_EQUIPMENT;
+        $warrantySourceOrder = $isEquipmentOrder ? $this->detectWarrantyReturn(
             isset($data['customer_id']) ? (int) $data['customer_id'] : null,
             isset($data['equipment_id']) ? (int) $data['equipment_id'] : null,
             isset($data['model']) ? (string) $data['model'] : null,
-        );
+        ) : null;
+        $data['equipment_id'] = $isEquipmentOrder ? ($data['equipment_id'] ?? null) : null;
+        $data['model'] = $isEquipmentOrder ? ($data['model'] ?? null) : null;
+        $data['password'] = $isEquipmentOrder ? ($data['password'] ?? null) : null;
+        $data['state_conservation'] = $isEquipmentOrder ? ($data['state_conservation'] ?? null) : null;
+        $data['accessories'] = $isEquipmentOrder ? ($data['accessories'] ?? null) : null;
+        $data['warranty_days'] = $isEquipmentOrder ? $data['warranty_days'] : null;
+        $data['service_type'] = $isEquipmentOrder ? null : ($data['service_type'] ?? null);
+        $data['service_details'] = $isEquipmentOrder ? null : ($data['service_details'] ?? null);
+        $data['materials_used'] = $isEquipmentOrder ? null : ($data['materials_used'] ?? null);
+        $data['defect'] = $isEquipmentOrder
+            ? $data['defect']
+            : ($data['service_type'] ?: ($data['service_details'] ?: 'Serviço externo'));
         $data['is_warranty_return'] = (bool) $warrantySourceOrder;
         $data['warranty_source_order_id'] = $warrantySourceOrder?->id;
         $order = Order::create($data);
+        if ($sourceSchedule) {
+            $sourceSchedule->update(['order_id' => $order->id]);
+        }
+
         OrderStatusHistory::create([
             'order_id' => $order->id,
             'status' => (int) $order->service_status,
@@ -619,7 +667,7 @@ class OrderController extends Controller
                 ->value('print_label_button_after_order_create')
             : false;
 
-        if ($shouldShowLabelButton) {
+        if ($shouldShowLabelButton && ! $sourceSchedule) {
             return redirect()
                 ->route('app.orders.create')
                 ->with('success', $successMessage)
@@ -632,6 +680,12 @@ class OrderController extends Controller
                         'format' => 'thermal',
                     ]),
                 ]);
+        }
+
+        if ($sourceSchedule) {
+            return redirect()
+                ->route('app.schedules.show', ['schedule' => $sourceSchedule->id])
+                ->with('success', $successMessage.' e vinculada ao agendamento.');
         }
 
         return redirect()->route('app.orders.index')->with('success', $successMessage);
@@ -752,7 +806,10 @@ class OrderController extends Controller
         $data = $request->all();
         $request->validated();
         Customer::query()->whereKey($data['customer_id'])->firstOrFail();
-        Equipment::query()->whereKey($data['equipment_id'])->firstOrFail();
+        $isEquipmentOrder = ($data['order_type'] ?? Order::TYPE_EQUIPMENT) === Order::TYPE_EQUIPMENT;
+        if ($isEquipmentOrder) {
+            Equipment::query()->whereKey($data['equipment_id'])->firstOrFail();
+        }
         if (! empty($data['user_id'])) {
             User::query()->whereKey($data['user_id'])->firstOrFail();
         }
@@ -764,12 +821,12 @@ class OrderController extends Controller
         $warrantyDays = isset($data['warranty_days']) && $data['warranty_days'] !== '' ? max(0, (int) $data['warranty_days']) : null;
         $deliveryDate = ! empty($data['delivery_date']) ? Carbon::parse($data['delivery_date']) : null;
         $warrantyExpiresAt = $deliveryDate && $warrantyDays ? $deliveryDate->copy()->addDays($warrantyDays) : null;
-        $warrantySourceOrder = $this->detectWarrantyReturn(
+        $warrantySourceOrder = $isEquipmentOrder ? $this->detectWarrantyReturn(
             isset($data['customer_id']) ? (int) $data['customer_id'] : null,
             isset($data['equipment_id']) ? (int) $data['equipment_id'] : null,
             isset($data['model']) ? (string) $data['model'] : null,
             (int) $order->id,
-        );
+        ) : null;
         $oldStatus = $order->service_status;
         $currentPartsSnapshot = $order->orderParts()
             ->get(['parts.id'])
@@ -780,16 +837,20 @@ class OrderController extends Controller
         $partsSyncResult = null;
         $changes = [];
 
-        DB::transaction(function () use ($order, $data, $warrantyDays, $warrantyExpiresAt, $warrantySourceOrder, $oldStatus, $currentPartsSnapshot, &$partsSyncResult, &$changes): void {
+        DB::transaction(function () use ($order, $data, $isEquipmentOrder, $warrantyDays, $warrantyExpiresAt, $warrantySourceOrder, $oldStatus, $currentPartsSnapshot, &$partsSyncResult, &$changes): void {
             $order->update([
+                'order_type' => $data['order_type'] ?? Order::TYPE_EQUIPMENT,
                 'customer_id' => $data['customer_id'],
-                'equipment_id' => $data['equipment_id'], // equipamento
+                'equipment_id' => $isEquipmentOrder ? $data['equipment_id'] : null, // equipamento
                 'user_id' => $data['user_id'] ?? null, // técnico responsável
-                'model' => $data['model'],
-                'password' => $data['password'],
-                'defect' => $data['defect'],
-                'state_conservation' => $data['state_conservation'], // estado de conservação
-                'accessories' => $data['accessories'],
+                'model' => $isEquipmentOrder ? $data['model'] : null,
+                'password' => $isEquipmentOrder ? $data['password'] : null,
+                'defect' => $isEquipmentOrder ? $data['defect'] : ($data['service_type'] ?: ($data['service_details'] ?: 'Serviço externo')),
+                'service_type' => $isEquipmentOrder ? null : ($data['service_type'] ?? null),
+                'service_details' => $isEquipmentOrder ? null : ($data['service_details'] ?? null),
+                'materials_used' => $isEquipmentOrder ? null : ($data['materials_used'] ?? null),
+                'state_conservation' => $isEquipmentOrder ? $data['state_conservation'] : null, // estado de conservação
+                'accessories' => $isEquipmentOrder ? $data['accessories'] : null,
                 'budget_description' => $data['budget_description'] ?? null,
                 'budget_value' => $data['budget_value'] ?? 0,
                 'budget_link' => $data['budget_link'] ?? null,
@@ -798,8 +859,8 @@ class OrderController extends Controller
                 'service_value' => $data['service_value'] ?? 0,
                 'service_cost' => $data['service_cost'] ?? 0, // custo
                 'delivery_date' => $data['delivery_date'], // $data de entrega
-                'warranty_days' => $warrantyDays,
-                'warranty_expires_at' => $warrantyExpiresAt,
+                'warranty_days' => $isEquipmentOrder ? $warrantyDays : null,
+                'warranty_expires_at' => $isEquipmentOrder ? $warrantyExpiresAt : null,
                 'is_warranty_return' => (bool) $warrantySourceOrder,
                 'warranty_source_order_id' => $warrantySourceOrder?->id,
                 'service_status' => $oldStatus,

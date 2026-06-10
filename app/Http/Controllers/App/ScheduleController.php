@@ -4,24 +4,55 @@ namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ScheduleRequest;
+use App\Models\App\CashSession;
 use App\Models\App\Customer;
 use App\Models\App\Order;
 use App\Models\App\Other;
+use App\Models\App\Part;
 use App\Models\App\Schedule;
 use App\Models\User;
+use App\Services\CashSessionService;
+use App\Services\OrderStatusService;
 use App\Services\TechnicianPushNotificationService;
+use App\Support\OrderStatus;
 use App\Support\TenantSequence;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class ScheduleController extends Controller
 {
+    public function __construct(
+        private readonly OrderStatusService $orderStatusService,
+        private readonly CashSessionService $cashSessionService,
+    ) {}
+
     private function currentTenantId(): ?int
     {
         return Auth::user()?->tenant_id ? (int) Auth::user()->tenant_id : null;
+    }
+
+    private function syncScheduleOrderStatus(Schedule $schedule): void
+    {
+        $order = $schedule->order;
+
+        if (! $order) {
+            return;
+        }
+
+        $targetStatus = (int) $schedule->status === 3
+            ? OrderStatus::SCHEDULE_COMPLETED
+            : OrderStatus::SCHEDULE_OPEN;
+
+        $this->orderStatusService->transition(
+            $order,
+            $targetStatus,
+            Auth::id(),
+            'Status atualizado pelo agendamento #'.$schedule->schedules_number
+        );
     }
 
     private function scheduleTenantId(array $data, ?Schedule $schedule = null): ?int
@@ -58,6 +89,46 @@ class ScheduleController extends Controller
         return $query;
     }
 
+    private function orderScheduleService(Order $order): string
+    {
+        $service = $order->order_type === Order::TYPE_EXTERNAL_SERVICE
+            ? ($order->service_type ?: $order->defect)
+            : $order->defect;
+
+        return mb_substr(trim((string) $service), 0, 500) ?: 'Atendimento da OS #'.$order->order_number;
+    }
+
+    private function orderScheduleDetails(Order $order): string
+    {
+        $details = collect([
+            $order->service_details,
+            $order->materials_used ? 'Materiais utilizados: '.$order->materials_used : null,
+            $order->budget_description,
+            $order->observations,
+            $order->services_performed,
+        ])->filter(fn ($value) => filled($value))->implode("\n\n");
+
+        return mb_substr($details ?: $this->orderScheduleService($order), 0, 500);
+    }
+
+    private function scheduleService(Schedule $schedule): ?string
+    {
+        if (filled($schedule->service)) {
+            return (string) $schedule->service;
+        }
+
+        return $schedule->order ? $this->orderScheduleService($schedule->order) : null;
+    }
+
+    private function scheduleDetails(Schedule $schedule): ?string
+    {
+        if (filled($schedule->details)) {
+            return (string) $schedule->details;
+        }
+
+        return $schedule->order ? $this->orderScheduleDetails($schedule->order) : null;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -78,6 +149,16 @@ class ScheduleController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('schedules_number', $search)
                     ->orWhere('service', 'like', '%'.$search.'%')
+                    ->orWhere('details', 'like', '%'.$search.'%')
+                    ->orWhere('material_checklist', 'like', '%'.$search.'%')
+                    ->orWhereHas('order', function ($subQuery) use ($search) {
+                        $subQuery->where('defect', 'like', '%'.$search.'%')
+                            ->orWhere('service_type', 'like', '%'.$search.'%')
+                            ->orWhere('service_details', 'like', '%'.$search.'%')
+                            ->orWhere('materials_used', 'like', '%'.$search.'%')
+                            ->orWhere('observations', 'like', '%'.$search.'%')
+                            ->orWhere('services_performed', 'like', '%'.$search.'%');
+                    })
                     ->orWhereHas('customer', function ($subQuery) use ($search) {
                         $subQuery->where('name', 'like', "%$search%")
                             ->orWhere('cpfcnpj', 'like', '%'.$search.'%');
@@ -88,6 +169,7 @@ class ScheduleController extends Controller
             ->with([
                 'user',
                 'customer',
+                'images',
                 'order.images:id,order_id',
                 'order.equipment.checklists:id,equipment_id,checklist',
                 'order.orderPayments:id,order_id,amount',
@@ -115,12 +197,25 @@ class ScheduleController extends Controller
             ->all();
         $completedChecklistItems = $order?->technician_checklist_items ?? [];
         $checklistCompleted = $checklistItems === [] || empty(array_diff($checklistItems, $completedChecklistItems));
+        $scheduleImages = $schedule->images
+            ->map(fn ($image) => [
+                'id' => $image->id,
+                'filename' => $image->filename,
+                'url' => asset('storage/schedules/'.$schedule->id.'/'.$image->filename),
+                'created_at' => $image->created_at,
+            ])
+            ->values();
 
         return [
             ...$schedule->toArray(),
+            'service' => $this->scheduleService($schedule),
+            'details' => $this->scheduleDetails($schedule),
+            'material_checklist' => $schedule->normalizedMaterialChecklist(),
+            'material_checklist_labels' => $schedule->materialChecklistLabels(),
             'customer' => $schedule->customer,
             'user' => $schedule->user,
             'order' => $order,
+            'images' => $scheduleImages,
             'mobile_summary' => [
                 'sent_to_technician' => (bool) $schedule->send_to_technician,
                 'has_check_in' => filled($schedule->check_in_at),
@@ -130,9 +225,16 @@ class ScheduleController extends Controller
                 'checklist_completed' => $checklistCompleted,
                 'checklist_items' => $checklistItems,
                 'checklist_completed_items' => $completedChecklistItems,
-                'images_count' => $order?->images?->count() ?? 0,
-                'local_payment_received' => (bool) $order?->technician_local_payment_received,
-                'payments_count' => $order?->orderPayments?->count() ?? 0,
+                'images_count' => $scheduleImages->count(),
+                'images' => $scheduleImages,
+                'local_payment_received' => (bool) $schedule->local_payment_received,
+                'local_payment_amount' => $schedule->local_payment_amount,
+                'local_payment_received_at' => $schedule->local_payment_received_at,
+                'local_payment_cash_session_id' => $schedule->local_payment_cash_session_id,
+                'local_payment_cash_registered_at' => $schedule->local_payment_cash_registered_at,
+                'local_payment_registered_in_cashier' => filled($schedule->local_payment_cash_session_id),
+                'can_register_local_payment_cashier' => (bool) $schedule->local_payment_received && blank($schedule->local_payment_cash_session_id),
+                'payments_count' => $schedule->local_payment_received ? 1 : 0,
             ],
         ];
     }
@@ -145,9 +247,11 @@ class ScheduleController extends Controller
         $this->authorize('create', Schedule::class);
 
         $customers = Customer::get();
-        $orders = Order::query()
-            ->orderByDesc('id')
-            ->get(['id', 'customer_id', 'order_number', 'model', 'defect', 'service_status']);
+        $parts = Part::query()
+            ->where('type', 'part')
+            ->where('status', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'part_number', 'reference_number', 'quantity', 'location']);
         $enableTechnicianScheduleNotifications = Other::technicianScheduleNotificationsEnabled($this->currentTenantId());
         $technicals = User::whereIn('roles', [User::ROLE_TECHNICIAN, User::ROLE_ADMIN])
             ->where('status', 1)
@@ -155,7 +259,7 @@ class ScheduleController extends Controller
 
         return Inertia::render('app/schedules/create-schedule', [
             'customers' => $customers,
-            'orders' => $orders,
+            'parts' => $parts,
             'technicals' => $technicals,
             'enableTechnicianScheduleNotifications' => $enableTechnicianScheduleNotifications,
         ]);
@@ -168,19 +272,27 @@ class ScheduleController extends Controller
     {
         $this->authorize('create', Schedule::class);
 
-        $data = $request->all();
-        $request->validated();
+        $data = $request->validated();
         Customer::query()->whereKey($data['customer_id'])->firstOrFail();
-        Order::query()
-            ->whereKey($data['order_id'])
-            ->where('customer_id', $data['customer_id'])
-            ->firstOrFail();
+        $order = null;
+        if (! empty($data['order_id'])) {
+            $order = Order::query()
+                ->whereKey($data['order_id'])
+                ->where('customer_id', $data['customer_id'])
+                ->first();
+            abort_unless($order, 404);
+        }
         User::query()->whereKey($data['user_id'])->firstOrFail();
+        if ($order && blank($data['service'] ?? null)) {
+            $data['service'] = $this->orderScheduleService($order);
+            $data['details'] = $data['details'] ?? $this->orderScheduleDetails($order);
+        }
         if (! Other::technicianScheduleNotificationsEnabled($this->scheduleTenantId($data))) {
             $data['send_to_technician'] = false;
         }
         $data['schedules_number'] = TenantSequence::next(Schedule::class, 'schedules_number');
         $schedule = Schedule::create($data);
+        $this->syncScheduleOrderStatus($schedule->loadMissing('order'));
         $this->notifyTechnicianIfNeeded($schedule);
 
         return redirect()->route('app.schedules.index')->with('success', 'Agenda cadastrada com sucesso');
@@ -196,15 +308,18 @@ class ScheduleController extends Controller
         $schedule->load([
             'user',
             'customer',
+            'images',
             'order.images',
             'order.equipment.checklists',
             'order.orderPayments',
         ]);
 
         $customers = Customer::get();
-        $orders = Order::query()
-            ->orderByDesc('id')
-            ->get(['id', 'customer_id', 'order_number', 'model', 'defect', 'service_status']);
+        $parts = Part::query()
+            ->where('type', 'part')
+            ->where('status', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'part_number', 'reference_number', 'quantity', 'location']);
         $enableTechnicianScheduleNotifications = Other::technicianScheduleNotificationsEnabled($this->currentTenantId());
         $technicals = User::whereIn('roles', [User::ROLE_TECHNICIAN, User::ROLE_ADMIN])
             ->where('status', 1)
@@ -213,7 +328,7 @@ class ScheduleController extends Controller
         return Inertia::render('app/schedules/edit-schedule', [
             'schedule' => $this->scheduleIndexPayload($schedule),
             'customers' => $customers,
-            'orders' => $orders,
+            'parts' => $parts,
             'technicals' => $technicals,
             'enableTechnicianScheduleNotifications' => $enableTechnicianScheduleNotifications,
             'page' => $request->page,
@@ -242,25 +357,73 @@ class ScheduleController extends Controller
     {
         $this->authorize('update', $schedule);
 
-        $data = $request->all();
-        $request->validated();
+        $data = $request->validated();
         Customer::query()->whereKey($data['customer_id'])->firstOrFail();
-        Order::query()
-            ->whereKey($data['order_id'])
-            ->where('customer_id', $data['customer_id'])
-            ->firstOrFail();
+        $order = null;
+        if (! empty($data['order_id'])) {
+            $order = Order::query()
+                ->whereKey($data['order_id'])
+                ->where('customer_id', $data['customer_id'])
+                ->first();
+            abort_unless($order, 404);
+        }
         User::query()->whereKey($data['user_id'])->firstOrFail();
+        if ($order && blank($data['service'] ?? null)) {
+            $data['service'] = $this->orderScheduleService($order);
+            $data['details'] = $data['details'] ?? $this->orderScheduleDetails($order);
+        }
         if (! Other::technicianScheduleNotificationsEnabled($this->scheduleTenantId($data, $schedule))) {
             $data['send_to_technician'] = false;
         }
         $wasSentToTechnician = (bool) $schedule->send_to_technician;
         $schedule->update($data);
+        $this->syncScheduleOrderStatus($schedule->loadMissing('order'));
 
-        if (! $wasSentToTechnician || $schedule->wasChanged(['user_id', 'schedules', 'service', 'customer_id'])) {
+        if (! $wasSentToTechnician || $schedule->wasChanged(['user_id', 'schedules', 'order_id', 'customer_id'])) {
             $this->notifyTechnicianIfNeeded($schedule);
         }
 
         return redirect()->route('app.schedules.show', ['schedule' => $schedule->id])->with('success', 'Agenda editada com sucesso');
+    }
+
+    public function registerLocalPaymentCashier(Schedule $schedule): RedirectResponse
+    {
+        $this->authorize('update', $schedule);
+
+        $schedule->refresh();
+
+        if (! $schedule->local_payment_received || (float) $schedule->local_payment_amount <= 0) {
+            return back()->with('error', 'Este agendamento não possui pagamento local para inserir no caixa.');
+        }
+
+        if ($schedule->local_payment_cash_session_id) {
+            return back()->with('error', 'Este pagamento local já foi inserido no caixa.');
+        }
+
+        $cashSession = CashSession::query()
+            ->where('status', 'open')
+            ->latest('opened_at')
+            ->first();
+
+        if (! $cashSession) {
+            return back()->with('error', 'Abra o caixa antes de registrar este pagamento.');
+        }
+
+        DB::transaction(function () use ($schedule, $cashSession): void {
+            $this->cashSessionService->registerEntry($cashSession, [
+                'amount' => (float) $schedule->local_payment_amount,
+                'description' => 'Atendimento do agendamento #'.$schedule->schedules_number,
+                'source_type' => 'schedule',
+                'source_id' => $schedule->id,
+            ], (int) Auth::id());
+
+            $schedule->update([
+                'local_payment_cash_session_id' => $cashSession->id,
+                'local_payment_cash_registered_at' => now(),
+            ]);
+        });
+
+        return back()->with('success', 'Pagamento do atendimento inserido no caixa.');
     }
 
     /**
@@ -273,16 +436,19 @@ class ScheduleController extends Controller
         $schedule->loadMissing('order.orderPayments');
 
         $order = $schedule->order;
-        if ($order && (
-            $order->orderPayments->isNotEmpty()
-            || $order->technician_local_payment_received
-            || $order->technician_attended_at
+        if (
+            $schedule->local_payment_received
             || $schedule->check_in_at
             || $schedule->check_out_at
-        )) {
+            || ($order && (
+                $order->orderPayments->isNotEmpty()
+                || $order->technician_local_payment_received
+                || $order->technician_attended_at
+            ))
+        ) {
             return redirect()->route('app.schedules.index')->with(
                 'error',
-                'Não é possível excluir este agendamento porque ele possui atendimento técnico ou pagamento registrado na OS vinculada.'
+                'Não é possível excluir este agendamento porque ele possui atendimento técnico ou pagamento registrado.'
             );
         }
 

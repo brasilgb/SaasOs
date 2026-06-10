@@ -12,6 +12,7 @@ class CashSessionMovement extends Model
 {
     use HasFactory, Tenantable;
 
+    public const TYPE_ENTRY = 'entry';
     public const TYPE_WITHDRAWAL = 'withdrawal';
 
     protected $fillable = [
@@ -21,6 +22,8 @@ class CashSessionMovement extends Model
         'type',
         'amount',
         'description',
+        'source_type',
+        'source_id',
         'cancelled_at',
         'cancelled_by',
         'cancellation_reason',

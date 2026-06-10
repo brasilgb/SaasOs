@@ -45,6 +45,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/tecnico/push-token', [TechnicianPushTokenController::class, 'store'])->name('api.technician.push-token.store');
     Route::delete('/tecnico/push-token', [TechnicianPushTokenController::class, 'destroy'])->name('api.technician.push-token.destroy');
     Route::get('/tecnico/dashboard', [TechnicianScheduleController::class, 'dashboard'])->name('api.technician.dashboard');
+    Route::get('/tecnico/materiais', [TechnicianScheduleController::class, 'materials'])->name('api.technician.materials.index');
     Route::get('/tecnico/agendamentos', [TechnicianScheduleController::class, 'index'])->name('api.technician.schedules.index');
     Route::get('/tecnico/agendamentos/{schedule}', [TechnicianScheduleController::class, 'show'])->name('api.technician.schedules.show');
     Route::post('/tecnico/agendamentos/{schedule}/status', [TechnicianScheduleController::class, 'updateStatus'])->name('api.technician.schedules.status');
@@ -53,6 +54,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/tecnico/agendamentos/{schedule}/relatorio', [TechnicianScheduleController::class, 'updateReport'])->name('api.technician.schedules.report');
     Route::post('/tecnico/agendamentos/{schedule}/checklist', [TechnicianScheduleController::class, 'updateChecklist'])->name('api.technician.schedules.checklist');
     Route::post('/tecnico/agendamentos/{schedule}/pagamento', [TechnicianScheduleController::class, 'recordPayment'])->name('api.technician.schedules.payment');
+    Route::get('/tecnico/agendamentos/{schedule}/imagens', [TechnicianScheduleController::class, 'images'])->name('api.technician.schedules.images.index');
+    Route::post('/tecnico/agendamentos/{schedule}/imagens', [TechnicianScheduleController::class, 'uploadImage'])->name('api.technician.schedules.images.store');
+    Route::delete('/tecnico/agendamentos/{schedule}/imagens/{image}', [TechnicianScheduleController::class, 'deleteImage'])->name('api.technician.schedules.images.destroy');
     Route::get('/empresa', [CompanyController::class, 'getEmpresaInfo']);
     Route::delete('/deleteimage/{aimage}', [ImageController::class, 'deleteImageOrder'])->name('deleteimage');
     Route::get('/images/{order}', [ImageController::class, 'getImages'])->name('images');

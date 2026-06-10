@@ -144,12 +144,16 @@ export default function EditOrder({
     }));
 
     const { data, post, setData, patch, progress, processing, reset, errors } = useForm({
+        order_type: 'equipment',
         customer_id: order?.customer_id,
         equipment_id: order?.equipment_id, // equipamento
         user_id: order?.user_id,
         model: order?.model,
         password: order?.password,
         defect: order?.defect,
+        service_type: '',
+        service_details: '',
+        materials_used: '',
         state_conservation: order?.state_conservation, //estado de conservação
         accessories: order?.accessories,
         budget_description: order?.budget_description, // descrição do orçamento
@@ -185,7 +189,6 @@ export default function EditOrder({
 
         patch(route('app.orders.update', { order: order.id, page, search, status, filter }), {
             onSuccess: () => {
-                toastSuccess('Sucesso', 'Ordem de serviço alterada com sucesso');
                 setPartsData([]);
             },
         });
@@ -333,7 +336,6 @@ export default function EditOrder({
 
     const currentStatusLabel = statusServico.find((item: any) => Number(item.value) === Number(data.service_status))?.label ?? 'Status';
     const isDeliveryStatus = Number(data.service_status) === ORDER_STATUS.DELIVERED;
-
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Ordens" />
@@ -470,7 +472,7 @@ export default function EditOrder({
                                                     defaultValue={defaultEquipament}
                                                     options={optionsEquipment}
                                                     onChange={changeEquipment}
-                                                    placeholder="Selecione o status"
+                                                    placeholder="Selecione o equipamento"
                                                     className="min-w-0"
                                                     styles={selectStyles}
                                                 />
@@ -735,7 +737,7 @@ export default function EditOrder({
                                             </div>
 
                                             <div className="grid gap-2">
-                                                <Label htmlFor="service_status">Status orçamento</Label>
+                                                <Label htmlFor="service_status">Status da ordem</Label>
                                                 <Select
                                                     menuPosition="fixed"
                                                     defaultValue={statusDefault}

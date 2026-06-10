@@ -132,11 +132,9 @@ class DashboardControllerTest extends TestCase
     {
         $matchingSchedule = Schedule::factory()->forTenant($this->tenant->id)->create([
             'schedules_number' => 1234,
-            'service' => 'Manutencao preventiva',
         ]);
         Schedule::factory()->forTenant($this->tenant->id)->create([
             'schedules_number' => 4321,
-            'service' => 'Instalacao',
         ]);
 
         $response = $this->get(route('app.schedules.index', ['search' => $matchingSchedule->schedules_number]));

@@ -83,4 +83,11 @@ class CashSession extends Model
             ->where('type', CashSessionMovement::TYPE_WITHDRAWAL)
             ->latest();
     }
+
+    public function entries(): HasMany
+    {
+        return $this->hasMany(CashSessionMovement::class)
+            ->where('type', CashSessionMovement::TYPE_ENTRY)
+            ->latest();
+    }
 }

@@ -71,6 +71,7 @@ class CashSessionController extends Controller
                 'closedBy:id,name',
                 'orderPayments:id,cash_session_id,amount,payment_method',
                 'sales:id,cash_session_id,total_amount,payment_method,status',
+                'entries.user:id,name',
                 'withdrawals.user:id,name',
                 'withdrawals.cancelledBy:id,name'
             )
@@ -84,6 +85,7 @@ class CashSessionController extends Controller
                 'closedBy:id,name',
                 'orderPayments:id,cash_session_id,amount,payment_method',
                 'sales:id,cash_session_id,total_amount,payment_method,status',
+                'entries.user:id,name',
                 'withdrawals.user:id,name',
                 'withdrawals.cancelledBy:id,name'
             )
@@ -95,6 +97,7 @@ class CashSessionController extends Controller
             'completed_sales' => 0,
             'cancelled_sales' => 0,
             'order_payments' => 0,
+            'cash_entries' => 0,
             'total_received' => 0,
             'withdrawals' => 0,
             'current_expected_balance' => 0,
@@ -115,7 +118,8 @@ class CashSessionController extends Controller
                 ->where('cash_session_id', $currentSession->id)
                 ->sum('amount');
 
-            $openTotals['total_received'] = $openTotals['completed_sales'] + $openTotals['order_payments'];
+            $openTotals['cash_entries'] = $this->cashSessionService->totalEntries($currentSession);
+            $openTotals['total_received'] = $openTotals['completed_sales'] + $openTotals['order_payments'] + $openTotals['cash_entries'];
             $openTotals['withdrawals'] = $this->cashSessionService->totalWithdrawals($currentSession);
             $openTotals['current_expected_balance'] = $this->cashSessionService->currentExpectedBalance($currentSession);
         }
@@ -188,6 +192,7 @@ class CashSessionController extends Controller
         $totalCancelledSales = (float) $cashSession->total_cancelled_sales;
         $manualEntries = (float) $cashSession->manual_entries;
         $manualExits = (float) $cashSession->manual_exits;
+        $cashEntries = $this->cashSessionService->totalEntries($cashSession);
         $withdrawals = $this->cashSessionService->totalWithdrawals($cashSession);
 
         $eventData = [
@@ -197,6 +202,7 @@ class CashSessionController extends Controller
             'total_completed_sales' => (float) $totalCompletedSales,
             'total_order_payments' => (float) $totalOrderPayments,
             'total_cancelled_sales' => (float) $totalCancelledSales,
+            'cash_entries' => $cashEntries,
             'manual_entries' => $manualEntries,
             'manual_exits' => $manualExits,
             'withdrawals' => $withdrawals,

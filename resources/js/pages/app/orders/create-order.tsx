@@ -1,4 +1,3 @@
-import { toastSuccess } from '@/components/app-toast-messages';
 import { DatePicker } from '@/components/date-picker';
 import FormFieldHelp from '@/components/form-field-help';
 import { Icon } from '@/components/icon';
@@ -37,10 +36,12 @@ export default function CreateOrder({
     customers,
     equipments,
     models,
+    sourceSchedule,
 }: {
     customers: { id: number; name: string }[];
     equipments: { id: number; equipment: string }[];
     models: string[];
+    sourceSchedule?: { id: number; customer_id: number; user_id?: number | null; schedules?: string | null; customer?: { name: string } } | null;
 }) {
     const { flash } = usePage().props as any;
     const initialModelOptions: OptionType[] = models.map((model) => ({
@@ -63,11 +64,17 @@ export default function CreateOrder({
     }));
 
     const { data, setData, post, processing, reset, errors } = useForm({
-        customer_id: '',
+        order_type: 'equipment',
+        schedule_id: sourceSchedule?.id ?? '',
+        customer_id: sourceSchedule?.customer_id ? String(sourceSchedule.customer_id) : '',
         equipment_id: '', // equipamento
+        user_id: sourceSchedule?.user_id ? String(sourceSchedule.user_id) : '',
         model: '',
         password: '',
         defect: '',
+        service_type: '',
+        service_details: '',
+        materials_used: '',
         state_conservation: '', //estado de conservação
         accessories: '',
         budget_description: '', // descrição do orçamento
@@ -90,7 +97,6 @@ export default function CreateOrder({
 
     useEffect(() => {
         if (flash?.success) {
-            toastSuccess('Sucesso', flash.success);
             reset();
             setSelectedModel(null);
             setModelInputValue('');
@@ -133,6 +139,7 @@ export default function CreateOrder({
             createModel(model);
         }
     };
+    const defaultCustomer = optionsCustomer.find((option) => String(option.value) === String(data.customer_id)) ?? null;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -175,10 +182,18 @@ export default function CreateOrder({
                             </div>
                         )}
 
+                        {sourceSchedule && (
+                            <div className="rounded-md border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
+                                Abrindo OS a partir do agendamento #{sourceSchedule.id}
+                                {sourceSchedule.customer?.name ? ` de ${sourceSchedule.customer.name}` : ''}.
+                            </div>
+                        )}
+
                         <div className="mt-4 grid gap-4 md:grid-cols-8">
                             <div className="grid gap-2 md:col-span-2">
                                 <Label htmlFor="customer_id">Cliente</Label>
                                 <Select<OptionType, false>
+                                    value={defaultCustomer}
                                     options={optionsCustomer}
                                     onChange={changeCustomer}
                                     placeholder="Selecione o cliente"
@@ -315,7 +330,7 @@ export default function CreateOrder({
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="service_status">Status orçamento</Label>
+                                <Label htmlFor="service_status">Status da ordem</Label>
                                 <Select<OptionType, false>
                                     menuPosition="fixed"
                                     options={statusOrcamento}

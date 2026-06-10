@@ -7,9 +7,12 @@ use App\Models\App\Checklist;
 use App\Models\App\Equipment;
 use App\Models\App\Image;
 use App\Models\App\Order;
+use App\Models\App\Part;
 use App\Models\App\Schedule;
+use App\Models\App\ScheduleImage;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\OrderStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Tests\TestCase;
@@ -53,7 +56,6 @@ class TechnicianScheduleApiTest extends TestCase
             'order_id' => $order->id,
             'user_id' => $this->technician->id,
             'send_to_technician' => true,
-            'service' => 'Atendimento externo',
         ]);
         Schedule::factory()->forTenant($this->tenant->id)->create([
             'customer_id' => $customer->id,
@@ -73,6 +75,98 @@ class TechnicianScheduleApiTest extends TestCase
             ->assertJsonPath('result.data.0.order.model', 'Dell Inspiron')
             ->assertJsonPath('result.data.0.order.equipment.equipment', 'Notebook')
             ->assertJsonCount(1, 'result.data');
+    }
+
+    public function test_technician_app_lists_schedule_without_order_and_updates_material_checklist(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create([
+            'name' => 'Cliente Externo',
+        ]);
+        $part = Part::factory()->forTenant($this->tenant->id)->create([
+            'name' => 'Fonte 12V',
+            'type' => 'part',
+            'status' => true,
+            'quantity' => 5,
+        ]);
+        $schedule = Schedule::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'order_id' => null,
+            'user_id' => $this->technician->id,
+            'send_to_technician' => true,
+            'service' => 'Retirada externa',
+            'material_checklist' => [
+                ['name' => 'Etiqueta', 'quantity' => 1, 'part_id' => null, 'used' => false],
+            ],
+        ]);
+
+        $this->actingAs($this->technician, 'sanctum')
+            ->getJson(route('api.technician.schedules.index'))
+            ->assertOk()
+            ->assertJsonPath('result.data.0.id', $schedule->id)
+            ->assertJsonPath('result.data.0.order', null)
+            ->assertJsonPath('result.data.0.service', 'Retirada externa')
+            ->assertJsonPath('result.data.0.material_checklist.0.name', 'Etiqueta')
+            ->assertJsonPath('result.data.0.material_checklist.0.quantity', 1);
+
+        $response = $this->actingAs($this->technician, 'sanctum')
+            ->postJson(route('api.technician.schedules.checklist', $schedule), [
+                'materials' => [
+                    ['name' => 'Fonte 12V', 'quantity' => 2, 'part_id' => $part->id, 'used' => false],
+                    ['name' => 'Cabo HDMI', 'quantity' => 1],
+                ],
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('result.material_checklist.0.name', 'Fonte 12V')
+            ->assertJsonPath('result.material_checklist.0.quantity', 2)
+            ->assertJsonPath('result.material_checklist.0.part_id', $part->id)
+            ->assertJsonPath('result.material_checklist.0.used', false)
+            ->assertJsonPath('result.material_checklist.1.name', 'Cabo HDMI');
+
+        $this->assertSame(5, (int) $part->fresh()->quantity);
+        $this->assertSame([
+            ['name' => 'Fonte 12V', 'quantity' => 2, 'part_id' => $part->id, 'used' => false],
+            ['name' => 'Cabo HDMI', 'quantity' => 1, 'part_id' => null, 'used' => false],
+        ], $schedule->refresh()->material_checklist);
+
+        $this->actingAs($this->technician, 'sanctum')
+            ->postJson(route('api.technician.schedules.checklist', $schedule), [
+                'materials' => [
+                    ['name' => 'Fonte 12V', 'quantity' => 2, 'part_id' => $part->id, 'used' => true],
+                    ['name' => 'Cabo HDMI', 'quantity' => 1, 'used' => true],
+                ],
+            ])
+            ->assertOk()
+            ->assertJsonPath('result.material_checklist.0.used', true);
+
+        $this->assertSame(3, (int) $part->fresh()->quantity);
+        $this->assertDatabaseHas('part_movements', [
+            'part_id' => $part->id,
+            'user_id' => $this->technician->id,
+            'movement_type' => 'uso_os',
+            'quantity' => 2,
+            'reason' => 'Uso no agendamento #'.$schedule->schedules_number,
+        ]);
+
+        $this->actingAs($this->technician, 'sanctum')
+            ->postJson(route('api.technician.schedules.checklist', $schedule), [
+                'materials' => [
+                    ['name' => 'Fonte 12V', 'quantity' => 2, 'part_id' => $part->id, 'used' => false],
+                    ['name' => 'Cabo HDMI', 'quantity' => 1, 'used' => false],
+                ],
+            ])
+            ->assertOk()
+            ->assertJsonPath('result.material_checklist.0.used', false);
+
+        $this->assertSame(5, (int) $part->fresh()->quantity);
+        $this->assertDatabaseHas('part_movements', [
+            'part_id' => $part->id,
+            'user_id' => $this->technician->id,
+            'movement_type' => 'devolucao',
+            'quantity' => 2,
+            'reason' => 'Devolução de peça do agendamento #'.$schedule->schedules_number,
+        ]);
     }
 
     public function test_technician_cannot_open_schedule_from_another_technician(): void
@@ -188,6 +282,10 @@ class TechnicianScheduleApiTest extends TestCase
         $this->assertDatabaseHas('schedules', [
             'id' => $schedule->id,
             'status' => 2,
+        ]);
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'service_status' => OrderStatus::SCHEDULE_OPEN,
         ]);
     }
 
@@ -408,6 +506,10 @@ class TechnicianScheduleApiTest extends TestCase
             'check_out_longitude' => -51.218000,
             'check_out_observations' => 'Atendimento finalizado.',
         ]);
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'service_status' => OrderStatus::SCHEDULE_COMPLETED,
+        ]);
     }
 
     public function test_technician_cannot_check_out_without_saved_report(): void
@@ -588,6 +690,55 @@ class TechnicianScheduleApiTest extends TestCase
         $this->assertFileExists(public_path('storage/orders/'.$order->order_number.'/'.$image->filename));
     }
 
+    public function test_technician_manages_images_for_owned_schedule_without_order(): void
+    {
+        $this->app->usePublicPath(storage_path('framework/testing/public'));
+        File::deleteDirectory(public_path());
+
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $schedule = Schedule::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'order_id' => null,
+            'user_id' => $this->technician->id,
+            'send_to_technician' => true,
+        ]);
+
+        $this->actingAs($this->technician, 'sanctum')
+            ->postJson(route('api.technician.schedules.images.store', $schedule), [
+                'filename' => base64_encode('schedule-image'),
+            ])
+            ->assertOk()
+            ->assertJson([
+                'success' => true,
+                'message' => 'Imagem salva com sucesso',
+            ])
+            ->assertJsonPath('result.schedule_id', $schedule->id);
+
+        $image = ScheduleImage::query()->where('schedule_id', $schedule->id)->firstOrFail();
+
+        $this->assertSame($this->tenant->id, $image->tenant_id);
+        $this->assertSame($this->technician->id, $image->user_id);
+        $this->assertFileExists(public_path('storage/schedules/'.$schedule->id.'/'.$image->filename));
+
+        $this->actingAs($this->technician, 'sanctum')
+            ->getJson(route('api.technician.schedules.images.index', $schedule))
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('result.0.id', $image->id)
+            ->assertJsonPath('result.0.schedule_id', $schedule->id);
+
+        $this->actingAs($this->technician, 'sanctum')
+            ->deleteJson(route('api.technician.schedules.images.destroy', [$schedule, $image]))
+            ->assertOk()
+            ->assertJson([
+                'success' => true,
+                'message' => 'Imagem deletada com sucesso!',
+            ]);
+
+        $this->assertDatabaseMissing('schedule_images', ['id' => $image->id]);
+        $this->assertFileDoesNotExist(public_path('storage/schedules/'.$schedule->id.'/'.$image->filename));
+    }
+
     public function test_technician_updates_report_for_owned_schedule_order(): void
     {
         $customer = Customer::factory()->forTenant($this->tenant->id)->create();
@@ -626,17 +777,12 @@ class TechnicianScheduleApiTest extends TestCase
         $this->assertNotNull($order->refresh()->technician_attended_at);
     }
 
-    public function test_technician_records_local_payment_for_owned_schedule_order(): void
+    public function test_technician_records_local_payment_for_owned_schedule_without_order(): void
     {
         $customer = Customer::factory()->forTenant($this->tenant->id)->create();
-        $order = Order::factory()->forTenant($this->tenant->id)->create([
-            'customer_id' => $customer->id,
-            'user_id' => $this->technician->id,
-            'service_cost' => 250,
-        ]);
         $schedule = Schedule::factory()->forTenant($this->tenant->id)->create([
             'customer_id' => $customer->id,
-            'order_id' => $order->id,
+            'order_id' => null,
             'user_id' => $this->technician->id,
             'send_to_technician' => true,
         ]);
@@ -644,31 +790,25 @@ class TechnicianScheduleApiTest extends TestCase
         $response = $this->actingAs($this->technician, 'sanctum')
             ->postJson(route('api.technician.schedules.payment', $schedule), [
                 'amount' => 120.50,
-                'payment_method' => 'pix',
-                'notes' => 'Recebido no local.',
+                'paid' => true,
             ]);
 
         $response
             ->assertOk()
             ->assertJsonPath('success', true)
-            ->assertJsonPath('result.order.technician_local_payment_received', true)
-            ->assertJsonPath('result.order.technician_local_payment_status', 'pending')
-            ->assertJsonPath('result.order.technician_local_payment_method', 'pix')
-            ->assertJsonPath('result.order.order_payments', []);
+            ->assertJsonPath('result.order', null)
+            ->assertJsonPath('result.local_payment.received', true)
+            ->assertJsonPath('result.local_payment.user_id', $this->technician->id);
 
-        $this->assertDatabaseHas('orders', [
-            'id' => $order->id,
-            'technician_local_payment_received' => true,
-            'technician_local_payment_status' => 'pending',
-            'technician_local_payment_method' => 'pix',
-            'technician_local_payment_notes' => 'Recebido no local.',
-            'technician_local_payment_user_id' => $this->technician->id,
+        $this->assertDatabaseHas('schedules', [
+            'id' => $schedule->id,
+            'local_payment_received' => true,
+            'local_payment_amount' => 120.50,
+            'local_payment_user_id' => $this->technician->id,
         ]);
 
         $this->assertDatabaseMissing('order_payments', [
-            'order_id' => $order->id,
-            'payment_method' => 'pix',
-            'notes' => 'Recebido no local.',
+            'amount' => 120.50,
         ]);
     }
 }
