@@ -594,6 +594,118 @@ class DashboardController extends Controller
         return response()->json($data);
     }
 
+    public function kpisSchedules($timeRange)
+    {
+        [$startDate, $endDate] = $this->getRange($timeRange);
+        [$previousStartDate, $previousEndDate] = $this->getPreviousRange($startDate, $endDate);
+        $today = now()->startOfDay();
+
+        $rangeQuery = $this->scopeSchedulesQuery(Schedule::query())
+            ->whereBetween('schedules', [$startDate, $endDate]);
+        $previousRangeQuery = $this->scopeSchedulesQuery(Schedule::query())
+            ->whereBetween('schedules', [$previousStartDate, $previousEndDate]);
+
+        $total = (clone $rangeQuery)->count();
+        $previousTotal = (clone $previousRangeQuery)->count();
+        $completed = (clone $rangeQuery)->where('status', 3)->count();
+        $previousCompleted = (clone $previousRangeQuery)->where('status', 3)->count();
+        $open = (clone $rangeQuery)->where('status', 1)->count();
+        $inProgress = (clone $this->scopeSchedulesQuery(Schedule::query()))->where('status', 2)->count();
+        $overdue = (clone $this->scopeSchedulesQuery(Schedule::query()))
+            ->whereIn('status', [1, 2])
+            ->where('schedules', '<', $today)
+            ->count();
+        $todayCount = (clone $this->scopeSchedulesQuery(Schedule::query()))->whereDate('schedules', $today)->count();
+        $tomorrowCount = (clone $this->scopeSchedulesQuery(Schedule::query()))->whereDate('schedules', $today->copy()->addDay())->count();
+        $localPaymentTotal = (float) (clone $rangeQuery)
+            ->where('local_payment_received', true)
+            ->sum('local_payment_amount');
+        $previousLocalPaymentTotal = (float) (clone $previousRangeQuery)
+            ->where('local_payment_received', true)
+            ->sum('local_payment_amount');
+
+        $serviceDurations = (clone $rangeQuery)
+            ->whereNotNull('check_in_at')
+            ->whereNotNull('check_out_at')
+            ->get(['check_in_at', 'check_out_at'])
+            ->map(fn (Schedule $schedule) => $schedule->check_in_at && $schedule->check_out_at
+                ? Carbon::parse($schedule->check_in_at)->diffInMinutes(Carbon::parse($schedule->check_out_at), false)
+                : null)
+            ->filter(fn ($minutes) => is_numeric($minutes) && $minutes > 0);
+        $previousServiceDurations = (clone $previousRangeQuery)
+            ->whereNotNull('check_in_at')
+            ->whereNotNull('check_out_at')
+            ->get(['check_in_at', 'check_out_at'])
+            ->map(fn (Schedule $schedule) => $schedule->check_in_at && $schedule->check_out_at
+                ? Carbon::parse($schedule->check_in_at)->diffInMinutes(Carbon::parse($schedule->check_out_at), false)
+                : null)
+            ->filter(fn ($minutes) => is_numeric($minutes) && $minutes > 0);
+        $avgServiceMinutes = (float) ($serviceDurations->avg() ?? 0);
+        $previousAvgServiceMinutes = (float) ($previousServiceDurations->avg() ?? 0);
+
+        $completionRate = $total > 0 ? round(($completed / $total) * 100, 1) : 0.0;
+        $previousCompletionRate = $previousTotal > 0 ? round(($previousCompleted / $previousTotal) * 100, 1) : 0.0;
+
+        return response()->json([
+            'range' => $timeRange,
+            'kpis' => [
+                'total' => $total,
+                'open' => $open,
+                'in_progress' => $inProgress,
+                'completed' => $completed,
+                'overdue' => $overdue,
+                'today' => $todayCount,
+                'tomorrow' => $tomorrowCount,
+                'completion_rate' => $completionRate,
+                'average_service_minutes' => round($avgServiceMinutes, 1),
+                'local_payment_total' => $localPaymentTotal,
+                'comparison' => [
+                    'total' => $this->comparison($total, $previousTotal),
+                    'completed' => $this->comparison($completed, $previousCompleted),
+                    'completion_rate' => $this->comparison($completionRate, $previousCompletionRate),
+                    'average_service_minutes' => $this->comparison($avgServiceMinutes, $previousAvgServiceMinutes),
+                    'local_payment_total' => $this->comparison($localPaymentTotal, $previousLocalPaymentTotal),
+                ],
+            ],
+        ]);
+    }
+
+    public function schedulesStatusChart($timeRange)
+    {
+        [$startDate, $endDate] = $this->getRange($timeRange);
+
+        $schedules = $this->scopeSchedulesQuery(Schedule::query())
+            ->selectRaw('
+                DATE(schedules) as date,
+                COUNT(*) as total,
+                SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as open,
+                SUM(CASE WHEN status = 2 THEN 1 ELSE 0 END) as in_progress,
+                SUM(CASE WHEN status = 3 THEN 1 ELSE 0 END) as completed
+            ')
+            ->whereBetween('schedules', [$startDate, $endDate])
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get()
+            ->keyBy('date');
+
+        $result = [];
+
+        for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
+            $key = $date->format('Y-m-d');
+            $data = $schedules->get($key);
+
+            $result[] = [
+                'date' => $key,
+                'total' => (int) ($data->total ?? 0),
+                'open' => (int) ($data->open ?? 0),
+                'in_progress' => (int) ($data->in_progress ?? 0),
+                'completed' => (int) ($data->completed ?? 0),
+            ];
+        }
+
+        return response()->json($result);
+    }
+
     public function kpisFinancialSales($timeRange)
     {
         [$startDate, $endDate] = $this->getRange($timeRange);

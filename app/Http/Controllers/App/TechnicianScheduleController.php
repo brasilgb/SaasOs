@@ -665,6 +665,7 @@ class TechnicianScheduleController extends Controller
             'order',
             'order.orderPayments',
             'order.equipment',
+            'order.equipment.checklists',
             'user',
         ]));
     }

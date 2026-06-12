@@ -1,7 +1,7 @@
 import { Icon } from '@/components/icon';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { Calendar, Camera, ClipboardCheck, CreditCard, Edit, Eye, FileText, MapPin, Plus, Smartphone, Timer, X } from 'lucide-react';
 import moment from 'moment';
 import { useState } from 'react';
@@ -152,6 +152,7 @@ function TechnicianMobileSummary({ schedule, scheduleHref }: { schedule: any; sc
 
 function TechnicianMobileTable({ schedules, pagination, canManageSchedules }: { schedules: any[]; pagination: any; canManageSchedules: boolean }) {
     const [selectedSchedule, setSelectedSchedule] = useState<any | null>(null);
+    const cashierForm = useForm({});
     const selectedSummary = selectedSchedule?.mobile_summary;
     const selectedStage = selectedSchedule ? getMobileStage(selectedSchedule) : null;
     const selectedReportHref = selectedSchedule ? getScheduleShowHref(selectedSchedule, undefined, undefined, '#technician-report') : '#';
@@ -306,6 +307,12 @@ function TechnicianMobileTable({ schedules, pagination, canManageSchedules }: { 
                                             Pagamento local {formatCurrency(selectedSummary?.local_payment_amount ?? selectedSchedule?.local_payment_amount)}
                                         </Badge>
                                     )}
+                                    {selectedSummary?.local_payment_registered_in_cashier && (
+                                        <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
+                                            <CreditCard className="h-3 w-3" />
+                                            Inserido no caixa
+                                        </Badge>
+                                    )}
                                     {selectedSummary?.sent_to_technician && (
                                         <Badge variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
                                             <MapPin className="h-3 w-3" />
@@ -316,9 +323,26 @@ function TechnicianMobileTable({ schedules, pagination, canManageSchedules }: { 
 
                                 <div className="flex justify-end">
                                     {canManageSchedules ? (
-                                        <Button asChild variant="outline" size="sm">
-                                            <Link href={route('app.schedules.edit', selectedSchedule.id)}>Abrir agendamento</Link>
-                                        </Button>
+                                        <div className="flex flex-wrap justify-end gap-2">
+                                            {selectedSummary?.can_register_local_payment_cashier && (
+                                                <Button
+                                                    type="button"
+                                                    size="sm"
+                                                    disabled={cashierForm.processing}
+                                                    onClick={() =>
+                                                        cashierForm.post(route('app.schedules.local-payment-cashier', selectedSchedule.id), {
+                                                            preserveScroll: true,
+                                                        })
+                                                    }
+                                                >
+                                                    <CreditCard className="h-4 w-4" />
+                                                    {cashierForm.processing ? 'Inserindo...' : 'Inserir no caixa'}
+                                                </Button>
+                                            )}
+                                            <Button asChild variant="outline" size="sm">
+                                                <Link href={route('app.schedules.edit', selectedSchedule.id)}>Abrir agendamento</Link>
+                                            </Button>
+                                        </div>
                                     ) : (
                                         <Button variant="outline" size="sm" disabled>
                                             Acompanhamento visível

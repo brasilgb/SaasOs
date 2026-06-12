@@ -55,6 +55,7 @@ class OrderControllerTest extends TestCase
             'defect' => 'Não liga',
             'service_status' => OrderStatus::OPEN,
             'user_id' => null,
+            'delivery_forecast' => now()->addDays(7)->toDateString(),
         ]);
 
         $response->assertRedirect(route('app.orders.index'));
@@ -84,6 +85,25 @@ class OrderControllerTest extends TestCase
         ]);
     }
 
+    public function test_it_requires_delivery_forecast_when_creating_an_order(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+
+        $response = $this->from(route('app.orders.create'))->post(route('app.orders.store'), [
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'model' => 'Notebook Dell Inspiron',
+            'defect' => 'Não liga',
+            'service_status' => OrderStatus::OPEN,
+            'user_id' => null,
+        ]);
+
+        $response
+            ->assertRedirect(route('app.orders.create'))
+            ->assertSessionHasErrors('delivery_forecast');
+    }
+
     public function test_it_links_created_order_to_source_schedule(): void
     {
         $customer = Customer::factory()->forTenant($this->tenant->id)->create();
@@ -102,6 +122,7 @@ class OrderControllerTest extends TestCase
             'defect' => 'Não liga',
             'service_status' => OrderStatus::OPEN,
             'user_id' => $this->user->id,
+            'delivery_forecast' => now()->addDays(7)->toDateString(),
         ]);
 
         $order = Order::query()->firstOrFail();
@@ -127,6 +148,7 @@ class OrderControllerTest extends TestCase
             'materials_used' => 'Cabos, conectores MC4 e disjuntores',
             'service_status' => OrderStatus::SCHEDULE_OPEN,
             'service_value' => '350,00',
+            'delivery_forecast' => now()->addDays(7)->toDateString(),
         ]);
 
         $response->assertRedirect(route('app.orders.index'));
@@ -180,7 +202,7 @@ class OrderControllerTest extends TestCase
             'service_cost' => '150,00',
             'delivery_date' => null,
             'service_status' => OrderStatus::BUDGET_GENERATED,
-            'delivery_forecast' => null,
+            'delivery_forecast' => now()->addDays(7)->toDateString(),
             'observations' => 'Aguardando aprovação',
         ]);
 
@@ -454,7 +476,7 @@ class OrderControllerTest extends TestCase
             'service_cost' => '0,00',
             'delivery_date' => null,
             'service_status' => OrderStatus::OPEN,
-            'delivery_forecast' => null,
+            'delivery_forecast' => now()->addDays(7)->toDateString(),
             'observations' => null,
         ]);
 
@@ -582,6 +604,7 @@ class OrderControllerTest extends TestCase
             'defect' => 'Não carrega',
             'service_status' => OrderStatus::OPEN,
             'user_id' => $this->user->id,
+            'delivery_forecast' => now()->addDays(7)->toDateString(),
         ]);
 
         $createResponse->assertRedirect(route('app.orders.index'));
@@ -605,7 +628,7 @@ class OrderControllerTest extends TestCase
             'service_cost' => '150,00',
             'delivery_date' => null,
             'service_status' => OrderStatus::BUDGET_GENERATED,
-            'delivery_forecast' => null,
+            'delivery_forecast' => now()->addDays(7)->toDateString(),
             'observations' => 'Aguardando resposta do cliente',
         ]);
 
@@ -634,7 +657,7 @@ class OrderControllerTest extends TestCase
             'service_cost' => '150,00',
             'delivery_date' => null,
             'service_status' => OrderStatus::SERVICE_COMPLETED,
-            'delivery_forecast' => null,
+            'delivery_forecast' => now()->addDays(7)->toDateString(),
             'observations' => 'Pronto para retirada',
         ]);
 
@@ -748,7 +771,7 @@ class OrderControllerTest extends TestCase
             'delivery_date' => $deliveryDate->format('Y-m-d H:i:s'),
             'warranty_days' => 90,
             'service_status' => OrderStatus::DELIVERED,
-            'delivery_forecast' => null,
+            'delivery_forecast' => now()->addDays(7)->toDateString(),
             'observations' => null,
         ]);
 
@@ -999,6 +1022,7 @@ class OrderControllerTest extends TestCase
             'defect' => 'Não liga novamente',
             'service_status' => OrderStatus::OPEN,
             'user_id' => $this->user->id,
+            'delivery_forecast' => now()->addDays(7)->toDateString(),
         ]);
 
         $response->assertRedirect(route('app.orders.index'));
@@ -1266,7 +1290,7 @@ class OrderControllerTest extends TestCase
             'service_cost' => '0,00',
             'delivery_date' => null,
             'service_status' => $order->service_status ?? OrderStatus::OPEN,
-            'delivery_forecast' => null,
+            'delivery_forecast' => now()->addDays(7)->toDateString(),
             'observations' => $order->observations ? mb_substr($order->observations, 0, 500) : null,
         ], $overrides);
     }

@@ -305,6 +305,76 @@ class DashboardControllerTest extends TestCase
             ->assertJsonPath('kpis.comparison.range_revenue.percent', 100);
     }
 
+    public function test_schedule_kpis_include_standard_attendance_metrics(): void
+    {
+        Schedule::factory()->forTenant($this->tenant->id)->create([
+            'status' => 3,
+            'schedules' => now()->subDay(),
+            'local_payment_received' => true,
+            'local_payment_amount' => 120,
+            'check_in_at' => now()->subDay()->setTime(10, 0),
+            'check_out_at' => now()->subDay()->setTime(11, 30),
+        ]);
+
+        Schedule::factory()->forTenant($this->tenant->id)->create([
+            'status' => 1,
+            'schedules' => now()->subDay(),
+        ]);
+
+        Schedule::factory()->forTenant($this->tenant->id)->create([
+            'status' => 2,
+            'schedules' => now()->subDays(2),
+        ]);
+
+        Schedule::factory()->forTenant($this->tenant->id)->create([
+            'status' => 3,
+            'schedules' => now()->subDays(8),
+        ]);
+
+        $response = $this->get(route('app.kpisSchedules', ['timerange' => 7]));
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('kpis.total', 3)
+            ->assertJsonPath('kpis.open', 1)
+            ->assertJsonPath('kpis.in_progress', 1)
+            ->assertJsonPath('kpis.completed', 1)
+            ->assertJsonPath('kpis.overdue', 2)
+            ->assertJsonPath('kpis.local_payment_total', 120)
+            ->assertJsonPath('kpis.average_service_minutes', 90)
+            ->assertJsonPath('kpis.completion_rate', 33.3)
+            ->assertJsonPath('kpis.comparison.total.previous', 1);
+    }
+
+    public function test_schedules_status_chart_returns_daily_status_series(): void
+    {
+        $scheduledAt = now()->subDay()->setTime(9, 0);
+
+        Schedule::factory()->forTenant($this->tenant->id)->create([
+            'status' => 1,
+            'schedules' => $scheduledAt,
+        ]);
+
+        Schedule::factory()->forTenant($this->tenant->id)->create([
+            'status' => 2,
+            'schedules' => $scheduledAt->copy()->addHour(),
+        ]);
+
+        Schedule::factory()->forTenant($this->tenant->id)->create([
+            'status' => 3,
+            'schedules' => $scheduledAt->copy()->addHours(2),
+        ]);
+
+        $response = $this->get(route('app.schedulesStatusChart', ['timerange' => 7]));
+        $point = collect($response->json())->firstWhere('date', $scheduledAt->format('Y-m-d'));
+
+        $response->assertOk();
+        $this->assertSame(3, $point['total']);
+        $this->assertSame(1, $point['open']);
+        $this->assertSame(1, $point['in_progress']);
+        $this->assertSame(1, $point['completed']);
+    }
+
     public function test_financial_sales_kpis_include_previous_period_comparison(): void
     {
         Sale::factory()->forTenant($this->tenant->id)->create([

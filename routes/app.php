@@ -35,6 +35,8 @@ Route::get('/budgetsStatusChart/{timerange}', [DashboardController::class, 'budg
 Route::get('/metricsSystem/{timerange}', [DashboardController::class, 'metricsSystem'])->name('metricsSystem');
 Route::get('/kpisFinancialOrder/{timerange}', [DashboardController::class, 'kpisFinancialOrder'])->name('kpisFinancialOrder');
 Route::get('/financialRevenueChart/{timerange}', [DashboardController::class, 'financialRevenueChart'])->name('financialRevenueChart');
+Route::get('/kpisSchedules/{timerange}', [DashboardController::class, 'kpisSchedules'])->name('kpisSchedules');
+Route::get('/schedulesStatusChart/{timerange}', [DashboardController::class, 'schedulesStatusChart'])->name('schedulesStatusChart');
 Route::get('/kpisFinancialSales/{timerange}', [DashboardController::class, 'kpisFinancialSales'])->name('kpisFinancialSales');
 Route::get('/financialSalesRevenueChart/{timerange}', [DashboardController::class, 'financialSalesRevenueChart'])->name('financialSalesRevenueChart');
 Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

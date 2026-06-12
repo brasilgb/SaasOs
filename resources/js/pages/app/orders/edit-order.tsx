@@ -518,7 +518,7 @@ export default function EditOrder({
                                             </div>
 
                                             <div className="grid gap-2">
-                                                <Label htmlFor="delivery_forecast">Previsão de entrega</Label>
+                                                <Label htmlFor="delivery_forecast">Previsão de entrega *</Label>
                                                 <DatePicker
                                                     mode="single"
                                                     date={data.delivery_forecast}
@@ -537,6 +537,7 @@ export default function EditOrder({
                                                         setData('delivery_forecast', formatted);
                                                     }}
                                                 />
+                                                <InputError className="mt-2" message={errors.delivery_forecast} />
                                             </div>
                                         </div>
 

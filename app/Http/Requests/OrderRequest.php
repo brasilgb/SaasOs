@@ -94,7 +94,7 @@ class OrderRequest extends FormRequest
             'user_id' => 'nullable|exists:users,id',
             'schedule_id' => 'nullable|exists:schedules,id',
             'delivery_date' => 'nullable|date',
-            'delivery_forecast' => 'nullable|date',
+            'delivery_forecast' => 'required|date',
             'observations' => 'nullable|string|max:500',
         ];
     }

@@ -13,6 +13,7 @@ import moment from 'moment';
 import FinanceiroOrders from './fin-order/ordens';
 import FinanceiroSales from './fin-order/sales';
 import OrderDashboard from './ope-order';
+import ScheduleDashboard from './schedules';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -147,12 +148,23 @@ export default function Dashboard({
                         </div>
                     )}
 
-                    <Tabs defaultValue="account" className="w-full">
+                    <Tabs defaultValue="account" className="mt-2 w-full">
                         {!isTechnician && (
-                            <TabsList className="h-auto w-full flex-wrap justify-start gap-2 md:max-w-96">
-                                <TabsTrigger value="account">Operacional</TabsTrigger>
-                                <TabsTrigger value="password">Financeiro</TabsTrigger>
-                                {canUseSales && <TabsTrigger value="sales">Vendas</TabsTrigger>}
+                            <TabsList className="h-auto w-full flex-wrap justify-start gap-2 md:max-w-[34rem]">
+                                <TabsTrigger value="account" className="hover:bg-background hover:text-foreground hover:shadow-sm">
+                                    Operacional
+                                </TabsTrigger>
+                                <TabsTrigger value="password" className="hover:bg-background hover:text-foreground hover:shadow-sm">
+                                    Financeiro
+                                </TabsTrigger>
+                                <TabsTrigger value="schedules" className="hover:bg-background hover:text-foreground hover:shadow-sm">
+                                    Agendamentos
+                                </TabsTrigger>
+                                {canUseSales && (
+                                    <TabsTrigger value="sales" className="hover:bg-background hover:text-foreground hover:shadow-sm">
+                                        Vendas
+                                    </TabsTrigger>
+                                )}
                             </TabsList>
                         )}
                         <TabsContent value="account">
@@ -171,6 +183,11 @@ export default function Dashboard({
                                 auth={auth}
                             />
                         </TabsContent>
+                        {!isTechnician && (
+                            <TabsContent value="schedules">
+                                <ScheduleDashboard timerange={timerangeForRequests} dateRange={dateRange} customRange={hasCustomRange} />
+                            </TabsContent>
+                        )}
                         {!isTechnician && (
                             <TabsContent value="password">
                                 <FinanceiroOrders timerange={timerangeForRequests} dateRange={dateRange} customRange={hasCustomRange} />
