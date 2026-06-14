@@ -26,7 +26,13 @@ class PartController extends Controller
     {
         Gate::authorize('parts.access');
 
-        $parts = Part::where('reference_number', $request->reference_number)->first();
+        $referenceNumber = trim((string) $request->reference_number);
+
+        $parts = Part::query()
+            ->where(function ($query) use ($referenceNumber) {
+                $this->applyBarcodeSearch($query, $referenceNumber);
+            })
+            ->first();
 
         return response()->json([
             'success' => true,
@@ -48,7 +54,10 @@ class PartController extends Controller
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('reference_number', 'like', "%{$search}%");
+                    ->orWhere('reference_number', 'like', "%{$search}%")
+                    ->orWhere('part_number', 'like', "%{$search}%");
+
+                $this->applyBarcodeSearch($q, $search);
             });
         }
 
@@ -213,5 +222,18 @@ class PartController extends Controller
         });
 
         return redirect()->route('app.parts.index')->with('success', 'Peça excluida com sucesso!');
+    }
+
+    private function applyBarcodeSearch($query, string $search): void
+    {
+        $barcode = preg_replace('/\D+/', '', $search) ?: null;
+
+        $query->orWhere('reference_number', $search)
+            ->orWhere('part_number', $search);
+
+        if ($barcode) {
+            $query->orWhere('reference_number', 'like', "%{$barcode}%")
+                ->orWhere('part_number', 'like', "%{$barcode}%");
+        }
     }
 }

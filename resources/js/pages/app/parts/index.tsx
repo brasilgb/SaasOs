@@ -4,13 +4,23 @@ import { Icon } from '@/components/icon';
 import InputSearch from '@/components/inputSearch';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { maskMoney } from '@/Utils/mask';
-import { Head, Link, usePage } from '@inertiajs/react';
-import { Edit, PackageCheck, Plus, Printer } from 'lucide-react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import { Barcode, Camera, Edit, PackageCheck, Plus, Printer } from 'lucide-react';
 import moment from 'moment';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
+declare global {
+    interface Window {
+        BarcodeDetector?: new (options?: { formats?: string[] }) => {
+            detect: (source: CanvasImageSource) => Promise<Array<{ rawValue?: string }>>;
+        };
+    }
+}
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -26,6 +36,119 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Parts({ parts, search }: any) {
     const { auth } = usePage<{ auth?: { permissions?: string[] } }>().props;
     const canManageParts = auth?.permissions?.includes('parts');
+    const barcodeForm = useForm({
+        barcode: '',
+    });
+    const [cameraOpen, setCameraOpen] = useState(false);
+    const [cameraError, setCameraError] = useState<string | null>(null);
+    const [cameraSupported, setCameraSupported] = useState(false);
+    const [isMobileDevice, setIsMobileDevice] = useState(false);
+    const videoRef = useRef<HTMLVideoElement | null>(null);
+    const streamRef = useRef<MediaStream | null>(null);
+
+    const submitBarcodeSearch = useCallback((barcode: string) => {
+        const code = String(barcode || '').trim();
+        if (!code) return;
+
+        router.get(
+            route('app.parts.index'),
+            {
+                search: code,
+            },
+            {
+                preserveState: true,
+                replace: true,
+            },
+        );
+    }, []);
+
+    const handleBarcodeSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        submitBarcodeSearch(barcodeForm.data.barcode);
+    };
+
+    const stopCamera = () => {
+        streamRef.current?.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+    };
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        const hasCameraApi = 'BarcodeDetector' in window && !!navigator.mediaDevices?.getUserMedia;
+        const mobileByViewport = window.matchMedia('(max-width: 768px)').matches;
+        const mobileByPointer = window.matchMedia('(pointer: coarse)').matches;
+        const mobileByUserAgent = /Android|iPhone|iPad|iPod|Mobile/i.test(window.navigator.userAgent);
+
+        setCameraSupported(hasCameraApi);
+        setIsMobileDevice(mobileByViewport || mobileByPointer || mobileByUserAgent);
+    }, []);
+
+    useEffect(() => {
+        if (!cameraOpen || !cameraSupported) return;
+
+        let animationFrameId = 0;
+        let cancelled = false;
+        const detector = window.BarcodeDetector
+            ? new window.BarcodeDetector({
+                  formats: ['code_128', 'code_39', 'ean_13', 'ean_8', 'upc_a', 'upc_e'],
+              })
+            : null;
+
+        const scan = async () => {
+            if (cancelled || !detector || !videoRef.current) return;
+
+            try {
+                const barcodes = await detector.detect(videoRef.current);
+                const value = barcodes.find((item) => item.rawValue)?.rawValue?.trim();
+
+                if (value) {
+                    barcodeForm.setData('barcode', value);
+                    setCameraOpen(false);
+                    stopCamera();
+                    submitBarcodeSearch(value);
+                    return;
+                }
+            } catch {
+                // Ignora leituras intermitentes enquanto a câmera está aberta.
+            }
+
+            animationFrameId = window.requestAnimationFrame(scan);
+        };
+
+        navigator.mediaDevices
+            .getUserMedia({
+                video: {
+                    facingMode: { ideal: 'environment' },
+                },
+            })
+            .then((stream) => {
+                if (cancelled) {
+                    stream.getTracks().forEach((track) => track.stop());
+                    return;
+                }
+
+                streamRef.current = stream;
+
+                if (videoRef.current) {
+                    videoRef.current.srcObject = stream;
+                    videoRef.current.play().catch(() => null);
+                }
+
+                animationFrameId = window.requestAnimationFrame(scan);
+            })
+            .catch(() => {
+                setCameraError('Não foi possível acessar a câmera deste dispositivo.');
+            });
+
+        return () => {
+            cancelled = true;
+            if (animationFrameId) {
+                window.cancelAnimationFrame(animationFrameId);
+            }
+            stopCamera();
+        };
+    }, [cameraOpen, cameraSupported, submitBarcodeSearch]);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -37,8 +160,53 @@ export default function Parts({ parts, search }: any) {
                 </div>
             </div>
             <div className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:justify-between">
-                <div className="w-full min-w-0 lg:max-w-[420px] lg:flex-1">
-                    <InputSearch placeholder="Buscar peça/produto por nome e número" url="app.parts.index" />
+                <div className="flex w-full min-w-0 flex-col gap-2 lg:max-w-[790px] lg:flex-1 lg:flex-row">
+                    <div className="w-full min-w-0 lg:max-w-[420px] lg:flex-1">
+                        <InputSearch placeholder="Buscar peça/produto por nome, número ou código" url="app.parts.index" />
+                    </div>
+                    <form onSubmit={handleBarcodeSubmit} className="w-full min-w-0 lg:max-w-[360px] lg:flex-1">
+                        <div className="flex gap-2">
+                            {isMobileDevice ? (
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => {
+                                        setCameraError(null);
+                                        setCameraOpen(true);
+                                    }}
+                                    disabled={!cameraSupported}
+                                    title={
+                                        cameraSupported
+                                            ? 'Ler código de barras com a câmera do celular'
+                                            : 'Leitura por câmera indisponível neste navegador'
+                                    }
+                                    className="w-full"
+                                >
+                                    <Camera className="mr-1 h-4 w-4" />
+                                    Ler com celular
+                                </Button>
+                            ) : (
+                                <div className="relative flex-1">
+                                    <Input
+                                        value={barcodeForm.data.barcode}
+                                        onChange={(e) => barcodeForm.setData('barcode', e.target.value)}
+                                        placeholder="Ler código de barras"
+                                        autoComplete="off"
+                                        className="pr-12"
+                                    />
+                                    <Button
+                                        type="submit"
+                                        size="icon"
+                                        className="absolute top-0 right-0 h-full rounded-l-none"
+                                        title="Buscar pelo código de barras"
+                                        aria-label="Buscar pelo código de barras"
+                                    >
+                                        <Barcode className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
+                    </form>
                 </div>
                 <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:shrink-0 lg:justify-end">
                     {canManageParts && (
@@ -51,6 +219,29 @@ export default function Parts({ parts, search }: any) {
                     )}
                 </div>
             </div>
+
+            {cameraError && <div className="px-4 text-sm text-red-600">{cameraError}</div>}
+            {cameraOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+                    <div className="w-full max-w-md rounded-lg bg-background p-4 shadow-xl">
+                        <div className="mb-3 flex items-center justify-between gap-3">
+                            <h3 className="font-semibold">Ler código de barras</h3>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                    setCameraOpen(false);
+                                    stopCamera();
+                                }}
+                            >
+                                Fechar
+                            </Button>
+                        </div>
+                        <video ref={videoRef} className="aspect-video w-full rounded-md bg-black" muted playsInline />
+                    </div>
+                </div>
+            )}
 
             <div className="p-4">
                 <div className="rounded-lg border">

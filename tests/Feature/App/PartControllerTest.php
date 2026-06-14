@@ -114,6 +114,58 @@ class PartControllerTest extends TestCase
         $this->assertSame(2, Part::where('category', 'Placa 1-3')->count());
     }
 
+    public function test_it_filters_parts_by_barcode_digits_from_reference_number(): void
+    {
+        $matched = Part::factory()->forTenant($this->tenant->id)->create([
+            'name' => 'Tela Notebook',
+            'reference_number' => 'REF-987654321',
+        ]);
+
+        Part::factory()->forTenant($this->tenant->id)->create([
+            'name' => 'Bateria Notebook',
+            'reference_number' => 'REF-111222333',
+        ]);
+
+        $response = $this->get(route('app.parts.index', [
+            'search' => '987654321',
+        ]));
+
+        $response
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('app/parts/index')
+                ->where('parts.data.0.id', $matched->id)
+                ->where('parts.data.0.reference_number', 'REF-987654321')
+                ->where('parts.data.1', null)
+            );
+    }
+
+    public function test_it_filters_parts_by_part_number(): void
+    {
+        $matched = Part::factory()->forTenant($this->tenant->id)->create([
+            'name' => 'Cabo USB-C',
+            'part_number' => 'PN-445566',
+        ]);
+
+        Part::factory()->forTenant($this->tenant->id)->create([
+            'name' => 'Cabo HDMI',
+            'part_number' => 'PN-778899',
+        ]);
+
+        $response = $this->get(route('app.parts.index', [
+            'search' => '445566',
+        ]));
+
+        $response
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('app/parts/index')
+                ->where('parts.data.0.id', $matched->id)
+                ->where('parts.data.0.part_number', 'PN-445566')
+                ->where('parts.data.1', null)
+            );
+    }
+
     public function test_it_records_adjustment_movement_when_part_quantity_changes(): void
     {
         $part = Part::factory()->forTenant($this->tenant->id)->create([
