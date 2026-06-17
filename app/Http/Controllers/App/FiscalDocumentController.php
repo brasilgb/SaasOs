@@ -8,6 +8,7 @@ use App\Models\App\FiscalSetting;
 use App\Models\App\Order;
 use App\Models\App\Sale;
 use App\Services\FiscalDocumentService;
+use App\Services\FocusNfeService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -17,7 +18,10 @@ use Inertia\Response;
 
 class FiscalDocumentController extends Controller
 {
-    public function __construct(private readonly FiscalDocumentService $fiscalDocumentService) {}
+    public function __construct(
+        private readonly FiscalDocumentService $fiscalDocumentService,
+        private readonly FocusNfeService $focusNfeService
+    ) {}
 
     public function index(): Response
     {
@@ -130,6 +134,25 @@ class FiscalDocumentController extends Controller
         $fiscalSetting->update($data);
 
         return redirect()->route('app.fiscal-documents.settings')->with('success', 'Configurações fiscais salvas com sucesso.');
+    }
+
+    public function testConnection(Request $request, FiscalSetting $fiscalSetting): RedirectResponse
+    {
+        Gate::authorize('fiscal-documents.access');
+
+        $data = $request->validate([
+            'api_token' => ['nullable', 'string', 'max:4000'],
+        ]);
+
+        try {
+            $this->focusNfeService->testConnection($fiscalSetting, $data['api_token'] ?? null);
+        } catch (\RuntimeException $exception) {
+            return back()
+                ->withErrors(['api_token' => $exception->getMessage()])
+                ->withInput();
+        }
+
+        return back()->with('success', 'Conexão com a Focus NFe testada com sucesso.');
     }
 
     private function normalizeNullableDecimal(mixed $value): mixed

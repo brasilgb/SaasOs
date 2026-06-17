@@ -297,4 +297,39 @@ class FocusNfeServiceTest extends TestCase
                 && $request->hasHeader('Authorization', 'Basic '.base64_encode('focus-token-teste:'));
         });
     }
+
+    public function test_it_tests_focus_connection_with_mocked_not_found_response(): void
+    {
+        Http::fake([
+            'api.focusnfe.com.br/v2/nfe/__vetoros_connection_test__' => Http::response([
+                'mensagem' => 'Nota fiscal nao encontrada',
+            ], 404),
+        ]);
+
+        $setting = FiscalSetting::query()->firstOrFail();
+
+        app(FocusNfeService::class)->testConnection($setting);
+
+        Http::assertSent(function (Request $request) {
+            return $request->method() === 'GET'
+                && str_contains((string) $request->url(), '/v2/nfe/__vetoros_connection_test__')
+                && $request->hasHeader('Authorization', 'Basic '.base64_encode('focus-token-teste:'));
+        });
+    }
+
+    public function test_it_reports_focus_connection_authentication_failure(): void
+    {
+        Http::fake([
+            'api.focusnfe.com.br/v2/nfe/__vetoros_connection_test__' => Http::response([
+                'mensagem' => 'Token invalido',
+            ], 401),
+        ]);
+
+        $setting = FiscalSetting::query()->firstOrFail();
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Não foi possível autenticar na Focus NFe: Token invalido');
+
+        app(FocusNfeService::class)->testConnection($setting);
+    }
 }

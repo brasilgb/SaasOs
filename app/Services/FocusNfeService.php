@@ -17,6 +17,31 @@ use RuntimeException;
 class FocusNfeService
 {
     private const BASE_URL = 'https://api.focusnfe.com.br/v2';
+    private const CONNECTION_TEST_REFERENCE = '__vetoros_connection_test__';
+
+    public function testConnection(FiscalSetting $setting, ?string $apiToken = null): void
+    {
+        $token = filled($apiToken) ? trim((string) $apiToken) : $setting->api_token;
+
+        if (blank($token)) {
+            throw new RuntimeException('Informe o token Focus NFe antes de testar a conexão.');
+        }
+
+        $endpoint = $setting->nfe_enabled ? 'nfe' : 'nfse';
+        $response = Http::acceptJson()
+            ->withBasicAuth($token, '')
+            ->timeout(15)
+            ->get(self::BASE_URL.'/'.$endpoint.'/'.self::CONNECTION_TEST_REFERENCE);
+
+        if ($response->successful() || $response->status() === 404) {
+            return;
+        }
+
+        $body = $response->json() ?? [];
+        $message = $body['mensagem'] ?? $body['message'] ?? $body['erro'] ?? $response->body();
+
+        throw new RuntimeException('Não foi possível autenticar na Focus NFe: '.Str::limit((string) $message, 500, ''));
+    }
 
     public function issueSaleNfe(Sale $sale): FiscalDocument
     {

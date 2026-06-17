@@ -10,9 +10,10 @@ import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
-import { Head, useForm } from '@inertiajs/react';
-import { HelpCircle, ReceiptText, Save } from 'lucide-react';
+import { Head, router, useForm } from '@inertiajs/react';
+import { HelpCircle, PlugZap, ReceiptText, Save } from 'lucide-react';
 import type { FormEvent } from 'react';
+import { useState } from 'react';
 
 type FiscalSetting = {
     id: number;
@@ -75,6 +76,7 @@ function FieldLabel({ htmlFor, children, help }: { htmlFor: string; children: st
 }
 
 export default function FiscalDocumentSettings({ fiscalSetting }: { fiscalSetting: FiscalSetting }) {
+    const [testingConnection, setTestingConnection] = useState(false);
     const { data, setData, put, processing, errors } = useForm({
         enabled: fiscalSetting.enabled,
         environment: fiscalSetting.environment ?? 'sandbox',
@@ -111,6 +113,25 @@ export default function FiscalDocumentSettings({ fiscalSetting }: { fiscalSettin
                 toastWarning('Erro', Object.values(formErrors)[0] ?? 'Não foi possível salvar as configurações fiscais.');
             },
         });
+    };
+
+    const handleTestConnection = () => {
+        setTestingConnection(true);
+
+        router.post(
+            route('app.fiscal-documents.settings.test-connection', fiscalSetting.id),
+            {
+                api_token: data.api_token,
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => toastSuccess('Conexão testada', 'A Focus NFe respondeu à autenticação com sucesso.'),
+                onError: (formErrors) => {
+                    toastWarning('Erro', Object.values(formErrors)[0] ?? 'Não foi possível testar a conexão com a Focus NFe.');
+                },
+                onFinish: () => setTestingConnection(false),
+            },
+        );
     };
 
     return (
@@ -157,9 +178,15 @@ export default function FiscalDocumentSettings({ fiscalSetting }: { fiscalSettin
                 {data.enabled && (
                     <>
                         <Card>
-                            <CardHeader>
-                                <CardTitle>Ambiente e credenciais</CardTitle>
-                                <CardDescription>Os tokens ficam criptografados no banco e não são exibidos novamente após salvar.</CardDescription>
+                            <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                                <div>
+                                    <CardTitle>Ambiente e credenciais</CardTitle>
+                                    <CardDescription>Os tokens ficam criptografados no banco e não são exibidos novamente após salvar.</CardDescription>
+                                </div>
+                                <Button type="button" variant="outline" onClick={handleTestConnection} disabled={processing || testingConnection}>
+                                    <PlugZap className="h-4 w-4" />
+                                    {testingConnection ? 'Testando...' : 'Testar conexão'}
+                                </Button>
                             </CardHeader>
                             <CardContent className="grid gap-4 md:grid-cols-2">
                                 <div className="grid gap-2">
