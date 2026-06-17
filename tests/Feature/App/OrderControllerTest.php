@@ -263,6 +263,48 @@ class OrderControllerTest extends TestCase
         $this->assertSame($budgetLink, $order->budget_link);
     }
 
+    public function test_root_app_can_create_and_update_an_order_assigned_to_another_user(): void
+    {
+        $rootApp = User::factory()->forTenant($this->tenant->id)->create([
+            'roles' => User::ROLE_ROOT_APP,
+        ]);
+        $technician = User::factory()->forTenant($this->tenant->id)->create([
+            'roles' => User::ROLE_TECHNICIAN,
+        ]);
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+
+        $this->actingAs($rootApp);
+
+        $createResponse = $this->post(route('app.orders.store'), [
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'model' => 'Modelo inicial',
+            'defect' => 'Nao liga',
+            'service_status' => OrderStatus::OPEN,
+            'user_id' => $technician->id,
+            'delivery_forecast' => now()->addDays(7)->toDateString(),
+        ]);
+
+        $createResponse->assertRedirect(route('app.orders.index'));
+
+        $order = Order::query()->latest('id')->firstOrFail();
+
+        $updateResponse = $this->put(
+            route('app.orders.update', $order),
+            $this->orderUpdatePayload($order, $customer, $equipment, [
+                'user_id' => $technician->id,
+                'model' => 'Modelo atualizado pelo rootapp',
+            ]),
+        );
+
+        $updateResponse
+            ->assertRedirect(route('app.orders.show', ['order' => $order->id]))
+            ->assertSessionMissing('authorization_error');
+
+        $this->assertSame('Modelo atualizado pelo rootapp', $order->fresh()->model);
+    }
+
     public function test_technician_can_update_owned_order_model_and_start_repair(): void
     {
         $technician = User::factory()->forTenant($this->tenant->id)->create([

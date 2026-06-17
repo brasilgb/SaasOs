@@ -19,11 +19,15 @@ class OrderPolicy
 
     public function view(User $user, Order $order): bool
     {
-        if (! $user->hasPermission('orders')) {
+        if (! $this->sameTenant($user, $order)) {
             return false;
         }
 
-        if (! $this->sameTenant($user, $order)) {
+        if ($user->isRoot()) {
+            return true;
+        }
+
+        if (! $user->hasPermission('orders')) {
             return false;
         }
 
@@ -36,12 +40,14 @@ class OrderPolicy
 
     public function create(User $user): bool
     {
-        return $user->hasPermission('orders') && ! $user->isTechnician();
+        return $user->isRoot()
+            || ($user->hasPermission('orders') && ! $user->isTechnician());
     }
 
     public function update(User $user, Order $order): bool
     {
-        return $user->hasPermission('orders') && $this->view($user, $order);
+        return $this->view($user, $order)
+            && ($user->isRoot() || $user->hasPermission('orders'));
     }
 
     public function delete(User $user, Order $order): bool
