@@ -133,6 +133,25 @@ export default function FiscalDocumentSettings({ fiscalSetting }: { fiscalSettin
         );
     };
 
+    const handleEnabledChange = (enabled: boolean) => {
+        setData('enabled', enabled);
+
+        router.put(
+            route('app.fiscal-documents.settings.update-enabled', fiscalSetting.id),
+            {
+                enabled,
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => toastSuccess('Sucesso', enabled ? 'Documentos fiscais ativados.' : 'Documentos fiscais desativados.'),
+                onError: (formErrors) => {
+                    setData('enabled', !enabled);
+                    toastWarning('Erro', Object.values(formErrors)[0] ?? 'Não foi possível alterar a ativação fiscal.');
+                },
+            },
+        );
+    };
+
     const handleTestConnection = () => {
         setTestingConnection(true);
 
@@ -187,7 +206,7 @@ export default function FiscalDocumentSettings({ fiscalSetting }: { fiscalSettin
                                     Quando desativado, vendas e ordens continuam usando o registro manual atual.
                                 </p>
                             </div>
-                            <Switch id="enabled" checked={data.enabled} onCheckedChange={(checked) => setData('enabled', checked)} />
+                            <Switch id="enabled" checked={data.enabled} onCheckedChange={handleEnabledChange} />
                         </div>
                         <InputError message={errors.enabled} />
                     </CardContent>

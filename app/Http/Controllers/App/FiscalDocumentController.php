@@ -136,6 +136,22 @@ class FiscalDocumentController extends Controller
         return redirect()->route('app.fiscal-documents.settings')->with('success', 'Configurações fiscais salvas com sucesso.');
     }
 
+    public function updateEnabled(Request $request, FiscalSetting $fiscalSetting): RedirectResponse
+    {
+        Gate::authorize('fiscal-documents.access');
+
+        $data = $request->validate([
+            'enabled' => ['required', 'boolean'],
+        ]);
+
+        $fiscalSetting->update([
+            'provider' => 'focus_nfe',
+            'enabled' => $data['enabled'],
+        ]);
+
+        return back()->with('success', $data['enabled'] ? 'Documentos fiscais ativados.' : 'Documentos fiscais desativados.');
+    }
+
     public function updateToken(Request $request, FiscalSetting $fiscalSetting): RedirectResponse
     {
         Gate::authorize('fiscal-documents.access');

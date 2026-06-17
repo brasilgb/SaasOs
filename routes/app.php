@@ -80,6 +80,7 @@ Route::resource('whatsapp-messages', WhatsappMessageController::class);
 Route::get('fiscal-documents', [FiscalDocumentController::class, 'index'])->name('fiscal-documents.index');
 Route::get('fiscal-documents/settings', [FiscalDocumentController::class, 'settings'])->name('fiscal-documents.settings');
 Route::put('fiscal-documents/settings/{fiscalSetting}', [FiscalDocumentController::class, 'update'])->name('fiscal-documents.settings.update');
+Route::put('fiscal-documents/settings/{fiscalSetting}/enabled', [FiscalDocumentController::class, 'updateEnabled'])->name('fiscal-documents.settings.update-enabled');
 Route::put('fiscal-documents/settings/{fiscalSetting}/token', [FiscalDocumentController::class, 'updateToken'])->name('fiscal-documents.settings.update-token');
 Route::post('fiscal-documents/settings/{fiscalSetting}/test-connection', [FiscalDocumentController::class, 'testConnection'])->name('fiscal-documents.settings.test-connection');
 Route::post('fiscal-documents/orders/{order}/issue', [FiscalDocumentController::class, 'issueOrder'])->name('fiscal-documents.orders.issue');
