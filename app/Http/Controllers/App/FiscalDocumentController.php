@@ -215,6 +215,10 @@ class FiscalDocumentController extends Controller
         Gate::authorize('fiscal-documents.access');
         $this->authorize('update', $order);
 
+        if (round((float) ($order->service_cost ?? 0), 2) <= 0) {
+            return back()->with('error', 'Informe um valor maior que zero na ordem antes de emitir a NFS-e.');
+        }
+
         try {
             $document = $this->fiscalDocumentService->issueOrderNfse($order);
         } catch (\RuntimeException $exception) {
@@ -228,6 +232,10 @@ class FiscalDocumentController extends Controller
     {
         Gate::authorize('fiscal-documents.access');
         $this->authorize('update', $sale);
+
+        if (round((float) ($sale->total_amount ?? 0), 2) <= 0) {
+            return back()->with('error', 'Informe um valor maior que zero na venda antes de emitir a NF-e.');
+        }
 
         try {
             $document = $this->fiscalDocumentService->issueSaleNfe($sale);

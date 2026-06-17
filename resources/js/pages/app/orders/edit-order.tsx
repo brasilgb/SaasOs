@@ -336,6 +336,7 @@ export default function EditOrder({
 
     const currentStatusLabel = statusServico.find((item: any) => Number(item.value) === Number(data.service_status))?.label ?? 'Status';
     const isDeliveryStatus = Number(data.service_status) === ORDER_STATUS.DELIVERED;
+    const canIssueInvoiceWithValue = Number(order.service_cost ?? 0) > 0;
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Ordens" />
@@ -373,7 +374,7 @@ export default function EditOrder({
                             </a>
                         </Button>
                     )}
-                    {canIssueServiceInvoice && ORDER_STATUSES_READY_FOR_INVOICE.includes(Number(order.service_status)) && (
+                    {canIssueServiceInvoice && ORDER_STATUSES_READY_FOR_INVOICE.includes(Number(order.service_status)) && canIssueInvoiceWithValue && (
                         <Button onClick={() => setOpenInvoiceModal(true)} className="rounded-lg py-2 text-sm font-medium">
                             <FileTextIcon className="h-4 w-4" />
                             Emitir NFSe

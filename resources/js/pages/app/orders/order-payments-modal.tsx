@@ -43,6 +43,7 @@ export default function OrderPaymentsModal({
     const remaining = Number(localSummary?.remaining || 0);
     const totalOrder = Number(localSummary?.total_order || 0);
     const totalPaid = Number(localSummary?.total_paid || 0);
+    const canIssueInvoice = totalOrder > 0;
     const isDelivered = Boolean(order?.delivery_date);
     const hasMailerAvailable = Boolean(order?.can_send_payment_reminder);
     const canSendReminder = remaining > 0 && isDelivered && hasMailerAvailable;
@@ -192,8 +193,9 @@ export default function OrderPaymentsModal({
                             type="button"
                             variant="outline"
                             size="sm"
-                            title="Resumo para emissão da NFS-e"
+                            title={canIssueInvoice ? 'Resumo para emissão da NFS-e' : 'Informe um valor maior que zero na ordem para emitir NFS-e'}
                             onClick={() => setOpenInvoiceSummary(true)}
+                            disabled={!canIssueInvoice}
                         >
                             <FileTextIcon className="mr-1 h-4 w-4" />
                             Emitir NFS-e

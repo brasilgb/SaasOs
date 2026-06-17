@@ -335,6 +335,7 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
         total: String(Number(saleData?.total_amount ?? cartTotal)),
         numberSale: saleData ?? {},
     };
+    const canIssueSaleInvoice = Number(saleData?.total_amount ?? cartTotal) > 0;
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -541,7 +542,13 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
                                 </Button>
 
                                 {/* Botão emitir nota fiscal */}
-                                <Button type="button" onClick={() => setOpenInvoiceModal(true)} className="rounded-lg py-2 text-sm font-medium">
+                                <Button
+                                    type="button"
+                                    onClick={() => setOpenInvoiceModal(true)}
+                                    disabled={!canIssueSaleInvoice}
+                                    title={canIssueSaleInvoice ? 'Emitir NFE' : 'Informe um valor maior que zero para emitir NF-e'}
+                                    className="rounded-lg py-2 text-sm font-medium"
+                                >
                                     <FileTextIcon className="h-4 w-4" />
                                     Emitir NFE
                                 </Button>

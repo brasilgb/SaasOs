@@ -48,6 +48,10 @@ class FocusNfeService
         $setting = $this->activeSetting('nfe_enabled');
         $sale->loadMissing(['customer', 'items.part']);
 
+        if (round((float) ($sale->total_amount ?? 0), 2) <= 0) {
+            throw new RuntimeException('Informe um valor maior que zero na venda antes de emitir a NF-e.');
+        }
+
         $document = $this->createProcessingDocument($sale, 'nfe', $setting);
         $payload = $this->buildNfePayload($sale, $setting);
 
@@ -58,6 +62,10 @@ class FocusNfeService
     {
         $setting = $this->activeSetting('nfse_enabled');
         $order->loadMissing(['customer']);
+
+        if (round((float) ($order->service_cost ?? 0), 2) <= 0) {
+            throw new RuntimeException('Informe um valor maior que zero na ordem antes de emitir a NFS-e.');
+        }
 
         $document = $this->createProcessingDocument($order, 'nfse', $setting);
         $payload = $this->buildNfsePayload($order, $setting);
@@ -260,7 +268,7 @@ class FocusNfeService
                 'discriminacao' => $order->services_performed ?: 'Serviços prestados na ordem #'.$order->order_number,
                 'iss_retido' => false,
                 'item_lista_servico' => $setting->service_list_item,
-                'valor_servicos' => round((float) ($order->service_value ?? $order->service_cost ?? 0), 2),
+                'valor_servicos' => round((float) ($order->service_cost ?? 0), 2),
             ],
         ];
     }

@@ -370,6 +370,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                         totalOrder > 0;
                                     const isDelivered = Number(order.service_status) === ORDER_STATUS.DELIVERED;
                                     const hasPendingPayment = remaining > 0.009;
+                                    const canIssueInvoiceWithValue = totalOrder > 0;
                                     const hasFiscalRegistered = Boolean(order?.fiscal_document_number || order?.fiscal_document_url);
                                     const hasBudgetFollowUp = Boolean(order.budget_follow_up);
                                     const hasPendingPaymentFollowUp = Boolean(order.pending_payment_follow_up);
@@ -541,7 +542,9 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                             </a>
                                                         </Button>
                                                     )}
-                                                    {canIssueServiceInvoice && ORDER_STATUSES_READY_FOR_INVOICE.includes(Number(order.service_status)) && (
+                                                    {canIssueServiceInvoice &&
+                                                        ORDER_STATUSES_READY_FOR_INVOICE.includes(Number(order.service_status)) &&
+                                                        canIssueInvoiceWithValue && (
                                                         <Button
                                                             size="icon"
                                                             title="Emitir NFSe"

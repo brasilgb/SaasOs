@@ -42,6 +42,7 @@ export default function InvoiceModal({ open, onClose, order, summary = null }: I
     const partsValue = Number(summary?.parts_value ?? order.parts_value ?? 0);
     const serviceValue = Number(summary?.service_value ?? order.service_value ?? 0);
     const totalOrder = Number(summary?.total_order ?? order.service_cost ?? serviceValue + partsValue);
+    const canIssueInvoice = totalOrder > 0;
     const hasRegisteredFiscal = Boolean(order?.fiscal_document_number || order?.fiscal_document_url);
     const { data, setData, post, processing, errors } = useForm({
         fiscal_document_number: '',
@@ -71,7 +72,7 @@ export default function InvoiceModal({ open, onClose, order, summary = null }: I
     };
 
     const handleIssueFocus = () => {
-        if (!orderId) return;
+        if (!orderId || !canIssueInvoice) return;
 
         router.post(route('app.fiscal-documents.orders.issue', orderId), {}, { preserveScroll: true, onSuccess: () => onClose() });
     };
@@ -122,6 +123,12 @@ export default function InvoiceModal({ open, onClose, order, summary = null }: I
                             <span>R$ {maskMoney(String(totalOrder))}</span>
                         </div>
 
+                        {!canIssueInvoice ? (
+                            <div className="rounded-md border border-amber-200 bg-amber-50 p-2 text-amber-900">
+                                Informe um valor maior que zero na ordem para emitir a NFS-e.
+                            </div>
+                        ) : null}
+
                         <div>
                             <span className="font-medium">Ordem de serviço:</span> #{order.order_number}
                         </div>
@@ -130,8 +137,12 @@ export default function InvoiceModal({ open, onClose, order, summary = null }: I
 
                 <div className="flex justify-end">
                     {focusEnabled ? (
-                        <Button type="button" onClick={handleIssueFocus} disabled={!orderId}>
+                        <Button type="button" onClick={handleIssueFocus} disabled={!orderId || !canIssueInvoice}>
                             Emitir via Focus NFe
+                        </Button>
+                    ) : !canIssueInvoice ? (
+                        <Button type="button" disabled>
+                            Abrir emissor
                         </Button>
                     ) : (
                         <Button asChild>
