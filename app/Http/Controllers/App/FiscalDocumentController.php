@@ -136,6 +136,24 @@ class FiscalDocumentController extends Controller
         return redirect()->route('app.fiscal-documents.settings')->with('success', 'Configurações fiscais salvas com sucesso.');
     }
 
+    public function updateToken(Request $request, FiscalSetting $fiscalSetting): RedirectResponse
+    {
+        Gate::authorize('fiscal-documents.access');
+
+        $data = $request->validate([
+            'api_token' => ['required', 'string', 'max:4000'],
+        ], [], [
+            'api_token' => 'token Focus NFe',
+        ]);
+
+        $fiscalSetting->update([
+            'provider' => 'focus_nfe',
+            'api_token' => $data['api_token'],
+        ]);
+
+        return back()->with('success', 'Token Focus NFe salvo com sucesso.');
+    }
+
     public function testConnection(Request $request, FiscalSetting $fiscalSetting): RedirectResponse
     {
         Gate::authorize('fiscal-documents.access');

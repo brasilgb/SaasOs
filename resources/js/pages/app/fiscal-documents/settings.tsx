@@ -117,6 +117,22 @@ export default function FiscalDocumentSettings({ fiscalSetting }: { fiscalSettin
         });
     };
 
+    const handleSaveToken = () => {
+        router.put(
+            route('app.fiscal-documents.settings.update-token', fiscalSetting.id),
+            {
+                api_token: data.api_token,
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => toastSuccess('Sucesso', 'Token Focus NFe salvo com sucesso.'),
+                onError: (formErrors) => {
+                    toastWarning('Erro', Object.values(formErrors)[0] ?? 'Não foi possível salvar o token Focus NFe.');
+                },
+            },
+        );
+    };
+
     const handleTestConnection = () => {
         setTestingConnection(true);
 
@@ -224,8 +240,19 @@ export default function FiscalDocumentSettings({ fiscalSetting }: { fiscalSettin
                                             value={data.api_token}
                                             placeholder={fiscalSetting.has_api_token ? 'Token já cadastrado' : 'Informe o token da Focus NFe'}
                                             onChange={(e) => setData('api_token', e.target.value)}
-                                            className="pr-10"
+                                            className="pr-20"
                                         />
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            className="absolute top-0 right-9 h-9 w-9 text-muted-foreground hover:text-foreground"
+                                            onClick={handleSaveToken}
+                                            disabled={processing}
+                                            aria-label="Salvar token Focus NFe"
+                                        >
+                                            <Save className="h-4 w-4" />
+                                        </Button>
                                         <Button
                                             type="button"
                                             variant="ghost"
