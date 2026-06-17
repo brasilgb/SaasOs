@@ -11,7 +11,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
-import { HelpCircle, PlugZap, ReceiptText, Save } from 'lucide-react';
+import { Eye, EyeOff, HelpCircle, PlugZap, ReceiptText, Save } from 'lucide-react';
 import type { FormEvent } from 'react';
 import { useState } from 'react';
 
@@ -20,6 +20,7 @@ type FiscalSetting = {
     enabled: boolean;
     provider: string;
     environment: 'sandbox' | 'production';
+    api_token?: string | null;
     nfe_enabled: boolean;
     nfse_enabled: boolean;
     company_tax_regime?: string | null;
@@ -77,10 +78,11 @@ function FieldLabel({ htmlFor, children, help }: { htmlFor: string; children: st
 
 export default function FiscalDocumentSettings({ fiscalSetting }: { fiscalSetting: FiscalSetting }) {
     const [testingConnection, setTestingConnection] = useState(false);
+    const [showApiToken, setShowApiToken] = useState(false);
     const { data, setData, put, processing, errors } = useForm({
         enabled: fiscalSetting.enabled,
         environment: fiscalSetting.environment ?? 'sandbox',
-        api_token: '',
+        api_token: fiscalSetting.api_token ?? '',
         webhook_secret: '',
         nfe_enabled: fiscalSetting.nfe_enabled,
         nfse_enabled: fiscalSetting.nfse_enabled,
@@ -215,13 +217,27 @@ export default function FiscalDocumentSettings({ fiscalSetting }: { fiscalSettin
                                     >
                                         Token Focus NFe
                                     </FieldLabel>
-                                    <Input
-                                        id="api_token"
-                                        type="password"
-                                        value={data.api_token}
-                                        placeholder={fiscalSetting.has_api_token ? 'Token já cadastrado' : 'Informe o token da Focus NFe'}
-                                        onChange={(e) => setData('api_token', e.target.value)}
-                                    />
+                                    <div className="relative">
+                                        <Input
+                                            id="api_token"
+                                            type={showApiToken ? 'text' : 'password'}
+                                            value={data.api_token}
+                                            placeholder={fiscalSetting.has_api_token ? 'Token já cadastrado' : 'Informe o token da Focus NFe'}
+                                            onChange={(e) => setData('api_token', e.target.value)}
+                                            className="pr-10"
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            className="absolute top-0 right-0 h-9 w-9 text-muted-foreground hover:text-foreground"
+                                            onClick={() => setShowApiToken((visible) => !visible)}
+                                            disabled={!data.api_token}
+                                            aria-label={showApiToken ? 'Ocultar token Focus NFe' : 'Mostrar token Focus NFe'}
+                                        >
+                                            {showApiToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                        </Button>
+                                    </div>
                                     <InputError message={errors.api_token} />
                                 </div>
 

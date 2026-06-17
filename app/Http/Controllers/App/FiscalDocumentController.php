@@ -224,6 +224,7 @@ class FiscalDocumentController extends Controller
                 'id',
                 'enabled',
                 'provider',
+                'api_token',
                 'nfe_enabled',
                 'nfse_enabled',
                 'company_tax_regime',
