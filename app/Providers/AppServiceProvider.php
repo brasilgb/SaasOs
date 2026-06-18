@@ -3,12 +3,12 @@
 namespace App\Providers;
 
 use App\Listeners\SetTenantIdInSession;
+use App\Models\App\CashSession;
+use App\Models\App\Expense;
 use App\Models\App\Message;
 use App\Models\App\Order;
 use App\Models\App\Sale;
 use App\Models\App\Schedule;
-use App\Models\App\CashSession;
-use App\Models\App\Expense;
 use App\Models\User;
 use App\Policies\CashSessionPolicy;
 use App\Policies\ExpensePolicy;
@@ -54,6 +54,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('parts.access', fn ($user) => $user->hasPermission('parts'));
         Gate::define('company.access', fn ($user) => $user->hasPermission('company'));
         Gate::define('other-settings.access', fn ($user) => $user->hasPermission('other_settings'));
+        Gate::define('auxiliary-apps.access', fn ($user) => $user->hasPermission('settings'));
         Gate::define('receipts.access', fn ($user) => $user->hasPermission('receipts'));
         Gate::define('fiscal-documents.access', fn ($user) => $user->hasPermission('fiscal_documents'));
         Gate::define('whatsapp-messages.access', fn ($user) => $user->hasPermission('whatsapp_messages'));

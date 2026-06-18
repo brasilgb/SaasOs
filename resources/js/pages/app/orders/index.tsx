@@ -320,10 +320,10 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                 {/* Botões */}
                 <div className="flex w-full flex-col gap-2 md:flex-row lg:w-auto lg:shrink-0 lg:justify-end">
                     <Button variant="default" asChild className="w-full whitespace-nowrap md:w-auto">
-                        <a href="/apk/vetorup-image-upload.apk" download="vetorup-image-upload.apk">
+                        <Link href={route('app.auxiliary-apps.index')}>
                             <Plus className="mr-1 h-4 w-4" />
-                            <span>App de upload de imagens</span>
-                        </a>
+                            <span>Aplicativos auxiliares</span>
+                        </Link>
                     </Button>
 
                     {canManageOrders && (

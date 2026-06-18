@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\App\AuxiliaryAppController;
 use App\Http\Controllers\App\BudgetController;
 use App\Http\Controllers\App\CashSessionController;
 use App\Http\Controllers\App\ChecklistController;
@@ -96,6 +97,7 @@ Route::delete('images/{image}', [ImageController::class, 'destroy'])->name('imag
 Route::get('other-settings', [OtherController::class, 'index'])->name('other-settings.index');
 Route::put('other-settings/{other}', [OtherController::class, 'update'])->name('other-settings.update');
 Route::post('other-settings/{other}/test-mail', [OtherController::class, 'sendTestMail'])->name('other-settings.test-mail');
+Route::get('auxiliary-apps', [AuxiliaryAppController::class, 'index'])->name('auxiliary-apps.index');
 
 Route::resource('company', CompanyController::class);
 Route::resource('whatsapp-message', WhatsappMessageController::class)->parameters(['whatsapp-message' => 'whatsappmessage']);
