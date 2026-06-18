@@ -16,6 +16,10 @@ type PaginationData = {
     last_page_url: string | null;
     current_page: number;
     last_page: number;
+    from?: number | null;
+    to?: number | null;
+    total?: number;
+    per_page?: number;
 };
 
 type NavButtonProps = {
@@ -31,6 +35,11 @@ export default function AppPagination({ data }: { data?: PaginationData | null }
     if (!data || !data.links) return null;
 
     const pageLinks = data.links.filter((link) => !isNaN(Number(link.label)));
+    const hasTotal = typeof data.total === 'number';
+    const total = data.total ?? 0;
+    const to = data.to ?? (data.per_page ? Math.min(data.current_page * data.per_page, total) : 0);
+    const recordsPerPage = data.per_page ?? (data.from && data.to ? data.to - data.from + 1 : to);
+    const formatNumber = (value: number) => new Intl.NumberFormat('pt-BR').format(value);
 
     const NavButton = ({ url, children, disabled, variant = 'outline', className = '', srText = '' }: NavButtonProps) => {
         const isButtonDisabled = !url || disabled;
@@ -85,8 +94,15 @@ export default function AppPagination({ data }: { data?: PaginationData | null }
             </div>
 
             {/* Contagem */}
-            <div className="text-muted-foreground text-sm">
-                Página <strong>{data.current_page}</strong> de <strong>{data.last_page}</strong>
+            <div className="text-muted-foreground flex shrink-0 flex-col text-sm md:items-end">
+                <span>
+                    Página <strong>{data.current_page}</strong> de <strong>{data.last_page}</strong>
+                </span>
+                {hasTotal && (
+                    <span className="text-muted-foreground/70 mt-0.5 text-xs">
+                        Registros por página: {formatNumber(recordsPerPage)} · Vistos: {formatNumber(to)} · Total: {formatNumber(total)}
+                    </span>
+                )}
             </div>
         </div>
     );
