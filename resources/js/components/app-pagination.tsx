@@ -1,5 +1,5 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Link, router } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { Button } from './ui/button';
 
@@ -45,12 +45,7 @@ export function PaginationSummary({ data }: { data?: PaginationData | null }) {
         const query = params.toString();
         const url = query ? `${window.location.pathname}?${query}` : window.location.pathname;
 
-        router.visit(url, {
-            method: 'get',
-            preserveScroll: true,
-            preserveState: false,
-            replace: true,
-        });
+        window.location.assign(url);
     };
 
     return (

@@ -170,7 +170,6 @@ function TechnicianMobileTable({ schedules, pagination, canManageSchedules }: { 
 
     return (
         <>
-            <PaginationSummary data={pagination} />
             <div className="rounded-lg border">
                 <Table>
                     <TableHeader>
