@@ -1,5 +1,6 @@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Link } from '@inertiajs/react';
 import { LinkIcon } from 'lucide-react';
 import { ReactNode } from 'react';
@@ -56,9 +57,18 @@ export function KpiOverdueOrders({ title, icon, link, ordersToday = 0, ordersTom
                     </Badge>
 
                     {link && (
-                        <Link href={link} className="text-primary flex shrink-0 items-center gap-1 text-xs hover:underline">
-                            <LinkIcon className="h-4 w-4" />
-                        </Link>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Link
+                                    href={link}
+                                    className="text-primary flex shrink-0 items-center gap-1 text-xs hover:underline"
+                                    aria-label={`Acessar ${title}`}
+                                >
+                                    <LinkIcon className="h-4 w-4" />
+                                </Link>
+                            </TooltipTrigger>
+                            <TooltipContent>Acessar {title}</TooltipContent>
+                        </Tooltip>
                     )}
                 </div>
             </CardContent>

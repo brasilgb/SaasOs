@@ -1,4 +1,5 @@
 import { Card, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Link } from '@inertiajs/react';
 import { LinkIcon } from 'lucide-react';
 import { ReactNode } from 'react';
@@ -25,14 +26,21 @@ export function KpiDashboard({ title, value, icon, description, link }: KpiDashb
             </CardHeader>
 
             <CardFooter className="flex min-w-0 items-center justify-between gap-2 text-sm">
-                <div className="text-muted-foreground flex min-w-0 items-center gap-2 text-xs">
-                    {description}
-                </div>
+                <div className="text-muted-foreground flex min-w-0 items-center gap-2 text-xs">{description}</div>
 
                 {link && (
-                    <Link href={link} className="text-primary flex shrink-0 items-center gap-1 text-xs hover:underline">
-                        <LinkIcon className="h-4 w-4" />
-                    </Link>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Link
+                                href={link}
+                                className="text-primary flex shrink-0 items-center gap-1 text-xs hover:underline"
+                                aria-label={`Acessar ${title}`}
+                            >
+                                <LinkIcon className="h-4 w-4" />
+                            </Link>
+                        </TooltipTrigger>
+                        <TooltipContent>Acessar {title}</TooltipContent>
+                    </Tooltip>
                 )}
             </CardFooter>
         </Card>

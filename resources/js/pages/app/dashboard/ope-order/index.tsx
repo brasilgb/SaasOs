@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { connectBackend } from '@/Utils/connectApi';
 import { Link } from '@inertiajs/react';
 import { Activity, AlertTriangle, Calendar, Check, Clock, MemoryStickIcon, MessageSquareMore, ShieldAlert, Star, Users, Wrench } from 'lucide-react';
@@ -313,21 +314,26 @@ export default function OrderDashboard({
                                             {isCashierOpen ? 'Aberto' : 'Fechado'}
                                         </div>
                                         {!isCashierOpen && (
-                                            <Button variant="outline" size="sm" className="mt-2" asChild>
-                                                <Link href={route('app.cashier.index')}>Abrir caixa</Link>
-                                            </Button>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Button variant="outline" size="sm" className="mt-2" asChild>
+                                                        <Link href={route('app.cashier.index')}>Abrir caixa</Link>
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>Acessar o caixa para iniciar o expediente</TooltipContent>
+                                            </Tooltip>
                                         )}
                                     </div>
                                 )}
                                 {showPdvShortcut && <SalesProducts parts={parts} customers={customers} iconSize={60} />}
                             </Card>
                             <Card className="flex h-full items-center justify-center p-4">
-                                <ScheduleCalendarModal schedules={listSchedules} iconSize={60} variant="outline" />
+                                <ScheduleCalendarModal schedules={listSchedules} iconSize={60} />
                             </Card>
                         </div>
                     ) : (
                         <Card className="flex h-full items-center justify-center p-4">
-                            <ScheduleCalendarModal schedules={listSchedules} iconSize={80} variant="outline" />
+                            <ScheduleCalendarModal schedules={listSchedules} iconSize={80} />
                         </Card>
                     )}
                 </div>

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { usePaperSize } from '@/hooks/usePaperSize';
 import Receipt from '@/pages/app/sales/receipt';
 import type { OptionType, PageProps, User } from '@/types';
@@ -114,7 +115,10 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
         total_amount: 0,
     });
 
-    const normalizeCode = (value: string | number | null | undefined) => String(value ?? '').trim().toLowerCase();
+    const normalizeCode = (value: string | number | null | undefined) =>
+        String(value ?? '')
+            .trim()
+            .toLowerCase();
 
     const optionsParts: OptionType[] = parts.map((part) => ({
         value: part.id,
@@ -185,9 +189,7 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
 
         if (!code) return;
 
-        const part = parts.find((item) =>
-            [item.reference_number, item.part_number, item.id].some((value) => normalizeCode(value) === code),
-        );
+        const part = parts.find((item) => [item.reference_number, item.part_number, item.id].some((value) => normalizeCode(value) === code));
 
         if (!part) {
             toastWarning('Produto não encontrado', 'Confira o código de barras informado.');
@@ -339,9 +341,14 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger className="flex h-full cursor-pointer items-center justify-center">
-                <ShoppingCartIcon size={iconSize} className={isCashierOpen ? 'text-green-300' : 'text-amber-400 opacity-70'} />
-            </DialogTrigger>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <DialogTrigger className="flex h-full cursor-pointer items-center justify-center" aria-label="Abrir frente de caixa">
+                        <ShoppingCartIcon size={iconSize} className={isCashierOpen ? 'text-green-300' : 'text-amber-400 opacity-70'} />
+                    </DialogTrigger>
+                </TooltipTrigger>
+                <TooltipContent>Abrir frente de caixa (PDV)</TooltipContent>
+            </Tooltip>
             <DialogContent className="sm:max-w-lvh">
                 <DialogHeader>
                     <DialogTitle>Frente de Caixa</DialogTitle>
@@ -398,10 +405,10 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
                                     isSearchable
                                     value={selectedOptionParts}
                                     options={optionsParts}
-                                onChange={changeParts}
-                                placeholder="Selecione a peça/produto"
-                                className="w-full"
-                                styles={selectStyles}
+                                    onChange={changeParts}
+                                    placeholder="Selecione a peça/produto"
+                                    className="w-full"
+                                    styles={selectStyles}
                                 />
                                 {errors.part_id && <p className="col-span-4 text-right text-xs text-red-500">{errors.part_id}</p>}
                             </div>
