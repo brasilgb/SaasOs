@@ -36,6 +36,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
@@ -293,6 +294,20 @@ class OrderController extends Controller
     private function logOperationalAudit(string $action, Order $order, array $data = []): void
     {
         $this->operationalAuditService->record($action, 'order', $order, $this->currentUser()?->id, $data);
+    }
+
+    private function reportPostSaveFailure(Order $order, string $stage, \Throwable $exception): void
+    {
+        Log::error('Falha em etapa complementar após salvar ordem.', [
+            'stage' => $stage,
+            'order_id' => $order->id,
+            'tenant_id' => $order->tenant_id,
+            'user_id' => $this->currentUser()?->id,
+            'exception' => $exception::class,
+            'message' => $exception->getMessage(),
+        ]);
+
+        report($exception);
     }
 
     private function syncOrderPartsStock(Order $order, array $partsToSync, array $currentPartsSnapshot): array
@@ -908,17 +923,22 @@ class OrderController extends Controller
                 'to_label' => $statusLabel,
                 'changes' => $changes,
             ];
-            event(new OrderLifecycleStatusChanged(
-                $order->id,
-                $this->currentUser()?->id,
-                $statusChangeData,
-                $statusChangeData,
-            ));
+            try {
+                event(new OrderLifecycleStatusChanged(
+                    $order->id,
+                    $this->currentUser()?->id,
+                    $statusChangeData,
+                    $statusChangeData,
+                ));
+            } catch (\Throwable $exception) {
+                $this->reportPostSaveFailure($order, 'status_lifecycle', $exception);
+                $successMessage = 'Ordem atualizada com sucesso, mas houve falha ao registrar o histórico completo.';
+            }
 
             try {
                 event(new OrderStatusUpdated($order->fresh(['customer', 'tenant']), $statusLabel, $data['observations'] ?? null));
-            } catch (\Throwable $e) {
-                report($e);
+            } catch (\Throwable $exception) {
+                $this->reportPostSaveFailure($order, 'status_notification', $exception);
                 $successMessage = 'Ordem atualizada com sucesso, mas houve falha ao enviar o e-mail de status ao cliente.';
             }
         } elseif ($changes !== []) {
@@ -928,8 +948,19 @@ class OrderController extends Controller
         }
 
         $order = $order->fresh(['orderPayments']);
-        $this->orderItemSyncService->sync($order);
-        $this->financialReceivableService->syncOrder($order);
+        try {
+            $this->orderItemSyncService->sync($order);
+        } catch (\Throwable $exception) {
+            $this->reportPostSaveFailure($order, 'order_items_sync', $exception);
+            $successMessage = 'Ordem atualizada com sucesso, mas houve falha na sincronização dos itens.';
+        }
+
+        try {
+            $this->financialReceivableService->syncOrder($order);
+        } catch (\Throwable $exception) {
+            $this->reportPostSaveFailure($order, 'financial_receivable_sync', $exception);
+            $successMessage = 'Ordem atualizada com sucesso, mas houve falha na sincronização financeira.';
+        }
 
         return redirect()->route('app.orders.show', [
             'order' => $order->id,
