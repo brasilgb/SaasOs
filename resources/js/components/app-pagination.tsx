@@ -1,6 +1,6 @@
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Button } from './ui/button';
 
 type PaginationLink = {
@@ -24,15 +24,24 @@ export type PaginationData = {
 };
 
 export function PaginationSummary({ data }: { data?: PaginationData | null }) {
+    const [selectedPerPage, setSelectedPerPage] = useState(String(data?.per_page ?? 20));
+
+    useEffect(() => {
+        if (data?.per_page) {
+            setSelectedPerPage(String(data.per_page));
+        }
+    }, [data?.per_page]);
+
     if (!data || typeof data.total !== 'number') return null;
 
     const total = data.total;
     const listed = data.to ?? (data.per_page ? Math.min(data.current_page * data.per_page, total) : 0);
-    const recordsPerPage = data.per_page ?? (data.from && data.to ? data.to - data.from + 1 : listed);
     const perPageOptions = [20, 35, 50];
     const formatNumber = (value: number) => new Intl.NumberFormat('pt-BR').format(value);
 
     const handlePerPageChange = (value: string) => {
+        setSelectedPerPage(value);
+
         const params = new URLSearchParams(window.location.search);
 
         params.set('per_page', value);
@@ -45,24 +54,24 @@ export function PaginationSummary({ data }: { data?: PaginationData | null }) {
         const query = params.toString();
         const url = query ? `${window.location.pathname}?${query}` : window.location.pathname;
 
-        window.location.assign(url);
+        router.get(url, {}, { preserveScroll: true });
     };
 
     return (
         <div className="bg-muted/20 mb-3 flex max-w-full items-center gap-2 overflow-x-auto rounded-lg border px-3 py-2 text-xs whitespace-nowrap">
             <span className="text-muted-foreground">Registros por página</span>
-            <Select value={String(recordsPerPage)} onValueChange={handlePerPageChange}>
-                <SelectTrigger size="sm" className="bg-background h-7 min-w-18 px-2 text-xs">
-                    <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                    {perPageOptions.map((option) => (
-                        <SelectItem key={option} value={String(option)}>
-                            {option}
-                        </SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
+            <select
+                value={selectedPerPage}
+                onChange={(event) => handlePerPageChange(event.target.value)}
+                aria-label="Registros por página"
+                className="border-input bg-background focus-visible:border-ring focus-visible:ring-ring/50 h-7 min-w-18 rounded-md border px-2 text-xs shadow-xs outline-none focus-visible:ring-[3px]"
+            >
+                {perPageOptions.map((option) => (
+                    <option key={option} value={option}>
+                        {option}
+                    </option>
+                ))}
+            </select>
             <span className="text-muted-foreground/40">·</span>
             <span className="text-muted-foreground">Listados: {formatNumber(listed)}</span>
             <span className="text-muted-foreground/40">·</span>
