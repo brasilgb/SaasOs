@@ -102,7 +102,7 @@ export default function CreateOrder({
             setModelInputValue('');
             setModelOptions(initialModelOptions);
         }
-    }, [flash?.success]);
+    }, [flash?.id, flash?.success]);
 
     const changeCustomer = (selected: OptionType | null) => {
         setData('customer_id', String(selected?.value ?? ''));

@@ -19,6 +19,7 @@ use App\Models\User;
 use App\Support\OrderStatus;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
 
@@ -279,6 +280,15 @@ class HandleInertiaRequests extends Middleware
 
         $user = $request->user();
         $tenant = $user?->tenant;
+        $hasFlashMessage = collect([
+            'success',
+            'message',
+            'error',
+            'authorization_error',
+            'import_success',
+            'import_error',
+        ])->contains(fn (string $key): bool => $request->session()->has($key));
+        $flashId = $hasFlashMessage ? (string) Str::uuid() : null;
 
         $subscription = null;
 
@@ -329,6 +339,7 @@ class HandleInertiaRequests extends Middleware
                 'permissions' => $user?->permissions() ?? [],
             ],
             'flash' => [
+                'id' => $flashId,
                 'success' => fn () => $request->session()->get('success'),
                 'message' => fn () => $request->session()->get('message'),
                 'error' => fn () => $request->session()->get('error'),

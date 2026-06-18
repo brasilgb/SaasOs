@@ -805,6 +805,9 @@ class OrderController extends Controller
 
         $data = $request->all();
         $request->validated();
+        if ($this->currentUser()?->isTechnician()) {
+            $data['user_id'] = $order->user_id;
+        }
         Customer::query()->whereKey($data['customer_id'])->firstOrFail();
         $isEquipmentOrder = ($data['order_type'] ?? Order::TYPE_EQUIPMENT) === Order::TYPE_EQUIPMENT;
         if ($isEquipmentOrder) {

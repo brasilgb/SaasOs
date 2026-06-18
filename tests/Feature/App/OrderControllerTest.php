@@ -335,6 +335,43 @@ class OrderControllerTest extends TestCase
         $this->assertSame(OrderStatus::REPAIR_IN_PROGRESS, (int) $order->service_status);
     }
 
+    public function test_technician_cannot_reassign_order_when_updating_it(): void
+    {
+        $technician = User::factory()->forTenant($this->tenant->id)->create([
+            'roles' => User::ROLE_TECHNICIAN,
+        ]);
+        $otherTechnician = User::factory()->forTenant($this->tenant->id)->create([
+            'roles' => User::ROLE_TECHNICIAN,
+        ]);
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'user_id' => $technician->id,
+            'service_status' => OrderStatus::OPEN,
+        ]);
+
+        $this->actingAs($technician);
+
+        $response = $this->put(
+            route('app.orders.update', $order),
+            $this->orderUpdatePayload($order, $customer, $equipment, [
+                'user_id' => $otherTechnician->id,
+                'model' => 'Atualizado pelo tecnico responsavel',
+            ]),
+        );
+
+        $response
+            ->assertRedirect(route('app.orders.show', ['order' => $order->id]))
+            ->assertSessionHas('success', 'Ordem atualizada com sucesso')
+            ->assertSessionMissing('authorization_error');
+
+        $order->refresh();
+        $this->assertSame($technician->id, $order->user_id);
+        $this->assertSame('Atualizado pelo tecnico responsavel', $order->model);
+    }
+
     public function test_operator_can_change_unassigned_order_status_without_responsible_technician(): void
     {
         $operator = User::factory()->forTenant($this->tenant->id)->create([

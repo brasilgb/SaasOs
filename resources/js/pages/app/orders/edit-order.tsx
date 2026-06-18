@@ -110,6 +110,7 @@ export default function EditOrder({
     };
 
     const { othersetting, auth, fiscalSetting } = usePage().props as any;
+    const isTechnician = auth?.role === 'technician';
     const canManageOrders = auth?.role !== 'technician' && auth?.permissions?.includes('orders');
     const canAccessSalesModules =
         auth?.role === 'administrator' || auth?.role === 'operator' || auth?.role === 'root_app' || auth?.role === 'root_system';
@@ -731,6 +732,7 @@ export default function EditOrder({
                                                     defaultValue={defaultTechnical}
                                                     options={optionsTechnical}
                                                     onChange={changeResponsibleTechnician}
+                                                    isDisabled={isTechnician}
                                                     placeholder="Selecione o técnico"
                                                     className="min-w-0"
                                                     styles={selectStyles}
@@ -749,6 +751,7 @@ export default function EditOrder({
                                                     className="min-w-0"
                                                     styles={selectStyles}
                                                 />
+                                                <InputError message={errors.service_status} />
                                             </div>
                                             <div className="grid gap-2">
                                                 <FormFieldHelp

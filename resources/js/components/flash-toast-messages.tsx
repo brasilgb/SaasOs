@@ -3,6 +3,7 @@ import { usePage } from '@inertiajs/react';
 import { useEffect } from 'react';
 
 type FlashMessages = {
+    id?: string;
     success?: string;
     message?: string;
     error?: string;
@@ -71,37 +72,37 @@ export function FlashToastMessages() {
         if (flash?.success) {
             toastSuccess(flash.success);
         }
-    }, [flash?.success]);
+    }, [flash?.id, flash?.success]);
 
     useEffect(() => {
         if (flash?.message) {
             toastSuccess(flash.message);
         }
-    }, [flash?.message]);
+    }, [flash?.id, flash?.message]);
 
     useEffect(() => {
         if (flash?.error) {
             toastError('Operação não concluída', flash.error);
         }
-    }, [flash?.error]);
+    }, [flash?.error, flash?.id]);
 
     useEffect(() => {
         if (flash?.authorization_error) {
             toastWarning('Ação não autorizada', flash.authorization_error);
         }
-    }, [flash?.authorization_error]);
+    }, [flash?.authorization_error, flash?.id]);
 
     useEffect(() => {
         if (flash?.import_success) {
             toastSuccess(flash.import_success);
         }
-    }, [flash?.import_success]);
+    }, [flash?.id, flash?.import_success]);
 
     useEffect(() => {
         if (flash?.import_error) {
             toastError('Importação não concluída', flash.import_error);
         }
-    }, [flash?.import_error]);
+    }, [flash?.id, flash?.import_error]);
 
     useEffect(() => {
         const handleInvalidResponse = (event: Event) => {
