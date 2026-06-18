@@ -42,9 +42,14 @@ export function PaginationSummary({ data }: { data?: PaginationData | null }) {
             }
         });
 
-        router.get(window.location.pathname, Object.fromEntries(params.entries()), {
+        const query = params.toString();
+        const url = query ? `${window.location.pathname}?${query}` : window.location.pathname;
+
+        router.visit(url, {
+            method: 'get',
             preserveScroll: true,
-            preserveState: true,
+            preserveState: false,
+            replace: true,
         });
     };
 
