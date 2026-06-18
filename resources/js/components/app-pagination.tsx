@@ -1,4 +1,5 @@
-import { Link } from '@inertiajs/react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Link, router } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { Button } from './ui/button';
 
@@ -8,7 +9,7 @@ type PaginationLink = {
     active?: boolean;
 };
 
-type PaginationData = {
+export type PaginationData = {
     links: PaginationLink[];
     first_page_url: string | null;
     prev_page_url: string | null;
@@ -21,6 +22,54 @@ type PaginationData = {
     total?: number;
     per_page?: number;
 };
+
+export function PaginationSummary({ data }: { data?: PaginationData | null }) {
+    if (!data || typeof data.total !== 'number') return null;
+
+    const total = data.total;
+    const listed = data.to ?? (data.per_page ? Math.min(data.current_page * data.per_page, total) : 0);
+    const recordsPerPage = data.per_page ?? (data.from && data.to ? data.to - data.from + 1 : listed);
+    const perPageOptions = [20, 35, 50];
+    const formatNumber = (value: number) => new Intl.NumberFormat('pt-BR').format(value);
+
+    const handlePerPageChange = (value: string) => {
+        const params = new URLSearchParams(window.location.search);
+
+        params.set('per_page', value);
+        Array.from(params.keys()).forEach((key) => {
+            if (key === 'page' || key.endsWith('_page')) {
+                params.delete(key);
+            }
+        });
+
+        router.get(window.location.pathname, Object.fromEntries(params.entries()), {
+            preserveScroll: true,
+            preserveState: true,
+        });
+    };
+
+    return (
+        <div className="bg-muted/20 mb-3 flex max-w-full items-center gap-2 overflow-x-auto rounded-lg border px-3 py-2 text-xs whitespace-nowrap">
+            <span className="text-muted-foreground">Registros por página</span>
+            <Select value={String(recordsPerPage)} onValueChange={handlePerPageChange}>
+                <SelectTrigger size="sm" className="bg-background h-7 min-w-18 px-2 text-xs">
+                    <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                    {perPageOptions.map((option) => (
+                        <SelectItem key={option} value={String(option)}>
+                            {option}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+            <span className="text-muted-foreground/40">·</span>
+            <span className="text-muted-foreground">Listados: {formatNumber(listed)}</span>
+            <span className="text-muted-foreground/40">·</span>
+            <span className="text-muted-foreground">Total: {formatNumber(total)}</span>
+        </div>
+    );
+}
 
 type NavButtonProps = {
     url?: string | null;
@@ -35,12 +84,6 @@ export default function AppPagination({ data }: { data?: PaginationData | null }
     if (!data || !data.links) return null;
 
     const pageLinks = data.links.filter((link) => !isNaN(Number(link.label)));
-    const hasTotal = typeof data.total === 'number';
-    const total = data.total ?? 0;
-    const to = data.to ?? (data.per_page ? Math.min(data.current_page * data.per_page, total) : 0);
-    const recordsPerPage = data.per_page ?? (data.from && data.to ? data.to - data.from + 1 : to);
-    const formatNumber = (value: number) => new Intl.NumberFormat('pt-BR').format(value);
-
     const NavButton = ({ url, children, disabled, variant = 'outline', className = '', srText = '' }: NavButtonProps) => {
         const isButtonDisabled = !url || disabled;
 
@@ -94,15 +137,10 @@ export default function AppPagination({ data }: { data?: PaginationData | null }
             </div>
 
             {/* Contagem */}
-            <div className="text-muted-foreground flex shrink-0 flex-col text-sm md:items-end">
+            <div className="text-muted-foreground flex shrink-0 text-sm md:items-end">
                 <span>
                     Página <strong>{data.current_page}</strong> de <strong>{data.last_page}</strong>
                 </span>
-                {hasTotal && (
-                    <span className="text-muted-foreground/70 mt-0.5 text-xs">
-                        Registros por página: {formatNumber(recordsPerPage)} · Vistos: {formatNumber(to)} · Total: {formatNumber(total)}
-                    </span>
-                )}
             </div>
         </div>
     );

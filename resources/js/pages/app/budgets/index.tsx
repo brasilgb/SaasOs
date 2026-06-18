@@ -1,5 +1,5 @@
 import ActionDelete from '@/components/action-delete';
-import AppPagination from '@/components/app-pagination';
+import AppPagination, { PaginationSummary } from '@/components/app-pagination';
 import { Icon } from '@/components/icon';
 import InputSearch from '@/components/inputSearch';
 import { Button } from '@/components/ui/button';
@@ -51,6 +51,7 @@ export default function CheckList({ budgets, company, search }: any) {
                 </div>
             </div>
             <div className="p-4">
+                <PaginationSummary data={budgets} />
                 <div className="rounded-lg border">
                     <Table>
                         <TableHeader>

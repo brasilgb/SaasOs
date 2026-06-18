@@ -1,6 +1,6 @@
 import ActionDelete from '@/components/action-delete';
 import { AppLoadMessage } from '@/components/app-load-message';
-import AppPagination from '@/components/app-pagination';
+import AppPagination, { PaginationSummary } from '@/components/app-pagination';
 import { Icon } from '@/components/icon';
 import InputSearch from '@/components/inputSearch';
 import { Badge } from '@/components/ui/badge';
@@ -121,6 +121,7 @@ export default function Messages({ messages, search }: any) {
             </div>
 
             <div className="p-4">
+                <PaginationSummary data={messages} />
                 <div className="rounded-lg border">
                     <Table>
                         <TableHeader>
@@ -188,7 +189,10 @@ export default function Messages({ messages, search }: any) {
                                                     <ActionDelete title={'esta mensagem'} url={'app.messages.destroy'} param={message.id} />
                                                 </div>
                                             ) : (
-                                                <AppLoadMessage message={message} canMarkRead={Number(message.recipient_id) === Number(auth.user.id)} />
+                                                <AppLoadMessage
+                                                    message={message}
+                                                    canMarkRead={Number(message.recipient_id) === Number(auth.user.id)}
+                                                />
                                             )}
                                         </TableCell>
                                     </TableRow>

@@ -1,5 +1,5 @@
 import ActionDelete from '@/components/action-delete';
-import AppPagination from '@/components/app-pagination';
+import AppPagination, { PaginationSummary } from '@/components/app-pagination';
 import { Icon } from '@/components/icon';
 import InputSearch from '@/components/inputSearch';
 import InvoiceModal from '@/components/Modals/InvoiceModal';
@@ -338,6 +338,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
             </div>
 
             <div className="p-4">
+                <PaginationSummary data={orders} />
                 <div className="rounded-lg border">
                     <Table>
                         <TableHeader>
@@ -429,9 +430,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                 <div className="space-y-1">
                                                     <div className="font-medium">{equipmentTitle}</div>
                                                     <div className="text-muted-foreground text-xs">{equipmentSubtitle}</div>
-                                                    <div className="text-muted-foreground text-xs">
-                                                        Senha: {order.password || '-'}
-                                                    </div>
+                                                    <div className="text-muted-foreground text-xs">Senha: {order.password || '-'}</div>
                                                 </div>
                                             </TableCell>
                                             <TableCell>
@@ -527,11 +526,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                     )}
 
                                                     {canManageOrders && (
-                                                        <Button
-                                                            asChild
-                                                            size="icon"
-                                                            className="bg-sky-700 text-white hover:bg-sky-800"
-                                                        >
+                                                        <Button asChild size="icon" className="bg-sky-700 text-white hover:bg-sky-800">
                                                             <a
                                                                 target="_blank"
                                                                 href={route('os.token', order?.tracking_token)}
@@ -545,18 +540,18 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                     {canIssueServiceInvoice &&
                                                         ORDER_STATUSES_READY_FOR_INVOICE.includes(Number(order.service_status)) &&
                                                         canIssueInvoiceWithValue && (
-                                                        <Button
-                                                            size="icon"
-                                                            title="Emitir NFSe"
-                                                            aria-label={`Emitir NFSe da ordem ${order.order_number}`}
-                                                            onClick={() => {
-                                                                setSelectedInvoiceOrder(order);
-                                                                setOpenInvoiceModal(true);
-                                                            }}
-                                                        >
-                                                            <FileTextIcon className="h-4 w-4" />
-                                                        </Button>
-                                                    )}
+                                                            <Button
+                                                                size="icon"
+                                                                title="Emitir NFSe"
+                                                                aria-label={`Emitir NFSe da ordem ${order.order_number}`}
+                                                                onClick={() => {
+                                                                    setSelectedInvoiceOrder(order);
+                                                                    setOpenInvoiceModal(true);
+                                                                }}
+                                                            >
+                                                                <FileTextIcon className="h-4 w-4" />
+                                                            </Button>
+                                                        )}
 
                                                     {canManageOrders && (
                                                         <WhatsAppButton
@@ -593,7 +588,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                         >
                                                             <ImageUp className="h-4 w-4" />
                                                             {imagesCount > 0 && (
-                                                                <span className="absolute -top-2 -right-2 flex h-5 min-w-5 items-center justify-center rounded-full border border-background bg-emerald-600 px-1 text-[10px] leading-none font-semibold text-white shadow-sm">
+                                                                <span className="border-background absolute -top-2 -right-2 flex h-5 min-w-5 items-center justify-center rounded-full border bg-emerald-600 px-1 text-[10px] leading-none font-semibold text-white shadow-sm">
                                                                     {imagesCount > 99 ? '99+' : imagesCount}
                                                                 </span>
                                                             )}

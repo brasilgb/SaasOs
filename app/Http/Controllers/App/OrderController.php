@@ -527,7 +527,7 @@ class OrderController extends Controller
             ->with('equipment', 'customer')
             ->withCount('images')
             ->withSum('orderPayments as total_paid', 'amount')
-            ->paginate(11)
+            ->paginate(\App\Support\Pagination::perPage($request))
             ->withQueryString();
         $orders->setCollection(
             $orders->getCollection()->map(function (Order $order) {

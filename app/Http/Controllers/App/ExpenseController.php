@@ -64,7 +64,7 @@ class ExpenseController extends Controller
             $query->where('category', 'like', '%'.$category.'%');
         }
 
-        $expenses = $query->paginate(11)->withQueryString();
+        $expenses = $query->paginate(\App\Support\Pagination::perPage($request))->withQueryString();
 
         return Inertia::render('app/expenses/index', [
             'expenses' => $expenses,

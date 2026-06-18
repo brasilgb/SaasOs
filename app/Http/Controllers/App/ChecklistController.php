@@ -31,7 +31,7 @@ class ChecklistController extends Controller
                     });
             });
         }
-        $checklists = $query->paginate(11);
+        $checklists = $query->paginate(\App\Support\Pagination::perPage($request))->withQueryString();
         $equipments = Equipment::get();
 
         return Inertia::render('app/checklists/index', ['checklists' => $checklists, 'equipments' => $equipments]);

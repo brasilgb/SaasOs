@@ -1,6 +1,6 @@
 import ActionDelete from '@/components/action-delete';
 import AlertSuccess from '@/components/app-alert-success';
-import AppPagination from '@/components/app-pagination';
+import AppPagination, { PaginationSummary } from '@/components/app-pagination';
 import { Icon } from '@/components/icon';
 import InputError from '@/components/input-error';
 import InputSearch from '@/components/inputSearch';
@@ -198,6 +198,7 @@ export default function Expenses({ expenses }: any) {
             </div>
 
             <div className="p-4">
+                <PaginationSummary data={expenses} />
                 <div className="rounded-lg border">
                     <Table>
                         <TableHeader>

@@ -90,7 +90,7 @@ class CashSessionController extends Controller
                 'withdrawals.cancelledBy:id,name'
             )
             ->latest('id')
-            ->paginate(11)
+            ->paginate(\App\Support\Pagination::perPage($request))
             ->withQueryString();
 
         $openTotals = [

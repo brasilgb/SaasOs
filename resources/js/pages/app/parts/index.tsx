@@ -1,5 +1,5 @@
 import ActionDelete from '@/components/action-delete';
-import AppPagination from '@/components/app-pagination';
+import AppPagination, { PaginationSummary } from '@/components/app-pagination';
 import { Icon } from '@/components/icon';
 import InputSearch from '@/components/inputSearch';
 import { Badge } from '@/components/ui/badge';
@@ -223,7 +223,7 @@ export default function Parts({ parts, search }: any) {
             {cameraError && <div className="px-4 text-sm text-red-600">{cameraError}</div>}
             {cameraOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-                    <div className="w-full max-w-md rounded-lg bg-background p-4 shadow-xl">
+                    <div className="bg-background w-full max-w-md rounded-lg p-4 shadow-xl">
                         <div className="mb-3 flex items-center justify-between gap-3">
                             <h3 className="font-semibold">Ler código de barras</h3>
                             <Button
@@ -244,6 +244,7 @@ export default function Parts({ parts, search }: any) {
             )}
 
             <div className="p-4">
+                <PaginationSummary data={parts} />
                 <div className="rounded-lg border">
                     <Table>
                         <TableHeader>

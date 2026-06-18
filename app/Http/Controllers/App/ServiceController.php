@@ -38,7 +38,7 @@ class ServiceController extends Controller
         if ($search) {
             $query->where('service', 'like', '%'.$search.'%');
         }
-        $services = $query->paginate(11);
+        $services = $query->paginate(\App\Support\Pagination::perPage($request))->withQueryString();
         $equipments = Equipment::get();
 
         return Inertia::render('app/services/index', ['services' => $services, 'equipments' => $equipments]);

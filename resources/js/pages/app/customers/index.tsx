@@ -1,5 +1,5 @@
 import ActionDelete from '@/components/action-delete';
-import AppPagination from '@/components/app-pagination';
+import AppPagination, { PaginationSummary } from '@/components/app-pagination';
 import { Icon } from '@/components/icon';
 import InputSearch from '@/components/inputSearch';
 import { Badge } from '@/components/ui/badge';
@@ -78,6 +78,7 @@ export default function Customers({ customers, search, pending }: any) {
 
             <div className="p-4">
                 <ImportCustomersModal isOpen={modalAberto} onClose={() => setModalAberto(false)} />
+                <PaginationSummary data={customers} />
                 <div className="rounded-lg border">
                     <Table>
                         <TableHeader>

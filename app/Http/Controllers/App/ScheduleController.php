@@ -174,7 +174,7 @@ class ScheduleController extends Controller
                 'order.equipment.checklists:id,equipment_id,checklist',
                 'order.orderPayments:id,order_id,amount',
             ])
-            ->paginate(11)
+            ->paginate(\App\Support\Pagination::perPage($request))
             ->through(fn (Schedule $schedule) => $this->scheduleIndexPayload($schedule))
             ->withQueryString();
 

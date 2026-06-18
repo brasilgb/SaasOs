@@ -1,5 +1,5 @@
 import ActionDelete from '@/components/action-delete';
-import AppPagination from '@/components/app-pagination';
+import AppPagination, { PaginationSummary } from '@/components/app-pagination';
 import { Icon } from '@/components/icon';
 import InputSearch from '@/components/inputSearch';
 import { StatusBadge } from '@/components/StatusBadge';
@@ -57,6 +57,7 @@ export default function Users({ users, firstAdminId, search }: any) {
             </div>
 
             <div className="p-4">
+                <PaginationSummary data={users} />
                 <div className="rounded-lg border">
                     <Table>
                         <TableHeader>

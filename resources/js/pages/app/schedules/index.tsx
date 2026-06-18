@@ -7,7 +7,7 @@ import moment from 'moment';
 import { useState } from 'react';
 
 import ActionDelete from '@/components/action-delete';
-import AppPagination from '@/components/app-pagination';
+import AppPagination, { PaginationSummary } from '@/components/app-pagination';
 import InputSearch from '@/components/inputSearch';
 import ScheduleCalendarModal from '@/components/Schedules/ScheduleCalendarModal';
 import SelectFilter from '@/components/SelectFilter';
@@ -76,7 +76,9 @@ function getTechnicianWhatsappMessage(schedule: any) {
         materialChecklist ? `Materiais: ${materialChecklist}.` : null,
         `Cliente: ${schedule.customer?.name}.`,
         `Endereço: ${addressParts.join(', ')}.`,
-    ].filter(Boolean).join('\n');
+    ]
+        .filter(Boolean)
+        .join('\n');
 }
 
 function getMobileStage(schedule: any) {
@@ -168,6 +170,7 @@ function TechnicianMobileTable({ schedules, pagination, canManageSchedules }: { 
 
     return (
         <>
+            <PaginationSummary data={pagination} />
             <div className="rounded-lg border">
                 <Table>
                     <TableHeader>
@@ -275,7 +278,7 @@ function TechnicianMobileTable({ schedules, pagination, canManageSchedules }: { 
                                                 href={image.url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="group block overflow-hidden rounded-md border bg-muted"
+                                                className="group bg-muted block overflow-hidden rounded-md border"
                                             >
                                                 <img
                                                     src={image.url}
@@ -304,7 +307,8 @@ function TechnicianMobileTable({ schedules, pagination, canManageSchedules }: { 
                                     {selectedSummary?.local_payment_received && (
                                         <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
                                             <CreditCard className="h-3 w-3" />
-                                            Pagamento local {formatCurrency(selectedSummary?.local_payment_amount ?? selectedSchedule?.local_payment_amount)}
+                                            Pagamento local{' '}
+                                            {formatCurrency(selectedSummary?.local_payment_amount ?? selectedSchedule?.local_payment_amount)}
                                         </Badge>
                                     )}
                                     {selectedSummary?.local_payment_registered_in_cashier && (
@@ -412,6 +416,7 @@ export default function Schedules({ schedules, search, status, tab }: any) {
                     </TabsList>
 
                     <TabsContent value="list">
+                        <PaginationSummary data={schedules} />
                         <div className="rounded-lg border">
                             <Table>
                                 <TableHeader>
@@ -451,7 +456,9 @@ export default function Schedules({ schedules, search, status, tab }: any) {
                                                     <div className="max-w-[280px] space-y-1">
                                                         <div className="font-medium">
                                                             {schedule.service || (
-                                                                <span className="text-muted-foreground text-sm font-normal">Serviço não informado</span>
+                                                                <span className="text-muted-foreground text-sm font-normal">
+                                                                    Serviço não informado
+                                                                </span>
                                                             )}
                                                         </div>
                                                         {formatMaterialChecklist(schedule.material_checklist) && (

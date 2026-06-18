@@ -61,7 +61,7 @@ class PartController extends Controller
             });
         }
 
-        $parts = $query->paginate(11)->withQueryString();
+        $parts = $query->paginate(\App\Support\Pagination::perPage($request))->withQueryString();
 
         return Inertia::render('app/parts/index', [
             'parts' => $parts,

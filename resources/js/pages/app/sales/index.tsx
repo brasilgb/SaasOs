@@ -1,5 +1,5 @@
 import ActionCancelSale from '@/components/action-cancel-sale';
-import AppPagination from '@/components/app-pagination';
+import AppPagination, { PaginationSummary } from '@/components/app-pagination';
 import { Icon } from '@/components/icon';
 import InputSearch from '@/components/inputSearch';
 import SaleInvoiceModal from '@/components/Modals/SaleInvoiceModal';
@@ -200,6 +200,7 @@ export default function Sales({ sales, search, financial_status, financial_count
             </div>
 
             <div className="p-4">
+                <PaginationSummary data={sales} />
                 <div className="rounded-lg border">
                     <Table>
                         <TableHeader>
