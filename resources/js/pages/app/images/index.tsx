@@ -2,16 +2,29 @@ import { toastSuccess, toastWarning } from '@/components/app-toast-messages';
 import HeadingSmall from '@/components/heading-small';
 import { Icon } from '@/components/icon';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, Save, Wrench } from 'lucide-react';
+import { ArrowLeft, Expand, Save, Wrench } from 'lucide-react';
 import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
 
 interface ImageData {
     file: File;
     preview: string;
     id: string;
+}
+
+interface SavedImage {
+    id: number;
+    filename: string;
+}
+
+interface ImageUploadProps {
+    savedimages: SavedImage[];
+    orderid: string | number;
+    ordernumber?: string | number | null;
+    errors?: Record<string, string>;
 }
 
 const MAX_IMAGES = 4;
@@ -30,8 +43,9 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '#',
     },
 ];
-const ImageUpload = ({ savedimages, orderid, ordernumber, errors }: any) => {
+const ImageUpload = ({ savedimages, orderid, ordernumber, errors }: ImageUploadProps) => {
     const [fileKey, setFileKey] = useState(0);
+    const [selectedImage, setSelectedImage] = useState<{ src: string; alt: string } | null>(null);
 
     const {
         data,
@@ -175,13 +189,28 @@ const ImageUpload = ({ savedimages, orderid, ordernumber, errors }: any) => {
                         {/* PREVIEWS */}
                         {imagePreviews.length > 0 && (
                             <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4">
-                                {imagePreviews.map((img) => (
+                                {imagePreviews.map((img, index) => (
                                     <div key={img.id} className="relative">
-                                        <img src={img.preview} className="h-32 w-full rounded object-cover" />
+                                        <button
+                                            type="button"
+                                            onClick={() => setSelectedImage({ src: img.preview, alt: `Prévia da imagem ${index + 1}` })}
+                                            className="group focus-visible:ring-ring relative block w-full cursor-zoom-in overflow-hidden rounded focus-visible:ring-2 focus-visible:outline-none"
+                                            aria-label={`Visualizar prévia da imagem ${index + 1}`}
+                                        >
+                                            <img
+                                                src={img.preview}
+                                                alt=""
+                                                className="h-32 w-full object-cover transition-transform group-hover:scale-105"
+                                            />
+                                            <span className="absolute inset-0 flex items-center justify-center rounded bg-black/0 transition-colors group-hover:bg-black/30">
+                                                <Expand className="h-6 w-6 text-white opacity-0 transition-opacity group-hover:opacity-100" />
+                                            </span>
+                                        </button>
                                         <button
                                             type="button"
                                             onClick={() => handleRemoveImage(img.id)}
-                                            className="absolute top-1 right-1 h-5 w-5 rounded-full bg-red-500 text-xs text-white"
+                                            className="absolute top-1 right-1 z-10 h-5 w-5 rounded-full bg-red-500 text-xs text-white"
+                                            aria-label="Remover imagem selecionada"
                                         >
                                             ×
                                         </button>
@@ -193,13 +222,33 @@ const ImageUpload = ({ savedimages, orderid, ordernumber, errors }: any) => {
                         {/* IMAGENS SALVAS */}
                         {savedimages?.length > 0 && (
                             <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">
-                                {savedimages.map((img: any) => (
+                                {savedimages.map((img, index) => (
                                     <div key={img.id} className="relative">
-                                        <img src={`/storage/orders/${ordernumber ?? orderid}/${img.filename}`} className="h-32 w-full rounded object-cover" />
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                setSelectedImage({
+                                                    src: `/storage/orders/${ordernumber ?? orderid}/${img.filename}`,
+                                                    alt: `Imagem ${index + 1} da ordem ${ordernumber ?? orderid}`,
+                                                })
+                                            }
+                                            className="group focus-visible:ring-ring relative block w-full cursor-zoom-in overflow-hidden rounded focus-visible:ring-2 focus-visible:outline-none"
+                                            aria-label={`Visualizar imagem ${index + 1}`}
+                                        >
+                                            <img
+                                                src={`/storage/orders/${ordernumber ?? orderid}/${img.filename}`}
+                                                alt=""
+                                                className="h-32 w-full object-cover transition-transform group-hover:scale-105"
+                                            />
+                                            <span className="absolute inset-0 flex items-center justify-center rounded bg-black/0 transition-colors group-hover:bg-black/30">
+                                                <Expand className="h-6 w-6 text-white opacity-0 transition-opacity group-hover:opacity-100" />
+                                            </span>
+                                        </button>
                                         <button
                                             type="button"
                                             onClick={() => handleDeleteImageBanco(img.id)}
-                                            className="absolute top-1 right-1 h-5 w-5 rounded-full bg-red-600 text-xs text-white"
+                                            className="absolute top-1 right-1 z-10 h-5 w-5 rounded-full bg-red-600 text-xs text-white"
+                                            aria-label="Excluir imagem da ordem"
                                         >
                                             ×
                                         </button>
@@ -217,6 +266,20 @@ const ImageUpload = ({ savedimages, orderid, ordernumber, errors }: any) => {
                     </form>
                 </div>
             </div>
+
+            <Dialog open={selectedImage !== null} onOpenChange={(open) => !open && setSelectedImage(null)}>
+                <DialogContent className="max-h-[95vh] max-w-5xl overflow-hidden p-4 sm:p-6">
+                    <DialogHeader>
+                        <DialogTitle>Visualizar imagem</DialogTitle>
+                        <DialogDescription>Imagem da ordem de serviço {ordernumber ?? orderid}.</DialogDescription>
+                    </DialogHeader>
+                    {selectedImage && (
+                        <div className="flex max-h-[78vh] items-center justify-center overflow-auto rounded-md bg-black/95 p-2">
+                            <img src={selectedImage.src} alt={selectedImage.alt} className="max-h-[75vh] max-w-full object-contain" />
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
         </AppLayout>
     );
 };
