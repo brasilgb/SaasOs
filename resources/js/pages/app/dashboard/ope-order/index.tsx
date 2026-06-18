@@ -7,20 +7,13 @@ import { SalesProducts } from '@/components/sales-products';
 import ScheduleCalendarModal from '@/components/Schedules/ScheduleCalendarModal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { connectBackend } from '@/Utils/connectApi';
 import { Link } from '@inertiajs/react';
-import { Activity, AlertTriangle, Calendar, Check, Clock, MemoryStickIcon, MessageSquareMore, ShieldAlert, Star, Users, Wrench } from 'lucide-react';
+import { AlertTriangle, Calendar, Check, Clock, MemoryStickIcon, MessageSquareMore, ShieldAlert, Star, Users, Wrench } from 'lucide-react';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
-
-type OperationStatusKey = 'va' | 'ea' | 'aa' | 'og' | 'oa' | 'ca' | 'cn' | 'fb' | 'wg';
-type OperationItem = {
-    schedules_number?: string | number;
-    order_number?: string | number;
-    feedback?: boolean;
-};
 
 function formatIsoDate(date: Date | string) {
     const d = date instanceof Date ? date : new Date(date);
@@ -47,7 +40,6 @@ export default function OrderDashboard({
     auth,
 }: any) {
     const [metrics, setMetrics] = useState<any>([]);
-    const [selectedOperation, setSelectedOperation] = useState<OperationStatusKey | null>(null);
     const canUsePdv = auth?.permissions?.includes('sales') && auth?.role !== 'technician';
     const canUseFinance = auth?.permissions?.includes('finance') && auth?.role !== 'technician';
     const isCashierOpen = Boolean(cashier?.isOpen);
@@ -99,119 +91,6 @@ export default function OrderDashboard({
         'inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-md bg-red-100 px-4 py-2 text-sm font-medium whitespace-nowrap text-red-900 shadow-xs transition-all hover:bg-red-200 dark:bg-red-500/25 dark:text-red-100 dark:hover:bg-red-500/35';
     const warrantyLinkClass =
         'inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-md bg-amber-100 px-4 py-2 text-sm font-medium whitespace-nowrap text-amber-900 shadow-xs transition-all hover:bg-amber-200 dark:bg-amber-500/25 dark:text-amber-100 dark:hover:bg-amber-500/35';
-    const operationStatusTriggerClass =
-        'group flex min-h-16 min-w-0 items-center justify-between gap-3 rounded-lg border bg-background px-3 py-2.5 text-left transition-all enabled:cursor-pointer enabled:hover:border-primary/40 enabled:hover:bg-primary/5 enabled:hover:text-primary enabled:hover:shadow-sm disabled:cursor-not-allowed disabled:bg-muted/30 disabled:opacity-45';
-    const operationStatuses: Array<{
-        key: OperationStatusKey;
-        title: string;
-        description: string;
-        items: OperationItem[];
-    }> = [
-        {
-            key: 'va',
-            title: 'Agenda aberta',
-            description: 'Visitas abertas pelo número do agendamento.',
-            items: orders?.agendados ?? [],
-        },
-        {
-            key: 'ea',
-            title: 'Em atendimento',
-            description: 'Atendimentos iniciados pelo app técnico.',
-            items: orders?.em_atendimento ?? [],
-        },
-        {
-            key: 'aa',
-            title: 'Atrasados',
-            description: 'Visitas abertas ou em atendimento com data anterior a hoje.',
-            items: orders?.atrasados ?? [],
-        },
-        {
-            key: 'og',
-            title: 'Orçamentos gerados',
-            description: 'Orçamentos gerados por número de ordem.',
-            items: orders?.gerados ?? [],
-        },
-        {
-            key: 'oa',
-            title: 'Orçamentos aprovados',
-            description: 'Orçamentos aprovados por número de ordem.',
-            items: orders?.aprovados ?? [],
-        },
-        {
-            key: 'ca',
-            title: 'Aguardando retirada',
-            description: 'Serviços concluídos por número de ordem e clientes avisados.',
-            items: orders?.concluidosca ?? [],
-        },
-        {
-            key: 'cn',
-            title: 'Serviço concluído',
-            description: 'Serviços concluídos por número de ordem e clientes não avisados.',
-            items: orders?.concluidoscn ?? [],
-        },
-        {
-            key: 'fb',
-            title: `Entregues há ${feedbackDelayLabel}`,
-            description: `Serviços no prazo de ${feedbackDelayLabel} para provável feedback.`,
-            items: orders?.feedback ?? [],
-        },
-        {
-            key: 'wg',
-            title: 'Retorno em garantia',
-            description: 'Ordens identificadas como retorno em garantia.',
-            items: orders?.garantia ?? [],
-        },
-    ];
-    const operationCount = operationStatuses.reduce((total, status) => total + status.items.length, 0);
-    const activeOperation = operationStatuses.find((status) => status.key === selectedOperation);
-
-    const renderOperationLink = (status: OperationStatusKey, item: OperationItem, index: number) => {
-        if (status === 'va' || status === 'ea' || status === 'aa') {
-            const className = status === 'ea' ? inProgressLinkClass : status === 'aa' ? overdueLinkClass : operationLinkClass;
-
-            return (
-                <Link
-                    key={`${status}-${item.schedules_number ?? index}`}
-                    href={route('app.schedules.index', { search: item.schedules_number, init: true })}
-                    className={className}
-                >
-                    {status === 'ea' && <Clock className="h-4 w-4" />}
-                    {status === 'aa' && <AlertTriangle className="h-4 w-4" />}
-                    {item.schedules_number}
-                </Link>
-            );
-        }
-
-        if (status === 'wg') {
-            return (
-                <Link
-                    key={`${status}-${item.order_number ?? index}`}
-                    href={route('app.orders.index', {
-                        filter: 'warranty_return',
-                        search: item.order_number,
-                    })}
-                    className={warrantyLinkClass}
-                >
-                    {item.order_number}
-                </Link>
-            );
-        }
-
-        return (
-            <Link
-                key={`${status}-${item.order_number ?? index}`}
-                href={route('app.orders.index', {
-                    search: item.order_number,
-                    init: true,
-                    ...(status === 'fb' ? { fd: 1 } : {}),
-                })}
-                className={`${operationLinkClass} ${status === 'fb' ? 'relative' : ''}`}
-            >
-                {status === 'fb' && item.feedback && <Check className="absolute -top-1 -right-1 h-4 w-4" />}
-                {item.order_number}
-            </Link>
-        );
-    };
 
     return (
         <div className="min-w-0">
@@ -339,73 +218,201 @@ export default function OrderDashboard({
                     ordersTomorrow={acount?.numorde_due_tomorrow}
                 />
                 <div className="h-full min-w-0 2xl:col-span-5">
-                    <Card className="@container/card h-full flex-1 gap-4 overflow-hidden">
-                        <CardHeader className="border-b pb-4">
-                            <div className="flex items-start justify-between gap-4">
-                                <div className="flex min-w-0 items-start gap-3">
-                                    <div className="bg-primary/10 text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
-                                        <Activity className="h-5 w-5" />
-                                    </div>
-                                    <div className="min-w-0 space-y-1">
-                                        <CardTitle>Status da operação</CardTitle>
-                                        <CardDescription>Selecione uma etapa para consultar os atendimentos e ordens relacionados.</CardDescription>
-                                    </div>
-                                </div>
-                                <div className="bg-muted shrink-0 rounded-lg px-3 py-2 text-right">
-                                    <div className="text-lg leading-none font-semibold tabular-nums">{operationCount}</div>
-                                    <div className="text-muted-foreground mt-1 text-[11px]">registros</div>
-                                </div>
-                            </div>
+                    <Card className="@container/card h-full flex-1">
+                        <CardHeader>
+                            <CardTitle>Status das Operações</CardTitle>
                         </CardHeader>
-                        <CardContent>
-                            <div className="grid w-full grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-5">
-                                {operationStatuses.map((status) => {
-                                    const hasItems = status.items.length > 0;
+                        <CardContent className="px-2">
+                            <Tabs defaultValue="va">
+                                <div className="w-full overflow-x-auto">
+                                    <TabsList className="w-max min-w-full flex-nowrap">
+                                        <TabsTrigger className="px-2 whitespace-nowrap" value="va">
+                                            Agenda aberta
+                                            <Badge className="ml-1 text-xs">{orders?.agendados.length}</Badge>
+                                        </TabsTrigger>
 
-                                    return (
-                                        <button
-                                            key={status.key}
-                                            type="button"
-                                            disabled={!hasItems}
-                                            onClick={() => setSelectedOperation(status.key)}
-                                            className={operationStatusTriggerClass}
-                                            title={hasItems ? `Abrir ${status.title}` : 'Nenhum registro disponível'}
-                                        >
-                                            <span className="min-w-0 leading-tight">{status.title}</span>
-                                            <Badge
-                                                variant={hasItems ? 'default' : 'secondary'}
-                                                className="group-enabled:group-hover:bg-primary shrink-0 tabular-nums"
-                                            >
-                                                {status.items.length}
-                                            </Badge>
-                                        </button>
-                                    );
-                                })}
-                            </div>
+                                        <TabsTrigger className="px-2 whitespace-nowrap" value="ea">
+                                            Em atendimento
+                                            <Badge className="ml-1 text-xs">{orders?.em_atendimento.length}</Badge>
+                                        </TabsTrigger>
+
+                                        <TabsTrigger className="px-2 whitespace-nowrap" value="aa">
+                                            Atrasados
+                                            <Badge className="ml-1 text-xs">{orders?.atrasados.length}</Badge>
+                                        </TabsTrigger>
+
+                                        <TabsTrigger className="px-2 whitespace-nowrap" value="og">
+                                            Orçam. gerados
+                                            <Badge className="ml-1 text-xs">{orders?.gerados.length}</Badge>
+                                        </TabsTrigger>
+
+                                        <TabsTrigger className="px-2 whitespace-nowrap" value="oa">
+                                            Orçam. aprovados
+                                            <Badge className="ml-1 text-xs">{orders?.aprovados.length}</Badge>
+                                        </TabsTrigger>
+
+                                        <TabsTrigger className="px-2 whitespace-nowrap" value="ca">
+                                            Serv. concluído aguardando retirada
+                                            <Badge className="ml-1 text-xs">{orders?.concluidosca.length}</Badge>
+                                        </TabsTrigger>
+
+                                        <TabsTrigger className="px-2 whitespace-nowrap" value="cn">
+                                            Serv. concluído
+                                            <Badge className="ml-1 text-xs">{orders?.concluidoscn.length}</Badge>
+                                        </TabsTrigger>
+
+                                        <TabsTrigger className="px-2 whitespace-nowrap" value="fb">
+                                            Equip. entregue há {feedbackDelayLabel}
+                                            <Badge className="ml-1 text-xs">{orders?.feedback.length}</Badge>
+                                        </TabsTrigger>
+
+                                        <TabsTrigger className="px-2 whitespace-nowrap" value="wg">
+                                            Retorno garantia
+                                            <Badge className="ml-1 text-xs">{orders?.garantia.length}</Badge>
+                                        </TabsTrigger>
+                                    </TabsList>
+                                    <TabsContent value="va" className="max-h-48 overflow-y-auto">
+                                        <div className="py-1 text-xs font-semibold">Visitas abertas pelo número do agendamento</div>
+                                        <div className="flex flex-wrap gap-2 border-t py-2">
+                                            {orders?.agendados.map((age: any, index: number) => (
+                                                <Link
+                                                    key={`ag-${age.schedules_number ?? index}`}
+                                                    href={route('app.schedules.index', { search: age.schedules_number, init: true })}
+                                                    className={operationLinkClass}
+                                                >
+                                                    {age.schedules_number}
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    </TabsContent>
+                                    <TabsContent value="ea" className="max-h-48 overflow-y-auto">
+                                        <div className="py-1 text-xs font-semibold">Atendimentos iniciados pelo app técnico</div>
+                                        <div className="flex flex-wrap gap-2 border-t py-2">
+                                            {orders?.em_atendimento.map((age: any, index: number) => (
+                                                <Link
+                                                    key={`ea-${age.schedules_number ?? index}`}
+                                                    href={route('app.schedules.index', { search: age.schedules_number, init: true })}
+                                                    className={inProgressLinkClass}
+                                                >
+                                                    <Clock className="h-4 w-4" />
+                                                    {age.schedules_number}
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    </TabsContent>
+                                    <TabsContent value="aa" className="max-h-48 overflow-y-auto">
+                                        <div className="py-1 text-xs font-semibold">Visitas abertas ou em atendimento com data anterior a hoje</div>
+                                        <div className="flex flex-wrap gap-2 border-t py-2">
+                                            {orders?.atrasados.map((age: any, index: number) => (
+                                                <Link
+                                                    key={`aa-${age.schedules_number ?? index}`}
+                                                    href={route('app.schedules.index', { search: age.schedules_number, init: true })}
+                                                    className={overdueLinkClass}
+                                                >
+                                                    <AlertTriangle className="h-4 w-4" />
+                                                    {age.schedules_number}
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    </TabsContent>
+                                    <TabsContent value="og" className="max-h-48 overflow-y-auto">
+                                        <div className="py-1 text-xs font-semibold">Orçamentos gerados por número de ordem</div>
+                                        <div className="flex flex-wrap gap-2 border-t py-2">
+                                            {orders?.gerados.map((ger: any, index: number) => (
+                                                <Link
+                                                    key={`og-${ger.order_number ?? index}`}
+                                                    href={route('app.orders.index', { search: ger.order_number, init: true })}
+                                                    className={operationLinkClass}
+                                                >
+                                                    {ger.order_number}
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    </TabsContent>
+                                    <TabsContent value="oa" className="max-h-48 overflow-y-auto">
+                                        <div className="py-1 text-xs font-semibold">Orçamentos aprovados por número de ordem</div>
+                                        <div className="flex flex-wrap gap-2 border-t py-2">
+                                            {orders?.aprovados.map((apro: any, index: number) => (
+                                                <Link
+                                                    key={`oa-${apro.order_number ?? index}`}
+                                                    href={route('app.orders.index', { search: apro.order_number, init: true })}
+                                                    className={operationLinkClass}
+                                                >
+                                                    {apro.order_number}
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    </TabsContent>
+                                    <TabsContent value="ca" className="max-h-48 overflow-y-auto">
+                                        <div className="py-1 text-xs font-semibold">Serviços concluídos por número de ordem e clientes avisados</div>
+                                        <div className="flex flex-wrap gap-2 border-t py-2">
+                                            {orders?.concluidosca.map((conca: any, index: number) => (
+                                                <Link
+                                                    key={`ca-${conca.order_number ?? index}`}
+                                                    href={route('app.orders.index', { search: conca.order_number, init: true })}
+                                                    className={operationLinkClass}
+                                                >
+                                                    {conca.order_number}
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    </TabsContent>
+                                    <TabsContent value="cn" className="max-h-48 overflow-y-auto">
+                                        <div className="py-1 text-xs font-semibold">
+                                            Serviços concluídos por número de ordem e clientes não avisados
+                                        </div>
+                                        <div className="flex flex-wrap gap-2 border-t py-2">
+                                            {orders?.concluidoscn.map((concn: any, index: number) => (
+                                                <Link
+                                                    key={`cn-${concn.order_number ?? index}`}
+                                                    href={route('app.orders.index', { search: concn.order_number, init: true })}
+                                                    className={operationLinkClass}
+                                                >
+                                                    {concn.order_number}
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    </TabsContent>
+                                    <TabsContent value="fb" className="max-h-48 overflow-y-auto">
+                                        <div className="py-1 text-xs font-semibold">
+                                            Serviços no prazo de {feedbackDelayLabel} para provável feedback
+                                        </div>
+                                        <div className="flex flex-wrap gap-2 border-t py-2">
+                                            {orders?.feedback.map((ger: any, index: number) => (
+                                                <Link
+                                                    key={`fb-${ger.order_number ?? index}`}
+                                                    href={route('app.orders.index', { search: ger.order_number, init: true, fd: 1 })}
+                                                    className={`${operationLinkClass} relative`}
+                                                >
+                                                    {ger.feedback && <Check className="absolute -top-1 -right-1 h-4 w-4" />}
+                                                    {ger.order_number}
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    </TabsContent>
+                                    <TabsContent value="wg" className="max-h-48 overflow-y-auto">
+                                        <div className="py-1 text-xs font-semibold">Ordens identificadas como retorno em garantia</div>
+                                        <div className="flex flex-wrap gap-2 border-t py-2">
+                                            {orders?.garantia.map((ret: any, index: number) => (
+                                                <Link
+                                                    key={`wg-${ret.order_number ?? index}`}
+                                                    href={route('app.orders.index', {
+                                                        filter: 'warranty_return',
+                                                        search: ret.order_number,
+                                                    })}
+                                                    className={warrantyLinkClass}
+                                                >
+                                                    {ret.order_number}
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    </TabsContent>
+                                </div>
+                            </Tabs>
                         </CardContent>
                     </Card>
                 </div>
             </div>
-
-            <Dialog open={selectedOperation !== null} onOpenChange={(open) => !open && setSelectedOperation(null)}>
-                <DialogContent className="max-h-[85vh] sm:max-w-2xl">
-                    <DialogHeader className="pr-8">
-                        <div className="flex items-center gap-2">
-                            <DialogTitle>{activeOperation?.title}</DialogTitle>
-                            <Badge variant="secondary" className="tabular-nums">
-                                {activeOperation?.items.length ?? 0}
-                            </Badge>
-                        </div>
-                        <DialogDescription>{activeOperation?.description}</DialogDescription>
-                    </DialogHeader>
-
-                    <div className="bg-muted/20 max-h-[60vh] overflow-y-auto rounded-lg border p-4">
-                        <div className="flex flex-wrap gap-2">
-                            {activeOperation?.items.map((item, index) => renderOperationLink(activeOperation.key, item, index))}
-                        </div>
-                    </div>
-                </DialogContent>
-            </Dialog>
 
             <div className="mt-3 grid gap-3 xl:grid-cols-3">
                 <div>
