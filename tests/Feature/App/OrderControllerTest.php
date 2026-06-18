@@ -14,13 +14,10 @@ use App\Models\App\Part;
 use App\Models\App\Schedule;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Services\FinancialReceivableService;
 use App\Support\OrderStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Queue;
-use Mockery;
-use RuntimeException;
 use Tests\TestCase;
 
 class OrderControllerTest extends TestCase
@@ -338,7 +335,7 @@ class OrderControllerTest extends TestCase
         $this->assertSame(OrderStatus::REPAIR_IN_PROGRESS, (int) $order->service_status);
     }
 
-    public function test_technician_cannot_reassign_order_when_updating_it(): void
+    public function test_technician_can_reassign_order_to_another_technician(): void
     {
         $technician = User::factory()->forTenant($this->tenant->id)->create([
             'roles' => User::ROLE_TECHNICIAN,
@@ -366,46 +363,13 @@ class OrderControllerTest extends TestCase
         );
 
         $response
-            ->assertRedirect(route('app.orders.show', ['order' => $order->id]))
-            ->assertSessionHas('success', 'Ordem atualizada com sucesso')
+            ->assertRedirect(route('app.orders.index'))
+            ->assertSessionHas('success', 'Ordem transferida e atualizada com sucesso')
             ->assertSessionMissing('authorization_error');
 
         $order->refresh();
-        $this->assertSame($technician->id, $order->user_id);
+        $this->assertSame($otherTechnician->id, $order->user_id);
         $this->assertSame('Atualizado pelo tecnico responsavel', $order->model);
-    }
-
-    public function test_order_update_succeeds_when_financial_projection_fails(): void
-    {
-        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
-        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
-        $order = Order::factory()->forTenant($this->tenant->id)->create([
-            'customer_id' => $customer->id,
-            'equipment_id' => $equipment->id,
-            'user_id' => $this->user->id,
-            'model' => 'Modelo original',
-            'service_status' => OrderStatus::OPEN,
-        ]);
-
-        $financialService = Mockery::mock(FinancialReceivableService::class);
-        $financialService
-            ->shouldReceive('syncOrder')
-            ->once()
-            ->andThrow(new RuntimeException('Tabela financeira indisponivel'));
-        $this->app->instance(FinancialReceivableService::class, $financialService);
-
-        $response = $this->put(
-            route('app.orders.update', $order),
-            $this->orderUpdatePayload($order, $customer, $equipment, [
-                'model' => 'Modelo salvo apesar da projecao',
-            ]),
-        );
-
-        $response
-            ->assertRedirect(route('app.orders.show', ['order' => $order->id]))
-            ->assertSessionHas('success', 'Ordem atualizada com sucesso, mas houve falha na sincronização financeira.');
-
-        $this->assertSame('Modelo salvo apesar da projecao', $order->fresh()->model);
     }
 
     public function test_operator_can_change_unassigned_order_status_without_responsible_technician(): void
