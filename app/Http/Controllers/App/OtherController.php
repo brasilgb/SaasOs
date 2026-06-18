@@ -5,15 +5,16 @@ namespace App\Http\Controllers\App;
 use App\Http\Controllers\Controller;
 use App\Models\App\Company;
 use App\Models\App\Other;
-use App\Support\TenantMailConfig;
 use App\Models\Tenant;
+use App\Support\TenantMailConfig;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class OtherController extends Controller
@@ -40,6 +41,7 @@ class OtherController extends Controller
             'print_label_button_after_order_create' => false,
             'automatic_follow_ups_enabled' => false,
             'enable_technician_schedule_notifications' => false,
+            'records_per_page' => 20,
         ]);
         $company = Company::query()
             ->where('tenant_id', $tenantId)
@@ -79,6 +81,9 @@ class OtherController extends Controller
                 ?? Other::budgetConversionTarget($tenantId),
             'payment_recovery_target' => $othersettings->payment_recovery_target
                 ?? Other::paymentRecoveryTarget($tenantId),
+            'records_per_page' => $othersettings->records_per_page
+                ?? Other::recordsPerPage($tenantId),
+            'records_per_page_options' => Other::ALLOWED_RECORDS_PER_PAGE,
         ];
 
         return Inertia::render('app/others/index', [
@@ -125,6 +130,7 @@ class OtherController extends Controller
             'customer_feedback_request_delay_days' => 'nullable|integer|min:1|max:30',
             'budget_conversion_target' => 'nullable|numeric|min:0|max:100',
             'payment_recovery_target' => 'nullable|numeric|min:0|max:100',
+            'records_per_page' => ['sometimes', 'required', 'integer', Rule::in(Other::ALLOWED_RECORDS_PER_PAGE)],
         ]);
 
         $data['mail_mailer'] = isset($data['mail_mailer']) ? trim((string) $data['mail_mailer']) : null;

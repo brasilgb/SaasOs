@@ -10,6 +10,10 @@ class Other extends Model
 {
     use HasFactory, Tenantable;
 
+    public const DEFAULT_RECORDS_PER_PAGE = 20;
+
+    public const ALLOWED_RECORDS_PER_PAGE = [10, 20, 35, 50, 100];
+
     protected $casts = [
         'navigation' => 'boolean',
         'enableparts' => 'boolean',
@@ -27,7 +31,23 @@ class Other extends Model
         'customer_feedback_request_delay_days' => 'integer',
         'budget_conversion_target' => 'float',
         'payment_recovery_target' => 'float',
+        'records_per_page' => 'integer',
     ];
+
+    public static function recordsPerPage(?int $tenantId = null): int
+    {
+        $query = static::query();
+
+        if ($tenantId) {
+            $query->where('tenant_id', $tenantId);
+        }
+
+        $configured = (int) ($query->value('records_per_page') ?? self::DEFAULT_RECORDS_PER_PAGE);
+
+        return in_array($configured, self::ALLOWED_RECORDS_PER_PAGE, true)
+            ? $configured
+            : self::DEFAULT_RECORDS_PER_PAGE;
+    }
 
     public static function warrantyReturnAlertThreshold(): float
     {

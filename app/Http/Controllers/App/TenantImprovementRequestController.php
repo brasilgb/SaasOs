@@ -28,7 +28,7 @@ class TenantImprovementRequestController extends Controller
             ->where('tenant_id', $user?->tenant_id)
             ->with('user:id,name')
             ->latest('id')
-            ->paginate(10)
+            ->paginate(\App\Support\Pagination::perPage())
             ->withQueryString();
 
         $feedbacks = TenantFeedback::query()

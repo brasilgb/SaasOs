@@ -25,7 +25,7 @@ class EquipmentController extends Controller
         if ($search) {
             $query->where('equipment', 'like', '%'.$search.'%');
         }
-        $equipments = $query->paginate(\App\Support\Pagination::perPage($request))->withQueryString();
+        $equipments = $query->paginate(\App\Support\Pagination::perPage())->withQueryString();
 
         return Inertia::render('app/equipments/index', ['equipments' => $equipments]);
     }

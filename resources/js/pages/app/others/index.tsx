@@ -4,6 +4,7 @@ import { Icon } from '@/components/icon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/layouts/app-layout';
@@ -54,6 +55,7 @@ export default function Others({ othersettings, company, time_remaining, mailSet
         customer_feedback_request_delay_days: businessMetrics?.customer_feedback_request_delay_days ?? 7,
         budget_conversion_target: businessMetrics?.budget_conversion_target ?? 60,
         payment_recovery_target: businessMetrics?.payment_recovery_target ?? 70,
+        records_per_page: businessMetrics?.records_per_page ?? 20,
     });
 
     const handleSubmit = (e: any) => {
@@ -105,6 +107,36 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                             </TabsList>
 
                             <TabsContent value="system" className="w-full space-y-8">
+                                <div id="registros-por-pagina" className="scroll-mt-24 space-y-6 rounded-2xl border p-5">
+                                    <HeadingSmall
+                                        title="Paginação das listagens"
+                                        description="Defina quantos registros serão exibidos por página nas listagens do sistema."
+                                    />
+
+                                    <div className="max-w-sm space-y-2">
+                                        <Label htmlFor="records_per_page">Registros por página</Label>
+                                        <Select
+                                            value={String(data.records_per_page)}
+                                            disabled={!canManageOtherSettings}
+                                            onValueChange={(value) => setData('records_per_page', Number(value))}
+                                        >
+                                            <SelectTrigger id="records_per_page" className="w-full">
+                                                <SelectValue placeholder="Selecione a quantidade" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {(businessMetrics?.records_per_page_options ?? [20]).map((option: number) => (
+                                                    <SelectItem key={option} value={String(option)}>
+                                                        {option} registros
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <p className="text-muted-foreground text-xs leading-relaxed">
+                                            Essa configuração será aplicada às listagens de ordens, clientes, peças, serviços e demais cadastros.
+                                        </p>
+                                    </div>
+                                </div>
+
                                 <div className="space-y-6 rounded-2xl border p-5">
                                     <HeadingSmall
                                         title="Notificações de agendamento"

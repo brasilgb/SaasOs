@@ -2,16 +2,16 @@
 
 namespace App\Support;
 
-use Illuminate\Http\Request;
+use App\Models\App\Other;
 
 final class Pagination
 {
-    private const ALLOWED_PER_PAGE = [20, 35, 50];
+    public const DEFAULT_PER_PAGE = Other::DEFAULT_RECORDS_PER_PAGE;
 
-    public static function perPage(Request $request): int
+    public const ALLOWED_PER_PAGE = Other::ALLOWED_RECORDS_PER_PAGE;
+
+    public static function perPage(): int
     {
-        $perPage = $request->integer('per_page', 20);
-
-        return in_array($perPage, self::ALLOWED_PER_PAGE, true) ? $perPage : 20;
+        return Other::recordsPerPage();
     }
 }

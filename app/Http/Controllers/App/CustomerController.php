@@ -445,7 +445,7 @@ class CustomerController extends Controller
             $query->whereRaw('COALESCE(receivable_totals.pending_amount, 0) > 0.009');
         }
 
-        $customers = $query->paginate(\App\Support\Pagination::perPage($request))->withQueryString();
+        $customers = $query->paginate(\App\Support\Pagination::perPage())->withQueryString();
         $customerlast = Customer::orderBy('id', 'DESC')->first();
 
         return Inertia::render('app/customers/index', [

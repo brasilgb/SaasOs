@@ -156,7 +156,7 @@ class BudgetController extends Controller
         if ($search) {
             $query->where('service', 'like', '%'.$search.'%');
         }
-        $budgets = $query->with('equipment')->paginate(\App\Support\Pagination::perPage($request))->withQueryString();
+        $budgets = $query->with('equipment')->paginate(\App\Support\Pagination::perPage())->withQueryString();
         $company = Company::query()
             ->where('tenant_id', $this->currentTenantId())
             ->first();

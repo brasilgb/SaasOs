@@ -793,14 +793,14 @@ class FollowUpController extends Controller
         $budgetOrders = $type === 'payment'
             ? null
             : $budgetQuery
-                ->paginate(10, ['*'], 'budget_page')
+                ->paginate(\App\Support\Pagination::perPage(), ['*'], 'budget_page')
                 ->withQueryString()
                 ->through(fn (Order $order) => $this->appendFollowUpData($order));
 
         $paymentOrders = $type === 'budget'
             ? null
             : $paymentQuery
-                ->paginate(10, ['*'], 'payment_page')
+                ->paginate(\App\Support\Pagination::perPage(), ['*'], 'payment_page')
                 ->withQueryString()
                 ->through(fn (Order $order) => $this->appendFollowUpData($order));
 

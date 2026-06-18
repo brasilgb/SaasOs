@@ -80,7 +80,7 @@ class SaleController extends Controller
         if ($financialStatus) {
             $query->where('financial_status', $financialStatus);
         }
-        $sales = $query->paginate(\App\Support\Pagination::perPage($request))->withQueryString();
+        $sales = $query->paginate(\App\Support\Pagination::perPage())->withQueryString();
 
         return Inertia::render('app/sales/index', [
             'sales' => $sales,

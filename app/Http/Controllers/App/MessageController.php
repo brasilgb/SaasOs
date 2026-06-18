@@ -74,7 +74,7 @@ class MessageController extends Controller
             $query->where('status', (int) $status);
         }
 
-        $messages = $query->with('sender')->with('recipient')->paginate(\App\Support\Pagination::perPage($request))->withQueryString();
+        $messages = $query->with('sender')->with('recipient')->paginate(\App\Support\Pagination::perPage())->withQueryString();
 
         return Inertia::render('app/messages/index', ['messages' => $messages, 'search' => $search, 'status' => $status, 'filter' => $filter]);
     }
