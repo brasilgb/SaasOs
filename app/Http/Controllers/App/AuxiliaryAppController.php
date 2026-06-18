@@ -17,17 +17,17 @@ class AuxiliaryAppController extends Controller
             [
                 'name' => 'Vetor Imagem',
                 'filename' => 'vetor-imagem.apk',
-                'description' => 'Aplicativo para localizar ordens de serviço e enviar imagens diretamente para o VetorOS.',
+                'description' => 'Localize ordens de serviço e registre imagens diretamente nelas. Ideal para documentar o recebimento do equipamento e apoiar o trabalho técnico.',
             ],
             [
                 'name' => 'Vetor Atendimento',
                 'filename' => 'vetor-atendimento.apk',
-                'description' => 'Aplicativo para pré-cadastro de clientes e consulta de orçamentos.',
+                'description' => 'Solução de autoatendimento público para pré-cadastro de clientes e consulta de orçamentos, agilizando o contato com a assistência.',
             ],
             [
                 'name' => 'Vetor Técnico',
                 'filename' => 'vetor-tecnico.apk',
-                'description' => 'Aplicativo destinado aos técnicos para consultar e executar os atendimentos atribuídos.',
+                'description' => 'Aplicativo para técnicos consultarem os atendimentos externos atribuídos e executarem as atividades em campo.',
             ],
         ])->map(function (array $app): array {
             $path = public_path('apk/'.$app['filename']);
