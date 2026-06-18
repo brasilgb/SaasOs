@@ -811,7 +811,11 @@ class OrderController extends Controller
             Equipment::query()->whereKey($data['equipment_id'])->firstOrFail();
         }
         if (! empty($data['user_id'])) {
-            User::query()->whereKey($data['user_id'])->firstOrFail();
+            User::query()
+                ->whereKey($data['user_id'])
+                ->whereIn('roles', [User::ROLE_TECHNICIAN, User::ROLE_ADMIN])
+                ->where('status', 1)
+                ->firstOrFail();
         }
         $data['budget_value'] = $this->normalizeMoneyValue($data['budget_value'] ?? 0);
         $data['parts_value'] = $this->normalizeMoneyValue($data['parts_value'] ?? 0);
@@ -914,8 +918,8 @@ class OrderController extends Controller
 
             try {
                 event(new OrderStatusUpdated($order->fresh(['customer', 'tenant']), $statusLabel, $data['observations'] ?? null));
-            } catch (\Throwable $e) {
-                report($e);
+            } catch (\Throwable $exception) {
+                report($exception);
                 $successMessage = 'Ordem atualizada com sucesso, mas houve falha ao enviar o e-mail de status ao cliente.';
             }
         } elseif ($changes !== []) {
@@ -927,6 +931,17 @@ class OrderController extends Controller
         $order = $order->fresh(['orderPayments']);
         $this->orderItemSyncService->sync($order);
         $this->financialReceivableService->syncOrder($order);
+
+        $currentUser = $this->currentUser();
+        if (
+            $currentUser?->isTechnician()
+            && ! is_null($order->user_id)
+            && (int) $order->user_id !== (int) $currentUser->id
+        ) {
+            return redirect()
+                ->route('app.orders.index')
+                ->with('success', 'Ordem transferida e atualizada com sucesso');
+        }
 
         return redirect()->route('app.orders.show', [
             'order' => $order->id,

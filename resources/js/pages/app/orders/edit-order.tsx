@@ -749,6 +749,7 @@ export default function EditOrder({
                                                     className="min-w-0"
                                                     styles={selectStyles}
                                                 />
+                                                <InputError message={errors.service_status} />
                                             </div>
                                             <div className="grid gap-2">
                                                 <FormFieldHelp
