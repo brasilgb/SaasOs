@@ -12,8 +12,8 @@ import { usePersistedPeriodFilter } from '@/hooks/use-persisted-period-filter';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { connectBackend } from '@/Utils/connectApi';
-import { Head, router } from '@inertiajs/react';
-import { AlertTriangle, ShieldAlert, ShieldCheck, ShieldEllipsis } from 'lucide-react';
+import { Head, Link, router } from '@inertiajs/react';
+import { AlertTriangle, ExternalLink, ShieldAlert, ShieldCheck, ShieldEllipsis, Star } from 'lucide-react';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
 
@@ -253,6 +253,88 @@ function FeedbackRecoveryCard({
                     </div>
                 ) : (
                     <p className="text-muted-foreground text-sm">Nenhuma avaliação crítica no período.</p>
+                )}
+            </CardContent>
+        </Card>
+    );
+}
+
+type CustomerFeedbackItem = {
+    id: number;
+    order_number: number;
+    customer: string;
+    technician?: string | null;
+    rating: number;
+    comment?: string | null;
+    submitted_at?: string | null;
+    requires_recovery?: boolean;
+    recovery_status?: string | null;
+};
+
+function CustomerFeedbackList({ items }: { items?: CustomerFeedbackItem[] }) {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base">Avaliações recebidas</CardTitle>
+                <p className="text-muted-foreground text-sm">Notas e comentários enviados pelos clientes no período selecionado.</p>
+            </CardHeader>
+            <CardContent>
+                {items && items.length > 0 ? (
+                    <div className="space-y-3">
+                        {items.map((item) => (
+                            <div key={item.id} className="rounded-lg border p-4">
+                                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                    <div className="min-w-0">
+                                        <div className="font-medium">
+                                            OS #{item.order_number} • {item.customer}
+                                        </div>
+                                        <div className="text-muted-foreground mt-1 text-xs">
+                                            {item.submitted_at ? moment(item.submitted_at).format('DD/MM/YYYY HH:mm') : 'Data não informada'}
+                                            {item.technician ? ` • Técnico: ${item.technician}` : ''}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex shrink-0 flex-wrap items-center gap-2">
+                                        <div className="flex items-center gap-1" aria-label={`Nota ${item.rating} de 5`}>
+                                            {[1, 2, 3, 4, 5].map((rating) => (
+                                                <Star
+                                                    key={rating}
+                                                    className={`h-4 w-4 ${
+                                                        rating <= item.rating
+                                                            ? 'fill-amber-400 text-amber-400'
+                                                            : 'text-muted-foreground/30'
+                                                    }`}
+                                                />
+                                            ))}
+                                        </div>
+                                        <Badge variant={item.requires_recovery ? 'destructive' : 'secondary'}>Nota {item.rating}</Badge>
+                                    </div>
+                                </div>
+
+                                <p className="text-muted-foreground mt-3 text-sm">
+                                    {item.comment?.trim() || 'O cliente enviou apenas a nota, sem comentário.'}
+                                </p>
+
+                                <div className="mt-3 flex items-center justify-between gap-3">
+                                    {item.requires_recovery ? (
+                                        <Badge variant="outline">
+                                            Tratativa: {item.recovery_status === 'resolved' ? 'resolvida' : item.recovery_status === 'in_progress' ? 'em andamento' : 'pendente'}
+                                        </Badge>
+                                    ) : (
+                                        <span />
+                                    )}
+                                    <Button asChild size="sm" variant="outline">
+                                        <Link href={route('app.orders.index', { search: item.order_number, init: true })}>
+                                            Abrir ordem
+                                            <ExternalLink className="h-4 w-4" />
+                                        </Link>
+                                    </Button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <p className="text-muted-foreground text-sm">Nenhuma avaliação recebida no período selecionado.</p>
                 )}
             </CardContent>
         </Card>
@@ -572,6 +654,8 @@ export default function QualityIndicators({
                                 </Card>
                             </CardContent>
                         </Card>
+
+                        <CustomerFeedbackList items={metrics?.feedback_orders} />
 
                         {Boolean(summary?.unassigned_low_feedbacks) && (
                             <Card className="border-amber-300 bg-amber-50">

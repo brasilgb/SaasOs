@@ -98,6 +98,7 @@ class QualityIndicatorControllerTest extends TestCase
             ->assertJsonPath('summary.feedback_average_rating', 4)
             ->assertJsonPath('summary.feedback_response_rate', 100)
             ->assertJsonPath('summary.low_feedbacks', 0)
+            ->assertJsonPath('feedback_orders.0.rating', 4)
             ->assertJsonPath('trend.granularity', 'daily')
             ->assertJsonPath('comparison.previous_warranty_return_rate', 33.3)
             ->assertJsonPath('comparison.delta_rate', 16.7)
@@ -141,7 +142,34 @@ class QualityIndicatorControllerTest extends TestCase
             ->assertJsonPath('summary.feedback_responses', 1)
             ->assertJsonPath('summary.feedback_average_rating', 2)
             ->assertJsonPath('summary.low_feedbacks', 1)
+            ->assertJsonPath('feedback_orders.0.comment', 'A comunicação poderia ser melhor.')
             ->assertJsonPath('low_feedback_orders.0.comment', 'A comunicação poderia ser melhor.');
+    }
+
+    public function test_quality_metrics_only_expose_feedbacks_from_the_authenticated_company(): void
+    {
+        $visibleOrder = Order::factory()->forTenant($this->tenant->id)->create([
+            'service_status' => OrderStatus::DELIVERED,
+            'customer_feedback_submitted_at' => now()->subHour(),
+            'customer_feedback_rating' => 5,
+            'customer_feedback_comment' => 'Atendimento excelente.',
+        ]);
+
+        $otherTenant = Tenant::factory()->create();
+        Order::factory()->forTenant($otherTenant->id)->create([
+            'service_status' => OrderStatus::DELIVERED,
+            'customer_feedback_submitted_at' => now()->subMinutes(30),
+            'customer_feedback_rating' => 1,
+            'customer_feedback_comment' => 'Avaliação de outra empresa.',
+        ]);
+
+        $response = $this->get(route('app.quality.metrics', ['timerange' => 7]));
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(1, 'feedback_orders')
+            ->assertJsonPath('feedback_orders.0.id', $visibleOrder->id)
+            ->assertJsonMissing(['comment' => 'Avaliação de outra empresa.']);
     }
 
     public function test_quality_feedback_recovery_can_be_updated(): void

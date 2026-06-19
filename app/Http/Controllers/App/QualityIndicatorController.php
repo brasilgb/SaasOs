@@ -245,10 +245,12 @@ class QualityIndicatorController extends Controller
         $feedbackResponses = Order::query()
             ->with([
                 'customer:id,name',
+                'user:id,name',
                 'customerFeedbackRecoveryAssignee:id,name',
             ])
             ->whereNotNull('customer_feedback_submitted_at')
             ->whereBetween('customer_feedback_submitted_at', [$start, $end])
+            ->orderByDesc('customer_feedback_submitted_at')
             ->get();
         $feedbackAverageRating = round((float) ($feedbackResponses->avg('customer_feedback_rating') ?? 0), 1);
         $feedbackResponseRate = $deliveredOrders->count() > 0
@@ -315,6 +317,17 @@ class QualityIndicatorController extends Controller
             'top_defects' => $topDefects,
             'top_technicians' => $topTechnicians,
             'status_breakdown' => $statusBreakdown,
+            'feedback_orders' => $feedbackResponses->map(fn (Order $order) => [
+                'id' => $order->id,
+                'order_number' => $order->order_number,
+                'customer' => $order->customer?->name ?: 'Cliente não informado',
+                'technician' => $order->user?->name,
+                'rating' => (int) ($order->customer_feedback_rating ?? 0),
+                'comment' => $order->customer_feedback_comment,
+                'submitted_at' => $order->customer_feedback_submitted_at?->toIso8601String(),
+                'requires_recovery' => (int) ($order->customer_feedback_rating ?? 0) <= 3,
+                'recovery_status' => $order->customer_feedback_recovery_status,
+            ])->all(),
             'low_feedback_orders' => $lowFeedbackOrders->map(fn (Order $order) => [
                 'id' => $order->id,
                 'order_number' => $order->order_number,
