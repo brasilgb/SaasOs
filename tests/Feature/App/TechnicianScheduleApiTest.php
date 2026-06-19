@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\App;
 
-use App\Models\App\Customer;
 use App\Models\App\Checklist;
+use App\Models\App\Customer;
 use App\Models\App\Equipment;
 use App\Models\App\Image;
 use App\Models\App\Order;
@@ -167,6 +167,54 @@ class TechnicianScheduleApiTest extends TestCase
             'quantity' => 2,
             'reason' => 'Devolução de peça do agendamento #'.$schedule->schedules_number,
         ]);
+    }
+
+    public function test_technician_updates_checklist_stored_on_independent_schedule(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $schedule = Schedule::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'order_id' => null,
+            'user_id' => $this->technician->id,
+            'send_to_technician' => true,
+            'technician_checklist' => [
+                'Testar funcionamento',
+                'Orientar cliente',
+            ],
+        ]);
+
+        $response = $this->actingAs($this->technician, 'sanctum')
+            ->postJson(route('api.technician.schedules.checklist', $schedule), [
+                'items' => [
+                    'Testar funcionamento',
+                    'Item não cadastrado',
+                ],
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('result.technician_checklist.0', 'Testar funcionamento')
+            ->assertJsonPath('result.technician_checklist.1', 'Orientar cliente')
+            ->assertJsonPath('result.technician_checklist_items.0', 'Testar funcionamento')
+            ->assertJsonMissing(['Item não cadastrado']);
+
+        $this->assertSame(
+            ['Testar funcionamento'],
+            $schedule->refresh()->technician_checklist_items
+        );
+        $this->assertNull($schedule->technician_checklist_completed_at);
+
+        $this->actingAs($this->technician, 'sanctum')
+            ->postJson(route('api.technician.schedules.checklist', $schedule), [
+                'items' => [
+                    'Testar funcionamento',
+                    'Orientar cliente',
+                ],
+            ])
+            ->assertOk()
+            ->assertJsonPath('result.technician_checklist_items.1', 'Orientar cliente');
+
+        $this->assertNotNull($schedule->refresh()->technician_checklist_completed_at);
     }
 
     public function test_technician_cannot_open_schedule_from_another_technician(): void

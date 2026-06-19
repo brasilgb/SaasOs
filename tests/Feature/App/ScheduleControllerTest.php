@@ -2,9 +2,9 @@
 
 namespace Tests\Feature\App;
 
-use App\Models\App\Customer;
 use App\Models\App\CashSession;
 use App\Models\App\CashSessionMovement;
+use App\Models\App\Customer;
 use App\Models\App\Order;
 use App\Models\App\OrderPayment;
 use App\Models\App\Other;
@@ -92,6 +92,10 @@ class ScheduleControllerTest extends TestCase
                 ['name' => 'Fonte de teste', 'quantity' => 1],
                 'Lacre',
             ],
+            'technician_checklist' => [
+                'Conferir equipamento',
+                'Orientar cliente',
+            ],
             'status' => 1,
             'send_to_technician' => false,
         ]);
@@ -113,6 +117,10 @@ class ScheduleControllerTest extends TestCase
             ['name' => 'Fonte de teste', 'quantity' => 1, 'part_id' => null, 'used' => false],
             ['name' => 'Lacre', 'quantity' => 1, 'part_id' => null, 'used' => false],
         ], $schedule->material_checklist);
+        $this->assertSame([
+            'Conferir equipamento',
+            'Orientar cliente',
+        ], $schedule->technician_checklist);
     }
 
     public function test_it_marks_linked_order_as_schedule_completed_when_schedule_is_closed(): void

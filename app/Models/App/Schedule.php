@@ -15,6 +15,9 @@ class Schedule extends Model
 
     protected $casts = [
         'material_checklist' => 'array',
+        'technician_checklist' => 'array',
+        'technician_checklist_items' => 'array',
+        'technician_checklist_completed_at' => 'datetime',
         'technician_report_updated_at' => 'datetime',
         'service_closure_requested_at' => 'datetime',
         'service_closure_amount' => 'decimal:2',
@@ -101,5 +104,32 @@ class Schedule extends Model
             ->map(fn (array $item): string => ($item['quantity'] ?? 1).'x '.$item['name'])
             ->values()
             ->all();
+    }
+
+    public static function normalizeTechnicianChecklist(mixed $items): array
+    {
+        return collect(is_array($items) ? $items : [])
+            ->map(fn ($item) => mb_substr(trim((string) $item), 0, 500))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    public function technicianChecklistItems(): array
+    {
+        $items = self::normalizeTechnicianChecklist($this->technician_checklist);
+
+        if ($items !== []) {
+            return $items;
+        }
+
+        return $this->order?->equipment?->checklists
+            ->flatMap(fn ($checklist) => collect(explode(',', (string) $checklist->checklist))
+                ->map(fn ($item) => trim($item))
+                ->filter())
+            ->unique()
+            ->values()
+            ->all() ?? [];
     }
 }

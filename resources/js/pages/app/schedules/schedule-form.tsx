@@ -251,6 +251,7 @@ function TechnicianAttendancePanel({ schedule }: { schedule: any }) {
 export default function ScheduleForm({ customers, parts = [], initialData, technicals, enableTechnicianScheduleNotifications }: ScheduleFormProps) {
     const isEdit = !!initialData;
     const [newMaterialItem, setNewMaterialItem] = useState('');
+    const [newChecklistItem, setNewChecklistItem] = useState('');
 
     const optionsCustomer = customers.map((customer: any) => ({
         value: customer.id,
@@ -268,6 +269,7 @@ export default function ScheduleForm({ customers, parts = [], initialData, techn
         service: initialData?.service ?? '',
         details: initialData?.details ?? '',
         material_checklist: normalizeMaterialChecklist(initialData?.material_checklist),
+        technician_checklist: Array.isArray(initialData?.technician_checklist) ? initialData.technician_checklist : [],
         user_id: initialData?.user_id ?? '',
         status: initialData?.status ?? '',
         observations: initialData?.observations ?? '',
@@ -332,6 +334,21 @@ export default function ScheduleForm({ customers, parts = [], initialData, techn
         setData(
             'material_checklist',
             data.material_checklist.filter((_: MaterialChecklistItem, itemIndex: number) => itemIndex !== index),
+        );
+    };
+
+    const addChecklistItem = () => {
+        const item = newChecklistItem.trim();
+        if (!item || data.technician_checklist.includes(item)) return;
+
+        setData('technician_checklist', [...data.technician_checklist, item]);
+        setNewChecklistItem('');
+    };
+
+    const removeChecklistItem = (index: number) => {
+        setData(
+            'technician_checklist',
+            data.technician_checklist.filter((_: string, itemIndex: number) => itemIndex !== index),
         );
     };
 
@@ -443,6 +460,51 @@ export default function ScheduleForm({ customers, parts = [], initialData, techn
                                             size="icon"
                                             onClick={() => removeMaterialItem(index)}
                                             aria-label={`Remover material ${item.name}`}
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="grid gap-3 border-t pt-4">
+                        <Label htmlFor="technician_checklist">Checklist técnico do atendimento</Label>
+                        <div className="flex flex-col gap-2 sm:flex-row">
+                            <Input
+                                id="technician_checklist"
+                                value={newChecklistItem}
+                                onChange={(event) => setNewChecklistItem(event.target.value)}
+                                onKeyDown={(event) => {
+                                    if (event.key === 'Enter') {
+                                        event.preventDefault();
+                                        addChecklistItem();
+                                    }
+                                }}
+                                placeholder="Ex.: testar funcionamento, orientar cliente"
+                            />
+                            <Button type="button" variant="outline" onClick={addChecklistItem}>
+                                <Plus className="h-4 w-4" />
+                                Adicionar
+                            </Button>
+                        </div>
+                        <InputError className="mt-2" message={(errors as any).technician_checklist} />
+
+                        {data.technician_checklist.length > 0 && (
+                            <div className="grid gap-2 md:grid-cols-2">
+                                {data.technician_checklist.map((item: string, index: number) => (
+                                    <div key={`${item}-${index}`} className="flex items-center justify-between gap-3 rounded-md border px-3 py-2 text-sm">
+                                        <div className="flex min-w-0 items-center gap-2">
+                                            <ClipboardCheck className="h-4 w-4 shrink-0 text-emerald-600" />
+                                            <span className="truncate">{item}</span>
+                                        </div>
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => removeChecklistItem(index)}
+                                            aria-label={`Remover item ${item}`}
                                         >
                                             <Trash2 className="h-4 w-4" />
                                         </Button>

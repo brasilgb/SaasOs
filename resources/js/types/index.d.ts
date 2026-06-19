@@ -126,6 +126,9 @@ export interface Scheduler {
     service?: string | null;
     details?: string | null;
     material_checklist?: Array<string | ScheduleMaterialChecklistItem> | null;
+    technician_checklist?: string[] | null;
+    technician_checklist_items?: string[] | null;
+    technician_checklist_completed_at?: string | null;
     status: number;
     schedules: string;
     created_at: string;

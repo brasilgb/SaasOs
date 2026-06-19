@@ -12,6 +12,7 @@ class ScheduleRequest extends FormRequest
     {
         $this->merge([
             'material_checklist' => Schedule::normalizeMaterialChecklist($this->input('material_checklist', [])),
+            'technician_checklist' => Schedule::normalizeTechnicianChecklist($this->input('technician_checklist', [])),
         ]);
     }
 
@@ -42,6 +43,8 @@ class ScheduleRequest extends FormRequest
             'material_checklist.*.quantity' => 'required|integer|min:1|max:999',
             'material_checklist.*.part_id' => 'nullable|integer|exists:parts,id',
             'material_checklist.*.used' => 'boolean',
+            'technician_checklist' => 'nullable|array',
+            'technician_checklist.*' => 'required|string|max:500',
             'observations' => 'nullable|string|max:500',
             'status' => 'required',
             'send_to_technician' => 'boolean',
@@ -57,6 +60,7 @@ class ScheduleRequest extends FormRequest
             'service' => 'serviço',
             'details' => 'detalhes do serviço',
             'material_checklist' => 'checklist de material',
+            'technician_checklist' => 'checklist técnico',
             'status' => 'status do agendamento',
             'send_to_technician' => 'enviar ao técnico',
         ];

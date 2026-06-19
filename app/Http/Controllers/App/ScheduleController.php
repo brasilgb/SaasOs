@@ -189,13 +189,10 @@ class ScheduleController extends Controller
     private function scheduleIndexPayload(Schedule $schedule): array
     {
         $order = $schedule->order;
-        $checklistItems = collect($order?->equipment?->checklists ?? [])
-            ->flatMap(fn ($checklist) => collect(explode(',', (string) $checklist->checklist))
-                ->map(fn ($item) => trim($item))
-                ->filter())
-            ->values()
-            ->all();
-        $completedChecklistItems = $order?->technician_checklist_items ?? [];
+        $checklistItems = $schedule->technicianChecklistItems();
+        $completedChecklistItems = $schedule->technician_checklist_items
+            ?? $order?->technician_checklist_items
+            ?? [];
         $checklistCompleted = $checklistItems === [] || empty(array_diff($checklistItems, $completedChecklistItems));
         $scheduleImages = $schedule->images
             ->map(fn ($image) => [

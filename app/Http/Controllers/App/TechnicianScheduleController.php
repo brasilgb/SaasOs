@@ -403,15 +403,12 @@ class TechnicianScheduleController extends Controller
 
         abort_if((int) $schedule->status === 3 || $schedule->check_out_at, 422, 'Atendimento ja finalizado.');
         abort_unless($schedule->check_in_at, 422, 'Registre o check-in antes do check-out.');
-        $checklistItems = $schedule->order?->equipment?->checklists
-            ->flatMap(fn ($checklist) => collect(explode(',', (string) $checklist->checklist))
-                ->map(fn ($item) => trim($item))
-                ->filter())
-            ->values()
-            ->all() ?? [];
+        $checklistItems = $schedule->technicianChecklistItems();
 
         if ($checklistItems !== []) {
-            $completedItems = $schedule->order?->technician_checklist_items ?? [];
+            $completedItems = $schedule->technician_checklist_items
+                ?? $schedule->order?->technician_checklist_items
+                ?? [];
 
             abort_unless(
                 empty(array_diff($checklistItems, $completedItems)),
@@ -487,7 +484,6 @@ class TechnicianScheduleController extends Controller
             ->whereKey($schedule->id)
             ->firstOrFail();
 
-        $order = $schedule->order;
         $materialChecklist = $data['material_checklist'] ?? $data['materials'] ?? null;
 
         if (is_array($materialChecklist)) {
@@ -507,13 +503,6 @@ class TechnicianScheduleController extends Controller
             });
         }
 
-        if (! $order) {
-            return response()->json([
-                'success' => true,
-                'result' => $this->freshSchedulePayload($schedule),
-            ]);
-        }
-
         if (! array_key_exists('items', $data)) {
             return response()->json([
                 'success' => true,
@@ -521,12 +510,7 @@ class TechnicianScheduleController extends Controller
             ]);
         }
 
-        $availableItems = $order->equipment?->checklists
-            ->flatMap(fn ($checklist) => collect(explode(',', (string) $checklist->checklist))
-                ->map(fn ($item) => trim($item))
-                ->filter())
-            ->values()
-            ->all() ?? [];
+        $availableItems = $schedule->technicianChecklistItems();
 
         $items = collect($data['items'] ?? [])
             ->map(fn ($item) => trim((string) $item))
@@ -536,10 +520,19 @@ class TechnicianScheduleController extends Controller
             ->values()
             ->all();
 
-        $order->update([
+        $schedule->update([
             'technician_checklist_items' => $items,
-            'technician_checklist_completed_at' => count($items) > 0 ? now() : null,
+            'technician_checklist_completed_at' => $availableItems !== [] && empty(array_diff($availableItems, $items))
+                ? now()
+                : null,
         ]);
+
+        if ($schedule->order && $schedule->technician_checklist === null) {
+            $schedule->order->update([
+                'technician_checklist_items' => $items,
+                'technician_checklist_completed_at' => $items !== [] ? now() : null,
+            ]);
+        }
 
         return response()->json([
             'success' => true,
@@ -742,6 +735,12 @@ class TechnicianScheduleController extends Controller
             'details' => $this->scheduleDetails($schedule),
             'material_checklist' => $schedule->normalizedMaterialChecklist(),
             'material_checklist_labels' => $schedule->materialChecklistLabels(),
+            'technician_checklist' => $schedule->technicianChecklistItems(),
+            'technician_checklist_items' => $schedule->technician_checklist_items
+                ?? $order?->technician_checklist_items
+                ?? [],
+            'technician_checklist_completed_at' => $schedule->technician_checklist_completed_at
+                ?? $order?->technician_checklist_completed_at,
             'status' => $schedule->status,
             'status_label' => $this->statusLabel((int) $schedule->status),
             'observations' => $schedule->observations,
