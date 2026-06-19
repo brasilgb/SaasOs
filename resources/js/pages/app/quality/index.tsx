@@ -5,6 +5,7 @@ import { SlaTooltip } from '@/components/sla-tooltip';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -13,7 +14,7 @@ import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { connectBackend } from '@/Utils/connectApi';
 import { Head, Link, router } from '@inertiajs/react';
-import { AlertTriangle, ExternalLink, ShieldAlert, ShieldCheck, ShieldEllipsis, Star } from 'lucide-react';
+import { AlertTriangle, ChevronLeft, ChevronRight, ExternalLink, ShieldAlert, ShieldCheck, ShieldEllipsis, Star } from 'lucide-react';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
 
@@ -27,6 +28,31 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: route('app.quality.index'),
     },
 ];
+
+type DateRangeValue = {
+    from?: Date | string;
+    to?: Date | string;
+};
+
+type RankingItem = {
+    label: string;
+    total: number;
+};
+
+type FeedbackRecoveryItem = {
+    id: number;
+    order_number: number;
+    customer: string;
+    rating: number;
+    comment?: string;
+    submitted_at?: string;
+    recovery_status?: string;
+    recovery_notes?: string;
+    recovery_updated_at?: string;
+    recovery_assigned_to?: string;
+    recovery_assigned_to_id?: number | null;
+    recovery_overdue?: boolean;
+};
 
 function formatDateRange(date?: Date | string) {
     if (!date) return '';
@@ -62,7 +88,7 @@ function severityConfig(severity: string) {
     };
 }
 
-function RankingCard({ title, items, emptyText }: { title: string; items?: Array<{ label: string; total: number }>; emptyText: string }) {
+function RankingCard({ title, items, emptyText }: { title: string; items?: RankingItem[]; emptyText: string }) {
     return (
         <Card className="h-full">
             <CardHeader>
@@ -92,27 +118,14 @@ function FeedbackRecoveryCard({
     onSave,
     currentUserId,
 }: {
-    items?: Array<{
-        id: number;
-        order_number: number;
-        customer: string;
-        rating: number;
-        comment?: string;
-        submitted_at?: string;
-        recovery_status?: string;
-        recovery_notes?: string;
-        recovery_updated_at?: string;
-        recovery_assigned_to?: string;
-        recovery_assigned_to_id?: number | null;
-        recovery_overdue?: boolean;
-    }>;
+    items?: FeedbackRecoveryItem[];
     assignees?: Array<{ id: number; name: string }>;
     onSave: (payload: { orderId: number; assigned_to: string; status: string; notes: string }) => void;
     currentUserId?: number | null;
 }) {
     const [forms, setForms] = useState<Record<number, { assigned_to: string; status: string; notes: string }>>({});
 
-    const getForm = (item: any) =>
+    const getForm = (item: FeedbackRecoveryItem) =>
         forms[item.id] ?? {
             assigned_to: item.recovery_assigned_to_id ? String(item.recovery_assigned_to_id) : '',
             status: item.recovery_status ?? 'pending',
@@ -271,68 +284,182 @@ type CustomerFeedbackItem = {
     recovery_status?: string | null;
 };
 
-function CustomerFeedbackList({ items }: { items?: CustomerFeedbackItem[] }) {
+type CustomerFeedbackPage = {
+    data: CustomerFeedbackItem[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    from?: number | null;
+    to?: number | null;
+    total: number;
+};
+
+type QualityMetrics = {
+    summary?: {
+        severity?: string;
+        warranty_return_rate?: number;
+        warranty_return_threshold?: number;
+        total_orders?: number;
+        warranty_returns?: number;
+        open_warranty_returns?: number;
+        affected_customers?: number;
+        avg_days_to_return?: number;
+        recovery_pending?: number;
+        recovery_in_progress?: number;
+        recovery_resolved?: number;
+        recovery_overdue?: number;
+        recovery_sla_days?: number;
+        feedback_responses?: number;
+        feedback_average_rating?: number;
+        feedback_response_rate?: number;
+        low_feedbacks?: number;
+        unassigned_low_feedbacks?: number;
+    };
+    comparison?: {
+        direction?: string;
+        previous_warranty_return_rate?: number;
+        delta_rate?: number;
+    };
+    top_equipments?: RankingItem[];
+    top_defects?: RankingItem[];
+    top_technicians?: RankingItem[];
+    status_breakdown?: RankingItem[];
+    trend?: {
+        granularity?: string;
+        data?: Array<{ label: string; rate: number; returns: number; total_orders: number }>;
+    };
+    feedback_orders?: CustomerFeedbackPage;
+    low_feedback_orders?: FeedbackRecoveryItem[];
+};
+
+function CustomerFeedbackTable({
+    page,
+    onPageChange,
+    onPerPageChange,
+}: {
+    page?: CustomerFeedbackPage;
+    onPageChange: (page: number) => void;
+    onPerPageChange: (perPage: number) => void;
+}) {
+    const items = page?.data ?? [];
+
     return (
         <Card>
-            <CardHeader>
-                <CardTitle className="text-base">Avaliações recebidas</CardTitle>
-                <p className="text-muted-foreground text-sm">Notas e comentários enviados pelos clientes no período selecionado.</p>
+            <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <CardTitle className="text-base">Avaliações recebidas</CardTitle>
+                    <p className="text-muted-foreground mt-1 text-sm">Notas e comentários enviados pelos clientes no período selecionado.</p>
+                </div>
+                <label className="text-muted-foreground flex items-center gap-2 text-xs">
+                    Por página
+                    <select
+                        value={page?.per_page ?? 20}
+                        onChange={(event) => onPerPageChange(Number(event.target.value))}
+                        className="border-input bg-background rounded-md border px-2 py-1.5 text-sm"
+                    >
+                        <option value={20}>20</option>
+                        <option value={50}>50</option>
+                        <option value={100}>100</option>
+                    </select>
+                </label>
             </CardHeader>
             <CardContent>
                 {items && items.length > 0 ? (
-                    <div className="space-y-3">
-                        {items.map((item) => (
-                            <div key={item.id} className="rounded-lg border p-4">
-                                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                                    <div className="min-w-0">
-                                        <div className="font-medium">
-                                            OS #{item.order_number} • {item.customer}
-                                        </div>
-                                        <div className="text-muted-foreground mt-1 text-xs">
-                                            {item.submitted_at ? moment(item.submitted_at).format('DD/MM/YYYY HH:mm') : 'Data não informada'}
-                                            {item.technician ? ` • Técnico: ${item.technician}` : ''}
-                                        </div>
-                                    </div>
+                    <>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Data</TableHead>
+                                    <TableHead>OS</TableHead>
+                                    <TableHead>Cliente</TableHead>
+                                    <TableHead>Técnico</TableHead>
+                                    <TableHead>Nota</TableHead>
+                                    <TableHead className="min-w-[280px]">Comentário</TableHead>
+                                    <TableHead className="text-right">Ação</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {items.map((item) => (
+                                    <TableRow key={item.id}>
+                                        <TableCell>{item.submitted_at ? moment(item.submitted_at).format('DD/MM/YYYY HH:mm') : '-'}</TableCell>
+                                        <TableCell className="font-medium">#{item.order_number}</TableCell>
+                                        <TableCell>{item.customer}</TableCell>
+                                        <TableCell>{item.technician || '-'}</TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-2">
+                                                <div className="flex items-center gap-0.5" aria-label={`Nota ${item.rating} de 5`}>
+                                                    {[1, 2, 3, 4, 5].map((rating) => (
+                                                        <Star
+                                                            key={rating}
+                                                            className={`h-3.5 w-3.5 ${
+                                                                rating <= item.rating
+                                                                    ? 'fill-amber-400 text-amber-400'
+                                                                    : 'text-muted-foreground/30'
+                                                            }`}
+                                                        />
+                                                    ))}
+                                                </div>
+                                                <Badge variant={item.requires_recovery ? 'destructive' : 'secondary'}>{item.rating}</Badge>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="max-w-[420px] whitespace-normal">
+                                            {item.comment?.trim() || <span className="text-muted-foreground">Sem comentário</span>}
+                                            {item.requires_recovery ? (
+                                                <div className="mt-1">
+                                                    <Badge variant="outline">
+                                                        Tratativa:{' '}
+                                                        {item.recovery_status === 'resolved'
+                                                            ? 'resolvida'
+                                                            : item.recovery_status === 'in_progress'
+                                                              ? 'em andamento'
+                                                              : 'pendente'}
+                                                    </Badge>
+                                                </div>
+                                            ) : null}
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <Button asChild size="icon" variant="outline" title={`Abrir OS ${item.order_number}`}>
+                                                <Link href={route('app.orders.index', { search: item.order_number, init: true })}>
+                                                    <ExternalLink className="h-4 w-4" />
+                                                </Link>
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
 
-                                    <div className="flex shrink-0 flex-wrap items-center gap-2">
-                                        <div className="flex items-center gap-1" aria-label={`Nota ${item.rating} de 5`}>
-                                            {[1, 2, 3, 4, 5].map((rating) => (
-                                                <Star
-                                                    key={rating}
-                                                    className={`h-4 w-4 ${
-                                                        rating <= item.rating
-                                                            ? 'fill-amber-400 text-amber-400'
-                                                            : 'text-muted-foreground/30'
-                                                    }`}
-                                                />
-                                            ))}
-                                        </div>
-                                        <Badge variant={item.requires_recovery ? 'destructive' : 'secondary'}>Nota {item.rating}</Badge>
-                                    </div>
-                                </div>
-
-                                <p className="text-muted-foreground mt-3 text-sm">
-                                    {item.comment?.trim() || 'O cliente enviou apenas a nota, sem comentário.'}
-                                </p>
-
-                                <div className="mt-3 flex items-center justify-between gap-3">
-                                    {item.requires_recovery ? (
-                                        <Badge variant="outline">
-                                            Tratativa: {item.recovery_status === 'resolved' ? 'resolvida' : item.recovery_status === 'in_progress' ? 'em andamento' : 'pendente'}
-                                        </Badge>
-                                    ) : (
-                                        <span />
-                                    )}
-                                    <Button asChild size="sm" variant="outline">
-                                        <Link href={route('app.orders.index', { search: item.order_number, init: true })}>
-                                            Abrir ordem
-                                            <ExternalLink className="h-4 w-4" />
-                                        </Link>
-                                    </Button>
-                                </div>
+                        <div className="mt-4 flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="text-muted-foreground text-sm">
+                                Exibindo {page?.from ?? 0}–{page?.to ?? 0} de {page?.total ?? 0} avaliações
                             </div>
-                        ))}
-                    </div>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={!page || page.current_page <= 1}
+                                    onClick={() => onPageChange(Math.max(1, (page?.current_page ?? 1) - 1))}
+                                >
+                                    <ChevronLeft className="h-4 w-4" />
+                                    Anterior
+                                </Button>
+                                <span className="text-muted-foreground px-2 text-sm">
+                                    Página {page?.current_page ?? 1} de {page?.last_page ?? 1}
+                                </span>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={!page || page.current_page >= page.last_page}
+                                    onClick={() => onPageChange(Math.min(page?.last_page ?? 1, (page?.current_page ?? 1) + 1))}
+                                >
+                                    Próxima
+                                    <ChevronRight className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        </div>
+                    </>
                 ) : (
                     <p className="text-muted-foreground text-sm">Nenhuma avaliação recebida no período selecionado.</p>
                 )}
@@ -349,9 +476,11 @@ export default function QualityIndicators({
     auth?: { id?: number };
 }) {
     const { timeRange, dateRange, setTimeRange, setDateRange, clearDateRange } = usePersistedPeriodFilter('quality-period-filter');
-    const [metrics, setMetrics] = useState<any>(null);
+    const [metrics, setMetrics] = useState<QualityMetrics | null>(null);
     const [recoveryStatusFilter, setRecoveryStatusFilter] = useState('all');
     const [assignedToFilter, setAssignedToFilter] = useState('all');
+    const [feedbackPage, setFeedbackPage] = useState(1);
+    const [feedbackPerPage, setFeedbackPerPage] = useState(20);
 
     const customRangeFrom = dateRange.from;
     const customRangeTo = dateRange.to;
@@ -384,25 +513,30 @@ export default function QualityIndicators({
                 query.set('assigned_to', assignedToFilter);
             }
 
+            query.set('feedback_page', String(feedbackPage));
+            query.set('feedback_per_page', String(feedbackPerPage));
+
             const url = `quality-indicators/metrics/${timerangeForRequests}${query.toString() ? `?${query.toString()}` : ''}`;
             const response = await connectBackend.get(url);
             setMetrics(response.data);
         };
 
         void loadMetrics();
-    }, [timeRange, dateRange, hasCustomRange, timerangeForRequests, recoveryStatusFilter, assignedToFilter]);
+    }, [timeRange, dateRange, hasCustomRange, timerangeForRequests, recoveryStatusFilter, assignedToFilter, feedbackPage, feedbackPerPage]);
 
     const onTimeRangeChange = (value: string) => {
         if (!value) return;
 
         setTimeRange(value);
+        setFeedbackPage(1);
         if (value !== 'custom') {
             clearDateRange();
         }
     };
 
-    const onDateRangeChange = (range: any) => {
+    const onDateRangeChange = (range: DateRangeValue) => {
         setDateRange(range);
+        setFeedbackPage(1);
 
         if (range?.from && range?.to) {
             setTimeRange('custom');
@@ -617,7 +751,7 @@ export default function QualityIndicators({
 
                         <RankingCard
                             title="Situação atual dos retornos em garantia"
-                            items={metrics?.status_breakdown?.map((item: any) => ({ label: item.label, total: item.total }))}
+                            items={metrics?.status_breakdown?.map((item) => ({ label: item.label, total: item.total }))}
                             emptyText="Nenhum retorno em garantia no período."
                         />
                     </TabsContent>
@@ -655,7 +789,14 @@ export default function QualityIndicators({
                             </CardContent>
                         </Card>
 
-                        <CustomerFeedbackList items={metrics?.feedback_orders} />
+                        <CustomerFeedbackTable
+                            page={metrics?.feedback_orders}
+                            onPageChange={setFeedbackPage}
+                            onPerPageChange={(perPage) => {
+                                setFeedbackPerPage(perPage);
+                                setFeedbackPage(1);
+                            }}
+                        />
 
                         {Boolean(summary?.unassigned_low_feedbacks) && (
                             <Card className="border-amber-300 bg-amber-50">

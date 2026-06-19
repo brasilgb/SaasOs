@@ -242,22 +242,47 @@ class QualityIndicatorController extends Controller
             ->all();
 
         $deliveredOrders = $allOrders->where('service_status', OrderStatus::DELIVERED);
-        $feedbackResponses = Order::query()
+        $feedbackBaseQuery = Order::query()
+            ->whereNotNull('customer_feedback_submitted_at')
+            ->whereBetween('customer_feedback_submitted_at', [$start, $end]);
+        $feedbackResponsesCount = (clone $feedbackBaseQuery)->count();
+        $feedbackAverageRating = round((float) ((clone $feedbackBaseQuery)->avg('customer_feedback_rating') ?? 0), 1);
+        $feedbackPerPage = in_array(request()->integer('feedback_per_page', 20), [20, 50, 100], true)
+            ? request()->integer('feedback_per_page', 20)
+            : 20;
+        $feedbackPaginator = (clone $feedbackBaseQuery)
             ->with([
                 'customer:id,name',
                 'user:id,name',
+            ])
+            ->orderByDesc('customer_feedback_submitted_at')
+            ->paginate(
+                $feedbackPerPage,
+                ['*'],
+                'feedback_page',
+                max(1, request()->integer('feedback_page', 1))
+            )
+            ->through(fn (Order $order) => [
+                'id' => $order->id,
+                'order_number' => $order->order_number,
+                'customer' => $order->customer?->name ?: 'Cliente não informado',
+                'technician' => $order->user?->name,
+                'rating' => (int) ($order->customer_feedback_rating ?? 0),
+                'comment' => $order->customer_feedback_comment,
+                'submitted_at' => $order->customer_feedback_submitted_at?->toIso8601String(),
+                'requires_recovery' => (int) ($order->customer_feedback_rating ?? 0) <= 3,
+                'recovery_status' => $order->customer_feedback_recovery_status,
+            ]);
+        $feedbackResponseRate = $deliveredOrders->count() > 0
+            ? min(100, round(($feedbackResponsesCount / $deliveredOrders->count()) * 100, 1))
+            : 0.0;
+        $lowFeedbackOrders = (clone $feedbackBaseQuery)
+            ->with([
+                'customer:id,name',
                 'customerFeedbackRecoveryAssignee:id,name',
             ])
-            ->whereNotNull('customer_feedback_submitted_at')
-            ->whereBetween('customer_feedback_submitted_at', [$start, $end])
-            ->orderByDesc('customer_feedback_submitted_at')
-            ->get();
-        $feedbackAverageRating = round((float) ($feedbackResponses->avg('customer_feedback_rating') ?? 0), 1);
-        $feedbackResponseRate = $deliveredOrders->count() > 0
-            ? min(100, round(($feedbackResponses->count() / $deliveredOrders->count()) * 100, 1))
-            : 0.0;
-        $lowFeedbackOrders = $feedbackResponses
-            ->filter(fn (Order $order) => (int) ($order->customer_feedback_rating ?? 0) <= 3)
+            ->where('customer_feedback_rating', '<=', 3)
+            ->get()
             ->sortBy('customer_feedback_rating')
             ->values();
         $allLowFeedbackOrders = $lowFeedbackOrders;
@@ -302,7 +327,7 @@ class QualityIndicatorController extends Controller
                 'open_warranty_returns' => $openWarrantyReturns,
                 'affected_customers' => $warrantyOrders->pluck('customer_id')->filter()->unique()->count(),
                 'avg_days_to_return' => $avgDaysToReturn,
-                'feedback_responses' => $feedbackResponses->count(),
+                'feedback_responses' => $feedbackResponsesCount,
                 'feedback_average_rating' => $feedbackAverageRating,
                 'feedback_response_rate' => $feedbackResponseRate,
                 'low_feedbacks' => $allLowFeedbackOrders->count(),
@@ -317,17 +342,7 @@ class QualityIndicatorController extends Controller
             'top_defects' => $topDefects,
             'top_technicians' => $topTechnicians,
             'status_breakdown' => $statusBreakdown,
-            'feedback_orders' => $feedbackResponses->map(fn (Order $order) => [
-                'id' => $order->id,
-                'order_number' => $order->order_number,
-                'customer' => $order->customer?->name ?: 'Cliente não informado',
-                'technician' => $order->user?->name,
-                'rating' => (int) ($order->customer_feedback_rating ?? 0),
-                'comment' => $order->customer_feedback_comment,
-                'submitted_at' => $order->customer_feedback_submitted_at?->toIso8601String(),
-                'requires_recovery' => (int) ($order->customer_feedback_rating ?? 0) <= 3,
-                'recovery_status' => $order->customer_feedback_recovery_status,
-            ])->all(),
+            'feedback_orders' => $feedbackPaginator,
             'low_feedback_orders' => $lowFeedbackOrders->map(fn (Order $order) => [
                 'id' => $order->id,
                 'order_number' => $order->order_number,

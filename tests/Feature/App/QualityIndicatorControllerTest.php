@@ -98,7 +98,7 @@ class QualityIndicatorControllerTest extends TestCase
             ->assertJsonPath('summary.feedback_average_rating', 4)
             ->assertJsonPath('summary.feedback_response_rate', 100)
             ->assertJsonPath('summary.low_feedbacks', 0)
-            ->assertJsonPath('feedback_orders.0.rating', 4)
+            ->assertJsonPath('feedback_orders.data.0.rating', 4)
             ->assertJsonPath('trend.granularity', 'daily')
             ->assertJsonPath('comparison.previous_warranty_return_rate', 33.3)
             ->assertJsonPath('comparison.delta_rate', 16.7)
@@ -142,7 +142,7 @@ class QualityIndicatorControllerTest extends TestCase
             ->assertJsonPath('summary.feedback_responses', 1)
             ->assertJsonPath('summary.feedback_average_rating', 2)
             ->assertJsonPath('summary.low_feedbacks', 1)
-            ->assertJsonPath('feedback_orders.0.comment', 'A comunicação poderia ser melhor.')
+            ->assertJsonPath('feedback_orders.data.0.comment', 'A comunicação poderia ser melhor.')
             ->assertJsonPath('low_feedback_orders.0.comment', 'A comunicação poderia ser melhor.');
     }
 
@@ -167,9 +167,32 @@ class QualityIndicatorControllerTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJsonCount(1, 'feedback_orders')
-            ->assertJsonPath('feedback_orders.0.id', $visibleOrder->id)
+            ->assertJsonCount(1, 'feedback_orders.data')
+            ->assertJsonPath('feedback_orders.data.0.id', $visibleOrder->id)
             ->assertJsonMissing(['comment' => 'Avaliação de outra empresa.']);
+    }
+
+    public function test_quality_feedback_table_is_paginated_on_the_server(): void
+    {
+        Order::factory()->forTenant($this->tenant->id)->count(25)->create([
+            'service_status' => OrderStatus::DELIVERED,
+            'created_at' => now()->subDay(),
+            'customer_feedback_submitted_at' => now()->subHour(),
+            'customer_feedback_rating' => 5,
+        ]);
+
+        $response = $this->get(route('app.quality.metrics', [
+            'timerange' => 7,
+            'feedback_page' => 2,
+            'feedback_per_page' => 20,
+        ]));
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('feedback_orders.current_page', 2)
+            ->assertJsonPath('feedback_orders.per_page', 20)
+            ->assertJsonPath('feedback_orders.total', 25)
+            ->assertJsonCount(5, 'feedback_orders.data');
     }
 
     public function test_quality_feedback_recovery_can_be_updated(): void
