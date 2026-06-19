@@ -281,10 +281,10 @@ export default function OrderDashboard({
                     />
                     <KpiDashboard
                         link={route('app.quality.index')}
-                        title="Avaliação"
-                        value={metrics?.feedback_average_rating ?? 0}
+                        title="Avaliações"
+                        value={metrics?.feedback_responses ?? 0}
                         icon={<Star className="h-10 w-10" />}
-                        description={`${metrics?.feedback_responses ?? 0} resposta(s) • ${metrics?.feedback_response_rate ?? 0}% retorno`}
+                        description={`Nota média ${metrics?.feedback_average_rating ?? 0} • ${metrics?.feedback_response_rate ?? 0}% retorno`}
                     />
                     <KpiDashboard
                         link={route('app.parts.index')}

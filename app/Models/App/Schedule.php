@@ -15,6 +15,9 @@ class Schedule extends Model
 
     protected $casts = [
         'material_checklist' => 'array',
+        'service_closure_requested_at' => 'datetime',
+        'service_closure_amount' => 'decimal:2',
+        'service_closure_priced_at' => 'datetime',
         'send_to_technician' => 'boolean',
         'check_in_at' => 'datetime',
         'check_in_latitude' => 'decimal:7',

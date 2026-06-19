@@ -283,4 +283,26 @@ class ScheduleControllerTest extends TestCase
 
         $this->assertSame(1, CashSessionMovement::query()->where('source_type', 'schedule')->where('source_id', $schedule->id)->count());
     }
+
+    public function test_company_defines_requested_service_closure_price(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $schedule = Schedule::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'user_id' => $this->user->id,
+            'service_closure_status' => 'requested',
+            'service_closure_requested_at' => now(),
+        ]);
+
+        $this->patch(route('app.schedules.service-closure-price', $schedule), [
+            'amount' => 245.90,
+        ])->assertSessionHas('success', 'Valor do atendimento definido e liberado para o técnico.');
+
+        $this->assertDatabaseHas('schedules', [
+            'id' => $schedule->id,
+            'service_closure_status' => 'priced',
+            'service_closure_amount' => 245.90,
+            'service_closure_priced_by' => $this->user->id,
+        ]);
+    }
 }

@@ -482,6 +482,8 @@ class TechnicianScheduleApiTest extends TestCase
             'send_to_technician' => true,
             'status' => 2,
             'check_in_at' => now()->subMinutes(20),
+            'service_closure_status' => 'priced',
+            'service_closure_amount' => 120.50,
         ]);
 
         $response = $this->actingAs($this->technician, 'sanctum')
@@ -785,6 +787,8 @@ class TechnicianScheduleApiTest extends TestCase
             'order_id' => null,
             'user_id' => $this->technician->id,
             'send_to_technician' => true,
+            'service_closure_status' => 'priced',
+            'service_closure_amount' => 120.50,
         ]);
 
         $response = $this->actingAs($this->technician, 'sanctum')
@@ -809,6 +813,40 @@ class TechnicianScheduleApiTest extends TestCase
 
         $this->assertDatabaseMissing('order_payments', [
             'amount' => 120.50,
+        ]);
+    }
+
+    public function test_technician_requests_service_closure_before_checkout(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'user_id' => $this->technician->id,
+            'technician_diagnosis' => 'Conector danificado.',
+            'technician_solution' => 'Conector substituído.',
+        ]);
+        $schedule = Schedule::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'order_id' => $order->id,
+            'user_id' => $this->technician->id,
+            'send_to_technician' => true,
+            'status' => 2,
+            'check_in_at' => now()->subMinutes(20),
+        ]);
+
+        $response = $this->actingAs($this->technician, 'sanctum')
+            ->postJson(route('api.technician.schedules.request-closure', $schedule));
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('result.service_closure.status', 'requested')
+            ->assertJsonPath('result.available_actions.can_check_out', false)
+            ->assertJsonPath('result.available_actions.can_record_local_payment', false);
+
+        $this->assertDatabaseHas('schedules', [
+            'id' => $schedule->id,
+            'service_closure_status' => 'requested',
+            'service_closure_requested_by' => $this->technician->id,
         ]);
     }
 }

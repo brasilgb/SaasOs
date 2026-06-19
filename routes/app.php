@@ -73,6 +73,7 @@ Route::delete('orders/{order}/payments/{payment}', [OrderController::class, 'des
 Route::get('orders/{order}/payments-data', [OrderController::class, 'paymentsData'])->name('orders.payments.data');
 Route::post('orders/{order}/fiscal', [OrderController::class, 'registerFiscal'])->name('orders.fiscal.register');
 Route::post('schedules/{schedule}/local-payment-cashier', [ScheduleController::class, 'registerLocalPaymentCashier'])->name('schedules.local-payment-cashier');
+Route::patch('schedules/{schedule}/service-closure-price', [ScheduleController::class, 'defineServiceClosurePrice'])->name('schedules.service-closure-price');
 Route::resource('schedules', ScheduleController::class);
 Route::resource('services', ServiceController::class);
 Route::resource('users', UserController::class);

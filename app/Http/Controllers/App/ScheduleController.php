@@ -235,8 +235,33 @@ class ScheduleController extends Controller
                 'local_payment_registered_in_cashier' => filled($schedule->local_payment_cash_session_id),
                 'can_register_local_payment_cashier' => (bool) $schedule->local_payment_received && blank($schedule->local_payment_cash_session_id),
                 'payments_count' => $schedule->local_payment_received ? 1 : 0,
+                'service_closure_status' => $schedule->service_closure_status,
+                'service_closure_requested_at' => $schedule->service_closure_requested_at,
+                'service_closure_amount' => $schedule->service_closure_amount,
+                'service_closure_priced_at' => $schedule->service_closure_priced_at,
             ],
         ];
+    }
+
+    public function defineServiceClosurePrice(Request $request, Schedule $schedule): RedirectResponse
+    {
+        $this->authorize('update', $schedule);
+        $data = $request->validate([
+            'amount' => ['required', 'numeric', 'min:0.01'],
+        ]);
+
+        if ($schedule->service_closure_status !== 'requested') {
+            return back()->with('error', 'O técnico ainda não solicitou o fechamento deste atendimento.');
+        }
+
+        $schedule->update([
+            'service_closure_status' => 'priced',
+            'service_closure_amount' => round((float) $data['amount'], 2),
+            'service_closure_priced_at' => now(),
+            'service_closure_priced_by' => Auth::id(),
+        ]);
+
+        return back()->with('success', 'Valor do atendimento definido e liberado para o técnico.');
     }
 
     /**

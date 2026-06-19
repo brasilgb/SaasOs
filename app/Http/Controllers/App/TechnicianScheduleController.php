@@ -7,6 +7,7 @@ use App\Models\App\Part;
 use App\Models\App\PartMovement;
 use App\Models\App\Schedule;
 use App\Models\App\ScheduleImage;
+use App\Models\Tenant;
 use App\Models\User;
 use App\Services\OrderStatusService;
 use App\Support\OrderStatus;
@@ -402,7 +403,6 @@ class TechnicianScheduleController extends Controller
 
         abort_if((int) $schedule->status === 3 || $schedule->check_out_at, 422, 'Atendimento ja finalizado.');
         abort_unless($schedule->check_in_at, 422, 'Registre o check-in antes do check-out.');
-
         $checklistItems = $schedule->order?->equipment?->checklists
             ->flatMap(fn ($checklist) => collect(explode(',', (string) $checklist->checklist))
                 ->map(fn ($item) => trim($item))
@@ -427,6 +427,12 @@ class TechnicianScheduleController extends Controller
                 'Salve o diagnostico e a solucao antes de finalizar o atendimento.'
             );
         }
+
+        abort_unless(
+            $schedule->service_closure_status === 'priced' && (float) $schedule->service_closure_amount > 0,
+            422,
+            'Solicite o fechamento e aguarde a empresa definir o valor antes do check-out.'
+        );
 
         $schedule->update([
             'status' => 3,
@@ -558,11 +564,51 @@ class TechnicianScheduleController extends Controller
             ->whereKey($schedule->id)
             ->firstOrFail();
 
+        abort_unless($schedule->service_closure_status === 'priced', 422, 'Aguarde a empresa definir o valor do atendimento.');
+        abort_unless(
+            abs((float) $data['amount'] - (float) $schedule->service_closure_amount) < 0.01,
+            422,
+            'O pagamento deve usar o valor definido pela empresa.'
+        );
+
         $schedule->update([
             'local_payment_received' => (bool) ($data['paid'] ?? true),
             'local_payment_amount' => round((float) $data['amount'], 2),
             'local_payment_received_at' => now(),
             'local_payment_user_id' => $technician->id,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'result' => $this->freshSchedulePayload($schedule),
+        ]);
+    }
+
+    public function requestServiceClosure(Request $request, Schedule $schedule)
+    {
+        $technician = $this->technician($request);
+        $schedule = $this->schedulesQuery($technician)
+            ->whereKey($schedule->id)
+            ->firstOrFail();
+
+        abort_if((int) $schedule->status === 3 || $schedule->check_out_at, 422, 'Atendimento já finalizado.');
+        abort_unless($schedule->check_in_at, 422, 'Registre o check-in antes de solicitar o fechamento.');
+
+        if ($schedule->order) {
+            abort_unless(
+                filled($schedule->order->technician_diagnosis) && filled($schedule->order->technician_solution),
+                422,
+                'Salve o diagnóstico e a solução antes de solicitar o fechamento.'
+            );
+        }
+
+        $schedule->update([
+            'service_closure_status' => 'requested',
+            'service_closure_requested_at' => now(),
+            'service_closure_requested_by' => $technician->id,
+            'service_closure_amount' => null,
+            'service_closure_priced_at' => null,
+            'service_closure_priced_by' => null,
         ]);
 
         return response()->json([
@@ -689,6 +735,10 @@ class TechnicianScheduleController extends Controller
             ->where('tenant_id', $schedule->tenant_id)
             ->where('schedule_id', $schedule->id)
             ->count();
+        $tenant = Tenant::query()->find($schedule->tenant_id);
+        $officeWhatsapp = preg_replace('/\D+/', '', (string) $tenant?->whatsapp);
+        $officeWhatsapp = $officeWhatsapp && strlen($officeWhatsapp) <= 11 ? '55'.$officeWhatsapp : $officeWhatsapp;
+        $closurePriced = $schedule->service_closure_status === 'priced' && (float) $schedule->service_closure_amount > 0;
 
         return [
             'id' => $schedule->id,
@@ -706,13 +756,20 @@ class TechnicianScheduleController extends Controller
             'available_actions' => [
                 'can_update_status' => (int) $schedule->status !== 3,
                 'can_check_in' => (int) $schedule->status !== 3 && ! $schedule->check_in_at,
-                'can_check_out' => (int) $schedule->status !== 3 && filled($schedule->check_in_at) && ! $schedule->check_out_at,
+                'can_check_out' => (int) $schedule->status !== 3 && filled($schedule->check_in_at) && ! $schedule->check_out_at && $closurePriced,
                 'can_finish' => (int) $schedule->status !== 3 && filled($schedule->check_in_at) && ! $schedule->check_out_at,
                 'can_cancel' => false,
                 'can_edit_service' => (bool) $order,
-                'can_record_local_payment' => true,
+                'can_record_local_payment' => $closurePriced,
                 'can_upload_images' => $imagesCount < self::MAX_IMAGES_PER_SCHEDULE,
                 'remaining_images' => max(0, self::MAX_IMAGES_PER_SCHEDULE - $imagesCount),
+            ],
+            'service_closure' => [
+                'status' => $schedule->service_closure_status,
+                'requested_at' => $schedule->service_closure_requested_at,
+                'amount' => $schedule->service_closure_amount,
+                'priced_at' => $schedule->service_closure_priced_at,
+                'office_whatsapp_url' => $officeWhatsapp ? 'https://wa.me/'.$officeWhatsapp : null,
             ],
             'local_payment' => [
                 'received' => (bool) $schedule->local_payment_received,

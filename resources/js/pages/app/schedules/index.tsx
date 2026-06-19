@@ -15,6 +15,7 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { statusAgenda } from '@/Utils/dataSelect';
@@ -155,6 +156,7 @@ function TechnicianMobileSummary({ schedule, scheduleHref }: { schedule: any; sc
 function TechnicianMobileTable({ schedules, pagination, canManageSchedules }: { schedules: any[]; pagination: any; canManageSchedules: boolean }) {
     const [selectedSchedule, setSelectedSchedule] = useState<any | null>(null);
     const cashierForm = useForm({});
+    const priceForm = useForm({ amount: '' });
     const selectedSummary = selectedSchedule?.mobile_summary;
     const selectedStage = selectedSchedule ? getMobileStage(selectedSchedule) : null;
     const selectedReportHref = selectedSchedule ? getScheduleShowHref(selectedSchedule, undefined, undefined, '#technician-report') : '#';
@@ -310,6 +312,18 @@ function TechnicianMobileTable({ schedules, pagination, canManageSchedules }: { 
                                             {formatCurrency(selectedSummary?.local_payment_amount ?? selectedSchedule?.local_payment_amount)}
                                         </Badge>
                                     )}
+                                    {selectedSummary?.service_closure_status === 'requested' && (
+                                        <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">
+                                            <CreditCard className="h-3 w-3" />
+                                            Aguardando definição do valor
+                                        </Badge>
+                                    )}
+                                    {selectedSummary?.service_closure_status === 'priced' && (
+                                        <Badge variant="outline" className="border-sky-200 bg-sky-50 text-sky-700">
+                                            <CreditCard className="h-3 w-3" />
+                                            Valor liberado: {formatCurrency(selectedSummary.service_closure_amount)}
+                                        </Badge>
+                                    )}
                                     {selectedSummary?.local_payment_registered_in_cashier && (
                                         <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
                                             <CreditCard className="h-3 w-3" />
@@ -327,6 +341,33 @@ function TechnicianMobileTable({ schedules, pagination, canManageSchedules }: { 
                                 <div className="flex justify-end">
                                     {canManageSchedules ? (
                                         <div className="flex flex-wrap justify-end gap-2">
+                                            {selectedSummary?.service_closure_status === 'requested' && (
+                                                <div className="flex w-full flex-col gap-2 rounded-md border border-amber-200 bg-amber-50 p-3 sm:w-auto sm:flex-row sm:items-center">
+                                                    <Input
+                                                        value={priceForm.data.amount}
+                                                        onChange={(event) => priceForm.setData('amount', event.target.value)}
+                                                        inputMode="decimal"
+                                                        placeholder="Valor do atendimento"
+                                                        className="bg-white sm:w-48"
+                                                    />
+                                                    <Button
+                                                        type="button"
+                                                        size="sm"
+                                                        disabled={priceForm.processing || !priceForm.data.amount}
+                                                        onClick={() =>
+                                                            priceForm.patch(route('app.schedules.service-closure-price', selectedSchedule.id), {
+                                                                preserveScroll: true,
+                                                                onSuccess: () => {
+                                                                    setSelectedSchedule(null);
+                                                                    priceForm.reset();
+                                                                },
+                                                            })
+                                                        }
+                                                    >
+                                                        {priceForm.processing ? 'Liberando...' : 'Definir e liberar valor'}
+                                                    </Button>
+                                                </div>
+                                            )}
                                             {selectedSummary?.can_register_local_payment_cashier && (
                                                 <Button
                                                     type="button"
