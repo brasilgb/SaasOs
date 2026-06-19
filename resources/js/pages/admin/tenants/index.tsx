@@ -180,7 +180,7 @@ export default function TenantsIndex({ tenants, filters }: any) {
                                         <TableCell>{tenant.expires_at ? moment(tenant.expires_at).format('DD/MM/YYYY') : '-'}</TableCell>
                                         <TableCell>{tenant.status_label}</TableCell>
                                         <TableCell className="flex justify-end gap-2">
-                                            <Button asChild size="icon" className="bg-green-500 text-white hover:bg-green-500">
+                                            <Button asChild size="icon" className="bg-green-500 text-white hover:bg-green-500" title="Enviar WhatsApp">
                                                 <a target="_blank" href={`https://wa.me/${normalizeWhatsappPhone(tenant.whatsapp)}?text=Olá, ${tenant.name}`}>
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"
@@ -195,7 +195,7 @@ export default function TenantsIndex({ tenants, filters }: any) {
                                                 </a>
                                             </Button>
 
-                                            <Button asChild size="icon" className="bg-orange-500 text-white hover:bg-orange-600">
+                                            <Button asChild size="icon" className="bg-orange-500 text-white hover:bg-orange-600" title="Editar empresa">
                                                 <Link href={route('admin.tenants.edit', tenant.id)}>
                                                     <Edit />
                                                 </Link>

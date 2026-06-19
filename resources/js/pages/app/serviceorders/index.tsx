@@ -80,6 +80,15 @@ interface Order {
 
 function formatDate(value?: string) {
     if (!value) return '-';
+
+    const dateOnly = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+    if (dateOnly) {
+        const [, year, month, day] = dateOnly;
+
+        return `${day}/${month}/${year}`;
+    }
+
     return new Date(value).toLocaleDateString('pt-BR');
 }
 
@@ -92,9 +101,16 @@ function getRemainingTime(deliveryDate?: string) {
     if (!deliveryDate) return null;
 
     const today = new Date();
-    const delivery = new Date(deliveryDate);
+    today.setHours(0, 0, 0, 0);
+
+    const dateOnly = deliveryDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    const delivery = dateOnly
+        ? new Date(Number(dateOnly[1]), Number(dateOnly[2]) - 1, Number(dateOnly[3]))
+        : new Date(deliveryDate);
+    delivery.setHours(0, 0, 0, 0);
+
     const diff = delivery.getTime() - today.getTime();
-    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    const days = Math.round(diff / (1000 * 60 * 60 * 24));
 
     if (days < 0) return 'Prazo expirado';
     if (days === 0) return 'Concluir hoje';

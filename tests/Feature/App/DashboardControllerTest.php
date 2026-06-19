@@ -128,6 +128,24 @@ class DashboardControllerTest extends TestCase
             });
     }
 
+    public function test_dashboard_feedback_metrics_use_submission_date_instead_of_order_creation_date(): void
+    {
+        Order::factory()->forTenant($this->tenant->id)->create([
+            'service_status' => OrderStatus::DELIVERED,
+            'created_at' => now()->subMonths(3),
+            'delivery_date' => now()->subMonths(2),
+            'customer_feedback_submitted_at' => now()->subHour(),
+            'customer_feedback_rating' => 5,
+        ]);
+
+        $response = $this->get(route('app.metricsSystem', ['timerange' => 7]));
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('feedback_responses', 1)
+            ->assertJsonPath('feedback_average_rating', 5);
+    }
+
     public function test_schedules_index_filters_by_schedule_number(): void
     {
         $matchingSchedule = Schedule::factory()->forTenant($this->tenant->id)->create([

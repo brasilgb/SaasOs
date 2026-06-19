@@ -325,23 +325,22 @@ class DashboardController extends Controller
 
         $ordersCount = $this->scopeOrdersQuery(Order::query())->whereBetween('created_at', [$startDate, $endDate])->count();
         $warrantyReturns = $this->scopeOrdersQuery(Order::query())->where('is_warranty_return', true)->whereBetween('created_at', [$startDate, $endDate])->count();
-        $deliveredOrders = $this->scopeOrdersQuery(Order::query())->where('service_status', OrderStatus::DELIVERED)
+        $deliveredOrders = $this->scopeOrdersQuery(Order::query())
+            ->where('service_status', OrderStatus::DELIVERED)
             ->whereBetween('created_at', [$startDate, $endDate]);
-        $feedbackResponses = (clone $deliveredOrders)
+        $feedbackResponsesQuery = $this->scopeOrdersQuery(Order::query())
             ->whereNotNull('customer_feedback_submitted_at')
-            ->count();
+            ->whereBetween('customer_feedback_submitted_at', [$startDate, $endDate]);
+        $feedbackResponses = (clone $feedbackResponsesQuery)->count();
         $feedbackAverageRating = round(
-            (float) ((clone $deliveredOrders)
-                ->whereNotNull('customer_feedback_submitted_at')
-                ->avg('customer_feedback_rating') ?? 0),
+            (float) ((clone $feedbackResponsesQuery)->avg('customer_feedback_rating') ?? 0),
             1
         );
-        $lowFeedbackCount = (clone $deliveredOrders)
-            ->whereNotNull('customer_feedback_submitted_at')
+        $lowFeedbackCount = (clone $feedbackResponsesQuery)
             ->where('customer_feedback_rating', '<=', 3)
             ->count();
         $feedbackResponseRate = (clone $deliveredOrders)->count() > 0
-            ? round(($feedbackResponses / (clone $deliveredOrders)->count()) * 100, 1)
+            ? min(100, round(($feedbackResponses / (clone $deliveredOrders)->count()) * 100, 1))
             : 0.0;
         $communicationThreshold = now()->subDays(2);
 

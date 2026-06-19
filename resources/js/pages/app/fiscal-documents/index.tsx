@@ -111,12 +111,13 @@ export default function FiscalDocuments({ documents = [] }: { documents?: Fiscal
                                                             type="button"
                                                             onClick={() => handleSync(document)}
                                                             aria-label="Sincronizar com Focus NFe"
+                                                            title="Sincronizar com Focus NFe"
                                                         >
                                                             <RefreshCw className="h-4 w-4" />
                                                         </Button>
                                                     )}
                                                     {document.pdf_url && (
-                                                        <Button size="icon" variant="outline" asChild>
+                                                        <Button size="icon" variant="outline" asChild title="Abrir PDF">
                                                             <a
                                                                 href={document.pdf_url}
                                                                 target="_blank"
@@ -128,7 +129,7 @@ export default function FiscalDocuments({ documents = [] }: { documents?: Fiscal
                                                         </Button>
                                                     )}
                                                     {document.xml_url && (
-                                                        <Button size="icon" variant="outline" asChild>
+                                                        <Button size="icon" variant="outline" asChild title="Abrir XML">
                                                             <a
                                                                 href={document.xml_url}
                                                                 target="_blank"

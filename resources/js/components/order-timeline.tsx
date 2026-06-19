@@ -97,7 +97,7 @@ function describeLog(log: OrderLogItem): Omit<TimelineEvent, 'id' | 'createdAt' 
                 description: [formatMoney(data.amount), data.payment_method].filter(Boolean).join(' • ') || undefined,
                 category: 'payment',
             };
-        case 'payment_reminder_sent':
+        case 'payment_reminder_sent': {
             const triggerLabel =
                 data.trigger === 'automatic'
                     ? 'automático'
@@ -117,6 +117,7 @@ function describeLog(log: OrderLogItem): Omit<TimelineEvent, 'id' | 'createdAt' 
                     .join(' • ') || undefined,
                 category: 'communication',
             };
+        }
         case 'budget_follow_up_sent':
             return {
                 title: 'Acompanhamento de orçamento enviado',
@@ -292,14 +293,26 @@ const publicAllowedActions = new Set([
 const internalHiddenActions = new Set(['updated']);
 
 export function OrderTimeline({ statusHistory = [], logs = [], mode = 'internal' }: OrderTimelineProps) {
+    const creationLog = logs.find((item) => item.action === 'created');
+    const creationStatus =
+        creationLog && typeof creationLog.data?.status === 'number'
+            ? creationLog.data.status
+            : null;
+    const initialStatusHistoryId =
+        creationStatus === null
+            ? null
+            : [...statusHistory]
+                  .sort((left, right) => moment(left.created_at).valueOf() - moment(right.created_at).valueOf())
+                  .find((item) => item.status === creationStatus)?.id ?? null;
+
     const visibleStatusHistory =
         mode === 'public'
             ? statusHistory.filter((item, index, items) => {
                   const previousItem = items[index - 1];
 
-                  return !previousItem || previousItem.status !== item.status;
+                  return item.id !== initialStatusHistoryId && (!previousItem || previousItem.status !== item.status);
               })
-            : statusHistory;
+            : statusHistory.filter((item) => item.id !== initialStatusHistoryId);
 
     const statusEvents: TimelineEvent[] = visibleStatusHistory.map((item) => ({
         id: `status-${item.id}`,

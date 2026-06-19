@@ -242,10 +242,17 @@ class QualityIndicatorController extends Controller
             ->all();
 
         $deliveredOrders = $allOrders->where('service_status', OrderStatus::DELIVERED);
-        $feedbackResponses = $deliveredOrders->filter(fn (Order $order) => ! is_null($order->customer_feedback_submitted_at));
+        $feedbackResponses = Order::query()
+            ->with([
+                'customer:id,name',
+                'customerFeedbackRecoveryAssignee:id,name',
+            ])
+            ->whereNotNull('customer_feedback_submitted_at')
+            ->whereBetween('customer_feedback_submitted_at', [$start, $end])
+            ->get();
         $feedbackAverageRating = round((float) ($feedbackResponses->avg('customer_feedback_rating') ?? 0), 1);
         $feedbackResponseRate = $deliveredOrders->count() > 0
-            ? round(($feedbackResponses->count() / $deliveredOrders->count()) * 100, 1)
+            ? min(100, round(($feedbackResponses->count() / $deliveredOrders->count()) * 100, 1))
             : 0.0;
         $lowFeedbackOrders = $feedbackResponses
             ->filter(fn (Order $order) => (int) ($order->customer_feedback_rating ?? 0) <= 3)

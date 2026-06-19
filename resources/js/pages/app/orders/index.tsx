@@ -519,11 +519,15 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                     )}
 
                                                     {canManageOrders && (
-                                                        <Button asChild size="icon" className="bg-sky-700 text-white hover:bg-sky-800">
+                                                        <Button
+                                                            asChild
+                                                            size="icon"
+                                                            className="bg-sky-700 text-white hover:bg-sky-800"
+                                                            title="Abrir página pública da ordem"
+                                                        >
                                                             <a
                                                                 target="_blank"
                                                                 href={route('os.token', order?.tracking_token)}
-                                                                title="Link para o cliente sobre a ordem de serviço"
                                                                 aria-label={`Abrir link do cliente da ordem ${order.order_number}`}
                                                             >
                                                                 <LinkIcon className="h-4 w-4 text-white" />

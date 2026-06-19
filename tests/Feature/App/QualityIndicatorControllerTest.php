@@ -123,6 +123,27 @@ class QualityIndicatorControllerTest extends TestCase
             ->assertJsonPath('low_feedback_orders.0.comment', 'Demorou mais do que eu esperava.');
     }
 
+    public function test_quality_metrics_include_recent_feedback_from_an_older_order(): void
+    {
+        Order::factory()->forTenant($this->tenant->id)->create([
+            'service_status' => OrderStatus::DELIVERED,
+            'created_at' => now()->subMonths(3),
+            'delivery_date' => now()->subMonths(2),
+            'customer_feedback_submitted_at' => now()->subHour(),
+            'customer_feedback_rating' => 2,
+            'customer_feedback_comment' => 'A comunicação poderia ser melhor.',
+        ]);
+
+        $response = $this->get(route('app.quality.metrics', ['timerange' => 7]));
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('summary.feedback_responses', 1)
+            ->assertJsonPath('summary.feedback_average_rating', 2)
+            ->assertJsonPath('summary.low_feedbacks', 1)
+            ->assertJsonPath('low_feedback_orders.0.comment', 'A comunicação poderia ser melhor.');
+    }
+
     public function test_quality_feedback_recovery_can_be_updated(): void
     {
         $assignee = User::factory()->forTenant($this->tenant->id)->create();

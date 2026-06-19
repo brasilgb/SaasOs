@@ -295,12 +295,11 @@ export default function Parts({ parts, search }: any) {
                                         <TableCell className="min-w-[140px]">
                                             <div className="flex flex-wrap justify-end gap-2">
                                                 {canManageParts && (
-                                                    <Button asChild size="icon" variant="outline">
+                                                    <Button asChild size="icon" variant="outline" title="Imprimir etiqueta do produto">
                                                         <a
                                                             href={route('app.parts.print-label', part.id)}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            title="Imprimir etiqueta do produto"
                                                             aria-label={`Imprimir etiqueta de ${part.name}`}
                                                         >
                                                             <Printer className="h-4 w-4" />
