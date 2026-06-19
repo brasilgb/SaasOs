@@ -420,13 +420,11 @@ class TechnicianScheduleController extends Controller
             );
         }
 
-        if ($schedule->order) {
-            abort_unless(
-                filled($schedule->order->technician_diagnosis) && filled($schedule->order->technician_solution),
-                422,
-                'Salve o diagnostico e a solucao antes de finalizar o atendimento.'
-            );
-        }
+        abort_unless(
+            filled($schedule->technician_diagnosis) && filled($schedule->technician_solution),
+            422,
+            'Salve o diagnostico e a solucao antes de finalizar o atendimento.'
+        );
 
         abort_unless(
             $schedule->service_closure_status === 'priced' && (float) $schedule->service_closure_amount > 0,
@@ -462,14 +460,11 @@ class TechnicianScheduleController extends Controller
             ->whereKey($schedule->id)
             ->firstOrFail();
 
-        $order = $schedule->order;
-        abort_unless($order, 404);
-
-        $order->update([
+        $schedule->update([
             'technician_diagnosis' => $data['technician_diagnosis'] ?? null,
             'technician_solution' => $data['technician_solution'] ?? null,
             'technician_observations' => $data['technician_observations'] ?? null,
-            'technician_attended_at' => $order->technician_attended_at ?? now(),
+            'technician_report_updated_at' => now(),
         ]);
 
         return response()->json([
@@ -594,13 +589,11 @@ class TechnicianScheduleController extends Controller
         abort_if((int) $schedule->status === 3 || $schedule->check_out_at, 422, 'Atendimento já finalizado.');
         abort_unless($schedule->check_in_at, 422, 'Registre o check-in antes de solicitar o fechamento.');
 
-        if ($schedule->order) {
-            abort_unless(
-                filled($schedule->order->technician_diagnosis) && filled($schedule->order->technician_solution),
-                422,
-                'Salve o diagnóstico e a solução antes de solicitar o fechamento.'
-            );
-        }
+        abort_unless(
+            filled($schedule->technician_diagnosis) && filled($schedule->technician_solution),
+            422,
+            'Salve o diagnóstico e a solução antes de solicitar o fechamento.'
+        );
 
         $schedule->update([
             'service_closure_status' => 'requested',
@@ -770,6 +763,12 @@ class TechnicianScheduleController extends Controller
                 'amount' => $schedule->service_closure_amount,
                 'priced_at' => $schedule->service_closure_priced_at,
                 'office_whatsapp_url' => $officeWhatsapp ? 'https://wa.me/'.$officeWhatsapp : null,
+            ],
+            'technician_report' => [
+                'diagnosis' => $schedule->technician_diagnosis,
+                'solution' => $schedule->technician_solution,
+                'observations' => $schedule->technician_observations,
+                'updated_at' => $schedule->technician_report_updated_at,
             ],
             'local_payment' => [
                 'received' => (bool) $schedule->local_payment_received,

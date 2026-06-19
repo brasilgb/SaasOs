@@ -482,6 +482,8 @@ class TechnicianScheduleApiTest extends TestCase
             'send_to_technician' => true,
             'status' => 2,
             'check_in_at' => now()->subMinutes(20),
+            'technician_diagnosis' => 'Falha identificada.',
+            'technician_solution' => 'Servico concluido.',
             'service_closure_status' => 'priced',
             'service_closure_amount' => 120.50,
         ]);
@@ -741,16 +743,12 @@ class TechnicianScheduleApiTest extends TestCase
         $this->assertFileDoesNotExist(public_path('storage/schedules/'.$schedule->id.'/'.$image->filename));
     }
 
-    public function test_technician_updates_report_for_owned_schedule_order(): void
+    public function test_technician_updates_report_directly_on_owned_schedule(): void
     {
         $customer = Customer::factory()->forTenant($this->tenant->id)->create();
-        $order = Order::factory()->forTenant($this->tenant->id)->create([
-            'customer_id' => $customer->id,
-            'user_id' => $this->technician->id,
-        ]);
         $schedule = Schedule::factory()->forTenant($this->tenant->id)->create([
             'customer_id' => $customer->id,
-            'order_id' => $order->id,
+            'order_id' => null,
             'user_id' => $this->technician->id,
             'send_to_technician' => true,
         ]);
@@ -765,18 +763,19 @@ class TechnicianScheduleApiTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonPath('success', true)
-            ->assertJsonPath('result.order.technician_diagnosis', 'Fonte queimada.')
-            ->assertJsonPath('result.order.technician_solution', 'Fonte substituida e equipamento testado.')
-            ->assertJsonPath('result.order.technician_observations', 'Cliente acompanhou o teste.');
+            ->assertJsonPath('result.order', null)
+            ->assertJsonPath('result.technician_report.diagnosis', 'Fonte queimada.')
+            ->assertJsonPath('result.technician_report.solution', 'Fonte substituida e equipamento testado.')
+            ->assertJsonPath('result.technician_report.observations', 'Cliente acompanhou o teste.');
 
-        $this->assertDatabaseHas('orders', [
-            'id' => $order->id,
+        $this->assertDatabaseHas('schedules', [
+            'id' => $schedule->id,
             'technician_diagnosis' => 'Fonte queimada.',
             'technician_solution' => 'Fonte substituida e equipamento testado.',
             'technician_observations' => 'Cliente acompanhou o teste.',
         ]);
 
-        $this->assertNotNull($order->refresh()->technician_attended_at);
+        $this->assertNotNull($schedule->refresh()->technician_report_updated_at);
     }
 
     public function test_technician_records_local_payment_for_owned_schedule_without_order(): void
@@ -832,6 +831,8 @@ class TechnicianScheduleApiTest extends TestCase
             'send_to_technician' => true,
             'status' => 2,
             'check_in_at' => now()->subMinutes(20),
+            'technician_diagnosis' => 'Conector danificado.',
+            'technician_solution' => 'Conector substituído.',
         ]);
 
         $response = $this->actingAs($this->technician, 'sanctum')

@@ -77,7 +77,7 @@ function getMobileStage(summary: any) {
 
 function TechnicianAttendancePanel({ schedule }: { schedule: any }) {
     const summary = schedule?.mobile_summary;
-    const order = schedule?.order;
+    const report = summary?.technician_report;
     const stage = getMobileStage(summary);
     const checklistItems = summary?.checklist_items || [];
     const completedItems = summary?.checklist_completed_items || [];
@@ -142,19 +142,19 @@ function TechnicianAttendancePanel({ schedule }: { schedule: any }) {
                     </div>
                 </div>
 
-                {(order?.technician_diagnosis || order?.technician_solution || order?.technician_observations) && (
+                {(report?.diagnosis || report?.solution || report?.observations) && (
                     <div className="grid gap-3 lg:grid-cols-3">
                         <div className="rounded-md border p-3">
                             <div className="text-muted-foreground text-xs">Diagnóstico</div>
-                            <div className="mt-2 whitespace-pre-wrap text-sm">{order?.technician_diagnosis || 'Não informado'}</div>
+                            <div className="mt-2 whitespace-pre-wrap text-sm">{report?.diagnosis || 'Não informado'}</div>
                         </div>
                         <div className="rounded-md border p-3">
                             <div className="text-muted-foreground text-xs">Solução aplicada</div>
-                            <div className="mt-2 whitespace-pre-wrap text-sm">{order?.technician_solution || 'Não informado'}</div>
+                            <div className="mt-2 whitespace-pre-wrap text-sm">{report?.solution || 'Não informado'}</div>
                         </div>
                         <div className="rounded-md border p-3">
                             <div className="text-muted-foreground text-xs">Observações do técnico</div>
-                            <div className="mt-2 whitespace-pre-wrap text-sm">{order?.technician_observations || 'Não informado'}</div>
+                            <div className="mt-2 whitespace-pre-wrap text-sm">{report?.observations || 'Não informado'}</div>
                         </div>
                     </div>
                 )}
