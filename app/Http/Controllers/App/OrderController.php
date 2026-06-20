@@ -543,6 +543,7 @@ class OrderController extends Controller
             ->whereNotNull('delivery_date')
             ->where('delivery_date', '<=', $feedbackThreshold)
             ->whereNull('customer_feedback_submitted_at')
+            ->whereNull('customer_feedback_request_expired_at')
             ->get(['id', 'order_number']);
 
         return Inertia::render('app/orders/index', [

@@ -3,6 +3,7 @@
 namespace App\Mail;
 
 use App\Mail\Concerns\AppliesTenantMailConfig;
+use App\Mail\Concerns\ResolvesTenantBranding;
 use App\Models\App\Order;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
@@ -12,13 +13,11 @@ use Illuminate\Queue\SerializesModels;
 
 class OrderBudgetFollowUpMail extends Mailable
 {
-    use AppliesTenantMailConfig, Queueable, SerializesModels;
+    use AppliesTenantMailConfig, Queueable, ResolvesTenantBranding, SerializesModels;
 
     public Order $order;
 
     public int $daysPending;
-
-    public ?string $logoUrl;
 
     public ?int $tenantId;
 
@@ -27,7 +26,7 @@ class OrderBudgetFollowUpMail extends Mailable
         $this->order = $order;
         $this->daysPending = $daysPending;
         $this->tenantId = $order->tenant_id ? (int) $order->tenant_id : null;
-        $this->logoUrl = $this->resolveLogoUrl();
+        $this->resolveTenantBranding($this->tenantId);
     }
 
     public function envelope(): Envelope
@@ -43,21 +42,15 @@ class OrderBudgetFollowUpMail extends Mailable
     {
         return new Content(
             view: 'emails.order-budget-follow-up',
-            with: [
+            with: array_merge([
                 'order' => $this->order,
                 'daysPending' => $this->daysPending,
-                'logoUrl' => $this->logoUrl,
-            ],
+            ], $this->tenantBrandingViewData()),
         );
     }
 
     public function attachments(): array
     {
         return [];
-    }
-
-    private function resolveLogoUrl(): ?string
-    {
-        return file_exists(public_path('images/vetor.png')) ? asset('images/vetor.png') : null;
     }
 }

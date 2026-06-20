@@ -15,6 +15,7 @@ class Order extends Model
     use HasFactory, Tenantable;
 
     public const TYPE_EQUIPMENT = 'equipment';
+
     public const TYPE_EXTERNAL_SERVICE = 'external_service';
 
     protected $guarded = ['allparts'];
@@ -26,6 +27,8 @@ class Order extends Model
         'customer_notification_acknowledged_at' => 'datetime',
         'customer_pickup_acknowledged_at' => 'datetime',
         'customer_feedback_submitted_at' => 'datetime',
+        'customer_feedback_reminder_sent_at' => 'datetime',
+        'customer_feedback_request_expired_at' => 'datetime',
         'customer_feedback_recovery_updated_at' => 'datetime',
         'budget_follow_up_paused_at' => 'datetime',
         'payment_follow_up_paused_at' => 'datetime',

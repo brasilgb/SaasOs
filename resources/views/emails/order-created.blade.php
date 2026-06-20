@@ -21,11 +21,13 @@
 
                     <tr>
                         <td align="center" style="background:#0f172a;padding:30px 20px;">
-                            @if (!empty($logoUrl))
-                                <img src="{{ $logoUrl }}" alt="VetorOS"
+                            @if (!empty($companyLogoUrl))
+                                <img src="{{ $companyLogoUrl }}" alt="Logo {{ $companyName }}"
                                     style="display:block;margin:0 auto 14px auto;width:84px;max-width:84px;height:auto;">
                             @endif
-                            @include('emails.partials.brand-title')
+                            <p style="margin:0;color:#ffffff;font-size:24px;font-weight:bold;letter-spacing:0.5px;">
+                                {{ $companyName }}
+                            </p>
                             <p style="margin:6px 0 0 0;color:#cbd5f5;font-size:13px;">
                                 Acompanhamento da sua ordem de serviço
                             </p>
@@ -83,13 +85,15 @@
 
                     <tr>
                         <td style="background:#f9fafb;text-align:center;padding:24px;font-size:12px;color:#6b7280;">
-                            <p style="margin:0;">© {{ date('Y') }} VetorOS</p>
+                            <p style="margin:0;">© {{ date('Y') }} {{ $companyName }}</p>
                             <p style="margin:6px 0;">Todos os direitos reservados</p>
-                            <p style="margin:6px 0;">
-                                <a href="{{ config('app.url') }}" style="color:#2563eb;text-decoration:none;">
-                                    {{ config('app.url') }}
-                                </a>
-                            </p>
+                            @if (!empty($companySite))
+                                <p style="margin:6px 0;">
+                                    <a href="{{ $companySite }}" style="color:#2563eb;text-decoration:none;">
+                                        {{ $companySite }}
+                                    </a>
+                                </p>
+                            @endif
                         </td>
                     </tr>
 

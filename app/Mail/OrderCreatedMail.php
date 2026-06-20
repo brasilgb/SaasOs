@@ -3,27 +3,27 @@
 namespace App\Mail;
 
 use App\Mail\Concerns\AppliesTenantMailConfig;
+use App\Mail\Concerns\ResolvesTenantBranding;
 use App\Models\App\Order;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
 class OrderCreatedMail extends Mailable
 {
-    use AppliesTenantMailConfig, Queueable, SerializesModels;
+    use AppliesTenantMailConfig, Queueable, ResolvesTenantBranding, SerializesModels;
 
     public Order $order;
-    public ?string $logoUrl;
+
     public ?int $tenantId;
 
     public function __construct(Order $order)
     {
         $this->order = $order;
         $this->tenantId = $order->tenant_id ? (int) $order->tenant_id : null;
-        $this->logoUrl = $this->resolveLogoUrl();
+        $this->resolveTenantBranding($this->tenantId);
     }
 
     public function envelope(): Envelope
@@ -39,20 +39,14 @@ class OrderCreatedMail extends Mailable
     {
         return new Content(
             view: 'emails.order-created',
-            with: [
+            with: array_merge([
                 'order' => $this->order,
-                'logoUrl' => $this->logoUrl,
-            ],
+            ], $this->tenantBrandingViewData()),
         );
     }
 
     public function attachments(): array
     {
         return [];
-    }
-
-    private function resolveLogoUrl(): ?string
-    {
-        return file_exists(public_path('images/vetor.png')) ? asset('images/vetor.png') : null;
     }
 }

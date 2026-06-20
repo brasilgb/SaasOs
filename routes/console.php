@@ -23,3 +23,7 @@ Schedule::command('vetoros:send-subscription-status-notifications')
 Schedule::command('vetoros:send-tenant-feedback-requests')
     ->dailyAt('11:00')
     ->withoutOverlapping();
+
+Schedule::command('vetoros:process-customer-feedback-requests')
+    ->dailyAt('11:30')
+    ->withoutOverlapping();

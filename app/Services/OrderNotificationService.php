@@ -4,10 +4,12 @@ namespace App\Services;
 
 use App\Jobs\SendOrderBudgetFollowUpNotification;
 use App\Jobs\SendOrderCreatedNotification;
+use App\Jobs\SendOrderFeedbackReminderNotification;
 use App\Jobs\SendOrderPaymentReminderNotification;
 use App\Jobs\SendOrderStatusUpdatedNotification;
 use App\Mail\OrderBudgetFollowUpMail;
 use App\Mail\OrderCreatedMail;
+use App\Mail\OrderFeedbackReminderMail;
 use App\Mail\OrderPaymentReminderMail;
 use App\Mail\OrderStatusUpdatedMail;
 use App\Models\App\Order;
@@ -68,6 +70,15 @@ class OrderNotificationService
         }
 
         SendOrderBudgetFollowUpNotification::dispatch($order->id, $daysPending)->afterCommit();
+    }
+
+    public function sendFeedbackReminder(Order $order): void
+    {
+        if (! $this->canSendToCustomer($order->loadMissing(['customer', 'tenant']), $order->customer?->email)) {
+            return;
+        }
+
+        SendOrderFeedbackReminderNotification::dispatch($order->id)->afterCommit();
     }
 
     public function deliverCreated(int $orderId): void
@@ -140,5 +151,23 @@ class OrderNotificationService
 
         TenantMailConfig::applyForTenantId($order->tenant_id ? (int) $order->tenant_id : null);
         Mail::to($customerEmail)->send(new OrderBudgetFollowUpMail($order, $daysPending));
+    }
+
+    public function deliverFeedbackReminder(int $orderId): void
+    {
+        $order = $this->resolveOrder($orderId);
+
+        if (! $order || $order->customer_feedback_submitted_at || $order->customer_feedback_request_expired_at) {
+            return;
+        }
+
+        $customerEmail = trim((string) ($order->customer?->email ?? ''));
+
+        if (! $this->canSendToCustomer($order, $customerEmail)) {
+            return;
+        }
+
+        TenantMailConfig::applyForTenantId($order->tenant_id ? (int) $order->tenant_id : null);
+        Mail::to($customerEmail)->send(new OrderFeedbackReminderMail($order));
     }
 }

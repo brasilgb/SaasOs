@@ -3,24 +3,24 @@
 namespace App\Mail;
 
 use App\Mail\Concerns\AppliesTenantMailConfig;
+use App\Mail\Concerns\ResolvesTenantBranding;
 use App\Models\App\Order;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
 class OrderStatusUpdatedMail extends Mailable
 {
-    use AppliesTenantMailConfig, Queueable, SerializesModels;
+    use AppliesTenantMailConfig, Queueable, ResolvesTenantBranding, SerializesModels;
 
     public Order $order;
 
     public string $statusLabel;
 
     public ?string $note;
-    public ?string $logoUrl;
+
     public ?int $tenantId;
 
     public function __construct(Order $order, string $statusLabel, ?string $note = null)
@@ -29,7 +29,7 @@ class OrderStatusUpdatedMail extends Mailable
         $this->statusLabel = $statusLabel;
         $this->note = $note;
         $this->tenantId = $order->tenant_id ? (int) $order->tenant_id : null;
-        $this->logoUrl = $this->resolveLogoUrl();
+        $this->resolveTenantBranding($this->tenantId);
     }
 
     public function envelope(): Envelope
@@ -45,22 +45,16 @@ class OrderStatusUpdatedMail extends Mailable
     {
         return new Content(
             view: 'emails.order-status-updated',
-            with: [
+            with: array_merge([
                 'order' => $this->order,
                 'statusLabel' => $this->statusLabel,
                 'note' => $this->note,
-                'logoUrl' => $this->logoUrl,
-            ],
+            ], $this->tenantBrandingViewData()),
         );
     }
 
     public function attachments(): array
     {
         return [];
-    }
-
-    private function resolveLogoUrl(): ?string
-    {
-        return file_exists(public_path('images/vetor.png')) ? asset('images/vetor.png') : null;
     }
 }
