@@ -12,6 +12,7 @@ import { statusAgenda } from '@/Utils/dataSelect';
 import selectStyles from '@/Utils/selectStyles';
 import { useForm } from '@inertiajs/react';
 import { Camera, CheckCircle2, ClipboardCheck, CreditCard, FileText, Plus, Save, Smartphone, Trash2, XCircle } from 'lucide-react';
+import moment from 'moment';
 import { useState } from 'react';
 import Select from 'react-select';
 import AddPartsModal from '../orders/add-parts';
@@ -57,6 +58,14 @@ function formatCurrency(value: any) {
         style: 'currency',
         currency: 'BRL',
     });
+}
+
+function formatDateTime(value: any) {
+    if (!value) return 'Não informado';
+
+    const date = moment(value);
+
+    return date.isValid() ? date.format('DD/MM/YYYY [às] HH:mm') : 'Não informado';
 }
 
 function getMobileStage(summary: any) {
@@ -146,15 +155,15 @@ function TechnicianAttendancePanel({ schedule }: { schedule: any }) {
                     <div className="grid gap-3 lg:grid-cols-3">
                         <div className="rounded-md border p-3">
                             <div className="text-muted-foreground text-xs">Diagnóstico</div>
-                            <div className="mt-2 whitespace-pre-wrap text-sm">{report?.diagnosis || 'Não informado'}</div>
+                            <div className="mt-2 text-sm whitespace-pre-wrap">{report?.diagnosis || 'Não informado'}</div>
                         </div>
                         <div className="rounded-md border p-3">
                             <div className="text-muted-foreground text-xs">Solução aplicada</div>
-                            <div className="mt-2 whitespace-pre-wrap text-sm">{report?.solution || 'Não informado'}</div>
+                            <div className="mt-2 text-sm whitespace-pre-wrap">{report?.solution || 'Não informado'}</div>
                         </div>
                         <div className="rounded-md border p-3">
                             <div className="text-muted-foreground text-xs">Observações do técnico</div>
-                            <div className="mt-2 whitespace-pre-wrap text-sm">{report?.observations || 'Não informado'}</div>
+                            <div className="mt-2 text-sm whitespace-pre-wrap">{report?.observations || 'Não informado'}</div>
                         </div>
                     </div>
                 )}
@@ -191,7 +200,7 @@ function TechnicianAttendancePanel({ schedule }: { schedule: any }) {
                                     href={image.url}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="group block overflow-hidden rounded-md border bg-muted"
+                                    className="group bg-muted block overflow-hidden rounded-md border"
                                 >
                                     <img
                                         src={image.url}
@@ -238,7 +247,9 @@ function TechnicianAttendancePanel({ schedule }: { schedule: any }) {
                             </div>
                             <div>
                                 <span className="text-muted-foreground">Registrado em: </span>
-                                <span className="font-medium">{summary?.local_payment_received_at || schedule?.local_payment_received_at || 'Não informado'}</span>
+                                <span className="font-medium">
+                                    {formatDateTime(summary?.local_payment_received_at || schedule?.local_payment_received_at)}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -367,27 +378,27 @@ export default function ScheduleForm({ customers, parts = [], initialData, techn
             <Card>
                 <CardTitle className="border-b px-6 pb-4">Agendamento</CardTitle>
                 <CardContent className="pt-6">
-            <div className="grid gap-4 lg:grid-cols-2">
-                <div className="grid gap-2">
-                    <Label htmlFor="customer_id">Cliente</Label>
-                    <Select
-                        menuPosition="fixed"
-                        defaultValue={defaultCustomer}
-                        options={optionsCustomer}
-                        onChange={changeCustomer}
-                        placeholder="Selecione o cliente"
-                        className="min-w-0"
-                        styles={selectStyles}
-                    />
-                    <InputError className="mt-2" message={errors.customer_id} />
-                </div>
+                    <div className="grid gap-4 lg:grid-cols-2">
+                        <div className="grid gap-2">
+                            <Label htmlFor="customer_id">Cliente</Label>
+                            <Select
+                                menuPosition="fixed"
+                                defaultValue={defaultCustomer}
+                                options={optionsCustomer}
+                                onChange={changeCustomer}
+                                placeholder="Selecione o cliente"
+                                className="min-w-0"
+                                styles={selectStyles}
+                            />
+                            <InputError className="mt-2" message={errors.customer_id} />
+                        </div>
 
-                <div className="grid gap-2">
-                    <Label htmlFor="schedules">Horário da visita</Label>
-                    <DateTimePicker id="schedules" value={data.schedules} onChange={(value) => setData('schedules', value)} />
-                    <InputError className="mt-2" message={errors.schedules} />
-                </div>
-            </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="schedules">Horário da visita</Label>
+                            <DateTimePicker id="schedules" value={data.schedules} onChange={(value) => setData('schedules', value)} />
+                            <InputError className="mt-2" message={errors.schedules} />
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
 
@@ -446,7 +457,10 @@ export default function ScheduleForm({ customers, parts = [], initialData, techn
                         {data.material_checklist.length > 0 && (
                             <div className="grid gap-2 md:grid-cols-2">
                                 {data.material_checklist.map((item: MaterialChecklistItem, index: number) => (
-                                    <div key={`${item.name}-${index}`} className="flex items-center justify-between gap-3 rounded-md border px-3 py-2 text-sm">
+                                    <div
+                                        key={`${item.name}-${index}`}
+                                        className="flex items-center justify-between gap-3 rounded-md border px-3 py-2 text-sm"
+                                    >
                                         <div className="flex min-w-0 items-center gap-2">
                                             <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
                                             <span className="truncate">
@@ -494,7 +508,10 @@ export default function ScheduleForm({ customers, parts = [], initialData, techn
                         {data.technician_checklist.length > 0 && (
                             <div className="grid gap-2 md:grid-cols-2">
                                 {data.technician_checklist.map((item: string, index: number) => (
-                                    <div key={`${item}-${index}`} className="flex items-center justify-between gap-3 rounded-md border px-3 py-2 text-sm">
+                                    <div
+                                        key={`${item}-${index}`}
+                                        className="flex items-center justify-between gap-3 rounded-md border px-3 py-2 text-sm"
+                                    >
                                         <div className="flex min-w-0 items-center gap-2">
                                             <ClipboardCheck className="h-4 w-4 shrink-0 text-emerald-600" />
                                             <span className="truncate">{item}</span>
@@ -519,50 +536,50 @@ export default function ScheduleForm({ customers, parts = [], initialData, techn
             <Card>
                 <CardTitle className="border-b px-6 pb-4">Acompanhamento</CardTitle>
                 <CardContent className="space-y-4 pt-6">
-            <div className="grid gap-4 lg:grid-cols-3">
-                <div className="grid gap-2">
-                    <Label htmlFor="service_status">Técnico responsável</Label>
-                    <Select
-                        menuPosition="fixed"
-                        defaultValue={defaultTechnical}
-                        options={optionsTechnical}
-                        onChange={changeResponsibleTechnician}
-                        placeholder="Selecione o técnico"
-                        className="min-w-0"
-                        styles={selectStyles}
-                    />
-                    <InputError className="mt-2" message={errors.user_id} />
-                </div>
+                    <div className="grid gap-4 lg:grid-cols-3">
+                        <div className="grid gap-2">
+                            <Label htmlFor="service_status">Técnico responsável</Label>
+                            <Select
+                                menuPosition="fixed"
+                                defaultValue={defaultTechnical}
+                                options={optionsTechnical}
+                                onChange={changeResponsibleTechnician}
+                                placeholder="Selecione o técnico"
+                                className="min-w-0"
+                                styles={selectStyles}
+                            />
+                            <InputError className="mt-2" message={errors.user_id} />
+                        </div>
 
-                <div className="grid gap-2">
-                    <Label htmlFor="status">Status do agendamento</Label>
-                    <Select
-                        menuPosition="fixed"
-                        defaultValue={statusDefault}
-                        options={statusAgenda}
-                        onChange={changeServiceStatus}
-                        placeholder="Selecione o status"
-                        className="min-w-0"
-                        styles={selectStyles}
-                    />
-                    <InputError className="mt-2" message={errors.status} />
-                </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="status">Status do agendamento</Label>
+                            <Select
+                                menuPosition="fixed"
+                                defaultValue={statusDefault}
+                                options={statusAgenda}
+                                onChange={changeServiceStatus}
+                                placeholder="Selecione o status"
+                                className="min-w-0"
+                                styles={selectStyles}
+                            />
+                            <InputError className="mt-2" message={errors.status} />
+                        </div>
 
-                <div className="flex items-center justify-between gap-4 rounded-md border px-4 py-3 lg:mt-6">
-                    <Label htmlFor="send_to_technician">Enviar ao técnico</Label>
-                    <Switch
-                        id="send_to_technician"
-                        checked={Boolean(data.send_to_technician)}
-                        disabled={!enableTechnicianScheduleNotifications}
-                        onCheckedChange={(checked) => setData('send_to_technician', checked)}
-                    />
-                </div>
-            </div>
+                        <div className="flex items-center justify-between gap-4 rounded-md border px-4 py-3 lg:mt-6">
+                            <Label htmlFor="send_to_technician">Enviar ao técnico</Label>
+                            <Switch
+                                id="send_to_technician"
+                                checked={Boolean(data.send_to_technician)}
+                                disabled={!enableTechnicianScheduleNotifications}
+                                onCheckedChange={(checked) => setData('send_to_technician', checked)}
+                            />
+                        </div>
+                    </div>
 
-            <div className="grid gap-2">
-                <Label htmlFor="observations">Observações</Label>
-                <Textarea id="observations" value={data.observations} onChange={(e) => setData('observations', e.target.value)} />
-            </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="observations">Observações</Label>
+                        <Textarea id="observations" value={data.observations} onChange={(e) => setData('observations', e.target.value)} />
+                    </div>
                 </CardContent>
             </Card>
 
