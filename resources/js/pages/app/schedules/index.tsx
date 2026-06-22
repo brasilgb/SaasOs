@@ -19,7 +19,7 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { statusAgenda } from '@/Utils/dataSelect';
-import { normalizeWhatsappPhone } from '@/Utils/mask';
+import { maskMoney, maskMoneyDot, normalizeWhatsappPhone } from '@/Utils/mask';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -357,10 +357,11 @@ function TechnicianMobileTable({ schedules, pagination, canManageSchedules }: { 
                                                     </div>
                                                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                                                         <Input
-                                                            value={priceForm.data.amount}
-                                                            onChange={(event) => priceForm.setData('amount', event.target.value)}
+                                                            type="text"
+                                                            value={maskMoney(priceForm.data.amount)}
+                                                            onChange={(event) => priceForm.setData('amount', maskMoneyDot(event.target.value))}
                                                             inputMode="decimal"
-                                                            placeholder="Valor do atendimento"
+                                                            placeholder="0,00"
                                                             aria-label="Valor do atendimento"
                                                             className="border-amber-300 bg-white text-slate-950 placeholder:text-slate-500 focus-visible:border-amber-500 focus-visible:ring-amber-500/30 sm:w-48 dark:border-amber-700 dark:bg-slate-950 dark:text-slate-50 dark:placeholder:text-slate-400"
                                                         />
