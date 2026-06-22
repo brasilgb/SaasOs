@@ -313,13 +313,19 @@ function TechnicianMobileTable({ schedules, pagination, canManageSchedules }: { 
                                         </Badge>
                                     )}
                                     {selectedSummary?.service_closure_status === 'requested' && (
-                                        <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">
+                                        <Badge
+                                            variant="outline"
+                                            className="border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-950/50 dark:text-amber-200"
+                                        >
                                             <CreditCard className="h-3 w-3" />
                                             Aguardando definição do valor
                                         </Badge>
                                     )}
                                     {selectedSummary?.service_closure_status === 'priced' && (
-                                        <Badge variant="outline" className="border-sky-200 bg-sky-50 text-sky-700">
+                                        <Badge
+                                            variant="outline"
+                                            className="border-sky-200 bg-sky-50 text-sky-800 dark:border-sky-800 dark:bg-sky-950/50 dark:text-sky-200"
+                                        >
                                             <CreditCard className="h-3 w-3" />
                                             Valor liberado: {formatCurrency(selectedSummary.service_closure_amount)}
                                         </Badge>
@@ -342,30 +348,39 @@ function TechnicianMobileTable({ schedules, pagination, canManageSchedules }: { 
                                     {canManageSchedules ? (
                                         <div className="flex flex-wrap justify-end gap-2">
                                             {selectedSummary?.service_closure_status === 'requested' && (
-                                                <div className="flex w-full flex-col gap-2 rounded-md border border-amber-200 bg-amber-50 p-3 sm:w-auto sm:flex-row sm:items-center">
-                                                    <Input
-                                                        value={priceForm.data.amount}
-                                                        onChange={(event) => priceForm.setData('amount', event.target.value)}
-                                                        inputMode="decimal"
-                                                        placeholder="Valor do atendimento"
-                                                        className="bg-white sm:w-48"
-                                                    />
-                                                    <Button
-                                                        type="button"
-                                                        size="sm"
-                                                        disabled={priceForm.processing || !priceForm.data.amount}
-                                                        onClick={() =>
-                                                            priceForm.patch(route('app.schedules.service-closure-price', selectedSchedule.id), {
-                                                                preserveScroll: true,
-                                                                onSuccess: () => {
-                                                                    setSelectedSchedule(null);
-                                                                    priceForm.reset();
-                                                                },
-                                                            })
-                                                        }
-                                                    >
-                                                        {priceForm.processing ? 'Liberando...' : 'Definir e liberar valor'}
-                                                    </Button>
+                                                <div className="flex w-full flex-col gap-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-amber-950 sm:w-auto dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-100">
+                                                    <div>
+                                                        <div className="text-sm font-semibold">Definição do valor</div>
+                                                        <div className="text-xs text-amber-800 dark:text-amber-300">
+                                                            Informe o total que será liberado ao técnico.
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                                                        <Input
+                                                            value={priceForm.data.amount}
+                                                            onChange={(event) => priceForm.setData('amount', event.target.value)}
+                                                            inputMode="decimal"
+                                                            placeholder="Valor do atendimento"
+                                                            aria-label="Valor do atendimento"
+                                                            className="border-amber-300 bg-white text-slate-950 placeholder:text-slate-500 focus-visible:border-amber-500 focus-visible:ring-amber-500/30 sm:w-48 dark:border-amber-700 dark:bg-slate-950 dark:text-slate-50 dark:placeholder:text-slate-400"
+                                                        />
+                                                        <Button
+                                                            type="button"
+                                                            size="sm"
+                                                            disabled={priceForm.processing || !priceForm.data.amount}
+                                                            onClick={() =>
+                                                                priceForm.patch(route('app.schedules.service-closure-price', selectedSchedule.id), {
+                                                                    preserveScroll: true,
+                                                                    onSuccess: () => {
+                                                                        setSelectedSchedule(null);
+                                                                        priceForm.reset();
+                                                                    },
+                                                                })
+                                                            }
+                                                        >
+                                                            {priceForm.processing ? 'Liberando...' : 'Definir e liberar valor'}
+                                                        </Button>
+                                                    </div>
                                                 </div>
                                             )}
                                             {selectedSummary?.can_register_local_payment_cashier && (
