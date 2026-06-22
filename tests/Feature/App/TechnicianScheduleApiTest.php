@@ -898,4 +898,42 @@ class TechnicianScheduleApiTest extends TestCase
             'service_closure_requested_by' => $this->technician->id,
         ]);
     }
+
+    public function test_technician_cannot_request_service_closure_with_pending_checklist(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+        Checklist::factory()->forTenant($this->tenant->id)->create([
+            'equipment_id' => $equipment->id,
+            'checklist' => 'Equipamento instalado, Equipamento testado',
+        ]);
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'user_id' => $this->technician->id,
+            'technician_checklist_items' => ['Equipamento instalado'],
+            'technician_diagnosis' => 'Conector danificado.',
+            'technician_solution' => 'Conector substituído.',
+        ]);
+        $schedule = Schedule::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'order_id' => $order->id,
+            'user_id' => $this->technician->id,
+            'send_to_technician' => true,
+            'status' => 2,
+            'check_in_at' => now()->subMinutes(20),
+            'technician_diagnosis' => 'Conector danificado.',
+            'technician_solution' => 'Conector substituído.',
+        ]);
+
+        $this->actingAs($this->technician, 'sanctum')
+            ->postJson(route('api.technician.schedules.request-closure', $schedule))
+            ->assertUnprocessable()
+            ->assertJsonPath('message', 'Conclua e salve o checklist antes de solicitar o fechamento.');
+
+        $this->assertDatabaseHas('schedules', [
+            'id' => $schedule->id,
+            'service_closure_status' => null,
+        ]);
+    }
 }

@@ -588,6 +588,20 @@ class TechnicianScheduleController extends Controller
             'Salve o diagnóstico e a solução antes de solicitar o fechamento.'
         );
 
+        $checklistItems = $schedule->technicianChecklistItems();
+
+        if ($checklistItems !== []) {
+            $completedItems = $schedule->technician_checklist_items
+                ?? $schedule->order?->technician_checklist_items
+                ?? [];
+
+            abort_unless(
+                empty(array_diff($checklistItems, $completedItems)),
+                422,
+                'Conclua e salve o checklist antes de solicitar o fechamento.'
+            );
+        }
+
         $schedule->update([
             'service_closure_status' => 'requested',
             'service_closure_requested_at' => now(),
@@ -725,6 +739,12 @@ class TechnicianScheduleController extends Controller
         $officeWhatsapp = preg_replace('/\D+/', '', (string) $tenant?->whatsapp);
         $officeWhatsapp = $officeWhatsapp && strlen($officeWhatsapp) <= 11 ? '55'.$officeWhatsapp : $officeWhatsapp;
         $closurePriced = $schedule->service_closure_status === 'priced' && (float) $schedule->service_closure_amount > 0;
+        $checklistItems = $schedule->technicianChecklistItems();
+        $completedChecklistItems = $schedule->technician_checklist_items
+            ?? $order?->technician_checklist_items
+            ?? [];
+        $checklistComplete = $checklistItems === [] || empty(array_diff($checklistItems, $completedChecklistItems));
+        $reportComplete = filled($schedule->technician_diagnosis) && filled($schedule->technician_solution);
 
         return [
             'id' => $schedule->id,
@@ -748,7 +768,12 @@ class TechnicianScheduleController extends Controller
             'available_actions' => [
                 'can_update_status' => (int) $schedule->status !== 3,
                 'can_check_in' => (int) $schedule->status !== 3 && ! $schedule->check_in_at,
-                'can_check_out' => (int) $schedule->status !== 3 && filled($schedule->check_in_at) && ! $schedule->check_out_at && $closurePriced,
+                'can_check_out' => (int) $schedule->status !== 3
+                    && filled($schedule->check_in_at)
+                    && ! $schedule->check_out_at
+                    && $closurePriced
+                    && $checklistComplete
+                    && $reportComplete,
                 'can_finish' => (int) $schedule->status !== 3 && filled($schedule->check_in_at) && ! $schedule->check_out_at,
                 'can_cancel' => false,
                 'can_edit_service' => (bool) $order,
