@@ -485,18 +485,16 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
                                         </div>
                                         <div className="text-sm">
                                             Valor unitário:{' '}
-                                            <span className="font-semibold text-blue-400">R$ {maskMoney(String(selectedPart?.sale_price))}</span>
+                                            <span className="font-semibold text-blue-400">R$ {maskMoney(Number(selectedPart?.sale_price))}</span>
                                         </div>
                                         <div className="text-sm">
                                             Total:{' '}
                                             <span className="font-semibold text-blue-400">
                                                 R${' '}
                                                 {maskMoney(
-                                                    String(
-                                                        data?.quantity <= selectedPart?.quantity
-                                                            ? data?.quantity * Number(selectedPart?.sale_price)
-                                                            : selectedPart?.quantity * Number(selectedPart?.sale_price),
-                                                    ),
+                                                    data?.quantity <= selectedPart?.quantity
+                                                        ? data?.quantity * Number(selectedPart?.sale_price)
+                                                        : selectedPart?.quantity * Number(selectedPart?.sale_price),
                                                 )}
                                             </span>
                                         </div>
@@ -514,7 +512,7 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
                                 <div key={item.cartItemId} className="mb-2 flex items-center justify-between">
                                     <span>
                                         {item.name} (x{item.selected_quantity}) - R${' '}
-                                        {maskMoney(String(Number(item.sale_price) * item.selected_quantity))}
+                                        {maskMoney(Number(item.sale_price) * item.selected_quantity)}
                                     </span>
                                     <Button variant="destructive" size="sm" onClick={() => removeFromCart(item.cartItemId)}>
                                         <Trash2 size={16} />
@@ -523,7 +521,7 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
                             ))}
                             <div className="mt-4 flex items-center justify-between font-bold">
                                 <span>Total do Carrinho:</span>
-                                <span>R$ {maskMoney(String(cartTotal))}</span>
+                                <span>R$ {maskMoney(cartTotal)}</span>
                             </div>
                             {errors.paid_amount && <p className="mt-2 text-right text-xs text-red-500">{errors.paid_amount}</p>}
                             {errors.total_amount && <p className="col-span-4 text-right text-xs text-red-500">{errors.total_amount}</p>}
