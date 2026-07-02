@@ -452,9 +452,19 @@ O VetorOS possui integração com a Focus NFe para emissão de NF-e (modelo 55),
 
 Após a emissão, o sistema registra no banco de dados a referência do documento e os links retornados pela Focus, como o DANFE/PDF e o XML, quando disponíveis. Caso o cliente solicite a nota, o DANFE pode ser acessado pelo link salvo no sistema, impresso em A4 ou enviado em PDF.
 
+21.1 Dados fiscais das peças e produtos
+O NCM e o CFOP são informados no cadastro de cada peça ou produto, e não nas configurações da Focus NFe. Essa separação permite que a empresa venda produtos com classificações fiscais diferentes na mesma nota.
+
+- NCM: código de 8 dígitos que classifica fiscalmente a mercadoria
+- CFOP: código de 4 dígitos que identifica a natureza fiscal da operação do produto
+
+Quando a integração fiscal e a emissão de NF-e estiverem habilitadas, NCM e CFOP serão obrigatórios ao cadastrar ou editar uma peça/produto. O sistema não enviará a NF-e se qualquer item da venda estiver sem esses dados.
+
+Os códigos devem ser obtidos na nota fiscal de compra e confirmados com a contabilidade. Serviços de uma ordem não utilizam NCM; para NFS-e, deve ser informado o item da lista de serviço nas configurações fiscais.
+
 É possível usar uma impressora térmica para entregar um resumo da venda ou do serviço. Essa impressão é somente um comprovante e deve conter a identificação "COMPROVANTE NÃO FISCAL — NÃO SUBSTITUI A NOTA FISCAL". Ela não transforma a operação em NFC-e e não substitui o documento fiscal emitido pela Focus.
 
-21.1 NFC-e, cupom fiscal e CSC
+21.2 NFC-e, cupom fiscal e CSC
 A NFC-e (modelo 65) é o cupom fiscal eletrônico normalmente utilizado no varejo e impresso em bobina. Sua representação, o DANFC-e, possui QR Code para consulta do documento.
 
 O CSC (Código de Segurança do Contribuinte) é fornecido pela SEFAZ e serve para proteger e gerar o QR Code da NFC-e. Ele não é o mesmo token usado para acessar a API da Focus NFe:

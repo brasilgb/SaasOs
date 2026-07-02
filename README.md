@@ -71,6 +71,13 @@ A integração atual com a Focus NFe contempla:
 - NFS-e para prestação de serviços
 - armazenamento, no banco de dados, da referência da emissão e dos links retornados pela Focus, como DANFE/PDF e XML quando disponíveis
 
+O NCM e o CFOP são configurados individualmente no cadastro de cada peça/produto, pois uma empresa pode comercializar mercadorias com classificações fiscais diferentes. Quando a integração fiscal e a emissão de NF-e estão habilitadas, os dois campos tornam-se obrigatórios no cadastro e na edição do produto. A emissão é bloqueada se algum item da venda estiver sem NCM ou CFOP.
+
+- NCM: classificação fiscal da mercadoria, informada com 8 dígitos
+- CFOP: natureza fiscal da operação do produto, informada com 4 dígitos
+
+Esses códigos devem ser confirmados na nota fiscal de compra, com a contabilidade ou na legislação aplicável. Serviços de uma ordem não utilizam NCM; na NFS-e, a classificação ocorre pelo item da lista de serviço.
+
 No atendimento, uma impressora térmica pode ser usada para imprimir um comprovante da venda ou do serviço. Esse documento deve ser identificado como `COMPROVANTE NÃO FISCAL — NÃO SUBSTITUI A NOTA FISCAL`. Quando o cliente precisar do documento fiscal, o DANFE da NF-e pode ser aberto pelo link salvo no sistema e impresso em A4 ou enviado em PDF.
 
 ### NFC-e, cupom fiscal e CSC
