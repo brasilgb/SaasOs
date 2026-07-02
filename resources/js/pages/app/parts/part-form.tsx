@@ -1,4 +1,3 @@
-import { toastSuccess } from '@/components/app-toast-messages';
 import FormFieldHelp from '@/components/form-field-help';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -77,19 +76,9 @@ export default function PartForm({ categories, manufacturers, initialData, fisca
         e.preventDefault();
 
         if (isEdit) {
-            patch(route('app.parts.update', initialData.id), {
-                onSuccess: () => {
-                    toastSuccess('Sucesso', 'Peça/Produto atualizado com sucesso');
-                },
-            });
+            patch(route('app.parts.update', initialData.id));
         } else {
-            post(route('app.parts.store'), {
-                onSuccess: () => {
-                    toastSuccess('Sucesso', 'Peça/Produto cadastrado com sucesso');
-                    reset();
-                    setSelectedCategory(null);
-                },
-            });
+            post(route('app.parts.store'));
         }
     };
 
