@@ -16,7 +16,9 @@ use RuntimeException;
 
 class FocusNfeService
 {
-    private const BASE_URL = 'https://api.focusnfe.com.br/v2';
+    private const PRODUCTION_BASE_URL = 'https://api.focusnfe.com.br/v2';
+
+    private const HOMOLOGATION_BASE_URL = 'https://homologacao.focusnfe.com.br/v2';
     private const CONNECTION_TEST_REFERENCE = '__vetoros_connection_test__';
 
     public function testConnection(FiscalSetting $setting, ?string $apiToken = null): void
@@ -31,7 +33,7 @@ class FocusNfeService
         $response = Http::acceptJson()
             ->withBasicAuth($token, '')
             ->timeout(15)
-            ->get(self::BASE_URL.'/'.$endpoint.'/'.self::CONNECTION_TEST_REFERENCE);
+            ->get($this->baseUrl($setting).'/'.$endpoint.'/'.self::CONNECTION_TEST_REFERENCE);
 
         if ($response->successful() || $response->status() === 404) {
             return;
@@ -199,7 +201,7 @@ class FocusNfeService
             ->asJson()
             ->withBasicAuth($setting->api_token, '')
             ->timeout(30)
-            ->post(self::BASE_URL.'/'.$endpoint.'?ref='.urlencode($reference), $payload);
+            ->post($this->baseUrl($setting).'/'.$endpoint.'?ref='.urlencode($reference), $payload);
     }
 
     private function get(string $endpoint, string $reference, FiscalSetting $setting): Response
@@ -207,7 +209,14 @@ class FocusNfeService
         return Http::acceptJson()
             ->withBasicAuth($setting->api_token, '')
             ->timeout(30)
-            ->get(self::BASE_URL.'/'.$endpoint.'/'.urlencode($reference));
+            ->get($this->baseUrl($setting).'/'.$endpoint.'/'.urlencode($reference));
+    }
+
+    private function baseUrl(FiscalSetting $setting): string
+    {
+        return $setting->environment === 'production'
+            ? self::PRODUCTION_BASE_URL
+            : self::HOMOLOGATION_BASE_URL;
     }
 
     private function buildNfePayload(Sale $sale, FiscalSetting $setting): array

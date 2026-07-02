@@ -74,7 +74,7 @@ class FocusNfeServiceTest extends TestCase
     public function test_it_issues_product_nfe_with_mocked_focus_response(): void
     {
         Http::fake([
-            'api.focusnfe.com.br/v2/nfe*' => Http::response([
+            'homologacao.focusnfe.com.br/v2/nfe*' => Http::response([
                 'status' => 'autorizado',
                 'numero' => '12345',
                 'serie' => '1',
@@ -167,7 +167,7 @@ class FocusNfeServiceTest extends TestCase
     public function test_it_issues_service_nfse_with_mocked_focus_response(): void
     {
         Http::fake([
-            'api.focusnfe.com.br/v2/nfse*' => Http::response([
+            'homologacao.focusnfe.com.br/v2/nfse*' => Http::response([
                 'status' => 'processando',
                 'numero_nfse' => '789',
                 'codigo_verificacao' => 'ABC123',
@@ -247,7 +247,7 @@ class FocusNfeServiceTest extends TestCase
     public function test_it_refreshes_focus_document_status_by_reference(): void
     {
         Http::fake([
-            'api.focusnfe.com.br/v2/nfe/nfe-'.$this->tenant->id.'-*' => Http::response([
+            'homologacao.focusnfe.com.br/v2/nfe/nfe-'.$this->tenant->id.'-*' => Http::response([
                 'status' => 'autorizado',
                 'numero' => '99887',
                 'serie' => '1',
@@ -301,7 +301,7 @@ class FocusNfeServiceTest extends TestCase
     public function test_it_tests_focus_connection_with_mocked_not_found_response(): void
     {
         Http::fake([
-            'api.focusnfe.com.br/v2/nfe/__vetoros_connection_test__' => Http::response([
+            'homologacao.focusnfe.com.br/v2/nfe/__vetoros_connection_test__' => Http::response([
                 'mensagem' => 'Nota fiscal nao encontrada',
             ], 404),
         ]);
@@ -320,7 +320,7 @@ class FocusNfeServiceTest extends TestCase
     public function test_it_reports_focus_connection_authentication_failure(): void
     {
         Http::fake([
-            'api.focusnfe.com.br/v2/nfe/__vetoros_connection_test__' => Http::response([
+            'homologacao.focusnfe.com.br/v2/nfe/__vetoros_connection_test__' => Http::response([
                 'mensagem' => 'Token invalido',
             ], 401),
         ]);
