@@ -21,7 +21,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function EditPart({ categories, manufacturers, parts, page, search }: any) {
+export default function EditPart({ categories, manufacturers, parts, page, search, fiscalNfeEnabled }: any) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Peças" />
@@ -53,7 +53,7 @@ export default function EditPart({ categories, manufacturers, parts, page, searc
 
             <div className="p-4">
                 <div className="rounded-lg border p-2">
-                    <PartForm categories={categories} initialData={parts} manufacturers={manufacturers} />
+                    <PartForm categories={categories} initialData={parts} manufacturers={manufacturers} fiscalNfeEnabled={fiscalNfeEnabled} />
                 </div>
             </div>
         </AppLayout>

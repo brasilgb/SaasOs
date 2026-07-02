@@ -4,6 +4,7 @@ namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PartRequest;
+use App\Models\App\FiscalSetting;
 use App\Models\App\Part;
 use App\Models\App\PartMovement;
 use App\Support\TenantSequence;
@@ -79,7 +80,11 @@ class PartController extends Controller
         $categories = Part::distinct()->pluck('category');
         $manufacturers = Part::distinct()->pluck('manufacturer');
 
-        return Inertia::render('app/parts/create-part', ['categories' => $categories, 'manufacturers' => $manufacturers]);
+        return Inertia::render('app/parts/create-part', [
+            'categories' => $categories,
+            'manufacturers' => $manufacturers,
+            'fiscalNfeEnabled' => $this->fiscalNfeEnabled(),
+        ]);
     }
 
     /**
@@ -146,6 +151,7 @@ class PartController extends Controller
             'parts' => $part,
             'categories' => $categories,
             'manufacturers' => $manufacturers,
+            'fiscalNfeEnabled' => $this->fiscalNfeEnabled(),
             'page' => $request->page,
             'search' => $request->search,
         ]);
@@ -237,5 +243,13 @@ class PartController extends Controller
             $query->orWhere('reference_number', 'like', "%{$barcode}%")
                 ->orWhere('part_number', 'like', "%{$barcode}%");
         }
+    }
+
+    private function fiscalNfeEnabled(): bool
+    {
+        return FiscalSetting::query()
+            ->where('enabled', true)
+            ->where('nfe_enabled', true)
+            ->exists();
     }
 }

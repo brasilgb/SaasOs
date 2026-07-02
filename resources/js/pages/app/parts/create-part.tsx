@@ -21,7 +21,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function CreatePart({ categories, manufacturers }: any) {
+export default function CreatePart({ categories, manufacturers, fiscalNfeEnabled }: any) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Peças" />
@@ -46,7 +46,7 @@ export default function CreatePart({ categories, manufacturers }: any) {
 
             <div className="p-4">
                 <div className="rounded-lg border p-2">
-                    <PartForm categories={categories} manufacturers={manufacturers} />
+                    <PartForm categories={categories} manufacturers={manufacturers} fiscalNfeEnabled={fiscalNfeEnabled} />
                 </div>
             </div>
         </AppLayout>

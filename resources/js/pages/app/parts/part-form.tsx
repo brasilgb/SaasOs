@@ -21,9 +21,10 @@ interface PartFormProps {
     categories: any;
     manufacturers: any;
     initialData?: any;
+    fiscalNfeEnabled?: boolean;
 }
 
-export default function PartForm({ categories, manufacturers, initialData }: PartFormProps) {
+export default function PartForm({ categories, manufacturers, initialData, fiscalNfeEnabled = false }: PartFormProps) {
     const isEdit = !!initialData;
     const [disableInput, setDisableInput] = useState(false);
 
@@ -351,10 +352,14 @@ export default function PartForm({ categories, manufacturers, initialData }: Par
             <Card>
                 <CardTitle className="border-b px-6 pb-4">Dados fiscais do produto</CardTitle>
                 <CardContent className="space-y-4 pt-6">
-                    <p className="text-muted-foreground text-sm">Obrigatórios para emitir NF-e quando esta peça ou produto for vendido.</p>
+                    <p className="text-muted-foreground text-sm">
+                        {fiscalNfeEnabled
+                            ? 'Obrigatórios porque a emissão de NF-e está habilitada.'
+                            : 'Serão obrigatórios quando a emissão de NF-e for habilitada.'}
+                    </p>
                     <div className="grid gap-4 md:grid-cols-2">
                         <div className="grid gap-2">
-                            <Label htmlFor="ncm">NCM</Label>
+                            <Label htmlFor="ncm">NCM{fiscalNfeEnabled ? ' *' : ''}</Label>
                             <Input
                                 type="text"
                                 inputMode="numeric"
@@ -363,12 +368,13 @@ export default function PartForm({ categories, manufacturers, initialData }: Par
                                 onChange={(e) => setData('ncm', e.target.value.replace(/\D/g, '').slice(0, 8))}
                                 maxLength={8}
                                 placeholder="8 dígitos"
+                                required={fiscalNfeEnabled}
                             />
                             <InputError message={errors.ncm} />
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="cfop">CFOP</Label>
+                            <Label htmlFor="cfop">CFOP{fiscalNfeEnabled ? ' *' : ''}</Label>
                             <Input
                                 type="text"
                                 inputMode="numeric"
@@ -377,6 +383,7 @@ export default function PartForm({ categories, manufacturers, initialData }: Par
                                 onChange={(e) => setData('cfop', e.target.value.replace(/\D/g, '').slice(0, 4))}
                                 maxLength={4}
                                 placeholder="4 dígitos"
+                                required={fiscalNfeEnabled}
                             />
                             <InputError message={errors.cfop} />
                         </div>

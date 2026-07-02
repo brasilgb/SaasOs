@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Models\App\FiscalSetting;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class PartRequest extends FormRequest
 {
@@ -32,6 +34,11 @@ class PartRequest extends FormRequest
      */
     public function rules(): array
     {
+        $fiscalNfeEnabled = FiscalSetting::query()
+            ->where('enabled', true)
+            ->where('nfe_enabled', true)
+            ->exists();
+
         return [
             'reference_number' => 'required',
             'type' => 'required',
@@ -39,8 +46,8 @@ class PartRequest extends FormRequest
             'category' => 'required',
             'name' => 'required',
             'description' => 'required|string|max:500',
-            'ncm' => ['nullable', 'regex:/^\d{8}$/'],
-            'cfop' => ['nullable', 'regex:/^\d{4}$/'],
+            'ncm' => [Rule::requiredIf($fiscalNfeEnabled), 'nullable', 'regex:/^\d{8}$/'],
+            'cfop' => [Rule::requiredIf($fiscalNfeEnabled), 'nullable', 'regex:/^\d{4}$/'],
             'manufacturer' => 'required',
             'model_compatibility' => 'nullable|string|max:500',
             'cost_price' => 'required',
