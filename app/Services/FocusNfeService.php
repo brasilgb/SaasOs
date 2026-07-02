@@ -220,8 +220,14 @@ class FocusNfeService
             throw new RuntimeException('A venda não possui itens para emissão da NF-e.');
         }
 
-        if (blank($setting->default_ncm) || blank($setting->default_cfop)) {
-            throw new RuntimeException('Configure NCM e CFOP padrão antes de emitir NF-e pela Focus.');
+        $itemWithoutFiscalClassification = $items->first(
+            fn ($item) => blank($item->part?->ncm) || blank($item->part?->cfop)
+        );
+
+        if ($itemWithoutFiscalClassification) {
+            $description = $itemWithoutFiscalClassification->part?->name ?? 'Produto';
+
+            throw new RuntimeException("Configure o NCM e o CFOP do produto {$description} antes de emitir a NF-e pela Focus.");
         }
 
         $totalProducts = (float) $items->sum(fn ($item) => (float) $item->unit_price * (int) $item->quantity);
@@ -350,7 +356,7 @@ class FocusNfeService
             'numero_item' => $number,
             'codigo_produto' => (string) ($part?->part_number ?? $item->part_id),
             'descricao' => $part?->name ?? 'Produto',
-            'cfop' => $setting->default_cfop,
+            'cfop' => $part->cfop,
             'unidade_comercial' => $setting->default_commercial_unit ?: 'UN',
             'quantidade_comercial' => $quantity,
             'valor_unitario_comercial' => $unitPrice,
@@ -358,7 +364,7 @@ class FocusNfeService
             'unidade_tributavel' => $setting->default_tax_unit ?: 'UN',
             'quantidade_tributavel' => $quantity,
             'valor_unitario_tributavel' => $unitPrice,
-            'codigo_ncm' => $setting->default_ncm,
+            'codigo_ncm' => $part->ncm,
             'icms_origem' => $setting->default_icms_origin ?: '0',
             'icms_situacao_tributaria' => $setting->default_icms_situation ?: '102',
             'pis_situacao_tributaria' => $setting->default_pis_situation ?: '99',

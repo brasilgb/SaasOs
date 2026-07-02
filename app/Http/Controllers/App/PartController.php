@@ -103,6 +103,8 @@ class PartController extends Controller
                     'category' => $data['category'],
                     'name' => $data['name'],
                     'description' => $data['description'],
+                    'ncm' => $data['ncm'] ?? null,
+                    'cfop' => $data['cfop'] ?? null,
                     'manufacturer' => $data['manufacturer'],
                     'model_compatibility' => $data['model_compatibility'] ?? null,
                     'cost_price' => $data['cost_price'],

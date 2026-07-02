@@ -31,8 +31,6 @@ type FiscalSetting = {
     default_iss_rate?: string | number | null;
     default_nfe_series?: string | null;
     default_nfse_series?: string | null;
-    default_ncm?: string | null;
-    default_cfop?: string | null;
     default_commercial_unit?: string | null;
     default_tax_unit?: string | null;
     default_icms_origin?: string | null;
@@ -94,8 +92,6 @@ export default function FiscalDocumentSettings({ fiscalSetting }: { fiscalSettin
         default_iss_rate: fiscalSetting.default_iss_rate ?? '',
         default_nfe_series: fiscalSetting.default_nfe_series ?? '',
         default_nfse_series: fiscalSetting.default_nfse_series ?? '',
-        default_ncm: fiscalSetting.default_ncm ?? '',
-        default_cfop: fiscalSetting.default_cfop ?? '',
         default_commercial_unit: fiscalSetting.default_commercial_unit ?? 'UN',
         default_tax_unit: fiscalSetting.default_tax_unit ?? 'UN',
         default_icms_origin: fiscalSetting.default_icms_origin ?? '0',
@@ -405,36 +401,6 @@ export default function FiscalDocumentSettings({ fiscalSetting }: { fiscalSettin
                                                     onChange={(e) => setData('default_nfe_series', e.target.value)}
                                                 />
                                                 <InputError message={errors.default_nfe_series} />
-                                            </div>
-
-                                            <div className="grid gap-2">
-                                                <FieldLabel
-                                                    htmlFor="default_ncm"
-                                                    help="Usado na NF-e de produtos para classificar mercadorias. É obrigatório no fluxo atual de NF-e e deve corresponder ao tipo de produto vendido."
-                                                >
-                                                    NCM padrão
-                                                </FieldLabel>
-                                                <Input
-                                                    id="default_ncm"
-                                                    value={data.default_ncm}
-                                                    onChange={(e) => setData('default_ncm', e.target.value)}
-                                                />
-                                                <InputError message={errors.default_ncm} />
-                                            </div>
-
-                                            <div className="grid gap-2">
-                                                <FieldLabel
-                                                    htmlFor="default_cfop"
-                                                    help="Usado na NF-e de produtos para indicar a natureza fiscal da operação, como venda dentro do estado. Confirme o código correto com a contabilidade."
-                                                >
-                                                    CFOP padrão
-                                                </FieldLabel>
-                                                <Input
-                                                    id="default_cfop"
-                                                    value={data.default_cfop}
-                                                    onChange={(e) => setData('default_cfop', e.target.value)}
-                                                />
-                                                <InputError message={errors.default_cfop} />
                                             </div>
 
                                             <div className="grid gap-2">

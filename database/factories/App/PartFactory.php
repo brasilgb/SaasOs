@@ -29,6 +29,8 @@ class PartFactory extends Factory
             'reference_number' => $this->faker->unique()->numerify('REF-#######'),
             'name' => $this->faker->words(3, true),
             'description' => $this->faker->sentence,
+            'ncm' => '85177010',
+            'cfop' => '5102',
             'manufacturer' => $this->faker->company(),
             'minimum_stock_level' => $this->faker->numberBetween(0, 10),
             'status' => true,

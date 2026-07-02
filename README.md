@@ -63,6 +63,27 @@ Antes de publicar em ambiente real, siga o checklist versionado em [docs/product
 
 Se o deploy for em HostGator Turbo compartilhado, siga também o guia específico em [docs/deploy-hostgator-turbo.md](docs/deploy-hostgator-turbo.md).
 
+## Emissão fiscal e comprovantes
+
+A integração atual com a Focus NFe contempla:
+
+- NF-e (modelo 55) para vendas de produtos
+- NFS-e para prestação de serviços
+- armazenamento, no banco de dados, da referência da emissão e dos links retornados pela Focus, como DANFE/PDF e XML quando disponíveis
+
+No atendimento, uma impressora térmica pode ser usada para imprimir um comprovante da venda ou do serviço. Esse documento deve ser identificado como `COMPROVANTE NÃO FISCAL — NÃO SUBSTITUI A NOTA FISCAL`. Quando o cliente precisar do documento fiscal, o DANFE da NF-e pode ser aberto pelo link salvo no sistema e impresso em A4 ou enviado em PDF.
+
+### NFC-e, cupom fiscal e CSC
+
+A NFC-e (modelo 65) é o cupom fiscal eletrônico normalmente impresso em bobina, com QR Code no DANFC-e. Ela não está implementada no fluxo fiscal atual do VetorOS.
+
+O CSC (Código de Segurança do Contribuinte) é uma credencial fornecida pela SEFAZ e usada exclusivamente na geração do QR Code da NFC-e. Ele é diferente do token da API da Focus NFe:
+
+- token da API Focus NFe: autentica as requisições do VetorOS à Focus
+- CSC e ID do CSC: identificam e protegem o QR Code da NFC-e
+
+Como o fluxo atual emite NF-e e NFS-e, não é necessário cadastrar CSC. O CSC somente será necessário se o sistema passar a emitir NFC-e/cupom fiscal. Nesse caso, também será preciso implementar o endpoint de NFC-e, DANFC-e, formas de pagamento e as regras fiscais estaduais aplicáveis à integração com POS/TEF.
+
 ## Configurações gerais
 
 A tela `Outras configurações` foi organizada em duas abas:

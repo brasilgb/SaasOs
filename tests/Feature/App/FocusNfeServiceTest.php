@@ -62,8 +62,6 @@ class FocusNfeServiceTest extends TestCase
             'service_city_code' => '3550308',
             'service_list_item' => '14.01',
             'default_iss_rate' => 2.5,
-            'default_ncm' => '85177010',
-            'default_cfop' => '5102',
             'default_commercial_unit' => 'UN',
             'default_tax_unit' => 'UN',
             'default_icms_origin' => '0',
@@ -99,6 +97,8 @@ class FocusNfeServiceTest extends TestCase
         $part = Part::factory()->forTenant($this->tenant->id)->create([
             'part_number' => 'TELA-001',
             'name' => 'Tela OLED',
+            'ncm' => '85177010',
+            'cfop' => '5102',
         ]);
         $sale = Sale::factory()->forTenant($this->tenant->id)->create([
             'customer_id' => $customer->id,

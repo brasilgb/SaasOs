@@ -48,6 +48,8 @@ export default function PartForm({ categories, manufacturers, initialData }: Par
         reference_number: initialData?.reference_number ?? '',
         name: initialData?.name ?? '',
         description: initialData?.description ?? '',
+        ncm: initialData?.ncm ?? '',
+        cfop: initialData?.cfop ?? '',
         manufacturer: initialData?.manufacturer ?? '',
         model_compatibility: initialData?.model_compatibility ?? '',
         cost_price: initialData?.cost_price ?? '',
@@ -120,6 +122,8 @@ export default function PartForm({ categories, manufacturers, initialData }: Par
                     type: parts.type,
                     name: parts.name,
                     description: parts.description,
+                    ncm: parts.ncm ?? '',
+                    cfop: parts.cfop ?? '',
                     manufacturer: parts.manufacturer,
                     model_compatibility: parts.model_compatibility,
                     cost_price: parts.cost_price,
@@ -341,6 +345,42 @@ export default function PartForm({ categories, manufacturers, initialData }: Par
                     />
                 </div>
             </div>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardTitle className="border-b px-6 pb-4">Dados fiscais do produto</CardTitle>
+                <CardContent className="space-y-4 pt-6">
+                    <p className="text-muted-foreground text-sm">Obrigatórios para emitir NF-e quando esta peça ou produto for vendido.</p>
+                    <div className="grid gap-4 md:grid-cols-2">
+                        <div className="grid gap-2">
+                            <Label htmlFor="ncm">NCM</Label>
+                            <Input
+                                type="text"
+                                inputMode="numeric"
+                                id="ncm"
+                                value={data.ncm}
+                                onChange={(e) => setData('ncm', e.target.value.replace(/\D/g, '').slice(0, 8))}
+                                maxLength={8}
+                                placeholder="8 dígitos"
+                            />
+                            <InputError message={errors.ncm} />
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="cfop">CFOP</Label>
+                            <Input
+                                type="text"
+                                inputMode="numeric"
+                                id="cfop"
+                                value={data.cfop}
+                                onChange={(e) => setData('cfop', e.target.value.replace(/\D/g, '').slice(0, 4))}
+                                maxLength={4}
+                                placeholder="4 dígitos"
+                            />
+                            <InputError message={errors.cfop} />
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
 

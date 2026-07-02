@@ -448,8 +448,22 @@ Regras práticas:
 Antes de importar grandes volumes, vale testar com um arquivo menor.
 
 21. EMISSÃO FISCAL
-O VetorOS não substitui um emissor fiscal próprio, mas oferece apoio ao processo.
-Nas ordens existe resumo para NFS-e e, nas vendas, apoio para emissão fiscal de produtos conforme o fluxo da empresa.
+O VetorOS possui integração com a Focus NFe para emissão de NF-e (modelo 55), usada nas vendas de produtos, e NFS-e, usada na prestação de serviços.
+
+Após a emissão, o sistema registra no banco de dados a referência do documento e os links retornados pela Focus, como o DANFE/PDF e o XML, quando disponíveis. Caso o cliente solicite a nota, o DANFE pode ser acessado pelo link salvo no sistema, impresso em A4 ou enviado em PDF.
+
+É possível usar uma impressora térmica para entregar um resumo da venda ou do serviço. Essa impressão é somente um comprovante e deve conter a identificação "COMPROVANTE NÃO FISCAL — NÃO SUBSTITUI A NOTA FISCAL". Ela não transforma a operação em NFC-e e não substitui o documento fiscal emitido pela Focus.
+
+21.1 NFC-e, cupom fiscal e CSC
+A NFC-e (modelo 65) é o cupom fiscal eletrônico normalmente utilizado no varejo e impresso em bobina. Sua representação, o DANFC-e, possui QR Code para consulta do documento.
+
+O CSC (Código de Segurança do Contribuinte) é fornecido pela SEFAZ e serve para proteger e gerar o QR Code da NFC-e. Ele não é o mesmo token usado para acessar a API da Focus NFe:
+- token da API Focus NFe: autentica a comunicação entre o VetorOS e a Focus
+- CSC e ID do CSC: são usados exclusivamente na emissão e no QR Code da NFC-e
+
+O fluxo atual do VetorOS não emite NFC-e/cupom fiscal; ele emite NF-e e NFS-e. Portanto, não é necessário cadastrar CSC para usar a emissão fiscal existente ou imprimir o comprovante não fiscal em impressora térmica.
+
+O CSC será necessário somente se a emissão de NFC-e for implementada futuramente. Essa implementação também deverá considerar o DANFC-e, as formas de pagamento e as regras estaduais para integração com maquininhas POS ou TEF.
 
 22. BOAS PRÁTICAS DE USO
 - manter clientes e equipamentos sempre atualizados
