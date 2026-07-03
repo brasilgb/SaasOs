@@ -61,6 +61,10 @@ class CompanyController extends Controller
             ->where('nfe_enabled', true)
             ->exists();
 
+        if ($request->has('number') && $request->input('number') !== null) {
+            $request->merge(['number' => (string) $request->input('number')]);
+        }
+
         $data = $request->validate([
             'shortname' => ['nullable', 'string', 'max:255'],
             'companyname' => [Rule::requiredIf($nfeEnabled), 'nullable', 'string', 'max:255'],

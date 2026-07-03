@@ -9,6 +9,13 @@ use Illuminate\Validation\Rule;
 
 class CustomerRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('number') && $this->input('number') !== null) {
+            $this->merge(['number' => (string) $this->input('number')]);
+        }
+    }
+
     /**
      * Determine if the user is authorized to make this request.
      */
