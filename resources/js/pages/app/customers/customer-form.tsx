@@ -162,6 +162,7 @@ export default function CustomerForm({ initialData }: { initialData?: Customer }
                             <Search className="h-4 w-4" />
                         </Button>
                     </div>
+                    {errors.zipcode && <div className="text-sm text-red-500">{errors.zipcode}</div>}
                 </div>
 
                 <div className="grid gap-2">
@@ -173,11 +174,13 @@ export default function CustomerForm({ initialData }: { initialData?: Customer }
                 <div className="grid gap-2 md:col-span-2">
                     <Label htmlFor="city">Cidade</Label>
                     <Input type="text" id="city" value={data.city} onChange={(e) => setData('city', e.target.value)} />
+                    {errors.city && <div className="text-sm text-red-500">{errors.city}</div>}
                 </div>
 
                 <div className="grid gap-2 md:col-span-2">
                     <Label htmlFor="district">Bairro</Label>
                     <Input type="text" id="district" value={data.district} onChange={(e) => setData('district', e.target.value)} />
+                    {errors.district && <div className="text-sm text-red-500">{errors.district}</div>}
                 </div>
             </div>
 
@@ -185,6 +188,7 @@ export default function CustomerForm({ initialData }: { initialData?: Customer }
                 <div className="grid gap-2 md:col-span-2">
                     <Label htmlFor="street">Endereço</Label>
                     <Input type="text" id="street" value={data.street} onChange={(e) => setData('street', e.target.value)} />
+                    {errors.street && <div className="text-sm text-red-500">{errors.street}</div>}
                 </div>
 
                 <div className="grid gap-2">
@@ -195,6 +199,7 @@ export default function CustomerForm({ initialData }: { initialData?: Customer }
                 <div className="grid gap-2">
                     <Label htmlFor="number">Número</Label>
                     <Input type="text" id="number" value={data.number ?? ''} onChange={(e) => setData('number', e.target.value)} />
+                    {errors.number && <div className="text-sm text-red-500">{errors.number}</div>}
                 </div>
             </div>
                 </CardContent>

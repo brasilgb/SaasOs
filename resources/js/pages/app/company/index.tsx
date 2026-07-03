@@ -167,6 +167,7 @@ export default function Company({ company }: any) {
                                     onBlur={(e) => getCep(e.target.value)}
                                     maxLength={9}
                                 />
+                                {errors.zip_code && <div className="text-sm text-red-500">{errors.zip_code}</div>}
                             </div>
 
                             <div className="grid gap-2">
@@ -190,6 +191,7 @@ export default function Company({ company }: any) {
                                     disabled={!canManageCompany}
                                     onChange={(e) => setData('city', e.target.value)}
                                 />
+                                {errors.city && <div className="text-sm text-red-500">{errors.city}</div>}
                             </div>
 
                             <div className="grid gap-2 md:col-span-2">
@@ -201,6 +203,7 @@ export default function Company({ company }: any) {
                                     disabled={!canManageCompany}
                                     onChange={(e) => setData('district', e.target.value)}
                                 />
+                                {errors.district && <div className="text-sm text-red-500">{errors.district}</div>}
                             </div>
                         </div>
 
@@ -214,6 +217,7 @@ export default function Company({ company }: any) {
                                     disabled={!canManageCompany}
                                     onChange={(e) => setData('street', e.target.value)}
                                 />
+                                {errors.street && <div className="text-sm text-red-500">{errors.street}</div>}
                             </div>
 
                             <div className="grid gap-2">
@@ -225,6 +229,7 @@ export default function Company({ company }: any) {
                                     disabled={!canManageCompany}
                                     onChange={(e) => setData('number', e.target.value)}
                                 />
+                                {errors.number && <div className="text-sm text-red-500">{errors.number}</div>}
                             </div>
 
                             <div className="grid gap-2">

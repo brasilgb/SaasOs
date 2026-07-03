@@ -20,6 +20,7 @@ class FocusNfeService
     private const PRODUCTION_BASE_URL = 'https://api.focusnfe.com.br/v2';
 
     private const HOMOLOGATION_BASE_URL = 'https://homologacao.focusnfe.com.br/v2';
+
     private const CONNECTION_TEST_REFERENCE = '__vetoros_connection_test__';
 
     public function testConnection(FiscalSetting $setting, ?string $apiToken = null): void
@@ -240,6 +241,8 @@ class FocusNfeService
         $customer = $sale->customer;
         $items = $sale->items;
 
+        $this->validateNfeParties($company, $customer, $setting);
+
         if ($items->isEmpty()) {
             throw new RuntimeException('A venda não possui itens para emissão da NF-e.');
         }
@@ -326,9 +329,49 @@ class FocusNfeService
             'municipio_emitente' => $company->city,
             'uf_emitente' => $company->state,
             'cep_emitente' => $this->digits($company->zip_code),
-            'inscricao_estadual_emitente' => $setting->state_registration,
+            'inscricao_estadual_emitente' => $this->digits($setting->state_registration),
             'regime_tributario_emitente' => (int) ($setting->company_tax_regime ?: 1),
         ];
+    }
+
+    private function validateNfeParties(Company $company, $customer, FiscalSetting $setting): void
+    {
+        $missing = [];
+
+        foreach ([
+            'logradouro do emitente' => $company->street,
+            'número do emitente' => $company->number,
+            'bairro do emitente' => $company->district,
+            'município do emitente' => $company->city,
+            'UF do emitente' => $company->state,
+            'CEP do emitente' => $company->zip_code,
+            'inscrição estadual do emitente' => $setting->state_registration,
+            'nome do destinatário' => $customer?->name,
+            'logradouro do destinatário' => $customer?->street,
+            'número do destinatário' => $customer?->number,
+            'bairro do destinatário' => $customer?->district,
+            'município do destinatário' => $customer?->city,
+            'UF do destinatário' => $customer?->state,
+            'CEP do destinatário' => $customer?->zipcode,
+        ] as $label => $value) {
+            if (blank($value)) {
+                $missing[] = $label;
+            }
+        }
+
+        $document = $this->digits($customer?->cpfcnpj);
+
+        if (! in_array(strlen($document), [11, 14], true)) {
+            $missing[] = 'CPF ou CNPJ válido do destinatário';
+        }
+
+        if (! in_array((int) $setting->company_tax_regime, [1, 2, 3], true)) {
+            $missing[] = 'regime tributário do emitente (use 1, 2 ou 3)';
+        }
+
+        if ($missing !== []) {
+            throw new RuntimeException('Complete os dados obrigatórios da NF-e antes de emitir: '.implode(', ', $missing).'.');
+        }
     }
 
     private function destinatarioPayload($customer): array

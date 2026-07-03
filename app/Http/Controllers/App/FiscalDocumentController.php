@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
+use App\Models\App\Company;
 use App\Models\App\FiscalDocument;
 use App\Models\App\FiscalSetting;
 use App\Models\App\Order;
@@ -77,7 +78,7 @@ class FiscalDocumentController extends Controller
             'webhook_secret' => ['nullable', 'string', 'max:4000'],
             'nfe_enabled' => ['required', 'boolean'],
             'nfse_enabled' => ['required', 'boolean'],
-            'company_tax_regime' => [Rule::requiredIf(fn () => $request->boolean('enabled') && $request->boolean('nfe_enabled')), 'nullable', 'string', 'max:50'],
+            'company_tax_regime' => [Rule::requiredIf(fn () => $request->boolean('enabled') && $request->boolean('nfe_enabled')), 'nullable', Rule::in(['1', '2', '3'])],
             'state_registration' => [Rule::requiredIf(fn () => $request->boolean('enabled') && $request->boolean('nfe_enabled')), 'nullable', 'string', 'max:50'],
             'municipal_registration' => [Rule::requiredIf(fn () => $request->boolean('enabled') && $request->boolean('nfse_enabled')), 'nullable', 'string', 'max:50'],
             'service_city_code' => [Rule::requiredIf(fn () => $request->boolean('enabled') && $request->boolean('nfse_enabled')), 'nullable', 'string', 'max:20'],
@@ -117,6 +118,16 @@ class FiscalDocumentController extends Controller
                 ->withInput();
         }
 
+        if ($data['enabled'] && ($data['nfe_enabled'] || $data['nfse_enabled'])) {
+            $missingCompanyFields = $this->missingCompanyFiscalFields((bool) $data['nfe_enabled']);
+
+            if ($missingCompanyFields !== []) {
+                return back()
+                    ->withErrors(['enabled' => 'Complete os dados da empresa antes de ativar a emissão fiscal: '.implode(', ', $missingCompanyFields).'.'])
+                    ->withInput();
+            }
+        }
+
         $data['provider'] = 'focus_nfe';
 
         if (blank($data['api_token'] ?? null)) {
@@ -139,6 +150,16 @@ class FiscalDocumentController extends Controller
         $data = $request->validate([
             'enabled' => ['required', 'boolean'],
         ]);
+
+        if ($data['enabled'] && ($fiscalSetting->nfe_enabled || $fiscalSetting->nfse_enabled)) {
+            $missingCompanyFields = $this->missingCompanyFiscalFields((bool) $fiscalSetting->nfe_enabled);
+
+            if ($missingCompanyFields !== []) {
+                return back()->withErrors([
+                    'enabled' => 'Complete os dados da empresa antes de ativar a emissão fiscal: '.implode(', ', $missingCompanyFields).'.',
+                ]);
+            }
+        }
 
         $fiscalSetting->update([
             'provider' => 'focus_nfe',
@@ -284,5 +305,27 @@ class FiscalDocumentController extends Controller
             'has_api_token' => ! empty($setting->api_token),
             'has_webhook_secret' => ! empty($setting->webhook_secret),
         ];
+    }
+
+    private function missingCompanyFiscalFields(bool $includeNfeAddress): array
+    {
+        $company = Company::query()->first();
+        $fields = [
+            'CNPJ' => $company?->cnpj,
+            'razão social' => $company?->companyname,
+        ];
+
+        if ($includeNfeAddress) {
+            $fields += [
+                'CEP' => $company?->zip_code,
+                'UF' => $company?->state,
+                'cidade' => $company?->city,
+                'bairro' => $company?->district,
+                'logradouro' => $company?->street,
+                'número' => $company?->number,
+            ];
+        }
+
+        return array_keys(array_filter($fields, fn ($value) => blank($value)));
     }
 }
