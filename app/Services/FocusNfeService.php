@@ -31,7 +31,9 @@ class FocusNfeService
             throw new RuntimeException('Informe o token Focus NFe antes de testar a conexão.');
         }
 
-        $endpoint = $setting->nfe_enabled ? 'nfe' : 'nfse';
+        $endpoint = $setting->nfe_enabled
+            ? 'nfe'
+            : ($setting->nfse_mode === 'national' ? 'nfsen' : 'nfse');
         $response = Http::acceptJson()
             ->withBasicAuth($token, '')
             ->timeout(15)
@@ -71,10 +73,13 @@ class FocusNfeService
             throw new RuntimeException('Informe um valor maior que zero na ordem antes de emitir a NFS-e.');
         }
 
-        $document = $this->createProcessingDocument($order, 'nfse', $setting);
-        $payload = $this->buildNfsePayload($order, $setting);
+        $endpoint = $setting->nfse_mode === 'national' ? 'nfsen' : 'nfse';
+        $document = $this->createProcessingDocument($order, 'nfse', $setting, $endpoint);
+        $payload = $endpoint === 'nfsen'
+            ? $this->buildNationalNfsePayload($order, $setting)
+            : $this->buildNfsePayload($order, $setting);
 
-        return $this->sendAndUpdate($document, 'nfse', $document->provider_reference, $payload, $setting);
+        return $this->sendAndUpdate($document, $endpoint, $document->provider_reference, $payload, $setting);
     }
 
     public function refreshDocument(FiscalDocument $document): FiscalDocument
@@ -85,7 +90,7 @@ class FocusNfeService
 
         $endpoint = match ($document->type) {
             'nfe' => 'nfe',
-            'nfse' => 'nfse',
+            'nfse' => Str::startsWith((string) $document->provider_reference, 'nfsen-') ? 'nfsen' : 'nfse',
             default => throw new RuntimeException('Tipo de documento fiscal não suportado para consulta na Focus NFe.'),
         };
 
@@ -106,9 +111,9 @@ class FocusNfeService
         return $setting;
     }
 
-    private function createProcessingDocument(Order|Sale $model, string $type, FiscalSetting $setting): FiscalDocument
+    private function createProcessingDocument(Order|Sale $model, string $type, FiscalSetting $setting, ?string $referenceType = null): FiscalDocument
     {
-        $reference = sprintf('%s-%s-%s', $type, $model->tenant_id, $model->id);
+        $reference = sprintf('%s-%s-%s', $referenceType ?? $type, $model->tenant_id, $model->id);
 
         return FiscalDocument::updateOrCreate(
             [
@@ -157,7 +162,7 @@ class FocusNfeService
             $number = $body['numero'] ?? $body['numero_nfse'] ?? null;
             $accessKey = $body['chave_nfe'] ?? $body['codigo_verificacao'] ?? null;
             $pdfUrl = $this->normalizeFocusFileUrl(
-                $body['caminho_danfe'] ?? $body['url_danfe'] ?? $body['url'] ?? null,
+                $body['caminho_danfe'] ?? $body['url_danfe'] ?? $body['url_danfse'] ?? $body['url'] ?? null,
                 $document->environment
             );
             $xmlUrl = $this->normalizeFocusFileUrl(
@@ -310,6 +315,55 @@ class FocusNfeService
                 'valor_servicos' => round((float) ($order->service_cost ?? 0), 2),
             ],
         ];
+    }
+
+    private function buildNationalNfsePayload(Order $order, FiscalSetting $setting): array
+    {
+        $company = $this->company();
+        $customer = $order->customer;
+        $serviceCode = $this->digits($setting->service_list_item);
+
+        if (strlen($serviceCode) === 4) {
+            $serviceCode .= '00';
+        }
+
+        if (strlen($serviceCode) !== 6 || strlen($this->digits($setting->service_city_code)) !== 7) {
+            throw new RuntimeException('Na NFS-e Nacional, informe o código IBGE com 7 dígitos e o código de tributação nacional do ISS com 6 dígitos.');
+        }
+
+        $customerDocument = $this->digits($customer?->cpfcnpj);
+
+        if (! in_array(strlen($customerDocument), [11, 14], true)) {
+            throw new RuntimeException('Informe um CPF ou CNPJ válido para o tomador da NFS-e Nacional.');
+        }
+
+        $payload = [
+            'data_emissao' => now()->toIso8601String(),
+            'serie_dps' => max(1, (int) $setting->default_nfse_series),
+            'numero_dps' => $order->id,
+            'data_competencia' => now()->toDateString(),
+            'emitente_dps' => 1,
+            'codigo_municipio_emissora' => (int) $this->digits($setting->service_city_code),
+            'cnpj_prestador' => $this->digits($company->cnpj),
+            'inscricao_municipal_prestador' => $setting->municipal_registration,
+            'codigo_opcao_simples_nacional' => (int) $setting->nfse_simple_option,
+            'regime_especial_tributacao' => (int) $setting->nfse_special_tax_regime,
+            strlen($customerDocument) === 14 ? 'cnpj_tomador' : 'cpf_tomador' => $customerDocument,
+            'razao_social_tomador' => $customer?->name,
+            'email_tomador' => $customer?->email,
+            'codigo_municipio_prestacao' => $this->digits($setting->service_city_code),
+            'codigo_tributacao_nacional_iss' => $serviceCode,
+            'descricao_servico' => $order->services_performed ?: 'Serviços prestados na ordem #'.$order->order_number,
+            'valor_servico' => round((float) ($order->service_cost ?? 0), 2),
+            'tributacao_iss' => 1,
+            'finalidade_emissao' => 0,
+            'consumidor_final' => 0,
+            'indicador_destinatario' => 0,
+            'ibs_cbs_situacao_tributaria' => $setting->nfse_ibs_cbs_situation,
+            'ibs_cbs_classificacao_tributaria' => $setting->nfse_ibs_cbs_classification,
+        ];
+
+        return $payload;
     }
 
     private function company(): Company

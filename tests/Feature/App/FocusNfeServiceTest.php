@@ -244,6 +244,50 @@ class FocusNfeServiceTest extends TestCase
         });
     }
 
+    public function test_it_issues_national_nfse_when_national_mode_is_enabled(): void
+    {
+        FiscalSetting::query()->firstOrFail()->update([
+            'nfse_mode' => 'national',
+            'nfse_simple_option' => 3,
+            'nfse_special_tax_regime' => 0,
+            'service_list_item' => '14.01',
+            'default_nfse_series' => '1',
+            'nfse_ibs_cbs_situation' => '000',
+            'nfse_ibs_cbs_classification' => '000001',
+        ]);
+
+        Http::fake([
+            'homologacao.focusnfe.com.br/v2/nfsen*' => Http::response([
+                'status' => 'processando_autorizacao',
+                'ref' => 'nfsen-ref',
+            ], 202),
+        ]);
+
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create([
+            'name' => 'Tomador Nacional',
+            'cpfcnpj' => '98765432100',
+        ]);
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'service_cost' => 150,
+            'services_performed' => 'Manutenção de equipamento',
+        ]);
+
+        $document = app(FocusNfeService::class)->issueOrderNfse($order);
+
+        expect($document->provider_reference)->toBe("nfsen-{$this->tenant->id}-{$order->id}");
+
+        Http::assertSent(function (Request $request): bool {
+            $payload = $request->data();
+
+            return str_contains((string) $request->url(), '/v2/nfsen?ref=nfsen-')
+                && $payload['codigo_tributacao_nacional_iss'] === '140100'
+                && $payload['codigo_municipio_emissora'] === 3550308
+                && $payload['cpf_tomador'] === '98765432100'
+                && $payload['ibs_cbs_situacao_tributaria'] === '000';
+        });
+    }
+
     public function test_it_refreshes_focus_document_status_by_reference(): void
     {
         Http::fake([

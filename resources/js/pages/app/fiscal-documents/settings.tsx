@@ -23,12 +23,17 @@ type FiscalSetting = {
     api_token?: string | null;
     nfe_enabled: boolean;
     nfse_enabled: boolean;
+    nfse_mode?: 'municipal' | 'national' | null;
+    nfse_simple_option?: string | number | null;
+    nfse_special_tax_regime?: string | number | null;
     company_tax_regime?: string | null;
     state_registration?: string | null;
     municipal_registration?: string | null;
     service_city_code?: string | null;
     service_list_item?: string | null;
     default_iss_rate?: string | number | null;
+    nfse_ibs_cbs_situation?: string | null;
+    nfse_ibs_cbs_classification?: string | null;
     default_nfe_series?: string | null;
     default_nfse_series?: string | null;
     default_commercial_unit?: string | null;
@@ -84,12 +89,17 @@ export default function FiscalDocumentSettings({ fiscalSetting }: { fiscalSettin
         webhook_secret: '',
         nfe_enabled: fiscalSetting.nfe_enabled,
         nfse_enabled: fiscalSetting.nfse_enabled,
+        nfse_mode: fiscalSetting.nfse_mode ?? 'municipal',
+        nfse_simple_option: String(fiscalSetting.nfse_simple_option ?? '3'),
+        nfse_special_tax_regime: String(fiscalSetting.nfse_special_tax_regime ?? '0'),
         company_tax_regime: fiscalSetting.company_tax_regime ?? '',
         state_registration: fiscalSetting.state_registration ?? '',
         municipal_registration: fiscalSetting.municipal_registration ?? '',
         service_city_code: fiscalSetting.service_city_code ?? '',
         service_list_item: fiscalSetting.service_list_item ?? '',
         default_iss_rate: fiscalSetting.default_iss_rate ?? '',
+        nfse_ibs_cbs_situation: fiscalSetting.nfse_ibs_cbs_situation ?? '',
+        nfse_ibs_cbs_classification: fiscalSetting.nfse_ibs_cbs_classification ?? '',
         default_nfe_series: fiscalSetting.default_nfe_series ?? '',
         default_nfse_series: fiscalSetting.default_nfse_series ?? '',
         default_commercial_unit: fiscalSetting.default_commercial_unit ?? 'UN',
@@ -480,6 +490,25 @@ export default function FiscalDocumentSettings({ fiscalSetting }: { fiscalSettin
                                     {data.nfse_enabled && (
                                         <>
                                             <div className="grid gap-2">
+                                                <FieldLabel
+                                                    htmlFor="nfse_mode"
+                                                    help="Use Nacional quando o município emitir pelo Ambiente Nacional; caso contrário, use a integração municipal da Focus."
+                                                >
+                                                    Modalidade NFS-e
+                                                </FieldLabel>
+                                                <select
+                                                    id="nfse_mode"
+                                                    className="border-input bg-background h-9 rounded-md border px-3 text-sm"
+                                                    value={data.nfse_mode}
+                                                    onChange={(e) => setData('nfse_mode', e.target.value as 'municipal' | 'national')}
+                                                >
+                                                    <option value="municipal">Municipal (Focus / prefeitura)</option>
+                                                    <option value="national">Nacional (DPS / Ambiente Nacional)</option>
+                                                </select>
+                                                <InputError message={errors.nfse_mode} />
+                                            </div>
+
+                                            <div className="grid gap-2">
                                                 <FieldLabel htmlFor="municipal_registration" help="Usada na NFS-e de serviços como inscrição municipal do prestador.">
                                                     Inscrição municipal
                                                 </FieldLabel>
@@ -538,6 +567,87 @@ export default function FiscalDocumentSettings({ fiscalSetting }: { fiscalSettin
                                                 />
                                                 <InputError message={errors.default_nfse_series} />
                                             </div>
+
+                                            {data.nfse_mode === 'national' && (
+                                                <>
+                                                    <div className="grid gap-2">
+                                                        <FieldLabel
+                                                            htmlFor="nfse_simple_option"
+                                                            help="Situação do prestador perante o Simples Nacional. Confirme com a contabilidade."
+                                                        >
+                                                            Opção do Simples Nacional
+                                                        </FieldLabel>
+                                                        <select
+                                                            id="nfse_simple_option"
+                                                            className="border-input bg-background h-9 rounded-md border px-3 text-sm"
+                                                            value={data.nfse_simple_option}
+                                                            onChange={(e) => setData('nfse_simple_option', e.target.value)}
+                                                        >
+                                                            <option value="1">Não optante</option>
+                                                            <option value="2">MEI</option>
+                                                            <option value="3">ME/EPP optante</option>
+                                                        </select>
+                                                        <InputError message={errors.nfse_simple_option} />
+                                                    </div>
+
+                                                    <div className="grid gap-2">
+                                                        <FieldLabel
+                                                            htmlFor="nfse_special_tax_regime"
+                                                            help="Regime especial de tributação municipal aplicável ao prestador."
+                                                        >
+                                                            Regime especial municipal
+                                                        </FieldLabel>
+                                                        <select
+                                                            id="nfse_special_tax_regime"
+                                                            className="border-input bg-background h-9 rounded-md border px-3 text-sm"
+                                                            value={data.nfse_special_tax_regime}
+                                                            onChange={(e) => setData('nfse_special_tax_regime', e.target.value)}
+                                                        >
+                                                            <option value="0">Nenhum</option>
+                                                            <option value="1">Ato cooperado</option>
+                                                            <option value="2">Estimativa</option>
+                                                            <option value="3">Microempresa municipal</option>
+                                                            <option value="4">Notário ou registrador</option>
+                                                            <option value="5">Profissional autônomo</option>
+                                                            <option value="6">Sociedade de profissionais</option>
+                                                            <option value="9">Outros</option>
+                                                        </select>
+                                                        <InputError message={errors.nfse_special_tax_regime} />
+                                                    </div>
+
+                                                    <div className="grid gap-2">
+                                                        <FieldLabel
+                                                            htmlFor="nfse_ibs_cbs_situation"
+                                                            help="Código CST de três dígitos do IBS/CBS aplicável ao serviço. Confirme com a contabilidade."
+                                                        >
+                                                            CST IBS/CBS
+                                                        </FieldLabel>
+                                                        <Input
+                                                            id="nfse_ibs_cbs_situation"
+                                                            value={data.nfse_ibs_cbs_situation}
+                                                            maxLength={3}
+                                                            onChange={(e) => setData('nfse_ibs_cbs_situation', e.target.value.replace(/\D/g, ''))}
+                                                        />
+                                                        <InputError message={errors.nfse_ibs_cbs_situation} />
+                                                    </div>
+
+                                                    <div className="grid gap-2">
+                                                        <FieldLabel
+                                                            htmlFor="nfse_ibs_cbs_classification"
+                                                            help="Código de classificação tributária de seis dígitos do IBS/CBS. Confirme com a contabilidade."
+                                                        >
+                                                            Classificação IBS/CBS
+                                                        </FieldLabel>
+                                                        <Input
+                                                            id="nfse_ibs_cbs_classification"
+                                                            value={data.nfse_ibs_cbs_classification}
+                                                            maxLength={6}
+                                                            onChange={(e) => setData('nfse_ibs_cbs_classification', e.target.value.replace(/\D/g, ''))}
+                                                        />
+                                                        <InputError message={errors.nfse_ibs_cbs_classification} />
+                                                    </div>
+                                                </>
+                                            )}
                                         </>
                                     )}
                                 </CardContent>
