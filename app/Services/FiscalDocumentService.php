@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\App\FiscalDocument;
+use App\Models\App\FiscalSetting;
 use App\Models\App\Order;
 use App\Models\App\Sale;
 use Illuminate\Support\Carbon;
@@ -14,6 +15,8 @@ class FiscalDocumentService
 
     public function registerManualOrder(Order $order, array $data, int $userId): FiscalDocument
     {
+        $this->ensureManualRegistrationAllowed('nfse_enabled', 'NFS-e');
+
         $documentKey = $order->fiscal_document_key ?: $this->manualKey($order->tenant_id, $order->id, $data['fiscal_document_number']);
         $issuedAt = $this->issuedAt($data['fiscal_issued_at'] ?? null);
 
@@ -48,6 +51,8 @@ class FiscalDocumentService
 
     public function registerManualSale(Sale $sale, array $data, int $userId): FiscalDocument
     {
+        $this->ensureManualRegistrationAllowed('nfe_enabled', 'NF-e');
+
         if ($sale->status === 'cancelled') {
             throw new \RuntimeException('Não é possível registrar comprovante fiscal em venda cancelada.');
         }
@@ -112,5 +117,18 @@ class FiscalDocumentService
     private function issuedAt(mixed $value): Carbon
     {
         return blank($value) ? now() : Carbon::parse($value);
+    }
+
+    private function ensureManualRegistrationAllowed(string $feature, string $documentLabel): void
+    {
+        $automaticEnabled = FiscalSetting::query()
+            ->where('enabled', true)
+            ->where($feature, true)
+            ->whereNotNull('api_token')
+            ->exists();
+
+        if ($automaticEnabled) {
+            throw new \RuntimeException("O registro manual de {$documentLabel} está desativado porque a emissão automática pela Focus NFe está habilitada.");
+        }
     }
 }

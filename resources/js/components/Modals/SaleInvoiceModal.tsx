@@ -138,7 +138,8 @@ export default function SaleInvoiceModal({ open, onClose, sale }: SaleInvoiceMod
                     )}
                 </div>
 
-                <Card>
+                {(hasRegisteredFiscal || !focusEnabled) && (
+                    <Card>
                     <CardContent className="space-y-3 pt-4 text-sm">
                         {hasRegisteredFiscal ? (
                             <>
@@ -200,13 +201,14 @@ export default function SaleInvoiceModal({ open, onClose, sale }: SaleInvoiceMod
                             </>
                         )}
                     </CardContent>
-                </Card>
+                    </Card>
+                )}
 
                 <DialogFooter className="flex justify-between">
                     <Button variant="ghost" onClick={onClose}>
                         Fechar
                     </Button>
-                    {!hasRegisteredFiscal && (
+                    {!focusEnabled && !hasRegisteredFiscal && (
                         <Button onClick={handleRegisterFiscal} disabled={!saleId || processing}>
                             Salvar comprovante
                         </Button>

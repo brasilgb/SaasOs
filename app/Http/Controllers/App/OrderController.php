@@ -1140,7 +1140,11 @@ class OrderController extends Controller
             'fiscal_notes' => 'nullable|string|max:500',
         ]);
 
-        $document = $this->fiscalDocumentService->registerManualOrder($order, $validated, (int) Auth::id());
+        try {
+            $document = $this->fiscalDocumentService->registerManualOrder($order, $validated, (int) Auth::id());
+        } catch (\RuntimeException $exception) {
+            return back()->with('error', $exception->getMessage());
+        }
 
         $this->logOrderAction($order, 'fiscal_registered', [
             'fiscal_document_number' => $document->number,

@@ -4,6 +4,7 @@ namespace Tests\Feature\App;
 
 use App\Models\App\Customer;
 use App\Models\App\Equipment;
+use App\Models\App\FiscalSetting;
 use App\Models\App\Order;
 use App\Models\App\Sale;
 use App\Models\Tenant;
@@ -117,6 +118,35 @@ class FiscalDocumentServiceTest extends TestCase
 
         app(FiscalDocumentService::class)->registerManualSale($sale, [
             'fiscal_document_number' => 'NFE-001',
+        ], $this->user->id);
+    }
+
+    public function test_it_blocks_only_the_manual_document_type_enabled_for_focus(): void
+    {
+        FiscalSetting::create([
+            'tenant_id' => $this->tenant->id,
+            'enabled' => true,
+            'provider' => 'focus_nfe',
+            'environment' => 'sandbox',
+            'api_token' => 'focus-token',
+            'nfe_enabled' => false,
+            'nfse_enabled' => true,
+        ]);
+
+        $sale = Sale::factory()->forTenant($this->tenant->id)->create(['status' => 'completed']);
+        $document = app(FiscalDocumentService::class)->registerManualSale($sale, [
+            'fiscal_document_number' => 'NFE-MANUAL-001',
+        ], $this->user->id);
+
+        $this->assertSame('manual', $document->provider);
+
+        $order = Order::factory()->forTenant($this->tenant->id)->create();
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('O registro manual de NFS-e está desativado');
+
+        app(FiscalDocumentService::class)->registerManualOrder($order, [
+            'fiscal_document_number' => 'NFSE-MANUAL-001',
         ], $this->user->id);
     }
 }
