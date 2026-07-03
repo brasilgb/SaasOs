@@ -26,6 +26,7 @@ type FiscalSetting = {
     nfse_mode?: 'municipal' | 'national' | null;
     nfse_simple_option?: string | number | null;
     nfse_special_tax_regime?: string | number | null;
+    nfse_operation_indicator?: string | null;
     company_tax_regime?: string | null;
     state_registration?: string | null;
     municipal_registration?: string | null;
@@ -92,6 +93,7 @@ export default function FiscalDocumentSettings({ fiscalSetting }: { fiscalSettin
         nfse_mode: fiscalSetting.nfse_mode ?? 'municipal',
         nfse_simple_option: String(fiscalSetting.nfse_simple_option ?? '3'),
         nfse_special_tax_regime: String(fiscalSetting.nfse_special_tax_regime ?? '0'),
+        nfse_operation_indicator: fiscalSetting.nfse_operation_indicator ?? '050101',
         company_tax_regime: fiscalSetting.company_tax_regime ?? '',
         state_registration: fiscalSetting.state_registration ?? '',
         municipal_registration: fiscalSetting.municipal_registration ?? '',
@@ -613,6 +615,22 @@ export default function FiscalDocumentSettings({ fiscalSetting }: { fiscalSettin
                                                             <option value="9">Outros</option>
                                                         </select>
                                                         <InputError message={errors.nfse_special_tax_regime} />
+                                                    </div>
+
+                                                    <div className="grid gap-2">
+                                                        <FieldLabel
+                                                            htmlFor="nfse_operation_indicator"
+                                                            help="Código cIndOp de seis dígitos que define o local da operação para IBS/CBS. Para manutenção do item 14.01, normalmente é 050101."
+                                                        >
+                                                            Indicador da operação IBS/CBS
+                                                        </FieldLabel>
+                                                        <Input
+                                                            id="nfse_operation_indicator"
+                                                            value={data.nfse_operation_indicator}
+                                                            maxLength={6}
+                                                            onChange={(e) => setData('nfse_operation_indicator', e.target.value.replace(/\D/g, ''))}
+                                                        />
+                                                        <InputError message={errors.nfse_operation_indicator} />
                                                     </div>
 
                                                     <div className="grid gap-2">

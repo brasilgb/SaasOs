@@ -250,6 +250,7 @@ class FocusNfeServiceTest extends TestCase
             'nfse_mode' => 'national',
             'nfse_simple_option' => 3,
             'nfse_special_tax_regime' => 0,
+            'nfse_operation_indicator' => '050101',
             'service_list_item' => '14.01',
             'default_nfse_series' => '1',
             'nfse_ibs_cbs_situation' => '000',
@@ -284,6 +285,8 @@ class FocusNfeServiceTest extends TestCase
                 && $payload['codigo_tributacao_nacional_iss'] === '140100'
                 && $payload['codigo_municipio_emissora'] === 3550308
                 && $payload['cpf_tomador'] === '98765432100'
+                && $payload['tipo_retencao_iss'] === 1
+                && $payload['codigo_indicador_operacao'] === '050101'
                 && $payload['ibs_cbs_situacao_tributaria'] === '000';
         });
     }
