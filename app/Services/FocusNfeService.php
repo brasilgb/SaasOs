@@ -156,8 +156,14 @@ class FocusNfeService
         if ($response->successful()) {
             $number = $body['numero'] ?? $body['numero_nfse'] ?? null;
             $accessKey = $body['chave_nfe'] ?? $body['codigo_verificacao'] ?? null;
-            $pdfUrl = $body['caminho_danfe'] ?? $body['url_danfe'] ?? $body['url'] ?? null;
-            $xmlUrl = $body['caminho_xml_nota_fiscal'] ?? $body['url_xml'] ?? null;
+            $pdfUrl = $this->normalizeFocusFileUrl(
+                $body['caminho_danfe'] ?? $body['url_danfe'] ?? $body['url'] ?? null,
+                $document->environment
+            );
+            $xmlUrl = $this->normalizeFocusFileUrl(
+                $body['caminho_xml_nota_fiscal'] ?? $body['url_xml'] ?? null,
+                $document->environment
+            );
             $issuedAt = now();
 
             $document->update([
@@ -442,6 +448,19 @@ class FocusNfeService
     private function statusFromResponse(array $body, string $fallback): string
     {
         return Str::lower((string) ($body['status'] ?? $body['situacao'] ?? $fallback));
+    }
+
+    private function normalizeFocusFileUrl(?string $url, ?string $environment): ?string
+    {
+        if (blank($url) || Str::startsWith($url, ['http://', 'https://'])) {
+            return $url;
+        }
+
+        $origin = $environment === 'production'
+            ? 'https://api.focusnfe.com.br'
+            : 'https://homologacao.focusnfe.com.br';
+
+        return $origin.'/'.ltrim($url, '/');
     }
 
     private function digits(?string $value): string

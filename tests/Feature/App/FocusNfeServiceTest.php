@@ -252,8 +252,8 @@ class FocusNfeServiceTest extends TestCase
                 'numero' => '99887',
                 'serie' => '1',
                 'chave_nfe' => '35260411222333000181550010000998871000099887',
-                'caminho_danfe' => 'https://focus.test/danfe-sync.pdf',
-                'caminho_xml_nota_fiscal' => 'https://focus.test/nfe-sync.xml',
+                'caminho_danfe' => '/arquivos_development/danfe-sync.pdf',
+                'caminho_xml_nota_fiscal' => '/arquivos_development/nfe-sync.xml',
             ], 200),
         ]);
 
@@ -280,15 +280,15 @@ class FocusNfeServiceTest extends TestCase
         expect($refreshed->status)->toBe('autorizado')
             ->and($refreshed->number)->toBe('99887')
             ->and($refreshed->access_key)->toBe('35260411222333000181550010000998871000099887')
-            ->and($refreshed->pdf_url)->toBe('https://focus.test/danfe-sync.pdf')
-            ->and($refreshed->xml_url)->toBe('https://focus.test/nfe-sync.xml');
+            ->and($refreshed->pdf_url)->toBe('https://homologacao.focusnfe.com.br/arquivos_development/danfe-sync.pdf')
+            ->and($refreshed->xml_url)->toBe('https://homologacao.focusnfe.com.br/arquivos_development/nfe-sync.xml');
 
         $this->assertDatabaseHas('sales', [
             'id' => $sale->id,
             'tenant_id' => $this->tenant->id,
             'fiscal_document_number' => '99887',
             'fiscal_document_key' => '35260411222333000181550010000998871000099887',
-            'fiscal_document_url' => 'https://focus.test/danfe-sync.pdf',
+            'fiscal_document_url' => 'https://homologacao.focusnfe.com.br/arquivos_development/danfe-sync.pdf',
         ]);
 
         Http::assertSent(function (Request $request) use ($sale) {
