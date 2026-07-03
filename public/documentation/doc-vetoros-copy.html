@@ -627,9 +627,9 @@
                         Configurações fiscais, ative a integração, configure o ambiente de homologação ou produção,
                         informe o token Focus NFe, opcionalmente cadastre o segredo de webhook e habilite os tipos de
                         emissão usados pela sua empresa: NF-e de produtos e/ou NFS-e de serviços.</p>
-                    <p>Também preencha os dados fiscais padrão usados na montagem dos documentos, como regime tributário,
-                        inscrições estadual e municipal, código do município, item da lista de serviço, alíquota de ISS,
-                        séries NF-e/NFS-e, NCM, CFOP, unidades, origem e situações tributárias de ICMS, PIS e COFINS.</p>
+                    <p>Também preencha os dados fiscais padrão usados na montagem dos documentos. NCM e CFOP são
+                        informados em cada produto. Para serviços, escolha NFS-e Municipal ou Nacional e configure os
+                        códigos municipais, ISS e, quando nacional, os campos IBS/CBS exigidos.</p>
                     <h4>3.9 Abas de configurações</h4>
                     <p>As Outras configurações estão divididas em duas abas. Em <strong>Sistema e SMTP</strong> ficam
                         os habilitadores gerais e os dados do servidor de e-mail. Em <strong>Operacionais</strong>
@@ -1438,8 +1438,9 @@
                         informar as credenciais fornecidas pela Focus NFe. Quando ativado, é possível emitir NF-e de
                         produtos a partir de vendas e NFS-e de serviços a partir de ordens de serviço, conforme
                         permissões, credenciais e dados fiscais configurados.</p>
-                    <p>Quando a integração não estiver ativa, vendas e ordens continuam permitindo o registro manual do
-                        comprovante ou documento fiscal, mantendo número, link, data, observações e vínculo com a operação.</p>
+                    <p>A NF-e e a NFS-e podem ser habilitadas separadamente. O registro manual fica disponível somente
+                        para o tipo que não usa emissão automática. Se apenas NF-e estiver ativa, por exemplo, vendas usam
+                        a Focus e ordens ainda aceitam NFS-e manual. Documentos já registrados permanecem consultáveis.</p>
                     <h4>24.1 Configurações fiscais</h4>
                     <ul>
                         <li><strong>Ativar documentos fiscais:</strong> libera o módulo fiscal integrado para a sua empresa.</li>
@@ -1448,30 +1449,42 @@
                         <li><strong>Segredo de webhook:</strong> campo opcional para validar retornos enviados pela integração.</li>
                         <li><strong>NF-e de produtos:</strong> habilita emissão fiscal para vendas de peças e produtos.</li>
                         <li><strong>NFS-e de serviços:</strong> habilita emissão fiscal para ordens de serviço.</li>
+                        <li><strong>Modalidade NFS-e:</strong> Municipal usa <code>/v2/nfse</code>; Nacional/DPS usa <code>/v2/nfsen</code>. A Focus não escolhe automaticamente.</li>
                     </ul>
                     <h4>24.2 Dados fiscais padrão</h4>
                     <p>Os dados fiscais padrão reduzem retrabalho na emissão e servem de base para os payloads enviados à
                         Focus NFe. Revise com a contabilidade antes de operar em produção.</p>
                     <ul>
-                        <li>Regime tributário, inscrição estadual e inscrição municipal.</li>
-                        <li>Código do município, item da lista de serviço e alíquota de ISS padrão.</li>
+                        <li>Regime tributário, inscrições estadual e municipal e dados completos da empresa.</li>
+                        <li>Código IBGE do município, item/código de tributação do serviço e alíquota de ISS.</li>
                         <li>Série NF-e e série NFS-e.</li>
-                        <li>NCM, CFOP, unidade comercial e unidade tributável padrão.</li>
+                        <li>NCM e CFOP por produto, unidade comercial e unidade tributável padrão.</li>
                         <li>Origem e situação de ICMS, situação de PIS e situação de COFINS.</li>
+                        <li>Na NFS-e Nacional: opção do Simples, regime especial, cIndOp, CST e classificação IBS/CBS.</li>
                     </ul>
-                    <h4>24.3 Como usar na prática</h4>
+                    <p>Na NF-e, o cliente deve ter nome, CPF/CNPJ e endereço completo. Na NFS-e, nome e documento são
+                        obrigatórios, e o município pode exigir também o endereço.</p>
+                    <h4>24.3 NFS-e Nacional</h4>
+                    <p>A modalidade Nacional exige município ativo no Emissor Público Nacional/API, código IBGE com 7
+                        dígitos e código de tributação nacional com 6. Produção e homologação possuem cadastros municipais
+                        separados; E0037 indica ausência de parametrização no ambiente atual.</p>
+                    <h4>24.4 Como usar na prática</h4>
                     <ul>
                         <li><strong>Na OS:</strong> emita NFS-e quando documentos fiscais e NFS-e estiverem ativos.</li>
                         <li><strong>Na venda:</strong> emita NF-e quando documentos fiscais e NF-e estiverem ativos.</li>
                         <li><strong>Na listagem de notas fiscais:</strong> acompanhe tipo, origem, vínculo, número, status, emissão e links de PDF/XML quando disponíveis.</li>
                         <li><strong>Registro manual:</strong> use quando a nota foi emitida fora do VetorOS ou quando a integração não estiver habilitada.</li>
+                        <li><strong>Sincronizar:</strong> consulta o processamento e grava status, PDF e XML quando autorizados.</li>
                     </ul>
-                    <h4>24.4 Permissões e responsabilidade fiscal</h4>
+                    <h4>24.5 Arquivos, logs e responsabilidade</h4>
+                    <p>PDF e XML permanecem hospedados pela Focus; o VetorOS guarda os links no banco, não em
+                        <code>public</code>. Rejeições são registradas no log e nos payloads do documento.</p>
                     <ul>
                         <li>O menu Notas fiscais aparece apenas para usuários com permissão fiscal e quando documentos fiscais estão ativos.</li>
                         <li>A emissão depende de dados fiscais corretos, token válido e configuração adequada do ambiente.</li>
                         <li>A responsabilidade pela conferência tributária, alíquotas, códigos fiscais e obrigações legais permanece com a empresa e sua contabilidade.</li>
                     </ul>
+                    <p>Após atualizações fiscais, execute <code>php artisan migrate --force</code>.</p>
                 </section>
 
                 <section id="botoes">

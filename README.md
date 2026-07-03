@@ -68,8 +68,10 @@ Se o deploy for em HostGator Turbo compartilhado, siga também o guia específic
 A integração atual com a Focus NFe contempla:
 
 - NF-e (modelo 55) para vendas de produtos
-- NFS-e para prestação de serviços
+- NFS-e municipal e NFS-e Nacional para prestação de serviços
 - armazenamento, no banco de dados, da referência da emissão e dos links retornados pela Focus, como DANFE/PDF e XML quando disponíveis
+
+O passo a passo completo de implantação, campos obrigatórios, modalidades, homologação, sincronização e diagnóstico está em [docs/integracao-fiscal-focus-nfe.md](docs/integracao-fiscal-focus-nfe.md).
 
 O NCM e o CFOP são configurados individualmente no cadastro de cada peça/produto, pois uma empresa pode comercializar mercadorias com classificações fiscais diferentes. Quando a integração fiscal e a emissão de NF-e estão habilitadas, os dois campos tornam-se obrigatórios no cadastro e na edição do produto. A emissão é bloqueada se algum item da venda estiver sem NCM ou CFOP.
 
