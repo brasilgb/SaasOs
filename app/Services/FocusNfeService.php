@@ -159,6 +159,24 @@ class FocusNfeService
         $body = $response->json() ?? [];
 
         if ($response->successful()) {
+            $status = $this->statusFromResponse($body, 'processing');
+            $businessError = in_array($status, ['erro_autorizacao', 'negado', 'rejeitado', 'erro'], true);
+            $errorMessage = $businessError ? $this->focusErrorMessage($body) : null;
+
+            if ($businessError) {
+                Log::error('Documento fiscal rejeitado durante a autorização pela Focus NFe.', [
+                    'tenant_id' => $document->tenant_id,
+                    'fiscal_document_id' => $document->id,
+                    'document_type' => $document->type,
+                    'environment' => $document->environment,
+                    'reference' => $document->provider_reference,
+                    'focus_status' => $status,
+                    'error_message' => $errorMessage,
+                    'request_payload' => $requestPayload ?? $document->request_payload,
+                    'response_payload' => $body,
+                ]);
+            }
+
             $number = $body['numero'] ?? $body['numero_nfse'] ?? null;
             $accessKey = $body['chave_nfe'] ?? $body['codigo_verificacao'] ?? null;
             $pdfUrl = $this->normalizeFocusFileUrl(
@@ -172,7 +190,7 @@ class FocusNfeService
             $issuedAt = now();
 
             $document->update([
-                'status' => $this->statusFromResponse($body, 'processing'),
+                'status' => $status,
                 'number' => $number,
                 'series' => $body['serie'] ?? null,
                 'access_key' => $accessKey,
@@ -181,6 +199,7 @@ class FocusNfeService
                 'issued_at' => $issuedAt,
                 'request_payload' => $requestPayload ?? $document->request_payload,
                 'response_payload' => $body,
+                'error_message' => $errorMessage,
             ]);
 
             $this->updateDocumentableFiscalFields($document, $number, $accessKey, $pdfUrl, $issuedAt);
@@ -505,6 +524,20 @@ class FocusNfeService
     private function statusFromResponse(array $body, string $fallback): string
     {
         return Str::lower((string) ($body['status'] ?? $body['situacao'] ?? $fallback));
+    }
+
+    private function focusErrorMessage(array $body): string
+    {
+        $messages = collect($body['erros'] ?? [])
+            ->map(fn ($error) => is_array($error) ? ($error['mensagem'] ?? $error['message'] ?? null) : $error)
+            ->filter()
+            ->implode(' | ');
+
+        return (string) ($body['mensagem']
+            ?? $body['message']
+            ?? $body['mensagem_sefaz']
+            ?? $body['erro']
+            ?? ($messages ?: 'A Focus NFe não informou o motivo detalhado da rejeição.'));
     }
 
     private function normalizeFocusFileUrl(?string $url, ?string $environment): ?string
