@@ -11,6 +11,7 @@ use Illuminate\Http\Client\Response;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use RuntimeException;
 
@@ -129,6 +130,20 @@ class FocusNfeService
     private function sendAndUpdate(FiscalDocument $document, string $endpoint, string $reference, array $payload, FiscalSetting $setting): FiscalDocument
     {
         $response = $this->post($endpoint, $reference, $payload, $setting);
+
+        if ($response->failed()) {
+            Log::error('Falha na emissão de documento fiscal pela Focus NFe.', [
+                'tenant_id' => $document->tenant_id,
+                'fiscal_document_id' => $document->id,
+                'document_type' => $document->type,
+                'environment' => $setting->environment,
+                'endpoint' => $endpoint,
+                'reference' => $reference,
+                'http_status' => $response->status(),
+                'request_payload' => $payload,
+                'response_payload' => $response->json() ?? ['raw' => $response->body()],
+            ]);
+        }
 
         return $this->updateFromFocusResponse($document, $response, $payload);
     }
