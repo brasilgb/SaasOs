@@ -69,40 +69,19 @@ export function FlashToastMessages() {
     const { flash } = usePage<{ flash?: FlashMessages }>().props;
 
     useEffect(() => {
-        if (flash?.success) {
-            toastSuccess(flash.success);
-        }
-    }, [flash?.id, flash?.success]);
-
-    useEffect(() => {
-        if (flash?.message) {
-            toastSuccess(flash.message);
-        }
-    }, [flash?.id, flash?.message]);
-
-    useEffect(() => {
-        if (flash?.error) {
-            toastError('Operação não concluída', flash.error);
-        }
-    }, [flash?.error, flash?.id]);
+        const success = flash?.success ?? flash?.message ?? flash?.import_success;
+        if (success) toastSuccess(success);
+    }, [flash?.id, flash?.import_success, flash?.message, flash?.success]);
 
     useEffect(() => {
         if (flash?.authorization_error) {
             toastWarning('Ação não autorizada', flash.authorization_error);
+            return;
         }
-    }, [flash?.authorization_error, flash?.id]);
 
-    useEffect(() => {
-        if (flash?.import_success) {
-            toastSuccess(flash.import_success);
-        }
-    }, [flash?.id, flash?.import_success]);
-
-    useEffect(() => {
-        if (flash?.import_error) {
-            toastError('Importação não concluída', flash.import_error);
-        }
-    }, [flash?.id, flash?.import_error]);
+        const error = flash?.error ?? flash?.import_error;
+        if (error) toastError(flash?.import_error ? 'Importação não concluída' : 'Operação não concluída', error);
+    }, [flash?.authorization_error, flash?.error, flash?.id, flash?.import_error]);
 
     useEffect(() => {
         const handleInvalidResponse = (event: Event) => {
