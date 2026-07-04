@@ -1,5 +1,6 @@
 import ActionDelete from '@/components/action-delete';
 import AppPagination, { PaginationSummary } from '@/components/app-pagination';
+import { normalizeScannedEan13 } from '@/components/ean13-barcode';
 import { Icon } from '@/components/icon';
 import InputSearch from '@/components/inputSearch';
 import { Badge } from '@/components/ui/badge';
@@ -47,7 +48,8 @@ export default function Parts({ parts, search }: any) {
     const streamRef = useRef<MediaStream | null>(null);
 
     const submitBarcodeSearch = useCallback((barcode: string) => {
-        const code = String(barcode || '').trim();
+        const rawCode = String(barcode || '').trim();
+        const code = normalizeScannedEan13(rawCode) ?? rawCode;
         if (!code) return;
 
         router.get(
@@ -56,7 +58,7 @@ export default function Parts({ parts, search }: any) {
                 search: code,
             },
             {
-                preserveState: true,
+                preserveState: false,
                 replace: true,
             },
         );

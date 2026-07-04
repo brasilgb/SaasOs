@@ -1,6 +1,7 @@
 import { apios } from '@/Utils/connectApi';
 import { maskMoney } from '@/Utils/mask';
 import selectStyles from '@/Utils/selectStyles';
+import { normalizeScannedEan13 } from '@/components/ean13-barcode';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -185,11 +186,15 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
     };
 
     const addByBarcode = () => {
-        const code = normalizeCode(barcode);
+        const code = normalizeScannedEan13(barcode) ?? normalizeCode(barcode);
 
         if (!code) return;
 
-        const part = parts.find((item) => [item.reference_number, item.part_number, item.id].some((value) => normalizeCode(value) === code));
+        const part = parts.find((item) =>
+            [item.reference_number, item.part_number, item.id].some(
+                (value) => (normalizeScannedEan13(String(value ?? '')) ?? normalizeCode(value)) === code,
+            ),
+        );
 
         if (!part) {
             toastWarning('Produto não encontrado', 'Confira o código de barras informado.');
@@ -511,8 +516,7 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
                             {cartItems.map((item) => (
                                 <div key={item.cartItemId} className="mb-2 flex items-center justify-between">
                                     <span>
-                                        {item.name} (x{item.selected_quantity}) - R${' '}
-                                        {maskMoney(Number(item.sale_price) * item.selected_quantity)}
+                                        {item.name} (x{item.selected_quantity}) - R$ {maskMoney(Number(item.sale_price) * item.selected_quantity)}
                                     </span>
                                     <Button variant="destructive" size="sm" onClick={() => removeFromCart(item.cartItemId)}>
                                         <Trash2 size={16} />

@@ -14,10 +14,12 @@ use App\Models\App\Part;
 use App\Models\App\Schedule;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\Ean13;
 use App\Support\OrderStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Queue;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class OrderControllerTest extends TestCase
@@ -41,6 +43,23 @@ class OrderControllerTest extends TestCase
 
         $this->withSession(['tenant_id' => $this->tenant->id])
             ->actingAs($this->user);
+    }
+
+    public function test_it_finds_an_order_by_its_ean_13_label(): void
+    {
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'order_number' => 123,
+        ]);
+
+        $response = $this->get(route('app.orders.index', [
+            'search' => Ean13::fromNumber($order->order_number),
+        ]));
+
+        $response->assertOk()->assertInertia(fn (Assert $page) => $page
+            ->component('app/orders/index')
+            ->has('orders.data', 1)
+            ->where('orders.data.0.id', $order->id)
+        );
     }
 
     public function test_it_registers_initial_status_history_and_log_when_creating_an_order(): void

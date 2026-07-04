@@ -7,6 +7,8 @@ use App\Http\Requests\PartRequest;
 use App\Models\App\FiscalSetting;
 use App\Models\App\Part;
 use App\Models\App\PartMovement;
+use App\Support\Ean13;
+use App\Support\Pagination;
 use App\Support\TenantSequence;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -62,7 +64,7 @@ class PartController extends Controller
             });
         }
 
-        $parts = $query->paginate(\App\Support\Pagination::perPage())->withQueryString();
+        $parts = $query->paginate(Pagination::perPage())->withQueryString();
 
         return Inertia::render('app/parts/index', [
             'parts' => $parts,
@@ -235,9 +237,14 @@ class PartController extends Controller
     private function applyBarcodeSearch($query, string $search): void
     {
         $barcode = preg_replace('/\D+/', '', $search) ?: null;
+        $ean = Ean13::normalize($search);
 
         $query->orWhere('reference_number', $search)
             ->orWhere('part_number', $search);
+
+        if ($ean) {
+            $query->orWhere('reference_number', $ean);
+        }
 
         if ($barcode) {
             $query->orWhere('reference_number', 'like', "%{$barcode}%")

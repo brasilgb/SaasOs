@@ -1,3 +1,4 @@
+import Ean13Barcode from '@/components/ean13-barcode';
 import { useEffect, useRef } from 'react';
 
 type LabelItem = {
@@ -20,34 +21,6 @@ const chunk = <T,>(array: T[], size: number) => {
     }
     return result;
 };
-
-const BAR_PATTERNS: Record<string, string> = {
-    '0': '101001101101',
-    '1': '110100101011',
-    '2': '101100101011',
-    '3': '110110010101',
-    '4': '101001101011',
-    '5': '110100110101',
-    '6': '101100110101',
-    '7': '101001011011',
-    '8': '110100101101',
-    '9': '101100101101',
-};
-
-function Barcode({ value }: { value: string }) {
-    const pattern = `1010${value
-        .split('')
-        .map((digit) => BAR_PATTERNS[digit] ?? BAR_PATTERNS['0'])
-        .join('00')}101`;
-
-    return (
-        <svg className="thermal-barcode" viewBox={`0 0 ${pattern.length} 40`} preserveAspectRatio="none" aria-label={`Codigo de barras ${value}`}>
-            {pattern
-                .split('')
-                .map((bit, index) => (bit === '1' ? <rect key={`${value}-${index}`} x={index} y="0" width="1" height="40" fill="#000" /> : null))}
-        </svg>
-    );
-}
 
 export default function Print({ data, format = 'a4' }: PrintProps) {
     const printRef = useRef<HTMLDivElement>(null);
@@ -220,7 +193,7 @@ export default function Print({ data, format = 'a4' }: PrintProps) {
                                     </div>
 
                                     <div className="thermal-footer">
-                                        <Barcode value={item.barcode || String(item.order)} />
+                                        <Ean13Barcode className="thermal-barcode" value={item.barcode || String(item.order)} />
                                         <div className="thermal-code">{item.barcode || String(item.order)}</div>
                                         <div className="thermal-phone">{item.telephone}</div>
                                     </div>

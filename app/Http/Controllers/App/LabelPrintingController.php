@@ -4,8 +4,9 @@ namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
 use App\Models\App\Company;
-use App\Models\App\Other;
 use App\Models\App\Order;
+use App\Models\App\Other;
+use App\Support\Ean13;
 use App\Support\TenantSequence;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -32,18 +33,18 @@ class LabelPrintingController extends Controller
             ->with('customer:id,name')
             ->where('tenant_id', $tenantId)
             ->whereBetween('order_number', [$initial, $final])
-            ->get(['id', 'customer_id', 'order_number'])
+            ->get(['id', 'customer_id', 'order_number', 'barcode'])
             ->keyBy('order_number');
 
         for ($i = $initial; $i <= $final; $i++) {
-            /** @var \App\Models\App\Order|null $order */
+            /** @var Order|null $order */
             $order = $orders->get($i);
             $data[] = [
                 'order' => $i,
                 'telephone' => $company?->telephone ?? '',
                 'company' => $company?->shortname ?: ($company?->companyname ?? ''),
                 'customer' => $order?->customer?->name ?? '',
-                'barcode' => str_pad((string) $i, 8, '0', STR_PAD_LEFT),
+                'barcode' => $order?->barcode ?: Ean13::fromNumber($i),
             ];
         }
 

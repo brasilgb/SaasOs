@@ -2,12 +2,12 @@
 
 namespace Tests\Feature\App;
 
-use App\Models\App\OrderLog;
 use App\Models\App\Customer;
 use App\Models\App\Message;
 use App\Models\App\Order;
-use App\Models\App\Part;
+use App\Models\App\OrderLog;
 use App\Models\App\Other;
+use App\Models\App\Part;
 use App\Models\App\Sale;
 use App\Models\App\SaleItem;
 use App\Models\App\Schedule;
@@ -125,6 +125,30 @@ class DashboardControllerTest extends TestCase
             ->assertViewHas('page.props.orders.feedback', function ($items) use ($deliveredOrder) {
                 return collect($items)->contains(fn ($item) => (int) $item['id'] === $deliveredOrder->id
                     && (int) $item['order_number'] === (int) $deliveredOrder->order_number);
+            });
+    }
+
+    public function test_dashboard_removes_delivered_orders_after_the_feedback_window_expires(): void
+    {
+        $visibleOrder = Order::factory()->forTenant($this->tenant->id)->create([
+            'service_status' => OrderStatus::DELIVERED,
+            'delivery_date' => now()->subDays(8),
+            'customer_feedback_submitted_at' => null,
+            'customer_feedback_request_expired_at' => null,
+        ]);
+        $expiredOrder = Order::factory()->forTenant($this->tenant->id)->create([
+            'service_status' => OrderStatus::DELIVERED,
+            'delivery_date' => now()->subDays(15),
+            'customer_feedback_submitted_at' => null,
+            'customer_feedback_request_expired_at' => null,
+        ]);
+
+        $this->get(route('app.dashboard'))
+            ->assertOk()
+            ->assertViewHas('page.props.orders.feedback', function ($items) use ($expiredOrder, $visibleOrder) {
+                $ids = collect($items)->pluck('id');
+
+                return $ids->contains($visibleOrder->id) && ! $ids->contains($expiredOrder->id);
             });
     }
 

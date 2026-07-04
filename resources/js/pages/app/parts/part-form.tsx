@@ -1,3 +1,4 @@
+import { generateEan13 } from '@/components/ean13-barcode';
 import FormFieldHelp from '@/components/form-field-help';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -27,9 +28,7 @@ export default function PartForm({ categories, manufacturers, initialData, fisca
     const isEdit = !!initialData;
     const [disableInput, setDisableInput] = useState(false);
 
-    const generateReferenceNumber = () => `${Date.now()}${Math.floor(Math.random() * 1000)
-        .toString()
-        .padStart(3, '0')}`;
+    const generateReferenceNumber = () => generateEan13(String(Date.now()).slice(-12));
 
     const initialCategoryOptions: OptionType[] = categories?.map((category: any) => ({
         value: category,
@@ -175,166 +174,181 @@ export default function PartForm({ categories, manufacturers, initialData, fisca
             <Card>
                 <CardTitle className="border-b px-6 pb-4">Identificação</CardTitle>
                 <CardContent className="space-y-4 pt-6">
-            <div className="mt-4 grid gap-4 md:grid-cols-4">
-                <div className="grid gap-2">
-                    <div className="flex items-center gap-2">
-                        <Label htmlFor="name">Número da Peça/Produto</Label>
-                        {!isEdit && (
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <button type="button" className="text-muted-foreground hover:text-foreground" aria-label="Informação sobre código gerado">
-                                        <Info className="h-4 w-4" />
-                                    </button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <p>Código gerado automaticamente para uso como código de barras.</p>
-                                </TooltipContent>
-                            </Tooltip>
-                        )}
-                    </div>
-                    <div className="flex gap-2">
-                        <Input
-                            type="text"
-                            id="reference_number"
-                            value={data.reference_number}
-                            onChange={(e) => setData('reference_number', e.target.value)}
-                            onBlur={(e) => partNumberDataSelected(e)}
-                            maxLength={18}
-                        />
-                        {!isEdit && (
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => setData('reference_number', generateReferenceNumber())}
-                                title="Gerar código de barras"
-                            >
-                                <Barcode className="h-4 w-4" />
-                            </Button>
-                        )}
-                    </div>
-                    {errors.reference_number && <div className="text-sm text-red-500">{errors.reference_number}</div>}
-                </div>
-
-                <div className="grid gap-2">
-                    <div className="flex items-center justify-between">
-                        <Label>Tipo</Label>
-
-                        <span className={`text-xs ${!data.type ? 'text-amber-600' : 'text-muted-foreground'}`}>
-                            {!data.type && 'Selecione o tipo do item'}
-                            {data.type === 'part' && 'Item técnico (uso interno ou venda)'}
-                            {data.type === 'product' && 'Produto final para venda'}
-                        </span>
-                    </div>
-
-                    {/* Tipo (identidade) */}
-                    <div className="flex items-center justify-between gap-6 rounded-md border p-2.5">
-                        <div className="flex items-center justify-between gap-4">
-                            <label className="flex cursor-pointer items-center gap-2">
-                                <input type="radio" name="type" checked={data.type === 'part'} onChange={() => setData('type', 'part')} />
-                                <span className="text-sm">Peça</span>
-                            </label>
-
-                            <label className="flex cursor-pointer items-center gap-2">
-                                <input type="radio" name="type" checked={data.type === 'product'} onChange={() => setData('type', 'product')} />
-                                <span className="text-sm">Produto</span>
-                            </label>
+                    <div className="mt-4 grid gap-4 md:grid-cols-4">
+                        <div className="grid gap-2">
+                            <div className="flex items-center gap-2">
+                                <Label htmlFor="name">Número da Peça/Produto</Label>
+                                {!isEdit && (
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <button
+                                                type="button"
+                                                className="text-muted-foreground hover:text-foreground"
+                                                aria-label="Informação sobre código gerado"
+                                            >
+                                                <Info className="h-4 w-4" />
+                                            </button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Código gerado automaticamente para uso como código de barras.</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                )}
+                            </div>
+                            <div className="flex gap-2">
+                                <Input
+                                    type="text"
+                                    id="reference_number"
+                                    value={data.reference_number}
+                                    onChange={(e) => setData('reference_number', e.target.value)}
+                                    onBlur={(e) => partNumberDataSelected(e)}
+                                    maxLength={18}
+                                />
+                                {!isEdit && (
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() => setData('reference_number', generateReferenceNumber())}
+                                        title="Gerar código de barras"
+                                    >
+                                        <Barcode className="h-4 w-4" />
+                                    </Button>
+                                )}
+                            </div>
+                            {errors.reference_number && <div className="text-sm text-red-500">{errors.reference_number}</div>}
                         </div>
 
-                        <div className="flex items-center justify-between gap-2">
-                            <span className="text-muted-foreground text-sm">Para venda</span>
+                        <div className="grid gap-2">
+                            <div className="flex items-center justify-between">
+                                <Label>Tipo</Label>
 
-                            <Switch checked={Boolean(data.is_sellable)} onCheckedChange={(checked) => setData('is_sellable', checked)} />
+                                <span className={`text-xs ${!data.type ? 'text-amber-600' : 'text-muted-foreground'}`}>
+                                    {!data.type && 'Selecione o tipo do item'}
+                                    {data.type === 'part' && 'Item técnico (uso interno ou venda)'}
+                                    {data.type === 'product' && 'Produto final para venda'}
+                                </span>
+                            </div>
+
+                            {/* Tipo (identidade) */}
+                            <div className="flex items-center justify-between gap-6 rounded-md border p-2.5">
+                                <div className="flex items-center justify-between gap-4">
+                                    <label className="flex cursor-pointer items-center gap-2">
+                                        <input type="radio" name="type" checked={data.type === 'part'} onChange={() => setData('type', 'part')} />
+                                        <span className="text-sm">Peça</span>
+                                    </label>
+
+                                    <label className="flex cursor-pointer items-center gap-2">
+                                        <input
+                                            type="radio"
+                                            name="type"
+                                            checked={data.type === 'product'}
+                                            onChange={() => setData('type', 'product')}
+                                        />
+                                        <span className="text-sm">Produto</span>
+                                    </label>
+                                </div>
+
+                                <div className="flex items-center justify-between gap-2">
+                                    <span className="text-muted-foreground text-sm">Para venda</span>
+
+                                    <Switch checked={Boolean(data.is_sellable)} onCheckedChange={(checked) => setData('is_sellable', checked)} />
+                                </div>
+                            </div>
+
+                            {/* Pode ser vendido */}
+
+                            {errors.type && <div className="text-sm text-red-500">{errors.type}</div>}
+                        </div>
+
+                        <div className="grid gap-2">
+                            <FormFieldHelp label="Categoria" content={`Selecione ou clique em Criar "categoria digitada".`} />
+                            <CreatableSelect<OptionType, false>
+                                value={selectedCategory}
+                                options={categoryOptions}
+                                onChange={changeCategory}
+                                onCreateOption={createCategory}
+                                isClearable
+                                styles={selectStyles}
+                                placeholder="Selecione ou digite a nova categoria"
+                                classNamePrefix="creatable-select"
+                                className="min-w-0"
+                                formatCreateLabel={(inputValue) => `Criar "${inputValue}"`}
+                            />
+                            <InputError message={errors.category} />
+                        </div>
+
+                        <div className="grid gap-2">
+                            <FormFieldHelp label="Fabricante" content={`Selecione ou clique em Criar "fabricante digitado".`} />
+                            <CreatableSelect<OptionType, false>
+                                value={selectedManufacturer}
+                                options={manufacturerOptions}
+                                onChange={changeManufacturer}
+                                onCreateOption={createManufacturer}
+                                isClearable
+                                styles={selectStyles}
+                                placeholder="Selecione ou digite o novo fabricante"
+                                classNamePrefix="creatable-select"
+                                className="min-w-0"
+                                formatCreateLabel={(inputValue) => `Criar "${inputValue}"`}
+                            />
+                            <InputError message={errors.manufacturer} />
                         </div>
                     </div>
-
-                    {/* Pode ser vendido */}
-
-                    {errors.type && <div className="text-sm text-red-500">{errors.type}</div>}
-                </div>
-
-                <div className="grid gap-2">
-                    <FormFieldHelp label="Categoria" content={`Selecione ou clique em Criar "categoria digitada".`} />
-                    <CreatableSelect<OptionType, false>
-                        value={selectedCategory}
-                        options={categoryOptions}
-                        onChange={changeCategory}
-                        onCreateOption={createCategory}
-                        isClearable
-                        styles={selectStyles}
-                        placeholder="Selecione ou digite a nova categoria"
-                        classNamePrefix="creatable-select"
-                        className="min-w-0"
-                        formatCreateLabel={(inputValue) => `Criar "${inputValue}"`}
-                    />
-                    <InputError message={errors.category} />
-                </div>
-
-                <div className="grid gap-2">
-                    <FormFieldHelp label="Fabricante" content={`Selecione ou clique em Criar "fabricante digitado".`} />
-                    <CreatableSelect<OptionType, false>
-                        value={selectedManufacturer}
-                        options={manufacturerOptions}
-                        onChange={changeManufacturer}
-                        onCreateOption={createManufacturer}
-                        isClearable
-                        styles={selectStyles}
-                        placeholder="Selecione ou digite o novo fabricante"
-                        classNamePrefix="creatable-select"
-                        className="min-w-0"
-                        formatCreateLabel={(inputValue) => `Criar "${inputValue}"`}
-                    />
-                    <InputError message={errors.manufacturer} />
-                </div>
-            </div>
                 </CardContent>
             </Card>
 
             <Card>
                 <CardTitle className="border-b px-6 pb-4">Descrição e compatibilidade</CardTitle>
                 <CardContent className="space-y-4 pt-6">
-            <div className="mt-4 grid gap-4 md:grid-cols-3">
-                <div className="grid gap-2">
-                    <Label htmlFor="name">Nome da Peça/Produto</Label>
-                    <Input type="text" id="name" value={data.name} onChange={(e) => setData('name', e.target.value)} readOnly={disableInput} />
-                    {errors.name && <div className="text-sm text-red-500">{errors.name}</div>}
-                </div>
+                    <div className="mt-4 grid gap-4 md:grid-cols-3">
+                        <div className="grid gap-2">
+                            <Label htmlFor="name">Nome da Peça/Produto</Label>
+                            <Input
+                                type="text"
+                                id="name"
+                                value={data.name}
+                                onChange={(e) => setData('name', e.target.value)}
+                                readOnly={disableInput}
+                            />
+                            {errors.name && <div className="text-sm text-red-500">{errors.name}</div>}
+                        </div>
 
-                <div className="grid gap-2 md:col-span-2">
-                    <Label htmlFor="description">Descrição</Label>
-                    <Input
-                        type="text"
-                        id="description"
-                        value={data.description}
-                        onChange={(e) => setData('description', e.target.value)}
-                        readOnly={disableInput}
-                    />
-                    {errors.description && <div className="text-sm text-red-500">{errors.description}</div>}
-                </div>
-            </div>
+                        <div className="grid gap-2 md:col-span-2">
+                            <Label htmlFor="description">Descrição</Label>
+                            <Input
+                                type="text"
+                                id="description"
+                                value={data.description}
+                                onChange={(e) => setData('description', e.target.value)}
+                                readOnly={disableInput}
+                            />
+                            {errors.description && <div className="text-sm text-red-500">{errors.description}</div>}
+                        </div>
+                    </div>
 
-            <div className="mt-4 grid gap-4 md:grid-cols-2">
-                <div className="grid gap-2">
-                    <Label htmlFor="model_compatibility">Modelos compatíveis</Label>
-                    <Input
-                        type="text"
-                        id="model_compatibility"
-                        value={data.model_compatibility}
-                        onChange={(e) => setData('model_compatibility', e.target.value)}
-                        readOnly={disableInput}
-                    />
-                </div>
+                    <div className="mt-4 grid gap-4 md:grid-cols-2">
+                        <div className="grid gap-2">
+                            <Label htmlFor="model_compatibility">Modelos compatíveis</Label>
+                            <Input
+                                type="text"
+                                id="model_compatibility"
+                                value={data.model_compatibility}
+                                onChange={(e) => setData('model_compatibility', e.target.value)}
+                                readOnly={disableInput}
+                            />
+                        </div>
 
-                <div className="grid gap-2">
-                    <Label htmlFor="location">Local de Armazenamento</Label>
-                    <Input
-                        type="text"
-                        id="location"
-                        value={data.location}
-                        onChange={(e) => setData('location', e.target.value)}
-                        readOnly={disableInput}
-                    />
-                </div>
-            </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="location">Local de Armazenamento</Label>
+                            <Input
+                                type="text"
+                                id="location"
+                                value={data.location}
+                                onChange={(e) => setData('location', e.target.value)}
+                                readOnly={disableInput}
+                            />
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
 
@@ -383,62 +397,70 @@ export default function PartForm({ categories, manufacturers, initialData, fisca
             <Card>
                 <CardTitle className="border-b px-6 pb-4">Valores e estoque</CardTitle>
                 <CardContent className="space-y-4 pt-6">
-            <div className="mt-4 grid gap-4 md:grid-cols-4">
-                <div className="grid gap-2">
-                    <Label htmlFor="cost_price">Preço de Custo</Label>
-                    <Input
-                        type="text"
-                        id="cost_price"
-                        value={maskMoney(data.cost_price)}
-                        onChange={(e) => setData('cost_price', e.target.value)}
-                        readOnly={disableInput}
-                        placeholder="0"
-                    />
-                    {errors.cost_price && <div className="text-sm text-red-500">{errors.cost_price}</div>}
-                </div>
+                    <div className="mt-4 grid gap-4 md:grid-cols-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="cost_price">Preço de Custo</Label>
+                            <Input
+                                type="text"
+                                id="cost_price"
+                                value={maskMoney(data.cost_price)}
+                                onChange={(e) => setData('cost_price', e.target.value)}
+                                readOnly={disableInput}
+                                placeholder="0"
+                            />
+                            {errors.cost_price && <div className="text-sm text-red-500">{errors.cost_price}</div>}
+                        </div>
 
-                <div className="grid gap-2">
-                    <Label htmlFor="sale_price">Preço de Venda</Label>
-                    <Input
-                        type="text"
-                        id="sale_price"
-                        value={maskMoney(data.sale_price)}
-                        onChange={(e) => setData('sale_price', e.target.value)}
-                        readOnly={disableInput}
-                        placeholder="0"
-                    />
-                    {errors.sale_price && <div className="text-sm text-red-500">{errors.sale_price}</div>}
-                </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="sale_price">Preço de Venda</Label>
+                            <Input
+                                type="text"
+                                id="sale_price"
+                                value={maskMoney(data.sale_price)}
+                                onChange={(e) => setData('sale_price', e.target.value)}
+                                readOnly={disableInput}
+                                placeholder="0"
+                            />
+                            {errors.sale_price && <div className="text-sm text-red-500">{errors.sale_price}</div>}
+                        </div>
 
-                <div className="grid gap-2">
-                    <Label htmlFor="quantity">{insertStock ? 'Inserir ao Estoque' : isEdit ? 'Alterar Estoque' : 'Quantidade do Estoque'}</Label>
-                    <Input type="text" id="quantity" value={data.quantity} onChange={(e) => setData('quantity', e.target.value)} placeholder="0" />
-                    {errors.quantity && <div className="text-sm text-red-500">{errors.quantity}</div>}
-                </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="quantity">
+                                {insertStock ? 'Inserir ao Estoque' : isEdit ? 'Alterar Estoque' : 'Quantidade do Estoque'}
+                            </Label>
+                            <Input
+                                type="text"
+                                id="quantity"
+                                value={data.quantity}
+                                onChange={(e) => setData('quantity', e.target.value)}
+                                placeholder="0"
+                            />
+                            {errors.quantity && <div className="text-sm text-red-500">{errors.quantity}</div>}
+                        </div>
 
-                <div className="grid gap-2">
-                    <Label htmlFor="minimum_stock_level">Estoque Mínimo</Label>
-                    <Input
-                        type="text"
-                        id="minimum_stock_level"
-                        value={data.minimum_stock_level}
-                        onChange={(e) => setData('minimum_stock_level', e.target.value)}
-                        readOnly={disableInput}
-                        placeholder="0"
-                    />
-                    {errors.minimum_stock_level && <div className="text-sm text-red-500">{errors.minimum_stock_level}</div>}
-                </div>
-            </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="minimum_stock_level">Estoque Mínimo</Label>
+                            <Input
+                                type="text"
+                                id="minimum_stock_level"
+                                value={data.minimum_stock_level}
+                                onChange={(e) => setData('minimum_stock_level', e.target.value)}
+                                readOnly={disableInput}
+                                placeholder="0"
+                            />
+                            {errors.minimum_stock_level && <div className="text-sm text-red-500">{errors.minimum_stock_level}</div>}
+                        </div>
+                    </div>
 
-            <div className="grid gap-2">
-                <Label htmlFor="status">Status da Peça</Label>
+                    <div className="grid gap-2">
+                        <Label htmlFor="status">Status da Peça</Label>
 
-                <div className="flex items-center gap-3">
-                    <Switch id="status" checked={data.status} onCheckedChange={(checked) => setData('status', checked)} />
+                        <div className="flex items-center gap-3">
+                            <Switch id="status" checked={data.status} onCheckedChange={(checked) => setData('status', checked)} />
 
-                    <span className="text-muted-foreground text-sm">{data.status ? 'Ativa' : 'Inativa'}</span>
-                </div>
-            </div>
+                            <span className="text-muted-foreground text-sm">{data.status ? 'Ativa' : 'Inativa'}</span>
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
 

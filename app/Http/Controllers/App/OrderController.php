@@ -10,33 +10,36 @@ use App\Events\OrderPaymentRemoved;
 use App\Events\OrderStatusUpdated;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OrderRequest;
-use App\Models\App\Other;
 use App\Models\App\Customer;
 use App\Models\App\Equipment;
-use App\Models\App\CashSession;
 use App\Models\App\Order;
 use App\Models\App\OrderLog;
 use App\Models\App\OrderPayment;
 use App\Models\App\OrderStatusHistory;
+use App\Models\App\Other;
 use App\Models\App\Part;
 use App\Models\App\PartMovement;
+use App\Models\App\Schedule;
 use App\Models\App\WhatsappMessage;
-use App\Services\OrderStatusService;
-use App\Services\OrderPaymentService;
-use App\Services\FinancialReceivableService;
-use App\Services\OrderItemSyncService;
-use App\Services\FiscalDocumentService;
-use App\Services\OrderNotificationService;
-use App\Services\OperationalAuditService;
-use App\Support\OrderStatus;
-use App\Support\TenantSequence;
 use App\Models\User;
+use App\Services\FinancialReceivableService;
+use App\Services\FiscalDocumentService;
+use App\Services\OperationalAuditService;
+use App\Services\OrderItemSyncService;
+use App\Services\OrderNotificationService;
+use App\Services\OrderPaymentService;
+use App\Services\OrderStatusService;
+use App\Support\Ean13;
+use App\Support\OrderStatus;
+use App\Support\Pagination;
+use App\Support\TenantSequence;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
 class OrderController extends Controller
@@ -141,6 +144,13 @@ class OrderController extends Controller
         $delay = Other::customerFeedbackRequestDelayDays($this->currentUser()?->tenant_id);
 
         return Carbon::now()->subDays($delay)->endOfDay();
+    }
+
+    private function customerFeedbackExpirationThreshold(): Carbon
+    {
+        $delay = Other::customerFeedbackRequestDelayDays($this->currentUser()?->tenant_id);
+
+        return Carbon::now()->subDays($delay + 7);
     }
 
     private function isBudgetFollowUpOrder(Order $order): bool
@@ -322,14 +332,14 @@ class OrderController extends Controller
             $part = $parts->get($partId);
 
             if (! $part) {
-                throw \Illuminate\Validation\ValidationException::withMessages([
+                throw ValidationException::withMessages([
                     'allparts' => 'Uma das peças informadas não foi encontrada.',
                 ]);
             }
 
             if ($quantityDiff > 0) {
                 if ((int) $part->quantity < $quantityDiff) {
-                    throw \Illuminate\Validation\ValidationException::withMessages([
+                    throw ValidationException::withMessages([
                         'allparts' => "Estoque insuficiente para {$part->name}.",
                     ]);
                 }
@@ -462,9 +472,13 @@ class OrderController extends Controller
         $this->authorize('viewAny', Order::class);
 
         $feedbackThreshold = $this->customerFeedbackRequestThreshold();
+        $feedbackExpirationThreshold = $this->customerFeedbackExpirationThreshold();
 
         $status = $request->status;
         $search = $request->search;
+        $barcodeSearch = is_string($search) ? Ean13::normalize($search) : null;
+        $eanPayload = $barcodeSearch !== null ? Ean13::payload($barcodeSearch) : null;
+        $orderNumberSearch = $eanPayload !== null ? (string) ((int) $eanPayload) : $search;
         $filter = $request->filter;
 
         $query = $this->scopeOrdersQuery(Order::query())->orderBy('id', 'DESC');
@@ -482,10 +496,11 @@ class OrderController extends Controller
                 ->whereBetween('delivery_forecast', [$today->toDateString(), $tomorrow->toDateString()]);
         } elseif ($filter === 'feedback') {
             $query->where('service_status', OrderStatus::DELIVERED)
-                ->whereBetween('delivery_date', [$startDate, $endDate])
-                ->where(function ($q) {
-                    $q->whereNull('feedback')->orWhere('feedback', 0);
-                });
+                ->whereNotNull('delivery_date')
+                ->where('delivery_date', '<=', $feedbackThreshold)
+                ->where('delivery_date', '>', $feedbackExpirationThreshold)
+                ->whereNull('customer_feedback_submitted_at')
+                ->whereNull('customer_feedback_request_expired_at');
         } elseif ($filter === 'financial_open') {
             $query
                 ->where('service_status', OrderStatus::DELIVERED)
@@ -514,11 +529,12 @@ class OrderController extends Controller
         }
 
         if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('order_number', $search)
+            $query->where(function ($q) use ($orderNumberSearch, $search, $barcodeSearch) {
+                $q->where('order_number', $orderNumberSearch)
+                    ->when($barcodeSearch !== null, fn ($barcodeQuery) => $barcodeQuery->orWhere('barcode', $barcodeSearch))
                     ->orWhereHas('customer', function ($subQuery) use ($search) {
                         $subQuery->where('name', 'like', "%$search%")
-                            ->orWhere('cpfcnpj', 'like', '%' . $search . '%');
+                            ->orWhere('cpfcnpj', 'like', '%'.$search.'%');
                     });
             });
         }
@@ -527,7 +543,7 @@ class OrderController extends Controller
             ->with('equipment', 'customer')
             ->withCount('images')
             ->withSum('orderPayments as total_paid', 'amount')
-            ->paginate(\App\Support\Pagination::perPage())
+            ->paginate(Pagination::perPage())
             ->withQueryString();
         $orders->setCollection(
             $orders->getCollection()->map(function (Order $order) {
@@ -542,6 +558,7 @@ class OrderController extends Controller
             ->where('service_status', OrderStatus::DELIVERED)
             ->whereNotNull('delivery_date')
             ->where('delivery_date', '<=', $feedbackThreshold)
+            ->where('delivery_date', '>', $feedbackExpirationThreshold)
             ->whereNull('customer_feedback_submitted_at')
             ->whereNull('customer_feedback_request_expired_at')
             ->get(['id', 'order_number']);
@@ -569,7 +586,7 @@ class OrderController extends Controller
         $sourceSchedule = null;
 
         if ($request->filled('schedule_id')) {
-            $sourceSchedule = \App\Models\App\Schedule::query()
+            $sourceSchedule = Schedule::query()
                 ->with(['customer:id,name', 'user:id,name'])
                 ->findOrFail($request->integer('schedule_id'));
             $this->authorize('view', $sourceSchedule);
@@ -597,7 +614,7 @@ class OrderController extends Controller
         Customer::query()->whereKey($data['customer_id'])->firstOrFail();
         $sourceSchedule = null;
         if ($sourceScheduleId) {
-            $sourceSchedule = \App\Models\App\Schedule::query()
+            $sourceSchedule = Schedule::query()
                 ->whereKey($sourceScheduleId)
                 ->where('customer_id', $data['customer_id'])
                 ->first();
@@ -610,6 +627,7 @@ class OrderController extends Controller
         }
         $tenantId = (int) ($this->currentUser()?->tenant_id ?? 0);
         $data['order_number'] = TenantSequence::next(Order::class, 'order_number', $tenantId);
+        $data['barcode'] = Ean13::fromNumber($data['order_number']);
         $data['tracking_token'] = Str::uuid();
         $data['warranty_days'] = isset($data['warranty_days']) && $data['warranty_days'] !== '' ? max(0, (int) $data['warranty_days']) : null;
         $data = $this->normalizeDeliveryDateForStatus($data);
@@ -900,7 +918,7 @@ class OrderController extends Controller
 
             try {
                 $order = $this->orderStatusService->transition($order, $currentStatus, $this->currentUser()?->id);
-            } catch (\Illuminate\Validation\ValidationException $exception) {
+            } catch (ValidationException $exception) {
                 return back()->withErrors($exception->errors());
             }
             $statusChangeData = [
@@ -1246,13 +1264,14 @@ class OrderController extends Controller
         $this->authorize('update', $order);
 
         $feedbackThreshold = $this->customerFeedbackRequestThreshold();
+        $feedbackExpirationThreshold = $this->customerFeedbackExpirationThreshold();
 
         if ((int) $order->service_status !== OrderStatus::DELIVERED || ! $order->delivery_date) {
             return back()->with('error', 'Esta ordem não está elegível para feedback.');
         }
 
         $deliveryDate = Carbon::parse($order->delivery_date);
-        $isInWindow = $deliveryDate->lte($feedbackThreshold);
+        $isInWindow = $deliveryDate->lte($feedbackThreshold) && $deliveryDate->gt($feedbackExpirationThreshold);
 
         if (! $isInWindow) {
             return back()->with('error', 'Esta ordem ainda não está elegível para feedback.');

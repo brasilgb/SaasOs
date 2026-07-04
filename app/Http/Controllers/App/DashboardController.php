@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
-use App\Models\App\Customer;
 use App\Models\App\CashSession;
+use App\Models\App\Customer;
 use App\Models\App\Equipment;
 use App\Models\App\Expense;
 use App\Models\App\Message;
@@ -14,8 +14,8 @@ use App\Models\App\Part;
 use App\Models\App\Sale;
 use App\Models\App\SaleItem;
 use App\Models\App\Schedule;
-use App\Support\OrderStatus;
 use App\Models\User;
+use App\Support\OrderStatus;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -64,6 +64,7 @@ class DashboardController extends Controller
     {
         $feedbackDelay = Other::customerFeedbackRequestDelayDays(auth()->user()?->tenant_id);
         $feedbackThreshold = Carbon::now()->subDays($feedbackDelay)->endOfDay();
+        $feedbackExpirationThreshold = Carbon::now()->subDays($feedbackDelay + 7);
         $today = Carbon::today();
         $tomorrow = Carbon::tomorrow();
 
@@ -107,6 +108,7 @@ class DashboardController extends Controller
             'feedback' => (clone $ordersQuery)->where('service_status', OrderStatus::DELIVERED)
                 ->whereNotNull('delivery_date')
                 ->where('delivery_date', '<=', $feedbackThreshold)
+                ->where('delivery_date', '>', $feedbackExpirationThreshold)
                 ->whereNull('customer_feedback_submitted_at')
                 ->whereNull('customer_feedback_request_expired_at')
                 ->get(['id', 'order_number']),

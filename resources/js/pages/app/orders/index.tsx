@@ -1,5 +1,6 @@
 import ActionDelete from '@/components/action-delete';
 import AppPagination, { PaginationSummary } from '@/components/app-pagination';
+import { isValidEan13 } from '@/components/ean13-barcode';
 import { Icon } from '@/components/icon';
 import InputSearch from '@/components/inputSearch';
 import InvoiceModal from '@/components/Modals/InvoiceModal';
@@ -69,6 +70,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
     const [cameraError, setCameraError] = useState<string | null>(null);
     const [cameraSupported, setCameraSupported] = useState(false);
     const [isMobileDevice, setIsMobileDevice] = useState(false);
+    const barcodeInputRef = useRef<HTMLInputElement | null>(null);
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const streamRef = useRef<MediaStream | null>(null);
     const canManageOrders = auth?.role !== 'technician' && auth?.permissions?.includes('orders');
@@ -118,21 +120,30 @@ export default function Orders({ orders, whats, feedback, search, status, filter
     const handleBarcodeSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        const barcode = String(barcodeForm.data.barcode || '').trim();
+        const barcode = String(barcodeInputRef.current?.value || barcodeForm.data.barcode || '').trim();
         if (!barcode) return;
 
+        searchByBarcode(barcode);
+    };
+
+    const searchByBarcode = (barcode: string) => {
         router.get(
             route('app.orders.index'),
             {
                 search: barcode,
-                status: status || undefined,
-                filter: filter || undefined,
             },
             {
-                preserveState: true,
+                preserveState: false,
                 replace: true,
             },
         );
+    };
+
+    const handleBarcodeChange = (value: string) => {
+        const barcode = value.replace(/\D/g, '');
+        barcodeForm.setData('barcode', barcode);
+
+        if (isValidEan13(barcode)) searchByBarcode(barcode);
     };
 
     const stopCamera = () => {
@@ -174,18 +185,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                     barcodeForm.setData('barcode', value);
                     setCameraOpen(false);
                     stopCamera();
-                    router.get(
-                        route('app.orders.index'),
-                        {
-                            search: value,
-                            status: status || undefined,
-                            filter: filter || undefined,
-                        },
-                        {
-                            preserveState: true,
-                            replace: true,
-                        },
-                    );
+                    searchByBarcode(value);
                     return;
                 }
             } catch {
@@ -271,8 +271,9 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                 ) : (
                                     <div className="relative flex-1">
                                         <Input
+                                            ref={barcodeInputRef}
                                             value={barcodeForm.data.barcode}
-                                            onChange={(e) => barcodeForm.setData('barcode', e.target.value)}
+                                            onChange={(e) => handleBarcodeChange(e.target.value)}
                                             placeholder="Ler com leitor de código de barras"
                                             autoComplete="off"
                                             className="pr-12"
