@@ -18,19 +18,6 @@ const BRANCH_CONFIG = {
     },
 };
 
-const SPECIAL_STATUS = {
-    [ORDER_STATUS.SCHEDULE_OPEN]: {
-        label: 'Agendamento aberto',
-        description: 'Atendimento externo agendado',
-        className: 'bg-cyan-600',
-    },
-    [ORDER_STATUS.SCHEDULE_COMPLETED]: {
-        label: 'Agendamento concluído',
-        description: 'Atendimento externo finalizado',
-        className: 'bg-emerald-600',
-    },
-};
-
 const COLORS = {
     red: {
         bg: 'bg-red-500',
@@ -45,19 +32,9 @@ type TimelineProps = {
 };
 
 export default function Timeline({ status, theme = 'light' }: TimelineProps) {
-    const special = SPECIAL_STATUS[status as keyof typeof SPECIAL_STATUS];
     const isBranch = status in BRANCH_CONFIG;
     const branch = BRANCH_CONFIG[status as keyof typeof BRANCH_CONFIG];
     const isDark = theme === 'dark';
-
-    if (special) {
-        return (
-            <div className="mb-10 text-center">
-                <span className={`inline-flex rounded-full px-4 py-1 text-xs font-medium text-white ${special.className}`}>{special.label}</span>
-                <p className={`mt-3 text-sm ${isDark ? 'text-slate-200' : 'text-slate-600'}`}>{special.description}</p>
-            </div>
-        );
-    }
 
     const getProgressIndex = () => {
         if (isBranch) {

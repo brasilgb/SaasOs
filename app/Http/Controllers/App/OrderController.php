@@ -428,7 +428,6 @@ class OrderController extends Controller
             'numconcluidosca' => $this->scopeOrdersQuery(Order::where('service_status', OrderStatus::CUSTOMER_NOTIFIED))->count(),
             'numconcluidoscn' => $this->scopeOrdersQuery(Order::whereIn('service_status', [
                 OrderStatus::SERVICE_COMPLETED,
-                OrderStatus::SCHEDULE_COMPLETED,
             ]))->count(),
         ];
 

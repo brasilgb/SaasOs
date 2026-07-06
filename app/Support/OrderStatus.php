@@ -14,8 +14,6 @@ final class OrderStatus
     public const SERVICE_NOT_EXECUTED = 8;
     public const CUSTOMER_NOTIFIED = 9;
     public const DELIVERED = 10;
-    public const SCHEDULE_OPEN = 11;
-    public const SCHEDULE_COMPLETED = 12;
 
     /**
      * @return array<int, string>
@@ -33,8 +31,6 @@ final class OrderStatus
             self::SERVICE_NOT_EXECUTED => 'Serviço não executado',
             self::CUSTOMER_NOTIFIED => 'Cliente avisado / aguardando retirada',
             self::DELIVERED => 'Entregue ao cliente',
-            self::SCHEDULE_OPEN => 'Agendamento aberto',
-            self::SCHEDULE_COMPLETED => 'Agendamento concluído',
         ];
     }
 

@@ -11,7 +11,6 @@ use App\Models\App\Other;
 use App\Models\App\Equipment;
 use App\Models\Tenant;
 use App\Support\OrderStatus;
-use App\Jobs\SendOrderPaymentReminderNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Mail;
@@ -25,6 +24,7 @@ class SendPaymentFollowUpsCommandTest extends TestCase
     public function test_it_sends_automatic_payment_follow_up_for_eligible_order(): void
     {
         Queue::fake();
+        Mail::fake();
 
         $tenant = Tenant::factory()->create();
         $customer = Customer::factory()->forTenant($tenant->id)->create([
@@ -66,7 +66,7 @@ class SendPaymentFollowUpsCommandTest extends TestCase
             ->expectsOutputToContain('Processadas: 1 | Enviadas: 1 | Ignoradas: 0')
             ->assertExitCode(0);
 
-        Queue::assertPushed(SendOrderPaymentReminderNotification::class, 1);
+        Mail::assertSent(OrderPaymentReminderMail::class, 1);
 
         $this->assertDatabaseHas('order_logs', [
             'order_id' => $order->id,

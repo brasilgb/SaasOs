@@ -258,6 +258,7 @@ class TechnicianScheduleApiTest extends TestCase
         $order = Order::factory()->forTenant($this->tenant->id)->create([
             'customer_id' => $customer->id,
             'user_id' => $this->technician->id,
+            'service_status' => OrderStatus::OPEN,
             'technician_diagnosis' => 'Falha identificada.',
             'technician_solution' => 'Servico concluido.',
         ]);
@@ -333,7 +334,7 @@ class TechnicianScheduleApiTest extends TestCase
         ]);
         $this->assertDatabaseHas('orders', [
             'id' => $order->id,
-            'service_status' => OrderStatus::SCHEDULE_OPEN,
+            'service_status' => OrderStatus::OPEN,
         ]);
     }
 
@@ -520,6 +521,7 @@ class TechnicianScheduleApiTest extends TestCase
         $order = Order::factory()->forTenant($this->tenant->id)->create([
             'customer_id' => $customer->id,
             'user_id' => $this->technician->id,
+            'service_status' => OrderStatus::OPEN,
             'technician_diagnosis' => 'Falha identificada.',
             'technician_solution' => 'Servico concluido.',
         ]);
@@ -560,7 +562,7 @@ class TechnicianScheduleApiTest extends TestCase
         ]);
         $this->assertDatabaseHas('orders', [
             'id' => $order->id,
-            'service_status' => OrderStatus::SCHEDULE_COMPLETED,
+            'service_status' => OrderStatus::OPEN,
         ]);
     }
 

@@ -12,9 +12,7 @@ use App\Models\App\Part;
 use App\Models\App\Schedule;
 use App\Models\User;
 use App\Services\CashSessionService;
-use App\Services\OrderStatusService;
 use App\Services\TechnicianPushNotificationService;
-use App\Support\OrderStatus;
 use App\Support\TenantSequence;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -26,33 +24,12 @@ use Inertia\Inertia;
 class ScheduleController extends Controller
 {
     public function __construct(
-        private readonly OrderStatusService $orderStatusService,
         private readonly CashSessionService $cashSessionService,
     ) {}
 
     private function currentTenantId(): ?int
     {
         return Auth::user()?->tenant_id ? (int) Auth::user()->tenant_id : null;
-    }
-
-    private function syncScheduleOrderStatus(Schedule $schedule): void
-    {
-        $order = $schedule->order;
-
-        if (! $order) {
-            return;
-        }
-
-        $targetStatus = (int) $schedule->status === 3
-            ? OrderStatus::SCHEDULE_COMPLETED
-            : OrderStatus::SCHEDULE_OPEN;
-
-        $this->orderStatusService->transition(
-            $order,
-            $targetStatus,
-            Auth::id(),
-            'Status atualizado pelo agendamento #'.$schedule->schedules_number
-        );
     }
 
     private function scheduleTenantId(array $data, ?Schedule $schedule = null): ?int
@@ -320,7 +297,6 @@ class ScheduleController extends Controller
         }
         $data['schedules_number'] = TenantSequence::next(Schedule::class, 'schedules_number');
         $schedule = Schedule::create($data);
-        $this->syncScheduleOrderStatus($schedule->loadMissing('order'));
         $this->notifyTechnicianIfNeeded($schedule);
 
         return redirect()->route('app.schedules.index')->with('success', 'Agenda cadastrada com sucesso');
@@ -405,7 +381,6 @@ class ScheduleController extends Controller
         }
         $wasSentToTechnician = (bool) $schedule->send_to_technician;
         $schedule->update($data);
-        $this->syncScheduleOrderStatus($schedule->loadMissing('order'));
 
         if (! $wasSentToTechnician || $schedule->wasChanged(['user_id', 'schedules', 'order_id', 'customer_id'])) {
             $this->notifyTechnicianIfNeeded($schedule);

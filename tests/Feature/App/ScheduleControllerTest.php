@@ -68,11 +68,7 @@ class ScheduleControllerTest extends TestCase
         ]);
         $this->assertDatabaseHas('orders', [
             'id' => $order->id,
-            'service_status' => OrderStatus::SCHEDULE_OPEN,
-        ]);
-        $this->assertDatabaseHas('order_status_history', [
-            'order_id' => $order->id,
-            'status' => OrderStatus::SCHEDULE_OPEN,
+            'service_status' => OrderStatus::OPEN,
         ]);
     }
 
@@ -123,13 +119,13 @@ class ScheduleControllerTest extends TestCase
         ], $schedule->technician_checklist);
     }
 
-    public function test_it_marks_linked_order_as_schedule_completed_when_schedule_is_closed(): void
+    public function test_it_does_not_change_linked_order_status_when_schedule_is_closed(): void
     {
         $customer = Customer::factory()->forTenant($this->tenant->id)->create();
         $order = Order::factory()->forTenant($this->tenant->id)->create([
             'customer_id' => $customer->id,
             'user_id' => $this->user->id,
-            'service_status' => OrderStatus::SCHEDULE_OPEN,
+            'service_status' => OrderStatus::OPEN,
         ]);
         $schedule = Schedule::factory()->forTenant($this->tenant->id)->create([
             'customer_id' => $customer->id,
@@ -152,11 +148,7 @@ class ScheduleControllerTest extends TestCase
 
         $this->assertDatabaseHas('orders', [
             'id' => $order->id,
-            'service_status' => OrderStatus::SCHEDULE_COMPLETED,
-        ]);
-        $this->assertDatabaseHas('order_status_history', [
-            'order_id' => $order->id,
-            'status' => OrderStatus::SCHEDULE_COMPLETED,
+            'service_status' => OrderStatus::OPEN,
         ]);
     }
 

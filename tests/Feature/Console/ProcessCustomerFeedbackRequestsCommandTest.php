@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Console;
 
-use App\Jobs\SendOrderFeedbackReminderNotification;
 use App\Mail\OrderFeedbackReminderMail;
 use App\Models\App\Company;
 use App\Models\App\Customer;
@@ -63,6 +62,7 @@ class ProcessCustomerFeedbackRequestsCommandTest extends TestCase
     public function test_it_sends_one_feedback_reminder_after_configured_delay(): void
     {
         Queue::fake();
+        Mail::fake();
 
         $tenant = $this->createTenantWithMailSettings();
         $order = $this->createDeliveredOrder($tenant, 7);
@@ -71,7 +71,7 @@ class ProcessCustomerFeedbackRequestsCommandTest extends TestCase
             ->expectsOutputToContain('Processadas: 1 | Lembretes: 1 | Expiradas: 0 | Ignoradas: 0')
             ->assertExitCode(0);
 
-        Queue::assertPushed(SendOrderFeedbackReminderNotification::class, 1);
+        Mail::assertSent(OrderFeedbackReminderMail::class, 1);
         $this->assertNotNull($order->fresh()->customer_feedback_reminder_sent_at);
         $this->assertDatabaseHas('order_logs', [
             'order_id' => $order->id,
@@ -82,7 +82,7 @@ class ProcessCustomerFeedbackRequestsCommandTest extends TestCase
             ->expectsOutputToContain('Processadas: 1 | Lembretes: 0 | Expiradas: 0 | Ignoradas: 1')
             ->assertExitCode(0);
 
-        Queue::assertPushed(SendOrderFeedbackReminderNotification::class, 1);
+        Mail::assertSent(OrderFeedbackReminderMail::class, 1);
     }
 
     public function test_it_expires_unanswered_request_after_seven_more_days(): void

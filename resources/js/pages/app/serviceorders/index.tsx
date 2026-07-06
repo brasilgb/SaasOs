@@ -146,16 +146,10 @@ function nextStepText(order: Order, remainingAmount: number) {
             return 'O orçamento foi reprovado. Se desejar revisar essa decisão, entre em contato com a assistência.';
         case ORDER_STATUS.REPAIR_IN_PROGRESS:
             return 'O reparo está em andamento. Assim que houver atualização importante, ela aparecerá aqui.';
-        case ORDER_STATUS.SCHEDULE_OPEN:
-            return 'Seu atendimento externo está agendado. A assistência atualizará esta página após a visita técnica.';
         case ORDER_STATUS.SERVICE_COMPLETED:
             return remainingAmount > 0.009
                 ? 'O serviço foi concluído. Falta apenas a regularização do saldo para liberação.'
                 : 'O serviço foi concluído. Agora falta apenas combinar a retirada do equipamento.';
-        case ORDER_STATUS.SCHEDULE_COMPLETED:
-            return remainingAmount > 0.009
-                ? 'O atendimento externo foi concluído. Há um saldo pendente para regularização.'
-                : 'O atendimento externo foi concluído.';
         case ORDER_STATUS.CUSTOMER_NOTIFIED:
             return remainingAmount > 0.009
                 ? 'Seu equipamento está pronto e aguardando retirada, com saldo pendente em aberto.'

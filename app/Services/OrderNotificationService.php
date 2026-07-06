@@ -2,11 +2,6 @@
 
 namespace App\Services;
 
-use App\Jobs\SendOrderBudgetFollowUpNotification;
-use App\Jobs\SendOrderCreatedNotification;
-use App\Jobs\SendOrderFeedbackReminderNotification;
-use App\Jobs\SendOrderPaymentReminderNotification;
-use App\Jobs\SendOrderStatusUpdatedNotification;
 use App\Mail\OrderBudgetFollowUpMail;
 use App\Mail\OrderCreatedMail;
 use App\Mail\OrderFeedbackReminderMail;
@@ -42,7 +37,7 @@ class OrderNotificationService
             return;
         }
 
-        SendOrderCreatedNotification::dispatch($order->id)->afterCommit();
+        $this->deliverCreated($order->id);
     }
 
     public function sendStatusUpdated(Order $order, string $statusLabel, ?string $observations = null): void
@@ -51,7 +46,7 @@ class OrderNotificationService
             return;
         }
 
-        SendOrderStatusUpdatedNotification::dispatch($order->id, $statusLabel, $observations)->afterCommit();
+        $this->deliverStatusUpdated($order->id, $statusLabel, $observations);
     }
 
     public function sendPaymentReminder(Order $order, array $paymentSummary, bool $isOverdue): void
@@ -60,7 +55,7 @@ class OrderNotificationService
             return;
         }
 
-        SendOrderPaymentReminderNotification::dispatch($order->id, $paymentSummary, $isOverdue)->afterCommit();
+        $this->deliverPaymentReminder($order->id, $paymentSummary, $isOverdue);
     }
 
     public function sendBudgetFollowUp(Order $order, int $daysPending): void
@@ -69,7 +64,7 @@ class OrderNotificationService
             return;
         }
 
-        SendOrderBudgetFollowUpNotification::dispatch($order->id, $daysPending)->afterCommit();
+        $this->deliverBudgetFollowUp($order->id, $daysPending);
     }
 
     public function sendFeedbackReminder(Order $order): void
@@ -78,7 +73,7 @@ class OrderNotificationService
             return;
         }
 
-        SendOrderFeedbackReminderNotification::dispatch($order->id)->afterCommit();
+        $this->deliverFeedbackReminder($order->id);
     }
 
     public function deliverCreated(int $orderId): void

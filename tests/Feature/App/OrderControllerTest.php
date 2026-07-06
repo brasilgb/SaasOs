@@ -2,9 +2,9 @@
 
 namespace Tests\Feature\App;
 
-use App\Jobs\SendOrderBudgetFollowUpNotification;
-use App\Jobs\SendOrderPaymentReminderNotification;
-use App\Jobs\SendOrderStatusUpdatedNotification;
+use App\Mail\OrderBudgetFollowUpMail;
+use App\Mail\OrderPaymentReminderMail;
+use App\Mail\OrderStatusUpdatedMail;
 use App\Models\App\CashSession;
 use App\Models\App\Customer;
 use App\Models\App\Equipment;
@@ -19,6 +19,7 @@ use App\Support\Ean13;
 use App\Support\OrderStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
@@ -166,7 +167,7 @@ class OrderControllerTest extends TestCase
             'service_type' => 'Instalação solar',
             'service_details' => 'Instalação de inversor solar e vistoria do quadro elétrico',
             'materials_used' => 'Cabos, conectores MC4 e disjuntores',
-            'service_status' => OrderStatus::SCHEDULE_OPEN,
+            'service_status' => OrderStatus::OPEN,
             'service_value' => '350,00',
             'delivery_forecast' => now()->addDays(7)->toDateString(),
         ]);
@@ -183,11 +184,11 @@ class OrderControllerTest extends TestCase
         $this->assertNull($order->equipment_id);
         $this->assertNull($order->model);
         $this->assertNull($order->password);
-        $this->assertSame(OrderStatus::SCHEDULE_OPEN, (int) $order->service_status);
+        $this->assertSame(OrderStatus::OPEN, (int) $order->service_status);
 
         $this->assertDatabaseHas('order_status_history', [
             'order_id' => $order->id,
-            'status' => OrderStatus::SCHEDULE_OPEN,
+            'status' => OrderStatus::OPEN,
         ]);
     }
 
@@ -427,7 +428,7 @@ class OrderControllerTest extends TestCase
 
     public function test_it_does_not_use_system_mail_for_status_email_when_tenant_mail_is_not_configured(): void
     {
-        Queue::fake();
+        Mail::fake();
 
         $customer = Customer::factory()->forTenant($this->tenant->id)->create([
             'email' => 'cliente@example.com',
@@ -444,7 +445,43 @@ class OrderControllerTest extends TestCase
         ]));
 
         $response->assertRedirect(route('app.orders.show', ['order' => $order->id]));
-        Queue::assertNotPushed(SendOrderStatusUpdatedNotification::class);
+        Mail::assertNothingSent();
+    }
+
+    public function test_it_sends_status_email_immediately_with_tenant_mail_configuration(): void
+    {
+        Mail::fake();
+
+        Other::query()->where('tenant_id', $this->tenant->id)->update([
+            'mail_mailer' => 'smtp',
+            'mail_host' => 'smtp.example.com',
+            'mail_port' => 587,
+            'mail_username' => 'user@example.com',
+            'mail_password' => Crypt::encryptString('secret'),
+            'mail_encryption' => 'tls',
+            'mail_from_address' => 'noreply@example.com',
+            'mail_from_name' => 'VetorOS',
+        ]);
+
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create([
+            'email' => 'cliente@example.com',
+        ]);
+        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'service_status' => OrderStatus::OPEN,
+        ]);
+
+        $response = $this->put(route('app.orders.update', $order), $this->orderUpdatePayload($order, $customer, $equipment, [
+            'service_status' => OrderStatus::REPAIR_IN_PROGRESS,
+        ]));
+
+        $response->assertRedirect(route('app.orders.show', ['order' => $order->id]));
+        Mail::assertSent(
+            OrderStatusUpdatedMail::class,
+            fn (OrderStatusUpdatedMail $mail) => $mail->hasTo('cliente@example.com'),
+        );
     }
 
     public function test_it_logs_order_payment_registration(): void
@@ -1273,6 +1310,7 @@ class OrderControllerTest extends TestCase
     public function test_it_logs_payment_reminder_sent(): void
     {
         Queue::fake();
+        Mail::fake();
 
         $customer = Customer::factory()->forTenant($this->tenant->id)->create([
             'email' => 'cliente@example.com',
@@ -1303,7 +1341,7 @@ class OrderControllerTest extends TestCase
 
         $response->assertSessionHas('success', 'E-mail de cobrança/lembrete enviado com sucesso.');
 
-        Queue::assertPushed(SendOrderPaymentReminderNotification::class, 1);
+        Mail::assertSent(OrderPaymentReminderMail::class, 1);
 
         $this->assertDatabaseHas('order_logs', [
             'order_id' => $order->id,
@@ -1315,6 +1353,7 @@ class OrderControllerTest extends TestCase
     public function test_it_logs_budget_follow_up_sent(): void
     {
         Queue::fake();
+        Mail::fake();
 
         $customer = Customer::factory()->forTenant($this->tenant->id)->create([
             'email' => 'cliente@example.com',
@@ -1344,7 +1383,7 @@ class OrderControllerTest extends TestCase
 
         $response->assertSessionHas('success', 'Acompanhamento de orçamento enviado com sucesso.');
 
-        Queue::assertPushed(SendOrderBudgetFollowUpNotification::class, 1);
+        Mail::assertSent(OrderBudgetFollowUpMail::class, 1);
 
         $this->assertDatabaseHas('order_logs', [
             'order_id' => $order->id,

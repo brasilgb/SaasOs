@@ -10,7 +10,6 @@ use App\Models\App\OrderLog;
 use App\Models\App\Other;
 use App\Models\Tenant;
 use App\Support\OrderStatus;
-use App\Jobs\SendOrderBudgetFollowUpNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Mail;
@@ -24,6 +23,7 @@ class SendBudgetFollowUpsCommandTest extends TestCase
     public function test_it_sends_automatic_budget_follow_up_for_eligible_order(): void
     {
         Queue::fake();
+        Mail::fake();
 
         $tenant = Tenant::factory()->create();
         $customer = Customer::factory()->forTenant($tenant->id)->create([
@@ -56,7 +56,7 @@ class SendBudgetFollowUpsCommandTest extends TestCase
             ->expectsOutputToContain('Processadas: 1 | Enviadas: 1 | Ignoradas: 0')
             ->assertExitCode(0);
 
-        Queue::assertPushed(SendOrderBudgetFollowUpNotification::class, 1);
+        Mail::assertSent(OrderBudgetFollowUpMail::class, 1);
 
         $this->assertDatabaseHas('order_logs', [
             'order_id' => $order->id,

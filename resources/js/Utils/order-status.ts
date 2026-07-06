@@ -9,8 +9,6 @@ export const ORDER_STATUS = {
     SERVICE_NOT_EXECUTED: 8,
     CUSTOMER_NOTIFIED: 9,
     DELIVERED: 10,
-    SCHEDULE_OPEN: 11,
-    SCHEDULE_COMPLETED: 12,
 } as const;
 
 export type OrderStatusValue = (typeof ORDER_STATUS)[keyof typeof ORDER_STATUS];
@@ -26,8 +24,6 @@ export const ORDER_STATUS_LABELS: Record<OrderStatusValue, string> = {
     [ORDER_STATUS.SERVICE_NOT_EXECUTED]: 'Serviço não executado',
     [ORDER_STATUS.CUSTOMER_NOTIFIED]: 'Cliente avisado / aguardando retirada',
     [ORDER_STATUS.DELIVERED]: 'Entregue ao cliente',
-    [ORDER_STATUS.SCHEDULE_OPEN]: 'Agendamento aberto',
-    [ORDER_STATUS.SCHEDULE_COMPLETED]: 'Agendamento concluído',
 };
 
 export const ORDER_STATUS_OPTIONS = Object.entries(ORDER_STATUS_LABELS).map(([value, label]) => ({
@@ -37,7 +33,6 @@ export const ORDER_STATUS_OPTIONS = Object.entries(ORDER_STATUS_LABELS).map(([va
 
 export const ORDER_BUDGET_STATUS_OPTIONS = [
     { value: String(ORDER_STATUS.OPEN), label: ORDER_STATUS_LABELS[ORDER_STATUS.OPEN] },
-    { value: String(ORDER_STATUS.SCHEDULE_OPEN), label: ORDER_STATUS_LABELS[ORDER_STATUS.SCHEDULE_OPEN] },
     { value: String(ORDER_STATUS.BUDGET_GENERATED), label: ORDER_STATUS_LABELS[ORDER_STATUS.BUDGET_GENERATED] },
     { value: String(ORDER_STATUS.BUDGET_APPROVED), label: ORDER_STATUS_LABELS[ORDER_STATUS.BUDGET_APPROVED] },
 ];
@@ -45,14 +40,12 @@ export const ORDER_BUDGET_STATUS_OPTIONS = [
 export const ORDER_STATUSES_COMPLETED: number[] = [
     ORDER_STATUS.SERVICE_COMPLETED,
     ORDER_STATUS.CUSTOMER_NOTIFIED,
-    ORDER_STATUS.SCHEDULE_COMPLETED,
 ];
 
 export const ORDER_STATUSES_READY_FOR_INVOICE: number[] = [
     ORDER_STATUS.REPAIR_IN_PROGRESS,
     ORDER_STATUS.SERVICE_COMPLETED,
     ORDER_STATUS.SERVICE_NOT_EXECUTED,
-    ORDER_STATUS.SCHEDULE_COMPLETED,
 ];
 
 export const ORDER_STATUSES_DELIVERED_FLOW: number[] = [

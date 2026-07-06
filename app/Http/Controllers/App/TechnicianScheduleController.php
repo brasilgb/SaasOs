@@ -9,8 +9,6 @@ use App\Models\App\Schedule;
 use App\Models\App\ScheduleImage;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Services\OrderStatusService;
-use App\Support\OrderStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -19,30 +17,6 @@ use Illuminate\Validation\ValidationException;
 class TechnicianScheduleController extends Controller
 {
     private const MAX_IMAGES_PER_SCHEDULE = 4;
-
-    public function __construct(
-        private readonly OrderStatusService $orderStatusService,
-    ) {}
-
-    private function syncScheduleOrderStatus(Schedule $schedule, ?int $changedBy = null): void
-    {
-        $order = $schedule->order;
-
-        if (! $order) {
-            return;
-        }
-
-        $targetStatus = (int) $schedule->status === 3
-            ? OrderStatus::SCHEDULE_COMPLETED
-            : OrderStatus::SCHEDULE_OPEN;
-
-        $this->orderStatusService->transition(
-            $order,
-            $targetStatus,
-            $changedBy,
-            'Status atualizado pelo agendamento #'.$schedule->schedules_number
-        );
-    }
 
     private function orderScheduleService($order): ?string
     {
@@ -344,7 +318,6 @@ class TechnicianScheduleController extends Controller
         $schedule->update([
             'status' => $data['status'],
         ]);
-        $this->syncScheduleOrderStatus($schedule->loadMissing('order'), $technician->id);
 
         return response()->json([
             'success' => true,
@@ -380,7 +353,6 @@ class TechnicianScheduleController extends Controller
             'check_in_longitude' => $data['longitude'] ?? null,
             'check_in_observations' => $data['observations'] ?? null,
         ]);
-        $this->syncScheduleOrderStatus($schedule->loadMissing('order'), $technician->id);
 
         return response()->json([
             'success' => true,
@@ -436,7 +408,6 @@ class TechnicianScheduleController extends Controller
             'check_out_longitude' => $data['longitude'] ?? null,
             'check_out_observations' => $data['observations'] ?? null,
         ]);
-        $this->syncScheduleOrderStatus($schedule->loadMissing('order'), $technician->id);
 
         return response()->json([
             'success' => true,
