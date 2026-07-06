@@ -12,22 +12,24 @@ class TenantMailConfig
 {
     public static function applySystemDefault(): void
     {
-        Config::set('mail.default', env('MAIL_MAILER', 'smtp'));
+        $system = config('mail.system', []);
+
+        Config::set('mail.default', $system['mailer'] ?? 'smtp');
         Config::set('mail.mailers.smtp.transport', 'smtp');
-        Config::set('mail.mailers.smtp.host', env('MAIL_HOST'));
-        Config::set('mail.mailers.smtp.port', (int) env('MAIL_PORT', 587));
-        Config::set('mail.mailers.smtp.encryption', env('MAIL_ENCRYPTION', 'tls'));
-        Config::set('mail.mailers.smtp.username', env('MAIL_USERNAME'));
-        Config::set('mail.mailers.smtp.password', env('MAIL_PASSWORD'));
-        Config::set('mail.from.address', env('MAIL_FROM_ADDRESS', config('mail.from.address')));
-        Config::set('mail.from.name', env('MAIL_FROM_NAME', config('app.name')));
+        Config::set('mail.mailers.smtp.host', $system['host'] ?? null);
+        Config::set('mail.mailers.smtp.port', (int) ($system['port'] ?? 587));
+        Config::set('mail.mailers.smtp.encryption', $system['encryption'] ?? 'tls');
+        Config::set('mail.mailers.smtp.username', $system['username'] ?? null);
+        Config::set('mail.mailers.smtp.password', $system['password'] ?? null);
+        Config::set('mail.from.address', $system['from_address'] ?? config('mail.from.address'));
+        Config::set('mail.from.name', $system['from_name'] ?? config('app.name'));
         app('mail.manager')->purge();
     }
 
     public static function hasConfiguredForTenantId(?int $tenantId): bool
     {
         if (! $tenantId || ! Schema::hasTable('others')) {
-            return false;
+            return self::hasSystemDefaultConfigured();
         }
 
         $mailConfig = DB::table('others')
@@ -54,6 +56,8 @@ class TenantMailConfig
     public static function applyForTenantId(?int $tenantId): void
     {
         if (! $tenantId || ! Schema::hasTable('others')) {
+            self::applySystemDefault();
+
             return;
         }
 
@@ -73,6 +77,9 @@ class TenantMailConfig
             ->first();
 
         if (! $mailConfig || empty($mailConfig->mail_host) || empty($mailConfig->mail_username)) {
+            Config::set('mail.default', 'log');
+            app('mail.manager')->purge();
+
             return;
         }
 
@@ -95,5 +102,10 @@ class TenantMailConfig
         Config::set('mail.from.address', $mailConfig->mail_from_address ?: config('mail.from.address'));
         Config::set('mail.from.name', $mailConfig->mail_from_name ?: config('app.name'));
         app('mail.manager')->purge();
+    }
+
+    private static function hasSystemDefaultConfigured(): bool
+    {
+        return ! empty(config('mail.system.host')) && ! empty(config('mail.system.port'));
     }
 }

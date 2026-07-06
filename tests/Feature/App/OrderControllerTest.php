@@ -4,6 +4,7 @@ namespace Tests\Feature\App;
 
 use App\Jobs\SendOrderBudgetFollowUpNotification;
 use App\Jobs\SendOrderPaymentReminderNotification;
+use App\Jobs\SendOrderStatusUpdatedNotification;
 use App\Models\App\CashSession;
 use App\Models\App\Customer;
 use App\Models\App\Equipment;
@@ -422,6 +423,28 @@ class OrderControllerTest extends TestCase
             'status' => OrderStatus::CANCELLED,
             'changed_by' => $operator->id,
         ]);
+    }
+
+    public function test_it_does_not_use_system_mail_for_status_email_when_tenant_mail_is_not_configured(): void
+    {
+        Queue::fake();
+
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create([
+            'email' => 'cliente@example.com',
+        ]);
+        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+        $order = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'service_status' => OrderStatus::OPEN,
+        ]);
+
+        $response = $this->put(route('app.orders.update', $order), $this->orderUpdatePayload($order, $customer, $equipment, [
+            'service_status' => OrderStatus::REPAIR_IN_PROGRESS,
+        ]));
+
+        $response->assertRedirect(route('app.orders.show', ['order' => $order->id]));
+        Queue::assertNotPushed(SendOrderStatusUpdatedNotification::class);
     }
 
     public function test_it_logs_order_payment_registration(): void
