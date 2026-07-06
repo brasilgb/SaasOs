@@ -1,5 +1,4 @@
 import { toastSuccess } from '@/components/app-toast-messages';
-import FormFieldHelp from '@/components/form-field-help';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
@@ -14,7 +13,6 @@ import { useForm } from '@inertiajs/react';
 import { Save } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Select from 'react-select';
-import CreatableSelect from 'react-select/creatable';
 
 interface BudgetFormProps {
     initialData?: Budget;
@@ -22,19 +20,8 @@ interface BudgetFormProps {
     equipments: { id: number; equipment: string }[];
 }
 
-export default function BudgetForm({ initialData, budgets, equipments }: BudgetFormProps) {
+export default function BudgetForm({ initialData, equipments }: BudgetFormProps) {
     const isEdit = !!initialData;
-
-    const initialModelOptions: OptionType[] = Array.from(
-        new Set(
-            (budgets ?? [])
-                .map((budget) => (typeof budget === 'string' ? budget : budget?.model))
-                .filter((model): model is string => Boolean(model?.trim())),
-        ),
-    ).map((model) => ({
-        value: model,
-        label: model,
-    }));
 
     const optionsEquipment: OptionType[] = equipments?.map((equipment) => ({
         value: equipment.id,
@@ -61,14 +48,8 @@ export default function BudgetForm({ initialData, budgets, equipments }: BudgetF
     /* =========================
      SELECT OPTIONS
   ========================= */
-    const [modelOptions, setModelOptions] = useState<OptionType[]>(initialModelOptions);
-
-    const defaultModel = modelOptions.find((o) => o.value === initialData?.model) ?? null;
-
     const defaultWarranty = warrantyOptions.find((o) => o.value === initialData?.warranty) ?? null;
     const defaultEquipament = optionsEquipment.find((o) => o.value == initialData?.equipment_id) ?? null;
-
-    const [selectedModel, setSelectedModel] = useState<OptionType | null>(defaultModel);
 
     const [selectedWarranty, setSelectedWarranty] = useState<OptionType | null>(defaultWarranty);
 
@@ -99,7 +80,6 @@ export default function BudgetForm({ initialData, budgets, equipments }: BudgetF
                 onSuccess: () => {
                     toastSuccess('Sucesso', 'Orçamento criado com sucesso');
                     reset();
-                    setSelectedModel(null);
                     setSelectedWarranty(null);
                 },
             });
@@ -109,18 +89,6 @@ export default function BudgetForm({ initialData, budgets, equipments }: BudgetF
     /* =========================
      SELECT HANDLERS
   ========================= */
-    const changeModel = (option: OptionType | null) => {
-        setSelectedModel(option);
-        setData('model', String(option?.value ?? ''));
-    };
-
-    const createModel = (value: string) => {
-        const option = { label: value, value };
-        setModelOptions((prev) => [...prev, option]);
-        setSelectedModel(option);
-        setData('model', value);
-    };
-
     const changeWarranty = (option: OptionType | null) => {
         setSelectedWarranty(option);
         setData('warranty', String(option?.value ?? ''));
@@ -154,18 +122,13 @@ export default function BudgetForm({ initialData, budgets, equipments }: BudgetF
                 </div>
 
                 <div className="grid gap-2">
-                    <FormFieldHelp label="Marca e Modelo" content={`Selecione ou clique em Criar "marca/modelo digitado".`} />
-                    <CreatableSelect<OptionType, false>
-                        value={selectedModel}
-                        options={modelOptions}
-                        onChange={changeModel}
-                        onCreateOption={createModel}
-                        isClearable
-                        styles={selectStyles}
-                        placeholder="Selecione ou digite nova marca/modelo"
-                        classNamePrefix="creatable-select"
-                        className="min-w-0"
-                        formatCreateLabel={(inputValue) => `Criar "${inputValue}"`}
+                    <Label htmlFor="model">Marca e Modelo</Label>
+                    <Input
+                        id="model"
+                        type="text"
+                        value={data.model}
+                        onChange={(e) => setData('model', e.target.value)}
+                        placeholder="Digite a marca e o modelo"
                     />
                     <InputError message={errors.model} />
                 </div>

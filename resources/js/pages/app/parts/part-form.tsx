@@ -1,5 +1,4 @@
 import { generateEan13 } from '@/components/ean13-barcode';
-import FormFieldHelp from '@/components/form-field-help';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
@@ -7,15 +6,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { OptionType } from '@/types';
 import { apios } from '@/Utils/connectApi';
 import { partsType } from '@/Utils/dataSelect';
 import { maskMoney, maskMoneyDot } from '@/Utils/mask';
-import selectStyles from '@/Utils/selectStyles';
 import { useForm } from '@inertiajs/react';
 import { Barcode, Info, Save } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import CreatableSelect from 'react-select/creatable';
 
 interface PartFormProps {
     categories: any;
@@ -24,21 +20,11 @@ interface PartFormProps {
     fiscalNfeEnabled?: boolean;
 }
 
-export default function PartForm({ categories, manufacturers, initialData, fiscalNfeEnabled = false }: PartFormProps) {
+export default function PartForm({ initialData, fiscalNfeEnabled = false }: PartFormProps) {
     const isEdit = !!initialData;
     const [disableInput, setDisableInput] = useState(false);
 
     const generateReferenceNumber = () => generateEan13(String(Date.now()).slice(-12));
-
-    const initialCategoryOptions: OptionType[] = categories?.map((category: any) => ({
-        value: category,
-        label: category,
-    }));
-
-    const initialManufacturerOptions: OptionType[] = manufacturers?.map((manufacturer: any) => ({
-        value: manufacturer,
-        label: manufacturer,
-    }));
 
     const { data, setData, post, patch, progress, processing, reset, errors } = useForm({
         category: initialData?.category ?? '',
@@ -58,14 +44,6 @@ export default function PartForm({ categories, manufacturers, initialData, fisca
         location: initialData?.location ?? '',
         status: Boolean(initialData?.status ?? true),
     });
-
-    const [categoryOptions, setCategoryOptions] = useState<OptionType[]>(initialCategoryOptions);
-    const defaultCategory = categoryOptions.find((o) => o.value === initialData?.category) ?? null;
-    const [selectedCategory, setSelectedCategory] = useState<OptionType | null>(defaultCategory);
-
-    const [manufacturerOptions, setManufacturerOptions] = useState<OptionType[]>(initialManufacturerOptions);
-    const defaultManufacturer = manufacturerOptions.find((o) => o.value === initialData?.manufacturer) ?? null;
-    const [selectedManufacturer, setSelectedManufacturer] = useState<OptionType | null>(defaultManufacturer);
 
     const defaultPartsType = partsType?.filter((part: any) => Number(part.value) === initialData?.type);
     const [selectedPartsType, setSelectedPartsType] = useState<any>(defaultPartsType);
@@ -90,19 +68,7 @@ export default function PartForm({ categories, manufacturers, initialData, fisca
             const { success, parts } = response;
 
             if (success && parts) {
-                const optionCat = {
-                    label: parts.category,
-                    value: parts.category,
-                };
-
-                const optionMan = {
-                    label: parts.manufacturer,
-                    value: parts.manufacturer,
-                };
-
                 setDisableInput(true);
-                setSelectedCategory(optionCat);
-                setSelectedManufacturer(optionMan);
                 setInsertStock(true);
 
                 setData((data) => ({
@@ -144,30 +110,6 @@ export default function PartForm({ categories, manufacturers, initialData, fisca
             setData('reference_number', generateReferenceNumber());
         }
     }, [isEdit]);
-
-    const changeCategory = (option: OptionType | null) => {
-        setSelectedCategory(option);
-        setData('category', option ? option.value : '');
-    };
-
-    const createCategory = (value: string) => {
-        const option = { label: value, value };
-        setCategoryOptions((prev) => [...prev, option]);
-        setSelectedCategory(option);
-        setData('category', value);
-    };
-
-    const changeManufacturer = (option: OptionType | null) => {
-        setSelectedManufacturer(option);
-        setData('manufacturer', option ? option.value : '');
-    };
-
-    const createManufacturer = (value: string) => {
-        const option = { label: value, value };
-        setManufacturerOptions((prev) => [...prev, option]);
-        setSelectedManufacturer(option);
-        setData('manufacturer', value);
-    };
 
     return (
         <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
@@ -261,35 +203,27 @@ export default function PartForm({ categories, manufacturers, initialData, fisca
                         </div>
 
                         <div className="grid gap-2">
-                            <FormFieldHelp label="Categoria" content={`Selecione ou clique em Criar "categoria digitada".`} />
-                            <CreatableSelect<OptionType, false>
-                                value={selectedCategory}
-                                options={categoryOptions}
-                                onChange={changeCategory}
-                                onCreateOption={createCategory}
-                                isClearable
-                                styles={selectStyles}
-                                placeholder="Selecione ou digite a nova categoria"
-                                classNamePrefix="creatable-select"
-                                className="min-w-0"
-                                formatCreateLabel={(inputValue) => `Criar "${inputValue}"`}
+                            <Label htmlFor="category">Categoria</Label>
+                            <Input
+                                type="text"
+                                id="category"
+                                value={data.category}
+                                onChange={(e) => setData('category', e.target.value)}
+                                placeholder="Digite a categoria"
+                                readOnly={disableInput}
                             />
                             <InputError message={errors.category} />
                         </div>
 
                         <div className="grid gap-2">
-                            <FormFieldHelp label="Fabricante" content={`Selecione ou clique em Criar "fabricante digitado".`} />
-                            <CreatableSelect<OptionType, false>
-                                value={selectedManufacturer}
-                                options={manufacturerOptions}
-                                onChange={changeManufacturer}
-                                onCreateOption={createManufacturer}
-                                isClearable
-                                styles={selectStyles}
-                                placeholder="Selecione ou digite o novo fabricante"
-                                classNamePrefix="creatable-select"
-                                className="min-w-0"
-                                formatCreateLabel={(inputValue) => `Criar "${inputValue}"`}
+                            <Label htmlFor="manufacturer">Fabricante</Label>
+                            <Input
+                                type="text"
+                                id="manufacturer"
+                                value={data.manufacturer}
+                                onChange={(e) => setData('manufacturer', e.target.value)}
+                                placeholder="Digite o fabricante"
+                                readOnly={disableInput}
                             />
                             <InputError message={errors.manufacturer} />
                         </div>

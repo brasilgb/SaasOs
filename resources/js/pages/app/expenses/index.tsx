@@ -12,13 +12,11 @@ import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
-import { BreadcrumbItem, OptionType } from '@/types';
-import selectStyles from '@/Utils/selectStyles';
+import { BreadcrumbItem } from '@/types';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { BanknoteArrowDownIcon, Edit, Plus } from 'lucide-react';
 import moment from 'moment';
 import { useRef, useState } from 'react';
-import CreatableSelect from 'react-select/creatable';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Painel', href: route('app.dashboard') },
@@ -73,11 +71,6 @@ export default function Expenses({ expenses }: any) {
     const [openModal, setOpenModal] = useState(false);
     const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
     const canManageOrders = auth?.role !== 'technician' && auth?.permissions?.includes('orders');
-    const initialCategoryOptions: OptionType[] = Array.from(
-        new Set<string>((expenses?.data ?? []).map((expense: Expense) => String(expense.category ?? '').trim()).filter(Boolean)),
-    ).map((category): OptionType => ({ value: category, label: category }));
-    const [categoryOptions, setCategoryOptions] = useState<OptionType[]>(initialCategoryOptions);
-    const [selectedCategory, setSelectedCategory] = useState<OptionType | null>(null);
     const [amountDisplay, setAmountDisplay] = useState('');
     const expenseDateRef = useRef<HTMLInputElement | null>(null);
 
@@ -95,7 +88,6 @@ export default function Expenses({ expenses }: any) {
         form.setData('expense_date', moment().format('YYYY-MM-DD'));
         form.setData('amount', '');
         setAmountDisplay('');
-        setSelectedCategory(null);
     };
 
     const openCreateModal = () => {
@@ -108,11 +100,6 @@ export default function Expenses({ expenses }: any) {
         setEditingExpense(expense);
         form.clearErrors();
         const categoryValue = (expense.category ?? '').trim();
-        const option = categoryValue ? { value: categoryValue, label: categoryValue } : null;
-        if (option && !categoryOptions.some((item) => item.value === option.value)) {
-            setCategoryOptions((prev) => [...prev, option]);
-        }
-        setSelectedCategory(option);
         form.setData({
             expense_date: moment(expense.expense_date).format('YYYY-MM-DD'),
             description: expense.description ?? '',
@@ -148,23 +135,6 @@ export default function Expenses({ expenses }: any) {
         form.post(route('app.expenses.store'), {
             onSuccess: () => closeModal(),
         });
-    };
-
-    const changeCategory = (option: OptionType | null) => {
-        setSelectedCategory(option);
-        form.setData('category', option ? String(option.value) : '');
-    };
-
-    const createCategory = (value: string) => {
-        const category = value.trim();
-        if (!category) return;
-
-        const option = { value: category, label: category };
-        if (!categoryOptions.some((item) => item.value === option.value)) {
-            setCategoryOptions((prev) => [...prev, option]);
-        }
-        setSelectedCategory(option);
-        form.setData('category', category);
     };
 
     const onAmountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -301,17 +271,12 @@ export default function Expenses({ expenses }: any) {
 
                                 <div className="grid gap-2">
                                     <Label htmlFor="category">Categoria</Label>
-                                    <CreatableSelect<OptionType, false>
-                                        value={selectedCategory}
-                                        options={categoryOptions}
-                                        onChange={changeCategory}
-                                        onCreateOption={createCategory}
-                                        isClearable
-                                        styles={selectStyles}
-                                        placeholder="Selecione ou digite a nova categoria"
-                                        classNamePrefix="creatable-select"
-                                        className="min-w-0"
-                                        formatCreateLabel={(inputValue) => `Criar "${inputValue}"`}
+                                    <Input
+                                        id="category"
+                                        type="text"
+                                        value={form.data.category}
+                                        onChange={(e) => form.setData('category', e.target.value)}
+                                        placeholder="Digite a categoria"
                                     />
                                     <InputError message={form.errors.category} />
                                 </div>
