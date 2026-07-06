@@ -24,7 +24,6 @@ import { ArrowLeft, Copy, FileTextIcon, Mail, Printer, Save, Wrench, X } from 'l
 import moment from 'moment';
 import { useEffect, useState } from 'react';
 import Select from 'react-select';
-import CreatableSelect from 'react-select/creatable';
 import AddPartsModal from './add-parts';
 import OrderPaymentsModal from './order-payments-modal';
 
@@ -84,7 +83,6 @@ export default function EditOrder({
     search,
     status,
     filter,
-    models,
 }: any) {
     const budgetFollowUpForm = useForm({});
 
@@ -116,17 +114,6 @@ export default function EditOrder({
     const canManagePayments = canManageOrders && canAccessSalesModules && Boolean(othersetting?.enable_finance) && Boolean(auth?.permissions?.includes('finance'));
     const canIssueServiceInvoice = canManageOrders && Boolean(fiscalSetting?.enabled) && Boolean(fiscalSetting?.nfse_enabled);
     const [partsData, setPartsData] = useState<any>([]);
-
-    const initialModelOptions = Array.from(new Set([...(models ?? []), order?.model].filter(Boolean))).map((model: any) => ({
-        value: String(model),
-        label: String(model),
-    }));
-
-    const defaultModel = initialModelOptions.find((o: any) => o.value === String(order?.model ?? '')) || null;
-
-    const [modelOptions, setModelOptions] = useState<OptionType[]>(initialModelOptions);
-    const [selectedModel, setSelectedModel] = useState<OptionType | null>(defaultModel);
-    const [modelInputValue, setModelInputValue] = useState('');
 
     const optionsCustomer = customers.map((customer: any) => ({
         value: customer.id,
@@ -185,7 +172,6 @@ export default function EditOrder({
 
     const handleSubmit = async (e: any) => {
         e.preventDefault();
-        commitModelInput();
 
         patch(route('app.orders.update', { order: order.id, page, search, status, filter }), {
             onSuccess: () => {
@@ -309,30 +295,6 @@ export default function EditOrder({
             source: 'local',
         })),
     ];
-
-    const changeModel = (option: OptionType | null) => {
-        setSelectedModel(option);
-        setModelInputValue('');
-        setData('model', option?.value ?? '');
-    };
-
-    const createModel = (value: string) => {
-        const model = value.trim();
-        if (!model) return;
-
-        const option = { label: model, value: model };
-        setModelOptions((prev) => [...prev, option]);
-        setSelectedModel(option);
-        setModelInputValue('');
-        setData('model', model);
-    };
-
-    const commitModelInput = () => {
-        const model = modelInputValue.trim();
-        if (model && model !== data.model) {
-            createModel(model);
-        }
-    };
 
     const currentStatusLabel = statusServico.find((item: any) => Number(item.value) === Number(data.service_status))?.label ?? 'Status';
     const isDeliveryStatus = Number(data.service_status) === ORDER_STATUS.DELIVERED;
@@ -481,28 +443,13 @@ export default function EditOrder({
                                             </div>
 
                                             <div className="grid gap-2 md:col-span-2">
-                                                <FormFieldHelp
-                                                    label="Marca e Modelo"
-                                                    content={`Selecione ou clique em Criar "marca/modelo digitado".`}
-                                                />
-                                                <CreatableSelect<OptionType, false>
-                                                    value={selectedModel}
-                                                    options={modelOptions}
-                                                    onChange={changeModel}
-                                                    onCreateOption={createModel}
-                                                    onBlur={commitModelInput}
-                                                    onInputChange={(value, meta) => {
-                                                        if (meta.action === 'input-change') {
-                                                            setModelInputValue(value);
-                                                            setData('model', value);
-                                                        }
-                                                    }}
-                                                    isClearable
-                                                    styles={selectStyles}
-                                                    placeholder="Selecione ou digite a nova marca/modelo"
-                                                    classNamePrefix="creatable-select"
-                                                    className="min-w-0"
-                                                    formatCreateLabel={(inputValue) => `Criar "${inputValue}"`}
+                                                <Label htmlFor="model">Marca e Modelo</Label>
+                                                <Input
+                                                    type="text"
+                                                    id="model"
+                                                    value={data.model ?? ''}
+                                                    onChange={(e) => setData('model', e.target.value)}
+                                                    placeholder="Digite a marca e o modelo"
                                                 />
                                                 <InputError message={errors.model} />
                                             </div>

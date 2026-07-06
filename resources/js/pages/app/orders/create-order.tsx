@@ -1,5 +1,4 @@
 import { DatePicker } from '@/components/date-picker';
-import FormFieldHelp from '@/components/form-field-help';
 import { Icon } from '@/components/icon';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -13,9 +12,8 @@ import { maskMoney, maskMoneyDot } from '@/Utils/mask';
 import selectStyles from '@/Utils/selectStyles';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { ArrowLeft, Printer, Save, Wrench } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import Select from 'react-select';
-import CreatableSelect from 'react-select/creatable';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -35,23 +33,13 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function CreateOrder({
     customers,
     equipments,
-    models,
     sourceSchedule,
 }: {
     customers: { id: number; name: string }[];
     equipments: { id: number; equipment: string }[];
-    models: string[];
     sourceSchedule?: { id: number; customer_id: number; user_id?: number | null; schedules?: string | null; customer?: { name: string } } | null;
 }) {
     const { flash } = usePage().props as any;
-    const initialModelOptions: OptionType[] = models.map((model) => ({
-        value: model,
-        label: model,
-    }));
-
-    const [modelOptions, setModelOptions] = useState<OptionType[]>(initialModelOptions);
-    const [selectedModel, setSelectedModel] = useState<OptionType | null>(null);
-    const [modelInputValue, setModelInputValue] = useState('');
 
     const optionsCustomer: OptionType[] = customers.map((customer) => ({
         value: customer.id,
@@ -87,7 +75,6 @@ export default function CreateOrder({
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        commitModelInput();
         post(route('app.orders.store'));
     };
 
@@ -98,9 +85,6 @@ export default function CreateOrder({
     useEffect(() => {
         if (flash?.success) {
             reset();
-            setSelectedModel(null);
-            setModelInputValue('');
-            setModelOptions(initialModelOptions);
         }
     }, [flash?.id, flash?.success]);
 
@@ -116,29 +100,6 @@ export default function CreateOrder({
         setData('service_status', String(selected?.value ?? ''));
     };
 
-    const changeModel = (option: OptionType | null) => {
-        setSelectedModel(option);
-        setModelInputValue('');
-        setData('model', String(option?.value ?? ''));
-    };
-
-    const createModel = (value: string) => {
-        const model = value.trim();
-        if (!model) return;
-
-        const option = { label: model, value: model };
-        setModelOptions((prev) => [...prev, option]);
-        setSelectedModel(option);
-        setModelInputValue('');
-        setData('model', model);
-    };
-
-    const commitModelInput = () => {
-        const model = modelInputValue.trim();
-        if (model && model !== data.model) {
-            createModel(model);
-        }
-    };
     const defaultCustomer = optionsCustomer.find((option) => String(option.value) === String(data.customer_id)) ?? null;
 
     return (
@@ -217,27 +178,13 @@ export default function CreateOrder({
                             </div>
 
                             <div className="grid gap-2 md:col-span-2">
-                                <FormFieldHelp label="Marca e Modelo" content={`Selecione ou clique em Criar "marca/modelo digitado".`} />
-                                <CreatableSelect<OptionType, false>
-                                    value={selectedModel}
-                                    options={modelOptions}
-                                    onChange={changeModel}
-                                    onCreateOption={createModel}
-                                    onBlur={commitModelInput}
-                                    onInputChange={(value, meta) => {
-                                        if (meta.action === 'input-change') {
-                                            setModelInputValue(value);
-                                            setData('model', value);
-                                        }
-                                    }}
-                                    isClearable
-                                    classNamePrefix="creatable-select"
-                                    className="min-w-0"
-                                    menuPosition="fixed"
-                                    menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
-                                    styles={selectStyles}
-                                    placeholder="Selecione ou digite a nova marca/modelo"
-                                    formatCreateLabel={(inputValue) => `Criar "${inputValue}"`}
+                                <Label htmlFor="model">Marca e Modelo</Label>
+                                <Input
+                                    type="text"
+                                    id="model"
+                                    value={data.model}
+                                    onChange={(e) => setData('model', e.target.value)}
+                                    placeholder="Digite a marca e o modelo"
                                 />
                                 <InputError message={errors.model} />
                             </div>
