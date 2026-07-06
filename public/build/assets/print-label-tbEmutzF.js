@@ -1,29 +1,4 @@
-import Ean13Barcode, { generateEan13 } from '@/components/ean13-barcode';
-import { useEffect } from 'react';
-
-type PartLabel = {
-    category?: string;
-    type?: string;
-    name?: string;
-    part_number?: string | number;
-    sale_price?: string | number;
-};
-
-export default function PrintPartLabel({ part }: { part?: PartLabel }) {
-    const productNumber = String(part?.part_number ?? '');
-    const barcode = generateEan13(productNumber);
-
-    useEffect(() => {
-        const timeout = window.setTimeout(() => {
-            window.print();
-        }, 300);
-
-        return () => window.clearTimeout(timeout);
-    }, []);
-
-    return (
-        <div className="bg-white text-black">
-            <style>{`
+import{r as a,j as i}from"./vendor-BuJb2mYm.js";import{g as n,E as r}from"./ean13-barcode-CuNz8zR2.js";function l({part:e}){const t=String((e==null?void 0:e.part_number)??""),s=n(t);return a.useEffect(()=>{const o=window.setTimeout(()=>{window.print()},300);return()=>window.clearTimeout(o)},[]),i.jsxs("div",{className:"bg-white text-black",children:[i.jsx("style",{children:`
                 @page {
                     size: 60mm 40mm;
                     margin: 0;
@@ -121,30 +96,4 @@ export default function PrintPartLabel({ part }: { part?: PartLabel }) {
                     line-height: 1;
                     text-align: center;
                 }
-            `}</style>
-
-            <div className="part-sheet">
-                <div className="part-label">
-                    <div className="part-top">
-                        <div className="part-category">{part?.category || 'Produto'}</div>
-                        <div className="part-badge">{part?.type === 'product' ? 'PRODUTO' : 'PECA'}</div>
-                    </div>
-
-                    <div className="part-name">{part?.name || 'Item sem nome'}</div>
-                    <div className="part-ref">Nº do produto: {productNumber || '-'}</div>
-                    <div className="part-price">
-                        R${' '}
-                        {Number(part?.sale_price || 0)
-                            .toFixed(2)
-                            .replace('.', ',')}
-                    </div>
-
-                    <div className="part-footer">
-                        <Ean13Barcode className="part-barcode" value={barcode} />
-                        <div className="part-code">{barcode}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-}
+            `}),i.jsx("div",{className:"part-sheet",children:i.jsxs("div",{className:"part-label",children:[i.jsxs("div",{className:"part-top",children:[i.jsx("div",{className:"part-category",children:(e==null?void 0:e.category)||"Produto"}),i.jsx("div",{className:"part-badge",children:(e==null?void 0:e.type)==="product"?"PRODUTO":"PECA"})]}),i.jsx("div",{className:"part-name",children:(e==null?void 0:e.name)||"Item sem nome"}),i.jsxs("div",{className:"part-ref",children:["Nº do produto: ",t||"-"]}),i.jsxs("div",{className:"part-price",children:["R$"," ",Number((e==null?void 0:e.sale_price)||0).toFixed(2).replace(".",",")]}),i.jsxs("div",{className:"part-footer",children:[i.jsx(r,{className:"part-barcode",value:s}),i.jsx("div",{className:"part-code",children:s})]})]})})]})}export{l as default};
