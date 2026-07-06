@@ -5,13 +5,14 @@ import { useState } from 'react';
 const sections = [
     { id: 'coleta', title: '1. Informações que coletamos' },
     { id: 'uso', title: '2. Como utilizamos os dados' },
-    { id: 'compartilhamento', title: '3. Compartilhamento de dados' },
-    { id: 'seguranca', title: '4. Armazenamento e segurança' },
-    { id: 'direitos', title: '5. Direitos do titular dos dados' },
-    { id: 'retencao', title: '6. Retenção de dados' },
-    { id: 'cookies', title: '7. Cookies' },
-    { id: 'alteracoes', title: '8. Alterações nesta política' },
-    { id: 'contato', title: '9. Contato' },
+    { id: 'papeis', title: '3. Responsabilidades sobre os dados' },
+    { id: 'compartilhamento', title: '4. Compartilhamento e Focus NFe' },
+    { id: 'seguranca', title: '5. Armazenamento e segurança' },
+    { id: 'direitos', title: '6. Direitos do titular dos dados' },
+    { id: 'retencao', title: '7. Retenção de dados' },
+    { id: 'cookies', title: '8. Cookies' },
+    { id: 'alteracoes', title: '9. Alterações nesta política' },
+    { id: 'contato', title: '10. Contato' },
 ];
 
 export default function Privacy() {
@@ -49,7 +50,7 @@ export default function Privacy() {
                 <article className="text-muted-foreground max-w-[72ch] text-base leading-relaxed">
                     <h1 className="text-foreground mb-6 text-3xl font-semibold tracking-tight">Política de Privacidade – VetorOS</h1>
 
-                    <p className="text-muted-foreground mb-10 text-sm">Última atualização: 12 de março de 2026</p>
+                    <p className="text-muted-foreground mb-10 text-sm">Última atualização: 6 de julho de 2026</p>
 
                     <p className="mb-6">
                         Esta Política de Privacidade descreve como o VetorOS coleta, utiliza, armazena e protege os dados pessoais dos usuários que
@@ -75,6 +76,7 @@ export default function Privacy() {
                         <li>Email</li>
                         <li>Telefone</li>
                         <li>Nome da empresa</li>
+                        <li>CNPJ e dados empresariais</li>
                     </ul>
 
                     <h3 className="text-foreground mt-8 mb-2 text-sm font-semibold">Dados de uso do sistema</h3>
@@ -83,7 +85,18 @@ export default function Privacy() {
                         <li>Informações inseridas na plataforma</li>
                         <li>Ordens de serviço cadastradas</li>
                         <li>Dados de clientes e equipamentos</li>
+                        <li>Agendamentos, registros técnicos, imagens e informações financeiras</li>
                         <li>Histórico de utilização</li>
+                    </ul>
+
+                    <h3 className="text-foreground mt-8 mb-2 text-sm font-semibold">Dados fiscais</h3>
+
+                    <ul className="mb-6 list-disc space-y-1 pl-6">
+                        <li>Dados cadastrais e fiscais da empresa emissora</li>
+                        <li>Dados de clientes ou destinatários constantes em NF-e e NFS-e</li>
+                        <li>Produtos, serviços, valores, tributos, endereços e informações dos documentos fiscais</li>
+                        <li>Token de integração fornecido pela Focus NFe</li>
+                        <li>Status, referências e links dos documentos processados</li>
                     </ul>
 
                     <h3 className="text-foreground mt-8 mb-2 text-sm font-semibold">Dados técnicos</h3>
@@ -108,37 +121,77 @@ export default function Privacy() {
                         <li>Prestar suporte técnico</li>
                         <li>Cumprir obrigações legais</li>
                         <li>Garantir a segurança da plataforma</li>
+                        <li>Enviar comunicações operacionais solicitadas pela empresa usuária</li>
+                        <li>Solicitar e acompanhar a emissão de NF-e e NFS-e pela Focus NFe quando a integração estiver habilitada</li>
                     </ul>
+
+                    {/* PAPÉIS E RESPONSABILIDADES */}
+
+                    <h2 id="papeis" className="text-foreground border-border mt-14 mb-4 scroll-mt-28 border-b pb-2 text-xl font-semibold">
+                        3. Responsabilidades sobre os dados
+                    </h2>
+
+                    <p className="mb-6">
+                        A empresa que contrata o VetorOS decide quais dados de clientes, colaboradores e demais terceiros serão cadastrados e para
+                        quais finalidades serão utilizados. Por isso, a empresa usuária é responsável pela legitimidade da coleta, pela qualidade das
+                        informações e pelo atendimento aos titulares desses dados.
+                    </p>
+
+                    <p className="mb-10">
+                        O VetorOS trata esses dados para disponibilizar as funcionalidades contratadas e executar as instruções da empresa usuária,
+                        observadas as obrigações legais e de segurança aplicáveis.
+                    </p>
 
                     {/* COMPARTILHAMENTO */}
 
                     <h2 id="compartilhamento" className="text-foreground border-border mt-14 mb-4 scroll-mt-28 border-b pb-2 text-xl font-semibold">
-                        3. Compartilhamento de dados
+                        4. Compartilhamento de dados e Focus NFe
                     </h2>
 
                     <p className="mb-4">O VetorOS não vende dados pessoais.</p>
 
                     <ul className="mb-10 list-disc space-y-1 pl-6">
                         <li>Prestadores de serviço necessários para operação da plataforma</li>
+                        <li>Provedores de hospedagem, envio de e-mail e processamento de pagamentos, conforme as funcionalidades utilizadas</li>
+                        <li>
+                            Focus NFe, exclusivamente quando a integração fiscal estiver habilitada e o usuário solicitar emissão ou sincronização de
+                            NF-e ou NFS-e
+                        </li>
                         <li>Cumprimento de obrigações legais</li>
                         <li>Determinação judicial ou autoridade competente</li>
                     </ul>
 
+                    <p className="mb-10">
+                        Na integração com a Focus NFe, são transmitidos os dados necessários ao documento fiscal, que podem incluir informações da
+                        empresa emissora, clientes ou destinatários, produtos, serviços, valores, tributos e endereços. O tratamento realizado pela
+                        Focus NFe também está sujeito aos{' '}
+                        <a
+                            href="https://focusnfe.com.br/termos-de-uso/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline"
+                        >
+                            termos e à política da própria Focus NFe
+                        </a>
+                        .
+                    </p>
+
                     {/* SEGURANÇA */}
 
                     <h2 id="seguranca" className="text-foreground border-border mt-14 mb-4 scroll-mt-28 border-b pb-2 text-xl font-semibold">
-                        4. Armazenamento e segurança
+                        5. Armazenamento e segurança
                     </h2>
 
                     <p className="mb-10">
                         Adotamos medidas técnicas e administrativas para proteger os dados contra acesso não autorizado, perda, alteração ou
-                        divulgação indevida.
+                        divulgação indevida. As credenciais sensíveis da integração Focus NFe, como o token de API e o segredo de webhook quando
+                        informado, são armazenadas de forma criptografada e não são exibidas novamente em texto aberto após o cadastro.
                     </p>
 
                     {/* DIREITOS */}
 
                     <h2 id="direitos" className="text-foreground border-border mt-14 mb-4 scroll-mt-28 border-b pb-2 text-xl font-semibold">
-                        5. Direitos do titular dos dados
+                        6. Direitos do titular dos dados
                     </h2>
 
                     <ul className="mb-10 list-disc space-y-1 pl-6">
@@ -149,22 +202,28 @@ export default function Privacy() {
                         <li>Revogar consentimento</li>
                     </ul>
 
+                    <p className="mb-10">
+                        Solicitações relacionadas a dados cadastrados por uma empresa usuária devem ser direcionadas inicialmente a essa empresa. O
+                        VetorOS prestará o suporte tecnicamente necessário para o atendimento da solicitação, quando aplicável.
+                    </p>
+
                     {/* RETENÇÃO */}
 
                     <h2 id="retencao" className="text-foreground border-border mt-14 mb-4 scroll-mt-28 border-b pb-2 text-xl font-semibold">
-                        6. Retenção de dados
+                        7. Retenção de dados
                     </h2>
 
                     <ul className="mb-10 list-disc space-y-1 pl-6">
                         <li>Prestação do serviço</li>
                         <li>Cumprimento de obrigações legais</li>
                         <li>Resolução de disputas</li>
+                        <li>Manutenção de registros operacionais e fiscais pelos prazos exigidos pela legislação aplicável</li>
                     </ul>
 
                     {/* COOKIES */}
 
                     <h2 id="cookies" className="text-foreground border-border mt-14 mb-4 scroll-mt-28 border-b pb-2 text-xl font-semibold">
-                        7. Cookies
+                        8. Cookies
                     </h2>
 
                     <ul className="mb-10 list-disc space-y-1 pl-6">
@@ -176,7 +235,7 @@ export default function Privacy() {
                     {/* ALTERAÇÕES */}
 
                     <h2 id="alteracoes" className="text-foreground border-border mt-14 mb-4 scroll-mt-28 border-b pb-2 text-xl font-semibold">
-                        8. Alterações nesta política
+                        9. Alterações nesta política
                     </h2>
 
                     <p className="mb-10">Esta política pode ser atualizada periodicamente.</p>
@@ -184,7 +243,7 @@ export default function Privacy() {
                     {/* CONTATO */}
 
                     <h2 id="contato" className="text-foreground border-border mt-14 mb-4 scroll-mt-28 border-b pb-2 text-xl font-semibold">
-                        9. Contato
+                        10. Contato
                     </h2>
 
                     <p>

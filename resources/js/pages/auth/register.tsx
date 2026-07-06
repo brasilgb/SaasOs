@@ -5,6 +5,7 @@ import { FormEventHandler, useState } from 'react';
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth-layout';
@@ -19,6 +20,7 @@ type RegisterForm = {
     whatsapp: string;
     password: string;
     password_confirmation: string;
+    accepted_terms: boolean;
 };
 
 export default function Register() {
@@ -33,6 +35,7 @@ export default function Register() {
         whatsapp: '',
         password: '',
         password_confirmation: '',
+        accepted_terms: false,
     });
 
     const submit: FormEventHandler = (e) => {
@@ -179,6 +182,25 @@ export default function Register() {
                                 <InputError message={errors.password_confirmation} />
                             </div>
                         </div>
+                    </div>
+                    <div className="grid gap-2">
+                        <div className="flex items-start gap-3">
+                            <Checkbox
+                                id="accepted_terms"
+                                checked={data.accepted_terms}
+                                onCheckedChange={(checked) => setData('accepted_terms', checked === true)}
+                                disabled={processing}
+                                aria-invalid={Boolean(errors.accepted_terms)}
+                            />
+                            <Label htmlFor="accepted_terms" className="text-muted-foreground cursor-pointer leading-5 font-normal">
+                                Li e aceito os{' '}
+                                <a href="/termos" target="_blank" rel="noopener noreferrer" className="text-foreground underline underline-offset-4">
+                                    Termos de Uso
+                                </a>
+                                .
+                            </Label>
+                        </div>
+                        <InputError message={errors.accepted_terms} />
                     </div>
                     <Button type="submit" className="mt-2 w-full" tabIndex={7} disabled={processing}>
                         {processing ? (

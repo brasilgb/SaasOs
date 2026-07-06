@@ -39,6 +39,9 @@ class RegisteredUserController extends Controller
             'whatsapp' => 'required|string|max:20',
             'email' => 'required|string|lowercase|email|max:255|unique:users,email',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'accepted_terms' => ['accepted'],
+        ], [
+            'accepted_terms.accepted' => 'Você precisa aceitar os Termos de Uso para criar sua conta.',
         ]);
 
         $user = DB::transaction(function () use ($request) {

@@ -6,14 +6,15 @@ const sections = [
     { id: 'descricao', title: '1. Descrição do serviço' },
     { id: 'cadastro', title: '2. Cadastro de conta' },
     { id: 'responsabilidade', title: '3. Responsabilidade do usuário' },
-    { id: 'notas-fiscais', title: '4. Emissão de notas fiscais' },
-    { id: 'disponibilidade', title: '5. Disponibilidade do serviço' },
-    { id: 'propriedade', title: '6. Propriedade intelectual' },
-    { id: 'cancelamento', title: '7. Cancelamento e suspensão' },
-    { id: 'responsabilidade-limitada', title: '8. Limitação de responsabilidade' },
-    { id: 'alteracoes', title: '9. Alterações nos termos' },
-    { id: 'legislacao', title: '10. Legislação aplicável' },
-    { id: 'contato', title: '11. Contato' },
+    { id: 'notas-fiscais', title: '4. Documentos fiscais e Focus NFe' },
+    { id: 'dados-integracoes', title: '5. Dados e integrações de terceiros' },
+    { id: 'disponibilidade', title: '6. Disponibilidade do serviço' },
+    { id: 'propriedade', title: '7. Propriedade intelectual' },
+    { id: 'cancelamento', title: '8. Planos, cancelamento e suspensão' },
+    { id: 'responsabilidade-limitada', title: '9. Limitação de responsabilidade' },
+    { id: 'alteracoes', title: '10. Alterações nos termos' },
+    { id: 'legislacao', title: '11. Legislação aplicável' },
+    { id: 'contato', title: '12. Contato' },
 ];
 
 export default function Terms() {
@@ -51,11 +52,15 @@ export default function Terms() {
                 <article className="text-muted-foreground max-w-[72ch] text-[15px] leading-7 [&>p]:mb-6 [&>ul]:mb-8 [&>ul]:space-y-2">
                     <h1 className="text-foreground mb-6 text-3xl font-semibold tracking-tight">Termos de Uso – VetorOS</h1>
 
-                    <p className="text-muted-foreground mb-10 text-sm">Última atualização: 12 de março de 2026</p>
+                    <p className="text-muted-foreground mb-10 text-sm">Última atualização: 6 de julho de 2026</p>
 
                     <p>
-                        Estes Termos de Uso regulam a utilização da plataforma VetorOS. Ao utilizar o sistema, o usuário declara que leu, compreendeu
-                        e concorda com os presentes termos.
+                        Estes Termos de Uso regulam a utilização da plataforma VetorOS. Ao marcar a opção de aceite no cadastro, criar uma conta ou
+                        utilizar o sistema, o usuário declara que leu, compreendeu e concorda com estes termos e com a{' '}
+                        <a href="/privacidade" className="text-primary hover:underline">
+                            Política de Privacidade
+                        </a>
+                        .
                     </p>
 
                     {/* DESCRIÇÃO */}
@@ -75,9 +80,12 @@ export default function Terms() {
                         <li>Cadastro de clientes</li>
                         <li>Registro de equipamentos</li>
                         <li>Gerenciamento de ordens e atendimentos</li>
+                        <li>Gestão independente de agendamentos e atividades de técnicos</li>
                         <li>Controle de peças e estoque</li>
                         <li>Armazenamento de informações de atendimento</li>
                         <li>Controle financeiro, caixa, despesas e vendas</li>
+                        <li>Emissão e acompanhamento de documentos fiscais por integração com a Focus NFe, quando contratada e habilitada</li>
+                        <li>Envio de comunicações operacionais por e-mail e outros canais configurados pelo usuário</li>
                         <li>Acompanhamento público do cliente, acompanhamentos e indicadores operacionais</li>
                     </ul>
 
@@ -94,6 +102,8 @@ export default function Terms() {
                     <ul className="list-disc pl-6">
                         <li>Manter a confidencialidade de suas credenciais</li>
                         <li>Todas as atividades realizadas em sua conta</li>
+                        <li>Gerenciar os acessos e permissões concedidos aos seus colaboradores</li>
+                        <li>Manter atualizados seus dados empresariais, fiscais e de contato</li>
                     </ul>
 
                     {/* RESPONSABILIDADE */}
@@ -116,31 +126,74 @@ export default function Terms() {
                         clientes, equipamentos, ordens, vendas, despesas e registros operacionais.
                     </p>
 
+                    <p>
+                        O usuário também é responsável por possuir base legal para cadastrar e utilizar dados pessoais de clientes, colaboradores e
+                        demais terceiros, bem como por atender solicitações dos titulares relacionadas aos dados sob sua responsabilidade.
+                    </p>
+
                     {/* NOTAS FISCAIS */}
 
                     <h2 id="notas-fiscais" className="text-foreground border-border mt-16 mb-5 scroll-mt-28 border-b pb-2 text-xl font-semibold">
-                        4. Emissão de notas fiscais
+                        4. Documentos fiscais e integração com a Focus NFe
                     </h2>
 
                     <p>
-                        O VetorOS é uma plataforma de gestão operacional e não realiza a emissão direta de documentos fiscais como Nota Fiscal de
-                        Serviço (NFS-e) ou Nota Fiscal Eletrônica (NF-e).
+                        Quando o módulo fiscal estiver habilitado, o VetorOS poderá transmitir dados para a Focus NFe com a finalidade de solicitar,
+                        consultar, sincronizar e armazenar informações relacionadas à emissão de Nota Fiscal Eletrônica de produtos (NF-e) e Nota
+                        Fiscal de Serviço Eletrônica (NFS-e). No VetorOS, a NF-e é utilizada nas vendas de peças e produtos, enquanto a NFS-e é
+                        utilizada nas ordens de serviço. A Focus NFe atua como prestadora independente da infraestrutura de comunicação com a SEFAZ
+                        e as prefeituras competentes.
                     </p>
 
                     <p>
-                        O sistema pode disponibilizar links ou integrações que direcionem o usuário para sistemas externos de emissão fiscal mantidos
-                        por terceiros ou por órgãos governamentais.
+                        A integração é opcional e depende de contratação e credenciais válidas fornecidas diretamente pela Focus NFe. O usuário é
+                        responsável por configurar corretamente no VetorOS o ambiente de homologação ou produção, token de API, dados cadastrais,
+                        regime tributário, inscrições, códigos fiscais, NCM, CFOP, dados municipais e demais informações solicitadas nos formulários
+                        fiscais da plataforma.
                     </p>
 
                     <p>
-                        A responsabilidade pela correta emissão de notas fiscais, cumprimento de obrigações tributárias e envio de informações aos
-                        órgãos competentes é exclusivamente do usuário.
+                        O envio de uma solicitação não garante autorização fiscal. O documento poderá permanecer em processamento ou ser rejeitado
+                        pela Focus NFe, SEFAZ ou prefeitura. Cabe ao usuário acompanhar o status no VetorOS, conferir os documentos autorizados e
+                        corrigir os dados que causarem rejeições.
+                    </p>
+
+                    <p>
+                        O VetorOS não presta consultoria contábil ou tributária. A definição dos tributos, enquadramentos, códigos e valores, assim
+                        como o cumprimento de obrigações principais e acessórias, permanece sob responsabilidade exclusiva do usuário e de seus
+                        assessores contábeis. Tarifas, limites, disponibilidade e condições comerciais da Focus NFe são regidos também pelos{' '}
+                        <a
+                            href="https://focusnfe.com.br/termos-de-uso/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline"
+                        >
+                            termos da própria Focus NFe
+                        </a>
+                        .
+                    </p>
+
+                    {/* DADOS E INTEGRAÇÕES */}
+
+                    <h2 id="dados-integracoes" className="text-foreground border-border mt-16 mb-5 scroll-mt-28 border-b pb-2 text-xl font-semibold">
+                        5. Dados e integrações de terceiros
+                    </h2>
+
+                    <p>
+                        Para executar funcionalidades solicitadas pelo usuário, o VetorOS poderá compartilhar com fornecedores integrados apenas os
+                        dados necessários à operação. Na integração fiscal, isso pode incluir dados da empresa emissora, clientes ou destinatários,
+                        produtos, serviços, valores, tributos, endereços e demais informações constantes do documento fiscal.
+                    </p>
+
+                    <p>
+                        O tratamento dessas informações também estará sujeito às políticas e aos termos do respectivo fornecedor. O usuário autoriza
+                        esse compartilhamento ao habilitar e utilizar a integração e declara estar autorizado a transmitir os dados envolvidos.
                     </p>
 
                     {/* DISPONIBILIDADE */}
 
                     <h2 id="disponibilidade" className="text-foreground border-border mt-16 mb-5 scroll-mt-28 border-b pb-2 text-xl font-semibold">
-                        5. Disponibilidade do serviço
+                        6. Disponibilidade do serviço
                     </h2>
 
                     <p>Nos esforçamos para manter o sistema disponível continuamente.</p>
@@ -151,12 +204,13 @@ export default function Terms() {
                         <li>Manutenção técnica programada</li>
                         <li>Falhas de infraestrutura</li>
                         <li>Eventos fora de nosso controle</li>
+                        <li>Indisponibilidade de provedores de e-mail, hospedagem, pagamentos, Focus NFe, SEFAZ, prefeituras ou outras integrações</li>
                     </ul>
 
                     {/* PROPRIEDADE */}
 
                     <h2 id="propriedade" className="text-foreground border-border mt-16 mb-5 scroll-mt-28 border-b pb-2 text-xl font-semibold">
-                        6. Propriedade intelectual
+                        7. Propriedade intelectual
                     </h2>
 
                     <p>
@@ -167,8 +221,14 @@ export default function Terms() {
                     {/* CANCELAMENTO */}
 
                     <h2 id="cancelamento" className="text-foreground border-border mt-16 mb-5 scroll-mt-28 border-b pb-2 text-xl font-semibold">
-                        7. Cancelamento e suspensão
+                        8. Planos, cancelamento e suspensão
                     </h2>
+
+                    <p>
+                        O acesso a determinadas funcionalidades pode depender do plano contratado, do pagamento da assinatura e da vigência do
+                        período de teste ou contratação. O cancelamento não elimina valores já devidos nem obrigações legais de guarda de documentos
+                        e informações.
+                    </p>
 
                     <p>Reservamo-nos o direito de suspender ou cancelar contas que:</p>
 
@@ -184,19 +244,21 @@ export default function Terms() {
                         id="responsabilidade-limitada"
                         className="text-foreground border-border mt-16 mb-5 scroll-mt-28 border-b pb-2 text-xl font-semibold"
                     >
-                        8. Limitação de responsabilidade
+                        9. Limitação de responsabilidade
                     </h2>
 
                     <ul className="list-disc pl-6">
                         <li>Perda de dados causada por uso indevido da plataforma</li>
                         <li>Danos indiretos ou lucros cessantes decorrentes do uso do sistema</li>
                         <li>Falhas em serviços ou integrações de terceiros</li>
+                        <li>Rejeição, atraso, duplicidade ou indisponibilidade de documentos fiscais decorrente de dados incorretos ou de sistemas externos</li>
+                        <li>Multas, autuações ou prejuízos decorrentes de classificação fiscal, tributação ou cumprimento de obrigações do usuário</li>
                     </ul>
 
                     {/* ALTERAÇÕES */}
 
                     <h2 id="alteracoes" className="text-foreground border-border mt-16 mb-5 scroll-mt-28 border-b pb-2 text-xl font-semibold">
-                        9. Alterações nos termos
+                        10. Alterações nos termos
                     </h2>
 
                     <p>
@@ -207,7 +269,7 @@ export default function Terms() {
                     {/* LEGISLAÇÃO */}
 
                     <h2 id="legislacao" className="text-foreground border-border mt-16 mb-5 scroll-mt-28 border-b pb-2 text-xl font-semibold">
-                        10. Legislação aplicável
+                        11. Legislação aplicável
                     </h2>
 
                     <p>Estes termos são regidos pelas leis da República Federativa do Brasil.</p>
@@ -215,7 +277,7 @@ export default function Terms() {
                     {/* CONTATO */}
 
                     <h2 id="contato" className="text-foreground border-border mt-16 mb-5 scroll-mt-28 border-b pb-2 text-xl font-semibold">
-                        11. Contato
+                        12. Contato
                     </h2>
 
                     <p>
