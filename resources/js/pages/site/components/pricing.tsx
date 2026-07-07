@@ -6,7 +6,7 @@ import { Check } from 'lucide-react';
 const plans = [
     {
         name: 'Mensal',
-        price: 'R$79,90',
+        price: 'R$49,90',
         period: '/mês',
         description: 'Ideal para começar',
         cta: 'Começar agora',
@@ -21,11 +21,11 @@ const plans = [
     },
     {
         name: 'Trimestral',
-        price: 'R$219,90',
+        price: 'R$134,90',
         period: 'a cada 3 meses',
-        monthlyEquivalent: 'equivalente a R$73,30/mês',
+        monthlyEquivalent: 'equivalente a R$44,97/mês',
         description: 'Economize pagando antecipado',
-        savings: 'Economize R$19,80',
+        savings: 'Economize R$14,80',
         highlight: 'Plano com economia no ciclo trimestral.',
         cta: 'Escolher trimestral',
         features: [
@@ -40,11 +40,11 @@ const plans = [
     },
     {
         name: 'Semestral',
-        price: 'R$399,90',
+        price: 'R$239,90',
         period: 'a cada 6 meses',
-        monthlyEquivalent: 'equivalente a R$66,65/mês',
+        monthlyEquivalent: 'equivalente a R$39,98/mês',
         description: 'Melhor custo-benefício',
-        savings: 'Economize R$79,50',
+        savings: 'Economize R$59,50',
         highlight: 'Plano mais escolhido por quem quer pagar menos por mês.',
         popular: true,
         cta: 'Quero o semestral',
