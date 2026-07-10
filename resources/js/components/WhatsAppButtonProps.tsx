@@ -19,6 +19,8 @@ type WhatsAppButtonProps = {
         budgetfollowup?: string;
         pendingpayment?: string;
         tracking_token?: string;
+        public_access_key?: string;
+        public_access_key_required?: boolean;
     };
 
     className?: string;
@@ -196,13 +198,17 @@ const buildMessage = ({
     const selectedTemplate = getTemplateForContext({ status, feedback, context, whats });
     if (!selectedTemplate) return '';
 
-    return normalizeWhatsAppLineBreaks(formatTemplateMessage({
+    const message = normalizeWhatsAppLineBreaks(formatTemplateMessage({
         template: selectedTemplate,
         greeting,
         customerName,
         values: templateValues,
         status,
     }));
+
+    return whats?.public_access_key_required && whats.public_access_key
+        ? `${message}\nChave de acesso: ${whats.public_access_key}`
+        : message;
 };
 
 const canSendWhatsAppMessage = ({ status, feedback, context, whats }: Pick<WhatsAppButtonProps, 'status' | 'feedback' | 'context' | 'whats'>) => {

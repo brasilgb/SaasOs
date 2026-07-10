@@ -9,6 +9,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -20,7 +21,7 @@ import { maskMoney, maskMoneyDot } from '@/Utils/mask';
 import { ORDER_STATUS, ORDER_STATUSES_READY_FOR_INVOICE } from '@/Utils/order-status';
 import selectStyles from '@/Utils/selectStyles';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, Copy, FileTextIcon, Mail, Printer, Save, Wrench, X } from 'lucide-react';
+import { ArrowLeft, Copy, FileTextIcon, KeyRound, Mail, Printer, Save, Wrench, X } from 'lucide-react';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
 import Select from 'react-select';
@@ -80,6 +81,7 @@ export default function EditOrder({
     paymentSummary,
     equipmentHistory,
     warrantySourceOrders,
+    publicAccessKey,
     page,
     search,
     status,
@@ -162,6 +164,7 @@ export default function EditOrder({
     });
 
     const [openInvoiceModal, setOpenInvoiceModal] = useState(false);
+    const [publicKeyModalOpen, setPublicKeyModalOpen] = useState(false);
     const eligibleWarrantyOrders = (warrantySourceOrders ?? []).filter(
         (item: any) => String(item.customer_id) === String(data.customer_id) && String(item.equipment_id) === String(data.equipment_id),
     );
@@ -422,15 +425,29 @@ export default function EditOrder({
                                         <div className="grid gap-4 md:grid-cols-8">
                                             <div className="grid gap-2 md:col-span-2">
                                                 <Label htmlFor="customer_id">Cliente</Label>
-                                                <Select<OptionType, false>
-                                                    menuPosition="fixed"
-                                                    defaultValue={defaultCustomer}
-                                                    options={optionsCustomer}
-                                                    onChange={changeCustomer}
-                                                    placeholder="Selecione o cliente"
-                                                    className="min-w-0"
-                                                    styles={selectStyles}
-                                                />
+                                                <div className="flex min-w-0 items-center gap-2">
+                                                    <Select<OptionType, false>
+                                                        menuPosition="fixed"
+                                                        defaultValue={defaultCustomer}
+                                                        options={optionsCustomer}
+                                                        onChange={changeCustomer}
+                                                        placeholder="Selecione o cliente"
+                                                        className="min-w-0 flex-1"
+                                                        styles={selectStyles}
+                                                    />
+                                                    {publicAccessKey && (
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="icon"
+                                                            title="Ver chave da página pública"
+                                                            aria-label="Ver chave da página pública"
+                                                            onClick={() => setPublicKeyModalOpen(true)}
+                                                        >
+                                                            <KeyRound className="h-4 w-4" />
+                                                        </Button>
+                                                    )}
+                                                </div>
                                                 <InputError className="mt-2" message={errors.customer_id} />
                                             </div>
 
@@ -908,6 +925,26 @@ export default function EditOrder({
                     </form>
                 </div>
             </div>
+            <Dialog open={publicKeyModalOpen} onOpenChange={setPublicKeyModalOpen}>
+                <DialogContent className="max-w-md">
+                    <DialogTitle>Chave da página pública</DialogTitle>
+                    <p className="text-muted-foreground text-sm">Envie esta chave ao cliente junto com o link público da OS.</p>
+                    <div className="rounded-lg border bg-slate-50 px-4 py-5 text-center font-mono text-2xl font-semibold tracking-[0.3em] text-slate-900">
+                        {publicAccessKey}
+                    </div>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                            void navigator.clipboard?.writeText(String(publicAccessKey));
+                            toastSuccess('Chave copiada', 'A chave da página pública foi copiada.');
+                        }}
+                    >
+                        <Copy className="h-4 w-4" />
+                        Copiar chave
+                    </Button>
+                </DialogContent>
+            </Dialog>
         </AppLayout>
     );
 }

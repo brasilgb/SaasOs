@@ -7,15 +7,41 @@ use App\Models\App\Customer;
 use App\Models\App\Equipment;
 use App\Models\App\Order;
 use App\Models\App\OrderPayment;
+use App\Models\App\Other;
 use App\Models\App\Receipt;
 use App\Models\Tenant;
 use App\Support\OrderStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class OsControllerTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_public_order_can_require_and_validate_an_access_key(): void
+    {
+        $tenant = Tenant::factory()->create();
+        Other::factory()->forTenant($tenant->id)->create(['public_order_access_key_required' => true]);
+        $order = Order::factory()->forTenant($tenant->id)->create([
+            'public_access_key' => 'ABCD1234',
+            'public_access_key_hash' => Hash::make('ABCD1234'),
+        ]);
+
+        $this->get(route('os.token', $order->tracking_token))
+            ->assertOk()
+            ->assertViewHas('page.component', 'app/serviceorders/access');
+
+        $this->post(route('os.access', $order->tracking_token), ['key' => 'INVALIDA'])
+            ->assertSessionHasErrors('key');
+
+        $this->post(route('os.access', $order->tracking_token), ['key' => 'abcd1234'])
+            ->assertRedirect(route('os.token', $order->tracking_token));
+
+        $this->get(route('os.token', $order->tracking_token))
+            ->assertOk()
+            ->assertViewHas('page.component', 'app/serviceorders/index');
+    }
 
     public function test_public_order_page_uses_order_meta_for_social_preview(): void
     {

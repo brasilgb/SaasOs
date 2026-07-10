@@ -38,6 +38,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -575,6 +576,7 @@ class OrderController extends Controller
         $orders->setCollection(
             $orders->getCollection()->map(function (Order $order) {
                 $order = $this->appendPaymentReminderAvailability($order);
+                $order->setAttribute('public_access_key_value', $order->public_access_key);
 
                 return $this->appendCommunicationFlags($order);
             })
@@ -657,6 +659,9 @@ class OrderController extends Controller
         $data['order_number'] = TenantSequence::next(Order::class, 'order_number', $tenantId);
         $data['barcode'] = Ean13::fromNumber($data['order_number']);
         $data['tracking_token'] = Str::uuid();
+        $publicAccessKey = Str::upper(Str::random(8));
+        $data['public_access_key'] = $publicAccessKey;
+        $data['public_access_key_hash'] = Hash::make($publicAccessKey);
         $data['warranty_days'] = isset($data['warranty_days']) && $data['warranty_days'] !== '' ? max(0, (int) $data['warranty_days']) : null;
         $data = $this->normalizeDeliveryDateForStatus($data);
         $isEquipmentOrder = ($data['order_type'] ?? Order::TYPE_EQUIPMENT) === Order::TYPE_EQUIPMENT;
@@ -816,6 +821,7 @@ class OrderController extends Controller
                 'history' => $equipmentHistory,
             ],
             'warrantySourceOrders' => $this->warrantySourceOptions($order->warranty_source_order_id, $order->id),
+            'publicAccessKey' => $order->public_access_key,
             'page' => $request->page,
             'search' => $request->search,
             'status' => $request->status,

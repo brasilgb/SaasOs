@@ -20,10 +20,13 @@ class Order extends Model
 
     protected $guarded = ['allparts'];
 
+    protected $hidden = ['public_access_key', 'public_access_key_hash'];
+
     protected $casts = [
         'delivery_date' => 'datetime',
         'warranty_expires_at' => 'datetime',
         'is_warranty_return' => 'boolean',
+        'public_access_key' => 'encrypted',
         'fiscal_issued_at' => 'datetime',
         'customer_notification_acknowledged_at' => 'datetime',
         'customer_pickup_acknowledged_at' => 'datetime',

@@ -80,6 +80,7 @@
                             <p style="font-size:15px;line-height:1.6;">
                                 Você pode usar o link acima para acompanhar atualizações da ordem em tempo real.
                             </p>
+                            @include('emails.partials.order-access-key')
                         </td>
                     </tr>
 

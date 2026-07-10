@@ -10,6 +10,9 @@ use Inertia\Inertia;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/os/{token}', [OsController::class, 'index'])->name('os.token');
+Route::post('/os/{token}/access', [OsController::class, 'authorizeAccess'])
+    ->middleware('throttle:6,1')
+    ->name('os.access');
 Route::post('/os/{token}/budget-status', [OsController::class, 'updateBudgetStatus'])
     ->name('orders.budget.status');
 Route::post('/os/{token}/acknowledge-notification', [OsController::class, 'acknowledgeNotification'])

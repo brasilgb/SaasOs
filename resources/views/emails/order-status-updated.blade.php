@@ -128,7 +128,8 @@ Acessar o sistema
                     </tr>
 
                     <tr>
-                        <td style="background:#f9fafb;text-align:center;padding:24px;font-size:12px;color:#6b7280;">
+                        <td style="padding:0 32px;">@include('emails.partials.order-access-key')</td>
+                    </tr><tr><td style="background:#f9fafb;text-align:center;padding:24px;font-size:12px;color:#6b7280;">
                             <p style="margin:0;">© {{ date('Y') }} {{ $companyName }}</p>
                             <p style="margin:6px 0;">Todos os direitos reservados</p>
                             @if (!empty($companySite))

@@ -8,10 +8,12 @@ use App\Events\OrderCustomerPickupAcknowledged;
 use App\Models\App\Checklist;
 use App\Models\App\Company;
 use App\Models\App\Order;
+use App\Models\App\Other;
 use App\Models\App\Receipt;
 use App\Services\OrderStatusService;
 use App\Support\OrderStatus;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
@@ -30,6 +32,24 @@ class OsController extends Controller
             ->where('tracking_token', $token);
     }
 
+    private function accessRequired(Order $order): bool
+    {
+        return (bool) Other::withoutGlobalScopes()
+            ->where('tenant_id', $order->tenant_id)
+            ->value('public_order_access_key_required');
+    }
+
+    private function accessGranted(Request $request, Order $order): bool
+    {
+        return ! $this->accessRequired($order)
+            || $request->session()->get("public_order_access.{$order->id}") === $order->tracking_token;
+    }
+
+    private function guardPublicAccess(Request $request, Order $order): void
+    {
+        abort_unless($this->accessGranted($request, $order), 403, 'Informe a chave de acesso para consultar esta ordem.');
+    }
+
     public function index(Request $request, $token)
     {
         $order = $this->publicOrderByToken($token)
@@ -42,6 +62,13 @@ class OsController extends Controller
             ->with('warrantySourceOrder:id,order_number,warranty_expires_at')
             ->firstOrFail();
 
+        if (! $this->accessGranted($request, $order)) {
+            return Inertia::render('app/serviceorders/access', [
+                'token' => $order->tracking_token,
+                'orderNumber' => $order->order_number,
+            ]);
+        }
+
         $company = $this->tenantScopedFirst(Company::class, (int) $order->tenant_id);
 
         return Inertia::render('app/serviceorders/index', [
@@ -50,6 +77,22 @@ class OsController extends Controller
         ])->withViewData([
             'meta' => $this->orderMeta($order, $company, $request->fullUrl()),
         ]);
+    }
+
+    public function authorizeAccess(Request $request, string $token)
+    {
+        $order = $this->publicOrderByToken($token)->firstOrFail();
+        $validated = $request->validate([
+            'key' => ['required', 'string', 'size:8'],
+        ]);
+
+        if (! $order->public_access_key_hash || ! Hash::check(strtoupper($validated['key']), $order->public_access_key_hash)) {
+            throw ValidationException::withMessages(['key' => 'Chave de acesso inválida.']);
+        }
+
+        $request->session()->put("public_order_access.{$order->id}", $order->tracking_token);
+
+        return redirect()->route('os.token', $order->tracking_token);
     }
 
     private function orderMeta(Order $order, ?Company $company, ?string $url = null): array
@@ -90,6 +133,7 @@ class OsController extends Controller
     public function updateBudgetStatus(Request $request, string $token)
     {
         $order = $this->publicOrderByToken($token)->firstOrFail();
+        $this->guardPublicAccess($request, $order);
 
         $validated = $request->validate([
             'status' => ['required', 'integer'],
@@ -118,9 +162,10 @@ class OsController extends Controller
         return back()->with('success', 'Status do orçamento atualizado com sucesso.');
     }
 
-    public function acknowledgeNotification(string $token)
+    public function acknowledgeNotification(Request $request, string $token)
     {
         $order = $this->publicOrderByToken($token)->firstOrFail();
+        $this->guardPublicAccess($request, $order);
 
         if (! in_array((int) $order->service_status, [OrderStatus::SERVICE_COMPLETED, OrderStatus::CUSTOMER_NOTIFIED], true)) {
             return back()->withErrors([
@@ -157,9 +202,10 @@ class OsController extends Controller
         return back()->with('success', 'Confirmação de aviso registrada com sucesso.');
     }
 
-    public function acknowledgePickup(string $token)
+    public function acknowledgePickup(Request $request, string $token)
     {
         $order = $this->publicOrderByToken($token)->firstOrFail();
+        $this->guardPublicAccess($request, $order);
 
         if (! in_array((int) $order->service_status, [OrderStatus::CUSTOMER_NOTIFIED, OrderStatus::DELIVERED], true)) {
             return back()->withErrors([
@@ -207,7 +253,7 @@ class OsController extends Controller
         return back()->with('success', 'Confirmação de retirada registrada com sucesso.');
     }
 
-    public function receipt(string $token, string $type)
+    public function receipt(Request $request, string $token, string $type)
     {
         $allowedTypes = ['orentrega', 'ororcamento'];
         abort_unless(in_array($type, $allowedTypes, true), 404);
@@ -215,6 +261,7 @@ class OsController extends Controller
         $order = $this->publicOrderByToken($token)
             ->with(['customer', 'equipment', 'orderParts'])
             ->firstOrFail();
+        $this->guardPublicAccess($request, $order);
 
         if ($type === 'orentrega' && ! in_array((int) $order->service_status, [OrderStatus::SERVICE_COMPLETED, OrderStatus::CUSTOMER_NOTIFIED, OrderStatus::DELIVERED], true)) {
             abort(403);
@@ -245,11 +292,12 @@ class OsController extends Controller
         ]);
     }
 
-    public function paymentProof(string $token)
+    public function paymentProof(Request $request, string $token)
     {
         $order = $this->publicOrderByToken($token)
             ->with(['customer', 'equipment', 'orderPayments'])
             ->firstOrFail();
+        $this->guardPublicAccess($request, $order);
 
         abort_if($order->orderPayments->isEmpty(), 404);
 
@@ -262,11 +310,12 @@ class OsController extends Controller
         ]);
     }
 
-    public function fiscalProof(string $token)
+    public function fiscalProof(Request $request, string $token)
     {
         $order = $this->publicOrderByToken($token)
             ->with(['customer', 'equipment'])
             ->firstOrFail();
+        $this->guardPublicAccess($request, $order);
 
         abort_unless($order->fiscal_document_number || $order->fiscal_document_url, 404);
 
@@ -282,6 +331,7 @@ class OsController extends Controller
     public function submitFeedback(Request $request, string $token)
     {
         $order = $this->publicOrderByToken($token)->firstOrFail();
+        $this->guardPublicAccess($request, $order);
 
         if ((int) $order->service_status !== OrderStatus::DELIVERED) {
             return back()->withErrors([
