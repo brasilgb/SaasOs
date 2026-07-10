@@ -260,33 +260,57 @@ class OrderController extends Controller
         return $data;
     }
 
-    private function detectWarrantyReturn(
-        ?int $customerId,
-        ?int $equipmentId,
-        ?string $model,
-        ?int $ignoreOrderId = null,
-    ): ?Order {
-        if (! $customerId || ! $equipmentId) {
+    private function warrantySourceOrder(array $data, ?Order $currentOrder = null): ?Order
+    {
+        if (! filter_var($data['is_warranty_return'] ?? false, FILTER_VALIDATE_BOOL)) {
             return null;
         }
 
         $query = Order::query()
-            ->where('customer_id', $customerId)
-            ->where('equipment_id', $equipmentId)
+            ->whereKey($data['warranty_source_order_id'] ?? 0)
+            ->where('customer_id', $data['customer_id'] ?? 0)
+            ->where('equipment_id', $data['equipment_id'] ?? 0)
             ->whereNotNull('delivery_date')
             ->whereNotNull('warranty_expires_at')
-            ->where('warranty_expires_at', '>', now())
-            ->orderByDesc('delivery_date');
+            ->where(function ($query) use ($currentOrder) {
+                $query->where('warranty_expires_at', '>=', now())
+                    ->when(
+                        $currentOrder?->warranty_source_order_id,
+                        fn ($query, $sourceId) => $query->orWhere($query->getModel()->getQualifiedKeyName(), $sourceId)
+                    );
+            });
 
-        if ($ignoreOrderId) {
-            $query->whereKeyNot($ignoreOrderId);
+        if ($currentOrder) {
+            $query->whereKeyNot($currentOrder->id);
         }
 
-        if (! empty($model)) {
-            $query->where('model', $model);
+        $sourceOrder = $query->first();
+
+        if (! $sourceOrder) {
+            throw ValidationException::withMessages([
+                'warranty_source_order_id' => 'Selecione uma OS de origem válida, entregue para o mesmo cliente e equipamento, com garantia ativa.',
+            ]);
         }
 
-        return $query->first();
+        return $sourceOrder;
+    }
+
+    private function warrantySourceOptions(?int $currentSourceOrderId = null, ?int $excludeOrderId = null)
+    {
+        return Order::query()
+            ->with(['customer:id,name', 'equipment:id,equipment'])
+            ->whereNotNull('delivery_date')
+            ->whereNotNull('warranty_expires_at')
+            ->where(function ($query) use ($currentSourceOrderId) {
+                $query->where('warranty_expires_at', '>=', now())
+                    ->when(
+                        $currentSourceOrderId,
+                        fn ($query) => $query->orWhere($query->getModel()->getQualifiedKeyName(), $currentSourceOrderId)
+                    );
+            })
+            ->when($excludeOrderId, fn ($query) => $query->whereKeyNot($excludeOrderId))
+            ->orderByDesc('delivery_date')
+            ->get(['id', 'order_number', 'customer_id', 'equipment_id', 'model', 'delivery_date', 'warranty_expires_at']);
     }
 
     private function logOrderAction(Order $order, string $action, array $data = []): void
@@ -525,6 +549,10 @@ class OrderController extends Controller
                 );
         } elseif ($filter === 'warranty_return') {
             $query->where('is_warranty_return', true);
+        } elseif ($filter === 'active_warranty') {
+            $query->whereNotNull('delivery_date')
+                ->whereNotNull('warranty_expires_at')
+                ->where('warranty_expires_at', '>=', now());
         }
 
         if ($search) {
@@ -596,6 +624,7 @@ class OrderController extends Controller
             'equipments' => $equipments,
             'models' => $models,
             'sourceSchedule' => $sourceSchedule,
+            'warrantySourceOrders' => $this->warrantySourceOptions(),
         ]);
     }
 
@@ -631,11 +660,7 @@ class OrderController extends Controller
         $data['warranty_days'] = isset($data['warranty_days']) && $data['warranty_days'] !== '' ? max(0, (int) $data['warranty_days']) : null;
         $data = $this->normalizeDeliveryDateForStatus($data);
         $isEquipmentOrder = ($data['order_type'] ?? Order::TYPE_EQUIPMENT) === Order::TYPE_EQUIPMENT;
-        $warrantySourceOrder = $isEquipmentOrder ? $this->detectWarrantyReturn(
-            isset($data['customer_id']) ? (int) $data['customer_id'] : null,
-            isset($data['equipment_id']) ? (int) $data['equipment_id'] : null,
-            isset($data['model']) ? (string) $data['model'] : null,
-        ) : null;
+        $warrantySourceOrder = $isEquipmentOrder ? $this->warrantySourceOrder($data) : null;
         $data['equipment_id'] = $isEquipmentOrder ? ($data['equipment_id'] ?? null) : null;
         $data['model'] = $isEquipmentOrder ? ($data['model'] ?? null) : null;
         $data['password'] = $isEquipmentOrder ? ($data['password'] ?? null) : null;
@@ -790,6 +815,7 @@ class OrderController extends Controller
                 ] : null,
                 'history' => $equipmentHistory,
             ],
+            'warrantySourceOrders' => $this->warrantySourceOptions($order->warranty_source_order_id, $order->id),
             'page' => $request->page,
             'search' => $request->search,
             'status' => $request->status,
@@ -823,6 +849,10 @@ class OrderController extends Controller
 
         $data = $request->all();
         $request->validated();
+        if ($order->is_warranty_return) {
+            $data['is_warranty_return'] = true;
+            $data['warranty_source_order_id'] = $order->warranty_source_order_id;
+        }
         Customer::query()->whereKey($data['customer_id'])->firstOrFail();
         $isEquipmentOrder = ($data['order_type'] ?? Order::TYPE_EQUIPMENT) === Order::TYPE_EQUIPMENT;
         if ($isEquipmentOrder) {
@@ -843,12 +873,7 @@ class OrderController extends Controller
         $warrantyDays = isset($data['warranty_days']) && $data['warranty_days'] !== '' ? max(0, (int) $data['warranty_days']) : null;
         $deliveryDate = ! empty($data['delivery_date']) ? Carbon::parse($data['delivery_date']) : null;
         $warrantyExpiresAt = $deliveryDate && $warrantyDays ? $deliveryDate->copy()->addDays($warrantyDays) : null;
-        $warrantySourceOrder = $isEquipmentOrder ? $this->detectWarrantyReturn(
-            isset($data['customer_id']) ? (int) $data['customer_id'] : null,
-            isset($data['equipment_id']) ? (int) $data['equipment_id'] : null,
-            isset($data['model']) ? (string) $data['model'] : null,
-            (int) $order->id,
-        ) : null;
+        $warrantySourceOrder = $isEquipmentOrder ? $this->warrantySourceOrder($data, $order) : null;
         $oldStatus = $order->service_status;
         $currentPartsSnapshot = $order->orderParts()
             ->get(['parts.id'])

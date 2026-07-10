@@ -1158,7 +1158,7 @@ class OrderControllerTest extends TestCase
         ]);
     }
 
-    public function test_it_marks_new_order_as_warranty_return_when_previous_covered_order_exists(): void
+    public function test_it_marks_new_order_as_warranty_return_when_the_source_order_is_selected(): void
     {
         $customer = Customer::factory()->forTenant($this->tenant->id)->create();
         $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
@@ -1181,6 +1181,8 @@ class OrderControllerTest extends TestCase
             'service_status' => OrderStatus::OPEN,
             'user_id' => $this->user->id,
             'delivery_forecast' => now()->addDays(7)->toDateString(),
+            'is_warranty_return' => true,
+            'warranty_source_order_id' => $coveredOrder->id,
         ]);
 
         $response->assertRedirect(route('app.orders.index'));
@@ -1188,6 +1190,20 @@ class OrderControllerTest extends TestCase
         $newOrder = Order::query()->whereKeyNot($coveredOrder->id)->latest('id')->firstOrFail();
 
         $this->assertTrue((bool) $newOrder->is_warranty_return);
+        $this->assertSame($coveredOrder->id, $newOrder->warranty_source_order_id);
+
+        $this->get(route('app.orders.show', $newOrder))
+            ->assertOk()
+            ->assertViewHas('page.props.order.is_warranty_return', true)
+            ->assertViewHas('page.props.order.warranty_source_order_id', $coveredOrder->id);
+
+        $this->put(route('app.orders.update', $newOrder), $this->orderUpdatePayload($newOrder, $customer, $equipment, [
+            'is_warranty_return' => false,
+            'warranty_source_order_id' => null,
+        ]))->assertRedirect();
+
+        $newOrder->refresh();
+        $this->assertTrue($newOrder->is_warranty_return);
         $this->assertSame($coveredOrder->id, $newOrder->warranty_source_order_id);
     }
 
@@ -1220,6 +1236,40 @@ class OrderControllerTest extends TestCase
 
                 return $orderIds->contains($warrantyReturnOrder->id)
                     && ! $orderIds->contains($regularOrder->id);
+            });
+    }
+
+    public function test_it_filters_orders_with_active_warranty(): void
+    {
+        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
+        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
+
+        $activeWarrantyOrder = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'user_id' => $this->user->id,
+            'delivery_date' => now()->subDay(),
+            'warranty_expires_at' => now()->addDays(30),
+        ]);
+
+        $expiredWarrantyOrder = Order::factory()->forTenant($this->tenant->id)->create([
+            'customer_id' => $customer->id,
+            'equipment_id' => $equipment->id,
+            'user_id' => $this->user->id,
+            'delivery_date' => now()->subDays(60),
+            'warranty_expires_at' => now()->subDays(30),
+        ]);
+
+        $response = $this->get(route('app.orders.index', ['filter' => 'active_warranty']));
+
+        $response
+            ->assertOk()
+            ->assertViewHas('page.props.filter', 'active_warranty')
+            ->assertViewHas('page.props.orders.data', function (array $orders) use ($activeWarrantyOrder, $expiredWarrantyOrder) {
+                $orderIds = collect($orders)->pluck('id');
+
+                return $orderIds->contains($activeWarrantyOrder->id)
+                    && ! $orderIds->contains($expiredWarrantyOrder->id);
             });
     }
 

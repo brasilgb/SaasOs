@@ -294,6 +294,20 @@ type CustomerFeedbackPage = {
     total: number;
 };
 
+type WarrantyReturnItem = {
+    id: number;
+    order_number: number;
+    source_order_number?: number | null;
+    customer: string;
+    equipment: string;
+    technician: string;
+    defect?: string | null;
+    status: string;
+    created_at?: string | null;
+};
+
+type WarrantyReturnPage = Omit<CustomerFeedbackPage, 'data'> & { data: WarrantyReturnItem[] };
+
 type QualityMetrics = {
     summary?: {
         severity?: string;
@@ -330,7 +344,73 @@ type QualityMetrics = {
     };
     feedback_orders?: CustomerFeedbackPage;
     low_feedback_orders?: FeedbackRecoveryItem[];
+    warranty_orders?: WarrantyReturnPage;
 };
+
+function WarrantyReturnsTable({ page, onPageChange }: { page?: WarrantyReturnPage; onPageChange: (page: number) => void }) {
+    const items = page?.data ?? [];
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base">Ordens que retornaram em garantia</CardTitle>
+                <p className="text-muted-foreground mt-1 text-sm">Relação das OS identificadas no período e suas respectivas ordens de origem.</p>
+            </CardHeader>
+            <CardContent>
+                {items.length ? (
+                    <>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Entrada</TableHead>
+                                    <TableHead>OS retorno</TableHead>
+                                    <TableHead>OS origem</TableHead>
+                                    <TableHead>Cliente / equipamento</TableHead>
+                                    <TableHead>Técnico</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead className="text-right">Ação</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {items.map((item) => (
+                                    <TableRow key={item.id}>
+                                        <TableCell>{item.created_at ? moment(item.created_at).format('DD/MM/YYYY') : '-'}</TableCell>
+                                        <TableCell className="font-medium">#{item.order_number}</TableCell>
+                                        <TableCell>{item.source_order_number ? `#${item.source_order_number}` : '-'}</TableCell>
+                                        <TableCell>
+                                            <div>{item.customer}</div>
+                                            <div className="text-muted-foreground text-xs">{item.equipment}</div>
+                                        </TableCell>
+                                        <TableCell>{item.technician}</TableCell>
+                                        <TableCell><Badge variant="outline">{item.status}</Badge></TableCell>
+                                        <TableCell className="text-right">
+                                            <Button asChild size="sm" variant="outline">
+                                                <Link href={route('app.orders.edit', item.id)}>Abrir OS</Link>
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                        <div className="mt-4 flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">{page?.total ?? 0} retorno(s)</span>
+                            <div className="flex gap-2">
+                                <Button size="sm" variant="outline" disabled={(page?.current_page ?? 1) <= 1} onClick={() => onPageChange((page?.current_page ?? 1) - 1)}>
+                                    <ChevronLeft className="h-4 w-4" /> Anterior
+                                </Button>
+                                <Button size="sm" variant="outline" disabled={(page?.current_page ?? 1) >= (page?.last_page ?? 1)} onClick={() => onPageChange((page?.current_page ?? 1) + 1)}>
+                                    Próxima <ChevronRight className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        </div>
+                    </>
+                ) : (
+                    <p className="text-muted-foreground text-sm">Nenhum retorno em garantia no período.</p>
+                )}
+            </CardContent>
+        </Card>
+    );
+}
 
 function CustomerFeedbackTable({
     page,
@@ -481,6 +561,7 @@ export default function QualityIndicators({
     const [assignedToFilter, setAssignedToFilter] = useState('all');
     const [feedbackPage, setFeedbackPage] = useState(1);
     const [feedbackPerPage, setFeedbackPerPage] = useState(20);
+    const [warrantyPage, setWarrantyPage] = useState(1);
 
     const customRangeFrom = dateRange.from;
     const customRangeTo = dateRange.to;
@@ -515,6 +596,7 @@ export default function QualityIndicators({
 
             query.set('feedback_page', String(feedbackPage));
             query.set('feedback_per_page', String(feedbackPerPage));
+            query.set('warranty_page', String(warrantyPage));
 
             const url = `quality-indicators/metrics/${timerangeForRequests}${query.toString() ? `?${query.toString()}` : ''}`;
             const response = await connectBackend.get(url);
@@ -522,13 +604,14 @@ export default function QualityIndicators({
         };
 
         void loadMetrics();
-    }, [timeRange, dateRange, hasCustomRange, timerangeForRequests, recoveryStatusFilter, assignedToFilter, feedbackPage, feedbackPerPage]);
+    }, [timeRange, dateRange, hasCustomRange, timerangeForRequests, recoveryStatusFilter, assignedToFilter, feedbackPage, feedbackPerPage, warrantyPage]);
 
     const onTimeRangeChange = (value: string) => {
         if (!value) return;
 
         setTimeRange(value);
         setFeedbackPage(1);
+        setWarrantyPage(1);
         if (value !== 'custom') {
             clearDateRange();
         }
@@ -537,6 +620,7 @@ export default function QualityIndicators({
     const onDateRangeChange = (range: DateRangeValue) => {
         setDateRange(range);
         setFeedbackPage(1);
+        setWarrantyPage(1);
 
         if (range?.from && range?.to) {
             setTimeRange('custom');
@@ -746,6 +830,11 @@ export default function QualityIndicators({
                                 emptyText="Nenhum técnico associado a retorno no período."
                             />
                         </div>
+
+                        <WarrantyReturnsTable
+                            page={metrics?.warranty_orders}
+                            onPageChange={setWarrantyPage}
+                        />
 
                         <ChartQualityTrend trend={metrics?.trend} threshold={summary?.warranty_return_threshold} />
 

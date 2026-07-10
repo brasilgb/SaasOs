@@ -5,7 +5,7 @@ import Timeline from '@/components/timeline';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Toaster } from '@/components/ui/sonner';
-import { maskMoney, normalizeWhatsappPhone } from '@/Utils/mask';
+import { normalizeWhatsappPhone } from '@/Utils/mask';
 import { ORDER_STATUS, orderStatusLabel } from '@/Utils/order-status';
 import { Head, router, usePage } from '@inertiajs/react';
 import {
@@ -95,6 +95,17 @@ function formatDate(value?: string) {
 function formatDateTime(value?: string) {
     if (!value) return '-';
     return new Date(value).toLocaleString('pt-BR');
+}
+
+function formatCurrency(value?: number | string | null) {
+    const amount = Number(value ?? 0);
+
+    return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    }).format(Number.isFinite(amount) ? amount : 0);
 }
 
 function getRemainingTime(deliveryDate?: string) {
@@ -213,6 +224,7 @@ function ServiceOrders({ order }: { order: Order }) {
     const [feedbackRating, setFeedbackRating] = useState<number | null>(order.customer_feedback_rating ?? null);
     const [feedbackComment, setFeedbackComment] = useState(order.customer_feedback_comment ?? '');
     const [selectedImage, setSelectedImage] = useState<{ src: string; alt: string } | null>(null);
+    const [budgetModalOpen, setBudgetModalOpen] = useState(false);
 
     const financialSummary = useMemo(() => {
         const total = Number(order.service_cost ?? 0);
@@ -260,6 +272,7 @@ function ServiceOrders({ order }: { order: Order }) {
                 preserveScroll: true,
                 onStart: () => (status === 4 ? setLoadingA(true) : setLoadingR(true)),
                 onSuccess: () => {
+                    setBudgetModalOpen(false);
                     toastSuccess('Sucesso', status === 4 ? 'Orçamento aprovado com sucesso' : 'Orçamento recusado com sucesso');
                 },
                 onError: () => {
@@ -393,8 +406,19 @@ function ServiceOrders({ order }: { order: Order }) {
 
                                     <div className="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 backdrop-blur">
                                         <p className="text-xs uppercase tracking-[0.2em] text-slate-300">Status atual</p>
-                                        <div className="mt-2">
+                                        <div className="mt-2 flex items-center gap-2 md:flex-col md:items-stretch">
                                             <StatusBadge category="ordem" value={order.service_status} className="border-white/20 bg-white/10 px-3 py-1.5 text-white" />
+                                            {hasBudgetReceipt && (
+                                                <Button
+                                                    type="button"
+                                                    size="sm"
+                                                    onClick={() => setBudgetModalOpen(true)}
+                                                    className="border border-amber-300/40 bg-amber-400 px-3 text-slate-950 hover:bg-amber-300 hover:text-slate-950"
+                                                >
+                                                    <FileText className="h-4 w-4" />
+                                                    Orçamento
+                                                </Button>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -506,15 +530,14 @@ function ServiceOrders({ order }: { order: Order }) {
                                             <p className="text-sm font-medium text-slate-900">Ações rápidas</p>
                                             <div className="mt-3 grid gap-2 sm:grid-cols-2">
                                                 {hasBudgetReceipt && (
-                                                    <a
-                                                        href={route('os.receipt', { token: order.tracking_token, type: 'ororcamento', pdf: 1 })}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setBudgetModalOpen(true)}
                                                         className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
                                                     >
                                                         <FileText className="h-4 w-4" />
                                                         Ver orçamento
-                                                    </a>
+                                                    </button>
                                                 )}
                                                 {hasPaymentProof && (
                                                     <a
@@ -559,7 +582,7 @@ function ServiceOrders({ order }: { order: Order }) {
                                                     <div>
                                                         <p className="text-sm text-slate-500">Total do atendimento</p>
                                                         <p className="text-lg font-semibold text-slate-900">
-                                                            R$ {maskMoney(String(financialSummary.total))}
+                                                            {formatCurrency(financialSummary.total)}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -572,7 +595,7 @@ function ServiceOrders({ order }: { order: Order }) {
                                                         <p
                                                             className={`text-lg font-semibold ${financialSummary.remaining > 0.009 ? 'text-rose-600' : 'text-emerald-600'}`}
                                                         >
-                                                            R$ {maskMoney(String(financialSummary.remaining))}
+                                                            {formatCurrency(financialSummary.remaining)}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -646,7 +669,7 @@ function ServiceOrders({ order }: { order: Order }) {
                                         <div className="min-w-0 rounded-2xl border border-red-200 bg-red-50 p-4">
                                             <p className="text-sm text-slate-500">Valor do orçamento</p>
                                             <p className="mt-2 text-2xl font-semibold text-red-600">
-                                                R$ {maskMoney(String(order.budget_value ?? 0))}
+                                                {formatCurrency(order.budget_value)}
                                             </p>
                                             <p className="mt-3 break-words text-sm text-slate-600">
                                                 Status atual: <span className="font-medium">{orderStatusLabel(order.service_status)}</span>
@@ -672,15 +695,15 @@ function ServiceOrders({ order }: { order: Order }) {
                                     <div className="mt-4 grid gap-4 sm:grid-cols-3">
                                         <div className="rounded-2xl border border-slate-200 p-4">
                                             <p className="text-sm text-slate-500">Peças</p>
-                                            <p className="mt-2 text-lg font-semibold text-slate-900">R$ {maskMoney(String(order.parts_value || 0))}</p>
+                                            <p className="mt-2 text-lg font-semibold text-slate-900">{formatCurrency(order.parts_value)}</p>
                                         </div>
                                         <div className="rounded-2xl border border-slate-200 p-4">
                                             <p className="text-sm text-slate-500">Serviço</p>
-                                            <p className="mt-2 text-lg font-semibold text-slate-900">R$ {maskMoney(String(order.service_value || 0))}</p>
+                                            <p className="mt-2 text-lg font-semibold text-slate-900">{formatCurrency(order.service_value)}</p>
                                         </div>
                                         <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
                                             <p className="text-sm text-slate-500">Total</p>
-                                            <p className="mt-2 text-lg font-semibold text-emerald-700">R$ {maskMoney(String(order.service_cost || 0))}</p>
+                                            <p className="mt-2 text-lg font-semibold text-emerald-700">{formatCurrency(order.service_cost)}</p>
                                         </div>
                                     </div>
                                 </section>
@@ -751,6 +774,7 @@ function ServiceOrders({ order }: { order: Order }) {
                                             <p className="mt-1 text-sm text-slate-700">
                                                 Esta ordem foi identificada como retorno em garantia
                                                 {order.warranty_source_order?.order_number ? ` da OS #${order.warranty_source_order.order_number}` : ''}.
+                                                Esse vínculo é permanente para preservar o histórico do atendimento.
                                             </p>
                                         </div>
                                     )}
@@ -917,16 +941,16 @@ function ServiceOrders({ order }: { order: Order }) {
                                 <div className="grid gap-3 sm:grid-cols-3">
                                     <div className="rounded-2xl border border-slate-200 p-4">
                                         <p className="text-sm text-slate-500">Total</p>
-                                        <p className="mt-2 font-semibold text-slate-900">R$ {maskMoney(String(financialSummary.total))}</p>
+                                        <p className="mt-2 font-semibold text-slate-900">{formatCurrency(financialSummary.total)}</p>
                                     </div>
                                     <div className="rounded-2xl border border-slate-200 p-4">
                                         <p className="text-sm text-slate-500">Pago</p>
-                                        <p className="mt-2 font-semibold text-emerald-700">R$ {maskMoney(String(financialSummary.paid))}</p>
+                                        <p className="mt-2 font-semibold text-emerald-700">{formatCurrency(financialSummary.paid)}</p>
                                     </div>
                                     <div className="rounded-2xl border border-slate-200 p-4">
                                         <p className="text-sm text-slate-500">Saldo</p>
                                         <p className={`mt-2 font-semibold ${financialSummary.remaining > 0.009 ? 'text-rose-600' : 'text-emerald-700'}`}>
-                                            R$ {maskMoney(String(financialSummary.remaining))}
+                                            {formatCurrency(financialSummary.remaining)}
                                         </p>
                                     </div>
                                 </div>
@@ -937,7 +961,7 @@ function ServiceOrders({ order }: { order: Order }) {
                                             <div key={payment.id} className="rounded-2xl border border-slate-200 px-4 py-3">
                                                 <div className="flex items-center justify-between gap-3">
                                                     <div>
-                                                        <p className="font-medium text-slate-900">R$ {maskMoney(String(payment.amount ?? 0))}</p>
+                                                        <p className="font-medium text-slate-900">{formatCurrency(payment.amount)}</p>
                                                         <p className="text-sm text-slate-500">
                                                             {payment.payment_method || 'Pagamento'} • {formatDateTime(payment.paid_at)}
                                                         </p>
@@ -970,6 +994,53 @@ function ServiceOrders({ order }: { order: Order }) {
                     {selectedImage && (
                         <img src={selectedImage.src} alt={selectedImage.alt} className="max-h-[80vh] w-full rounded-xl object-contain" />
                     )}
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={budgetModalOpen} onOpenChange={setBudgetModalOpen}>
+                <DialogContent className="max-w-2xl overflow-hidden border-slate-200 bg-white p-0 text-slate-900 [&>button]:text-slate-600 [&>button]:hover:text-slate-950">
+                    <div className="border-b border-slate-200 bg-slate-50 px-6 py-5">
+                        <DialogTitle className="text-slate-950">Orçamento da OS #{order.order_number}</DialogTitle>
+                        <p className="mt-1 text-sm text-slate-600">Confira os detalhes antes de tomar uma decisão.</p>
+                    </div>
+                    <div className="space-y-5 px-6 py-5">
+                        <div>
+                            <p className="text-sm font-semibold text-slate-700">Descrição do orçamento</p>
+                            <p className="mt-2 rounded-xl border border-slate-200 bg-slate-50 p-4 whitespace-pre-wrap text-slate-950">
+                                {order.budget_description || 'Descrição não informada.'}
+                            </p>
+                        </div>
+                        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+                            <p className="text-sm text-emerald-800">Valor do orçamento</p>
+                            <p className="mt-1 text-2xl font-semibold text-emerald-900">{formatCurrency(order.budget_value)}</p>
+                        </div>
+                        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
+                            <Button
+                                variant="outline"
+                                asChild
+                                className="border-slate-300 bg-white text-slate-800 hover:border-slate-400 hover:bg-slate-100 hover:text-slate-950 focus-visible:ring-slate-400"
+                            >
+                                <a
+                                    href={route('os.receipt', { token: order.tracking_token, type: 'ororcamento', pdf: 1 })}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    <ExternalLink className="h-4 w-4" />
+                                    Abrir comprovante completo
+                                </a>
+                            </Button>
+                            {order.service_status === ORDER_STATUS.BUDGET_GENERATED && (
+                                <div className="flex gap-2">
+                                    <Button variant="outline" onClick={handleReject} disabled={loadingR || loadingA}>
+                                        {loadingR ? 'Recusando...' : 'Recusar'}
+                                    </Button>
+                                    <Button onClick={handleApprove} disabled={loadingA || loadingR}>
+                                        {loadingA ? 'Aprovando...' : 'Aprovar orçamento'}
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </DialogContent>
             </Dialog>
         </>

@@ -79,6 +79,7 @@ export default function EditOrder({
     orderPayments,
     paymentSummary,
     equipmentHistory,
+    warrantySourceOrders,
     page,
     search,
     status,
@@ -152,6 +153,8 @@ export default function EditOrder({
         service_cost: order.service_cost, // custo
         delivery_date: order.delivery_date,
         warranty_days: order?.warranty_days ?? '',
+        is_warranty_return: Boolean(order?.is_warranty_return),
+        warranty_source_order_id: order?.warranty_source_order_id ? String(order.warranty_source_order_id) : '',
         service_status: order?.service_status,
         delivery_forecast: order?.delivery_forecast, // previsao de entrega
         observations: order?.observations,
@@ -159,6 +162,9 @@ export default function EditOrder({
     });
 
     const [openInvoiceModal, setOpenInvoiceModal] = useState(false);
+    const eligibleWarrantyOrders = (warrantySourceOrders ?? []).filter(
+        (item: any) => String(item.customer_id) === String(data.customer_id) && String(item.equipment_id) === String(data.equipment_id),
+    );
 
     const handleModalSubmit = (modalParts: any) => {
         setPartsData((currentLocalParts: any) => {
@@ -742,6 +748,52 @@ export default function EditOrder({
                                                     placeholder="Ex.: 90"
                                                 />
                                                 {errors.warranty_days && <div className="text-sm text-red-500">{errors.warranty_days}</div>}
+                                            </div>
+                                            <div className="grid gap-2 md:col-span-2">
+                                                {order?.is_warranty_return ? (
+                                                    <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">
+                                                        <p className="font-medium">Esta OS é um retorno em garantia</p>
+                                                        <p className="mt-1">
+                                                            Vinculada à OS #{equipmentHistory?.warranty_source_order?.order_number ?? 'não informada'}.
+                                                            Esse vínculo é permanente para preservar o histórico da garantia.
+                                                        </p>
+                                                    </div>
+                                                ) : (
+                                                    <label className="flex items-center gap-2 font-medium">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={data.is_warranty_return}
+                                                            onChange={(event) => {
+                                                                setData('is_warranty_return', event.target.checked);
+                                                                if (!event.target.checked) setData('warranty_source_order_id', '');
+                                                            }}
+                                                        />
+                                                        Esta OS é um retorno em garantia de outra OS
+                                                    </label>
+                                                )}
+                                                {data.is_warranty_return && !order?.is_warranty_return && (
+                                                    <select
+                                                        value={data.warranty_source_order_id}
+                                                        onChange={(event) => setData('warranty_source_order_id', event.target.value)}
+                                                        className="border-input bg-background h-10 rounded-md border px-3 text-sm"
+                                                    >
+                                                        <option value="">Selecione a OS de origem</option>
+                                                        {eligibleWarrantyOrders.map((item: any) => (
+                                                            <option key={item.id} value={item.id}>
+                                                                OS #{item.order_number}{item.model ? ` • ${item.model}` : ''} • garantia até{' '}
+                                                                {moment(item.warranty_expires_at).format('DD/MM/YYYY')}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                )}
+                                                {data.is_warranty_return && !order?.is_warranty_return && eligibleWarrantyOrders.length === 0 && (
+                                                    <p className="text-sm text-amber-700">
+                                                        Não há outra OS entregue com garantia ativa para este cliente e equipamento.
+                                                    </p>
+                                                )}
+                                                {errors.warranty_source_order_id && (
+                                                    <div className="text-sm text-red-500">{errors.warranty_source_order_id}</div>
+                                                )}
                                             </div>
                                         </div>
 

@@ -304,6 +304,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                             { value: 'pending_payment_follow_up', label: 'Cobrança pendente' },
                             { value: 'due_48h', label: 'Vencendo hoje e amanhã' },
                             { value: 'financial_open', label: 'Em aberto no financeiro' },
+                            { value: 'active_warranty', label: 'Garantia ativa' },
                             { value: 'warranty_return', label: 'Retorno em garantia' },
                         ]}
                         url="app.orders.index"
@@ -452,6 +453,16 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                     {Boolean(order.is_warranty_return) && (
                                                         <Badge variant="secondary" className="w-fit bg-amber-100 text-amber-900 hover:bg-amber-100">
                                                             Retorno garantia
+                                                        </Badge>
+                                                    )}
+                                                    {order.warranty_expires_at && moment(order.warranty_expires_at).isSameOrAfter(moment()) && (
+                                                        <Badge variant="secondary" className="w-fit bg-emerald-100 text-emerald-900 hover:bg-emerald-100">
+                                                            Garantia até {moment(order.warranty_expires_at).format('DD/MM/YYYY')}
+                                                        </Badge>
+                                                    )}
+                                                    {order.warranty_expires_at && moment(order.warranty_expires_at).isBefore(moment()) && (
+                                                        <Badge variant="outline" className="w-fit text-slate-500">
+                                                            Garantia encerrada em {moment(order.warranty_expires_at).format('DD/MM/YYYY')}
                                                         </Badge>
                                                     )}
                                                     {hasBudgetFollowUp && (

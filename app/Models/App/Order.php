@@ -23,6 +23,7 @@ class Order extends Model
     protected $casts = [
         'delivery_date' => 'datetime',
         'warranty_expires_at' => 'datetime',
+        'is_warranty_return' => 'boolean',
         'fiscal_issued_at' => 'datetime',
         'customer_notification_acknowledged_at' => 'datetime',
         'customer_pickup_acknowledged_at' => 'datetime',

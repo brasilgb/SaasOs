@@ -831,8 +831,10 @@
 
                     <p>Se o SMTP estiver configurado e o cliente tiver e-mail válido, o sistema pode enviar e-mail
                         automático na criação da ordem e sempre que houver atualização de status.</p>
-                    <p>Quando houver garantia ativa, o sistema também pode ajudar a identificar retorno em garantia e
-                        manter o histórico do atendimento vinculado à ordem anterior.</p>
+                    <p>Ao entregar uma OS, informe a quantidade de dias de garantia. Essa OS passa a ser a
+                        <strong>origem da garantia</strong>; ela não é um retorno. Se o mesmo equipamento voltar com um
+                        problema coberto, abra uma nova OS, marque <strong>Esta OS é um retorno em garantia</strong> e
+                        selecione a OS entregue anteriormente.</p>
                     <h4>6.1 O que os principais botões fazem</h4>
                     <ul>
                         <li><strong>Salvar:</strong> grava alterações da OS, valida campos e pode registrar mudança de status.</li>
@@ -848,7 +850,8 @@
                     <ul>
                         <li>O sistema grava histórico de status para rastreabilidade da OS.</li>
                         <li>Logs operacionais ajudam a identificar ações importantes como envio de acompanhamento, cobrança e confirmações do cliente.</li>
-                        <li>Se houver garantia válida de ordem anterior, a nova OS pode ser marcada como retorno em garantia.</li>
+                        <li>Uma OS só é registrada como retorno quando a equipe marca essa opção e seleciona a OS de origem.</li>
+                        <li>O sistema permite selecionar apenas uma OS entregue, do mesmo cliente e equipamento, com garantia ativa.</li>
                         <li>Quando o cliente interage no portal público, a OS também recebe atualização e registro de log.</li>
                     </ul>
                     <h4>6.3 Quando o status muda, o sistema pode fazer isto</h4>
@@ -877,6 +880,25 @@
                     <h4>6.6 Documentação do atendimento</h4>
                     <p>Use imagens, checklist, observações e histórico de status para manter rastreabilidade do
                         atendimento e reduzir dúvidas futuras.</p>
+                    <h4>6.7 Fluxo de garantia e retorno</h4>
+                    <ol>
+                        <li>Na OS do serviço original, informe os dias de garantia.</li>
+                        <li>Marque a OS como entregue ao cliente. O vencimento da garantia será calculado a partir da entrega.</li>
+                        <li>Se o equipamento voltar dentro do prazo por um problema coberto, crie uma nova OS.</li>
+                        <li>Na nova OS, marque <strong>Esta OS é um retorno em garantia</strong>.</li>
+                        <li>Selecione a OS original no campo <strong>OS de origem</strong> e salve.</li>
+                    </ol>
+                    <div class="callout">
+                        Não marque a OS original como retorno. A primeira OS origina a garantia; somente a nova OS,
+                        aberta quando o equipamento volta, deve ser identificada como retorno em garantia. Depois de
+                        registrada, a nova OS permanece marcada para preservar o histórico, mesmo após o vencimento da
+                        garantia original. Após salvar, o vínculo não pode ser desmarcado ou trocado na edição, garantindo
+                        a integridade dos indicadores e do histórico operacional.
+                    </div>
+                    <p>Na listagem de ordens, a situação aparece ao lado do status como <strong>Garantia até</strong> ou
+                        <strong>Garantia encerrada em</strong>. Use o filtro <strong>Garantia ativa</strong> para mostrar
+                        somente as OS que ainda estão dentro do prazo. O filtro <strong>Retorno em garantia</strong>
+                        continua separado e mostra as novas OS vinculadas a uma garantia anterior.</p>
                 </section>
 
                 <section id="pagamentos-ordens">
@@ -1145,8 +1167,9 @@
                         e monitorar <strong>avaliações de clientes</strong>.</p>
                     <h4>12.1 Garantia</h4>
                     <ul>
-                        <li>O sistema pode calcular vencimento de garantia conforme a configuração da OS.</li>
-                        <li>Quando uma nova ordem entra dentro da cobertura, ela pode ser marcada como retorno em garantia.</li>
+                        <li>O sistema calcula o vencimento usando a data de entrega e os dias de garantia informados na OS original.</li>
+                        <li>A OS original é a origem da cobertura e não deve ser marcada como retorno.</li>
+                        <li>Quando o equipamento volta dentro da cobertura, a equipe marca a nova OS como retorno e seleciona a OS de origem.</li>
                         <li>Os relatórios e indicadores usam essa marcação para medir taxa de retorno.</li>
                         <li>Há limiar configurável para alerta visual de excesso de garantia.</li>
                     </ul>
@@ -1156,6 +1179,11 @@
                         <li><strong>Motivo recorrente:</strong> usar o histórico para identificar falha de processo, peça ou execução.</li>
                         <li><strong>Excesso de garantias:</strong> tratar como sinal de atenção gerencial, não só como caso isolado.</li>
                     </ul>
+                    <h4>12.1.2 Como visualizar os retornos</h4>
+                    <p>Abra <strong>Garantias e avaliações</strong> e acesse a aba <strong>Retornos em garantia</strong>.
+                        A tabela <strong>Ordens que retornaram em garantia</strong> apresenta a OS de retorno, a OS de
+                        origem, cliente, equipamento, técnico, status e data de entrada. Use o botão
+                        <strong>Abrir OS</strong> para consultar ou corrigir o atendimento.</p>
                     <h4>12.2 Avaliações</h4>
                     <ul>
                         <li>Após a entrega, o cliente pode deixar nota e comentário no portal público.</li>

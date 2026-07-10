@@ -70,6 +70,13 @@ class OrderRequest extends FormRequest
             'accessories' => 'nullable|string|max:500',
             'service_status' => ['required', 'integer', Rule::in(OrderStatus::values())],
             'warranty_days' => 'nullable|integer|min:0|max:3650',
+            'is_warranty_return' => 'nullable|boolean',
+            'warranty_source_order_id' => [
+                Rule::requiredIf($this->boolean('is_warranty_return')),
+                'nullable',
+                'integer',
+                'exists:orders,id',
+            ],
 
             'budget_description' => [
                 Rule::requiredIf((int) $this->service_status === OrderStatus::BUDGET_GENERATED),
@@ -120,6 +127,8 @@ class OrderRequest extends FormRequest
             'schedule_id' => 'agendamento',
             'delivery_date' => 'data de entrega',
             'warranty_days' => 'garantia em dias',
+            'is_warranty_return' => 'retorno em garantia',
+            'warranty_source_order_id' => 'ordem de serviço de origem da garantia',
             'delivery_forecast' => 'previsão de entrega',
             'observations' => 'observações',
         ];

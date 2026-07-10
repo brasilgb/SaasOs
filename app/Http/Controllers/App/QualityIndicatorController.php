@@ -6,6 +6,7 @@ use App\Events\OrderFeedbackRecoveryUpdated;
 use App\Http\Controllers\Controller;
 use App\Models\App\Order;
 use App\Models\App\Other;
+use App\Models\User;
 use App\Support\OrderStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -13,11 +14,11 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
-use App\Models\User;
 
 class QualityIndicatorController extends Controller
 {
     private const FEEDBACK_RECOVERY_SLA_DAYS = 3;
+
     private const FEEDBACK_RECOVERY_STATUSES = [
         'pending',
         'in_progress',
@@ -97,7 +98,7 @@ class QualityIndicatorController extends Controller
             for ($cursor = $start->copy()->startOfWeek(); $cursor->lte($end); $cursor->addWeek()) {
                 $bucketStart = $cursor->copy()->max($start);
                 $bucketEnd = $cursor->copy()->endOfWeek()->min($end);
-                $label = $bucketStart->format('d/m') . ' - ' . $bucketEnd->format('d/m');
+                $label = $bucketStart->format('d/m').' - '.$bucketEnd->format('d/m');
 
                 $bucketOrders = $orders->filter(fn (Order $order) => Carbon::parse($order->created_at)->between($bucketStart, $bucketEnd));
                 $totalOrders = $bucketOrders->count();
@@ -181,6 +182,36 @@ class QualityIndicatorController extends Controller
             ->get();
 
         $warrantyOrders = $allOrders->where('is_warranty_return', true)->values();
+        $warrantyPerPage = in_array(request()->integer('warranty_per_page', 20), [20, 50, 100], true)
+            ? request()->integer('warranty_per_page', 20)
+            : 20;
+        $warrantyPaginator = Order::query()
+            ->with([
+                'customer:id,name',
+                'equipment:id,equipment',
+                'user:id,name',
+                'warrantySourceOrder:id,order_number,delivery_date,warranty_expires_at',
+            ])
+            ->where('is_warranty_return', true)
+            ->whereBetween('created_at', [$start, $end])
+            ->orderByDesc('created_at')
+            ->paginate(
+                $warrantyPerPage,
+                ['*'],
+                'warranty_page',
+                max(1, request()->integer('warranty_page', 1))
+            )
+            ->through(fn (Order $order) => [
+                'id' => $order->id,
+                'order_number' => $order->order_number,
+                'source_order_number' => $order->warrantySourceOrder?->order_number,
+                'customer' => $order->customer?->name ?: 'Cliente não informado',
+                'equipment' => $order->equipment?->equipment ?: 'Equipamento não informado',
+                'technician' => $order->user?->name ?: 'Não definido',
+                'defect' => $order->defect,
+                'status' => OrderStatus::label((int) $order->service_status),
+                'created_at' => $order->created_at?->toIso8601String(),
+            ]);
         $totalOrders = $allOrders->count();
         $warrantyReturns = $warrantyOrders->count();
         $rate = $totalOrders > 0 ? round(($warrantyReturns / $totalOrders) * 100, 1) : 0.0;
@@ -342,6 +373,7 @@ class QualityIndicatorController extends Controller
             'top_defects' => $topDefects,
             'top_technicians' => $topTechnicians,
             'status_breakdown' => $statusBreakdown,
+            'warranty_orders' => $warrantyPaginator,
             'feedback_orders' => $feedbackPaginator,
             'low_feedback_orders' => $lowFeedbackOrders->map(fn (Order $order) => [
                 'id' => $order->id,
@@ -392,7 +424,7 @@ class QualityIndicatorController extends Controller
 
         $validated = $request->validate([
             'assigned_to' => ['nullable', 'integer', 'exists:users,id'],
-            'status' => ['required', 'string', 'in:' . implode(',', self::FEEDBACK_RECOVERY_STATUSES)],
+            'status' => ['required', 'string', 'in:'.implode(',', self::FEEDBACK_RECOVERY_STATUSES)],
             'notes' => ['nullable', 'string', 'max:500'],
         ]);
 

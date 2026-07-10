@@ -34,10 +34,19 @@ export default function CreateOrder({
     customers,
     equipments,
     sourceSchedule,
+    warrantySourceOrders,
 }: {
     customers: { id: number; name: string }[];
     equipments: { id: number; equipment: string }[];
     sourceSchedule?: { id: number; customer_id: number; user_id?: number | null; schedules?: string | null; customer?: { name: string } } | null;
+    warrantySourceOrders: Array<{
+        id: number;
+        order_number: number;
+        customer_id: number;
+        equipment_id: number;
+        model?: string | null;
+        warranty_expires_at: string;
+    }>;
 }) {
     const { flash } = usePage().props as any;
 
@@ -68,6 +77,8 @@ export default function CreateOrder({
         budget_description: '', // descrição do orçamento
         budget_value: '', // valor do orçamento
         warranty_days: '',
+        is_warranty_return: false,
+        warranty_source_order_id: '',
         service_status: '1',
         delivery_forecast: '', // previsao de entrega
         observations: '',
@@ -101,6 +112,9 @@ export default function CreateOrder({
     };
 
     const defaultCustomer = optionsCustomer.find((option) => String(option.value) === String(data.customer_id)) ?? null;
+    const eligibleWarrantyOrders = warrantySourceOrders.filter(
+        (item) => String(item.customer_id) === String(data.customer_id) && String(item.equipment_id) === String(data.equipment_id),
+    );
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -275,6 +289,39 @@ export default function CreateOrder({
                                     placeholder="Ex.: 90"
                                 />
                                 {errors.warranty_days && <div className="text-sm text-red-500">{errors.warranty_days}</div>}
+                            </div>
+
+                            <div className="grid gap-2 md:col-span-2">
+                                <label className="flex items-center gap-2 font-medium">
+                                    <input
+                                        type="checkbox"
+                                        checked={data.is_warranty_return}
+                                        onChange={(event) => {
+                                            setData('is_warranty_return', event.target.checked);
+                                            if (!event.target.checked) setData('warranty_source_order_id', '');
+                                        }}
+                                    />
+                                    Esta nova OS é um retorno em garantia de outra OS
+                                </label>
+                                {data.is_warranty_return && (
+                                    <select
+                                        value={data.warranty_source_order_id}
+                                        onChange={(event) => setData('warranty_source_order_id', event.target.value)}
+                                        className="border-input bg-background h-10 rounded-md border px-3 text-sm"
+                                    >
+                                        <option value="">Selecione a OS de origem</option>
+                                        {eligibleWarrantyOrders.map((item) => (
+                                            <option key={item.id} value={item.id}>
+                                                OS #{item.order_number}{item.model ? ` • ${item.model}` : ''} • garantia até{' '}
+                                                {new Date(item.warranty_expires_at).toLocaleDateString('pt-BR')}
+                                            </option>
+                                        ))}
+                                    </select>
+                                )}
+                                {data.is_warranty_return && eligibleWarrantyOrders.length === 0 && (
+                                    <p className="text-sm text-amber-700">Não há OS entregue com garantia ativa para este cliente e equipamento.</p>
+                                )}
+                                {errors.warranty_source_order_id && <div className="text-sm text-red-500">{errors.warranty_source_order_id}</div>}
                             </div>
 
                             <div className="grid gap-2">
