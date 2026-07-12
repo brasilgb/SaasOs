@@ -1,0 +1,491 @@
+MANUAL DO CLIENTE
+VetorOS - Sistema de Gestão de Ordens de Serviço
+Versão 1.5
+Maio de 2026
+
+Aviso importante
+Este manual descreve o uso prático do VetorOS na rotina da assistência técnica.
+Mantenha este material alinhado com a versão instalada do sistema.
+
+ÍNDICE
+1. Introdução
+2. Visão geral do sistema
+3. Configuração inicial recomendada
+4. Dashboard
+5. Gestão de clientes
+6. Ordens de serviço
+7. Pagamentos de ordens de serviço
+8. Orçamentos
+9. Agendamentos de visitas
+10. Área do cliente
+11. Mensagens internas da equipe
+12. Peças, produtos e estoque
+13. Vendas
+14. Despesas
+15. Caixa diário
+16. Relatórios, acompanhamentos e indicadores
+17. Configurações gerais
+18. Gestão de usuários
+19. Aplicativo e upload de imagens
+20. Importação de clientes por CSV
+21. Emissão fiscal
+22. Boas práticas de uso
+23. Suporte
+
+1. INTRODUÇÃO
+O VetorOS foi desenvolvido para empresas que trabalham com assistência técnica, manutenção, eletrônica, informática, oficinas e atendimentos externos.
+O sistema reúne atendimento, operação, financeiro, comunicação com clientes e gestão interna em um único ambiente.
+Pode ser usado em computadores, tablets e celulares.
+
+2. VISÃO GERAL DO SISTEMA
+Os principais módulos são:
+- Dashboard
+- Clientes
+- Ordens de serviço
+- Orçamentos
+- Agendamentos
+- Mensagens internas
+- Peças e produtos
+- Vendas
+- Despesas
+- Caixa diário
+- Relatórios
+- Configurações
+- Usuários
+
+Recursos complementares:
+- área pública de acompanhamento da ordem
+- upload de imagens do equipamento
+- importação de clientes por CSV
+- mensagens por WhatsApp
+- e-mails automáticos
+- apoio à emissão fiscal
+
+3. CONFIGURAÇÃO INICIAL RECOMENDADA
+3.1 Dados da empresa
+Cadastre nome, telefone, endereço, e-mail e dados institucionais.
+Essas informações são usadas em recibos, comprovantes, impressões e comunicações.
+
+3.2 Tipos de equipamento
+Cadastre os equipamentos atendidos pela empresa.
+Exemplos:
+- celular
+- notebook
+- impressora
+- televisão
+- tablet
+
+3.3 Checklists
+Cadastre checklists por tipo de equipamento para padronizar a conferência de entrada e saída.
+
+3.4 Mensagens padrão
+Configure mensagens de WhatsApp para orçamento, atualização de status, retirada e outros contatos recorrentes.
+
+3.5 Impressões e etiquetas
+Ajuste textos de recibos, comprovantes e etiquetas para manter o padrão da empresa.
+
+3.6 Módulos opcionais
+Em Outras configurações é possível habilitar ou desabilitar recursos como orçamentos, peças/estoque, vendas e partes do menu operacional.
+
+3.7 Configuração de e-mail
+Para usar e-mails automáticos, configure SMTP com host, porta, usuário, senha, criptografia, endereço remetente e nome do remetente.
+Também existe envio de e-mail de teste para validação.
+
+3.8 Abas de configurações
+As Outras configurações estão divididas em:
+- Sistema e SMTP
+- Operacionais
+
+4. DASHBOARD
+O dashboard reúne indicadores operacionais e financeiros com gráficos, métricas e atalhos rápidos.
+
+Pode exibir:
+- visão operacional das ordens
+- visão financeira
+- alertas de qualidade
+- atalhos para ações rápidas
+
+Quando o módulo de vendas está ativo, o sistema também destaca informações comerciais.
+
+5. GESTÃO DE CLIENTES
+O módulo de clientes permite:
+- cadastrar
+- editar
+- excluir
+- pesquisar por nome ou documento
+- visualizar ordens e agendamentos
+- consultar total pago e saldo pendente
+- enviar mensagem via WhatsApp
+
+Fluxo recomendado:
+1. Cadastrar o cliente com nome, telefone e formas principais de contato.
+2. Revisar documento, endereço e observações.
+3. Usar a ficha do cliente como ponto de consulta de ordens e pendências.
+
+6. ORDENS DE SERVIÇO
+A ordem de serviço é o núcleo operacional do sistema.
+Cada ordem pode conter:
+- número da ordem
+- cliente
+- equipamento
+- modelo
+- senha
+- defeito informado
+- estado de conservação
+- acessórios
+- descrição do orçamento
+- serviços executados
+- peças utilizadas
+- valores do serviço, peças e total
+- previsão e data de entrega
+- observações
+- técnico responsável
+
+Ações disponíveis:
+- criar
+- editar
+- excluir
+- vincular peças
+- registrar imagens
+- imprimir documentos
+- enviar mensagens por WhatsApp
+- acompanhar status
+
+Documentos relacionados:
+- recibo de entrada
+- recibo de entrega
+- orçamento
+- checklist
+
+Status disponíveis:
+- 1. Ordem aberta
+- 2. Ordem cancelada
+- 3. Orçamento gerado
+- 4. Orçamento aprovado
+- 5. Orçamento reprovado
+- 6. Reparo em andamento
+- 7. Serviço concluído
+- 8. Serviço não executado
+- 9. Cliente avisado / aguardando retirada
+- 10. Entregue ao cliente
+
+Fluxo recomendado da OS:
+1. Abrir a ordem com o máximo de detalhes.
+2. Registrar acessórios, senha e observações.
+3. Atualizar o status a cada mudança real da operação.
+4. Gerar orçamento quando necessário.
+5. Registrar conclusão, aviso, retirada e entrega final.
+
+Se o SMTP estiver configurado e o cliente tiver e-mail válido, o sistema pode enviar e-mail automático na criação da ordem e nas atualizações de status.
+Quando houver garantia ativa, o sistema pode identificar retorno em garantia e manter o vínculo com a ordem anterior.
+
+7. PAGAMENTOS DE ORDENS DE SERVIÇO
+O VetorOS possui controle financeiro por ordem com pagamentos totais ou parciais.
+
+Resumo financeiro da ordem:
+- valor de peças
+- valor de serviço
+- total da ordem
+- valor pago
+- saldo restante
+
+Formas de pagamento:
+- Pix
+- cartão
+- dinheiro
+- transferência
+- boleto
+
+Regras importantes:
+- o valor pago não pode ser maior que o saldo restante
+- para registrar pagamento é necessário haver caixa aberto
+- pagamentos podem ser removidos conforme permissão de uso
+
+Boas práticas:
+1. Conferir o saldo antes de lançar.
+2. Selecionar a forma de pagamento correta.
+3. Registrar o recebimento no momento em que ele acontece.
+
+Quando a ordem já possui data de entrega, ainda tem saldo pendente e o cliente possui e-mail válido, o sistema pode enviar lembrete de cobrança por e-mail.
+
+8. ORÇAMENTOS
+O módulo de orçamentos permite:
+- criar
+- editar
+- excluir
+- imprimir
+
+O orçamento pode fazer parte do fluxo da ordem de serviço.
+Na área pública do cliente também pode haver aprovação ou reprovação do orçamento.
+
+9. AGENDAMENTOS DE VISITAS
+O módulo de agendamentos organiza visitas técnicas e atendimentos externos.
+
+Funções:
+- cadastrar
+- editar
+- excluir
+- vincular cliente e técnico
+- acompanhar status
+- enviar mensagem ao técnico por WhatsApp
+
+Status comuns:
+- aberto
+- em atendimento
+- fechado
+
+10. ÁREA DO CLIENTE
+Cada ordem pode gerar um link público de acompanhamento por token.
+Esse link pode ser enviado ao cliente sem necessidade de login administrativo.
+
+Na área do cliente podem ser exibidos:
+- status atual
+- dados do equipamento
+- informações principais do atendimento
+- resumo financeiro
+- links para comprovantes, orçamento, pagamentos e nota quando disponíveis
+
+Dependendo do status da ordem, o cliente também pode:
+- aprovar ou reprovar orçamento
+- confirmar o aviso de conclusão
+- confirmar retirada
+- enviar avaliação com nota em 5 estrelas e opinião
+
+11. MENSAGENS INTERNAS DA EQUIPE
+O sistema possui um módulo de comunicação interna entre usuários.
+O remetente pode editar ou excluir a mensagem e o destinatário pode marcá-la como lida.
+Esse recurso é indicado para alinhamentos internos sem misturar com a comunicação enviada ao cliente.
+
+12. PEÇAS, PRODUTOS E ESTOQUE
+O sistema permite cadastrar peças e produtos para uso em ordens e em vendas.
+
+Funções:
+- cadastro, edição e exclusão de itens
+- controle de estoque por quantidade
+- uso de peças em ordens
+- baixa automática em vendas
+- devolução ao estoque quando uma venda é cancelada
+
+13. VENDAS
+O módulo de vendas é opcional e pode ser habilitado nas configurações.
+
+Permite:
+- registrar venda com cliente opcional
+- escolher forma de pagamento
+- informar valor total e valor pago
+- acompanhar status financeiro
+- cancelar venda com devolução de estoque
+- usar apoio à emissão fiscal
+
+O sistema exige caixa aberto para concluir venda e não permite valor pago acima do total.
+
+14. DESPESAS
+O módulo de despesas registra saídas financeiras da rotina.
+
+Cada despesa pode ter:
+- número
+- data
+- descrição
+- categoria
+- valor
+- observações
+
+15. CAIXA DIÁRIO
+O caixa diário centraliza a operação financeira do dia.
+Ele precisa estar aberto para registrar vendas e pagamentos de ordens.
+
+Fluxo recomendado:
+1. Abrir o caixa com saldo inicial.
+2. Registrar vendas e recebimentos ao longo do dia.
+3. Registrar sangrias quando houver retirada de dinheiro do caixa aberto.
+4. Informar entradas e saídas manuais no fechamento.
+5. Fechar o caixa com saldo contado.
+6. Conferir diferença entre saldo esperado e informado.
+
+Sangria de caixa:
+A sangria deve ser usada quando parte do dinheiro físico é retirada do caixa aberto antes do fechamento, por exemplo para envio ao cofre, depósito bancário ou redução de numerário no balcão.
+
+Como registrar:
+- acessar Caixa diário com o caixa aberto
+- clicar em Registrar sangria
+- informar valor da sangria
+- informar o motivo da retirada
+- confirmar o lançamento
+
+Regras importantes:
+- a sangria só pode ser registrada com caixa aberto
+- o motivo é obrigatório
+- o valor precisa ser maior que zero
+- o sistema não permite sangria maior que o saldo esperado atual
+- sangrias ativas reduzem o saldo esperado do caixa
+- cada lançamento guarda data, usuário, valor e motivo
+
+Cancelamento de sangria:
+Se uma sangria for lançada incorretamente, use Cancelar na lista de sangrias do caixa aberto.
+O sistema exige motivo do cancelamento.
+A sangria permanece no histórico, mostra quem cancelou e quando foi cancelada, mas deixa de contar no saldo esperado.
+Sangrias de caixas já fechados não podem ser canceladas.
+
+Fechamento e conferência:
+No fechamento, informe o saldo contado em dinheiro e, se necessário, entradas ou saídas manuais que não vieram de vendas, pagamentos de ordens ou sangrias.
+O saldo esperado considera saldo inicial, vendas concluídas, pagamentos de ordens, entradas manuais, saídas manuais e sangrias não canceladas.
+Use observações do fechamento para explicar diferenças entre saldo esperado e saldo contado.
+
+16. RELATÓRIOS, ACOMPANHAMENTOS E INDICADORES
+Os relatórios podem ser filtrados por período e ajudam no acompanhamento operacional e gerencial.
+
+Relatórios mais comuns:
+- ordens de serviço
+- clientes
+- agendamentos
+- vendas
+- peças e produtos
+- caixa diário, incluindo saldos, sangrias e diferenças de fechamento
+- despesas
+
+Indicadores de qualidade:
+- quantidade e taxa de retorno em garantia
+- limite percentual configurável
+- notas médias e avaliações com nota baixa
+- tratativa de avaliações críticas
+
+Acompanhamentos e tarefas:
+- fila de follow-up de orçamento
+- fila de follow-up de cobrança
+- pausa e retomada de cadências
+- resposta manual do cliente
+- atribuição de tarefas para usuários da equipe
+
+Performance comercial:
+- comparação entre contatos realizados e recuperação efetiva
+- taxa de conversão de orçamento
+- taxa de recuperação de cobrança
+
+Como usar na rotina:
+1. Revisar o dashboard diariamente.
+2. Usar Acompanhamentos para priorizar contatos.
+3. Usar Tarefas para distribuir pendências.
+4. Usar Performance comercial para medir resultado.
+5. Usar Garantia/Avaliações para localizar falhas recorrentes.
+
+17. CONFIGURAÇÕES GERAIS
+O menu de configurações concentra os cadastros administrativos e o comportamento do sistema.
+
+Itens principais:
+- dados da empresa
+- mensagens do WhatsApp
+- impressões de recibos
+- impressão de etiquetas
+- tipos de equipamento
+- checklists
+- Outras configurações
+
+Em Outras configurações também ficam:
+- parâmetros de SMTP
+- habilitadores de módulos
+- disparo do e-mail de teste
+- regras operacionais
+
+Sistema e SMTP:
+- habilitadores gerais
+- dados do servidor de e-mail
+- teste SMTP
+
+Operacionais:
+- metas
+- indicadores
+- regras de avaliação
+- intervalo de follow-up
+- visibilidade de menus
+
+Menus operacionais que podem ser exibidos ou ocultados:
+- Acompanhamentos
+- Tarefas
+- Performance comercial
+- Garantia/Avaliações
+
+Regras de follow-up:
+O intervalo de follow-up define quantos dias o sistema deve esperar antes de considerar um novo contato automático elegível.
+Se o envio automático estiver desligado, o sistema não envia follow-ups automáticos.
+
+Avaliações e metas:
+Também é possível configurar:
+- prazo para solicitar avaliação do cliente
+- meta de conversão de orçamento
+- meta de recuperação de cobrança
+- limite de alerta de retorno em garantia
+
+Ordem sugerida de configuração:
+1. Preencher dados da empresa.
+2. Configurar e testar SMTP.
+3. Definir módulos e menus visíveis.
+4. Revisar garantia, follow-up e metas comerciais.
+
+18. GESTÃO DE USUÁRIOS
+O sistema permite cadastrar, editar, excluir, ativar e inativar usuários.
+Também é possível definir permissões de acesso conforme o perfil operacional.
+
+Perfis comuns:
+- Administrador
+- Operador / atendente
+- Técnico
+
+19. APLICATIVO E UPLOAD DE IMAGENS
+As ordens podem receber imagens pela interface do sistema.
+Esse recurso ajuda a documentar o estado de entrada, o defeito e as evidências do serviço executado.
+Há limite máximo de imagens por ordem.
+
+20. IMPORTAÇÃO DE CLIENTES POR CSV
+O sistema permite importar clientes em lote por CSV ou TXT.
+O delimitador é identificado automaticamente entre formatos mais comuns.
+
+Regras práticas:
+- e-mails repetidos são aceitos
+- o sistema tenta importar em lote e, se necessário, processa linha a linha
+- ao final, informa quantos clientes foram salvos e se houve erros
+- datas precisam estar em formato consistente
+
+Antes de importar grandes volumes, vale testar com um arquivo menor.
+
+21. EMISSÃO FISCAL
+O VetorOS possui integração com a Focus NFe para emissão de NF-e (modelo 55), usada nas vendas de produtos, e NFS-e, usada na prestação de serviços.
+
+Após a emissão, o sistema registra no banco de dados a referência do documento e os links retornados pela Focus, como o DANFE/PDF e o XML, quando disponíveis. Caso o cliente solicite a nota, o DANFE pode ser acessado pelo link salvo no sistema, impresso em A4 ou enviado em PDF.
+
+21.1 Dados fiscais das peças e produtos
+O NCM e o CFOP são informados no cadastro de cada peça ou produto, e não nas configurações da Focus NFe. Essa separação permite que a empresa venda produtos com classificações fiscais diferentes na mesma nota.
+
+- NCM: código de 8 dígitos que classifica fiscalmente a mercadoria
+- CFOP: código de 4 dígitos que identifica a natureza fiscal da operação do produto
+
+Quando a integração fiscal e a emissão de NF-e estiverem habilitadas, NCM e CFOP serão obrigatórios ao cadastrar ou editar uma peça/produto. O sistema não enviará a NF-e se qualquer item da venda estiver sem esses dados.
+
+Os códigos devem ser obtidos na nota fiscal de compra e confirmados com a contabilidade. Serviços de uma ordem não utilizam NCM; para NFS-e, deve ser informado o item da lista de serviço nas configurações fiscais.
+
+É possível usar uma impressora térmica para entregar um resumo da venda ou do serviço. Essa impressão é somente um comprovante e deve conter a identificação "COMPROVANTE NÃO FISCAL — NÃO SUBSTITUI A NOTA FISCAL". Ela não transforma a operação em NFC-e e não substitui o documento fiscal emitido pela Focus.
+
+21.2 NFC-e, cupom fiscal e CSC
+A NFC-e (modelo 65) é o cupom fiscal eletrônico normalmente utilizado no varejo e impresso em bobina. Sua representação, o DANFC-e, possui QR Code para consulta do documento.
+
+O CSC (Código de Segurança do Contribuinte) é fornecido pela SEFAZ e serve para proteger e gerar o QR Code da NFC-e. Ele não é o mesmo token usado para acessar a API da Focus NFe:
+- token da API Focus NFe: autentica a comunicação entre o VetorOS e a Focus
+- CSC e ID do CSC: são usados exclusivamente na emissão e no QR Code da NFC-e
+
+O fluxo atual do VetorOS não emite NFC-e/cupom fiscal; ele emite NF-e e NFS-e. Portanto, não é necessário cadastrar CSC para usar a emissão fiscal existente ou imprimir o comprovante não fiscal em impressora térmica.
+
+O CSC será necessário somente se a emissão de NFC-e for implementada futuramente. Essa implementação também deverá considerar o DANFC-e, as formas de pagamento e as regras estaduais para integração com maquininhas POS ou TEF.
+
+22. BOAS PRÁTICAS DE USO
+- manter clientes e equipamentos sempre atualizados
+- preencher corretamente defeito, acessórios e observações
+- atualizar o status da ordem conforme a etapa real do atendimento
+- registrar pagamentos e vendas no momento em que acontecerem
+- abrir e fechar o caixa diariamente com conferência
+- revisar despesas e diferenças de caixa no mesmo dia
+- configurar e testar o SMTP antes de usar e-mails automáticos em produção
+- revisar a aba Operacionais para decidir quais menus e automações devem ficar ativos
+- deixar o follow-up automático desligado enquanto a operação ainda estiver em fase de ajuste
+- usar relatórios para acompanhar desempenho, faturamento e pendências
+
+23. SUPORTE
+Em caso de dúvidas de uso, configuração ou melhoria, mantenha este manual atualizado junto da versão instalada do sistema e utilize o canal de suporte definido pela empresa.
