@@ -20,6 +20,7 @@ compose.yaml
 /public/hot
 #/public/build
 /public/storage
+/public/apk/
 /storage/*.key
 /storage/app
 /storage/framework
