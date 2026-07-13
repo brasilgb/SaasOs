@@ -44,8 +44,8 @@ export function Hero() {
                             className="h-12 w-full rounded-xl bg-[#00E59B] px-6 text-sm font-semibold text-slate-950 shadow-[0_20px_50px_rgba(0,229,155,0.18)] hover:bg-[#2ff0b1] sm:h-14 sm:w-auto sm:px-8 sm:text-base"
                             asChild
                         >
-                            <Link href={route('register')}>
-                                Começar teste grátis
+                            <Link href={route('plans.index')}>
+                                Conhecer planos
                                 <ArrowRight className="h-5 w-5" />
                             </Link>
                         </Button>

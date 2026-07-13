@@ -23,16 +23,16 @@ type RegisterForm = {
     accepted_terms: boolean;
 };
 
-export default function Register() {
+export default function Register({ initialData = {} }: { initialData?: Partial<Pick<RegisterForm, 'name' | 'email' | 'whatsapp'>> }) {
     const [showPassword, setShowPassword] = useState(false);
 
     const { data, setData, post, processing, errors, reset } = useForm<Required<RegisterForm>>({
         cnpj: '',
         company: '',
-        name: '',
-        email: '',
+        name: initialData.name ?? '',
+        email: initialData.email ?? '',
         phone: '',
-        whatsapp: '',
+        whatsapp: initialData.whatsapp ?? '',
         password: '',
         password_confirmation: '',
         accepted_terms: false,

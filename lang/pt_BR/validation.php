@@ -213,7 +213,7 @@ return [
         'month' => 'mês',
         'name' => 'nome',
         'zipcode' => 'cep',
-        'name' => 'razão social',
+        'company' => 'razão social',
         'neighborhood' => 'bairro',
         'number' => 'número',
         'password' => 'senha',

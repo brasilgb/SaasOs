@@ -4,18 +4,18 @@ import { Features } from '../components/features';
 import { Footer } from '../components/footer';
 import { Header } from '../components/header';
 import { Hero } from '../components/hero';
-import { Pricing } from '../components/pricing';
 import { Testimonials, type TestimonialItem } from '../components/testimonials';
+import { Head } from '@inertiajs/react';
 
 export default function Home({ testimonials = [] }: { testimonials?: TestimonialItem[] }) {
     return (
         <main className="min-h-screen">
+            <Head title="Início" />
             <Header />
             <Hero />
             <AudienceStrip />
             <Features />
             <Testimonials testimonials={testimonials} />
-            <Pricing />
             <CTA />
             <Footer />
         </main>

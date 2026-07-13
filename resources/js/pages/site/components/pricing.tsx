@@ -20,34 +20,15 @@ const plans = [
         ],
     },
     {
-        name: 'Trimestral',
-        price: 'R$134,90',
-        period: 'a cada 3 meses',
-        monthlyEquivalent: 'equivalente a R$44,97/mês',
-        description: 'Economize pagando antecipado',
-        savings: 'Economize R$14,80',
-        highlight: 'Plano com economia no ciclo trimestral.',
-        cta: 'Escolher trimestral',
-        features: [
-            'Todos os recursos incluídos',
-            'Usuários ilimitados',
-            'Aplicativo Android',
-            'Suporte prioritário',
-            'Atualizações automáticas',
-            'Backup diário',
-            'Economia no pagamento trimestral',
-        ],
-    },
-    {
-        name: 'Semestral',
-        price: 'R$239,90',
-        period: 'a cada 6 meses',
-        monthlyEquivalent: 'equivalente a R$39,98/mês',
-        description: 'Melhor custo-benefício',
-        savings: 'Economize R$59,50',
-        highlight: 'Plano mais escolhido por quem quer pagar menos por mês.',
+        name: 'Anual',
+        price: 'R$419,16',
+        period: '/ano',
+        monthlyEquivalent: 'equivalente a R$34,93/mês',
+        description: 'Economia máxima durante todo o ano',
+        savings: '30% de desconto • economize R$179,64',
+        highlight: 'Doze meses com 30% de desconto sobre o valor mensal.',
         popular: true,
-        cta: 'Quero o semestral',
+        cta: 'Quero o anual',
         features: [
             'Todos os recursos incluídos',
             'Usuários ilimitados',
@@ -55,7 +36,7 @@ const plans = [
             'Suporte prioritário',
             'Atualizações automáticas',
             'Backup diário',
-            'Melhor economia por mês',
+            '30% de desconto no pagamento anual',
         ],
     },
 ];
@@ -82,7 +63,7 @@ export function Pricing() {
                     <p className="mt-2 text-sm text-white/48">Depois do período de teste, você paga via Pix e pode cancelar sem burocracia.</p>
                 </div>
 
-                <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-3">
+                <div className="mx-auto grid max-w-4xl gap-8 md:grid-cols-2">
                     {plans.map((plan, index) => (
                         <Card
                             key={index}

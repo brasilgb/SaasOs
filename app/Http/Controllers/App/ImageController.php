@@ -16,7 +16,7 @@ use Inertia\Inertia;
 
 class ImageController extends Controller
 {
-    private const MAX_IMAGES_PER_ORDER = 4;
+    private const MAX_IMAGES_PER_ORDER = 8;
 
     private function currentTenantId(): ?int
     {

@@ -6,10 +6,11 @@ use App\Http\Controllers\Admin\FeatureController;
 use App\Http\Controllers\Admin\FiscalDocumentController;
 use App\Http\Controllers\Admin\PeriodController;
 use App\Http\Controllers\Admin\PlanController;
+use App\Http\Controllers\Admin\ProspectController;
 use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\TenantController;
 use App\Http\Controllers\Admin\TenantFeedbackController;
 use App\Http\Controllers\Admin\TenantImprovementRequestController;
-use App\Http\Controllers\Admin\TenantController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -36,6 +37,8 @@ Route::post('/fiscal-documents/{adminFiscalDocument}/sync', [FiscalDocumentContr
 Route::resource('/tenants', TenantController::class);
 Route::resource('/branches', BranchController::class);
 Route::resource('/plans', PlanController::class);
+Route::patch('/prospects/{prospect}/contact', [ProspectController::class, 'contact'])->name('prospects.contact');
+Route::resource('/prospects', ProspectController::class)->except(['create', 'show', 'edit']);
 Route::resource('/features', FeatureController::class);
 Route::resource('/periods', PeriodController::class);
 Route::resource('/settings', SettingController::class);

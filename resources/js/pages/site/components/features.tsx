@@ -86,8 +86,8 @@ const features = [
     },
     {
         icon: Bell,
-        title: 'Alertas e Mensagens Amigáveis',
-        description: 'Oriente o usuário em falhas de rede, sessão expirada, falta de permissão e erros temporários sem telas técnicas.',
+        title: 'Operação Simples e Produtiva',
+        description: 'Execute as tarefas diárias da sua empresa de manutenção com facilidade, desde o atendimento até a entrega, mantendo a equipe organizada e produtiva.',
     },
     {
         icon: CalendarCheck,
@@ -166,17 +166,17 @@ export function Features() {
                     {features.map((feature, index) => (
                         <Card
                             key={index}
-                            className="border-white/10 bg-white/[0.045] text-white shadow-[0_18px_60px_rgba(0,0,0,0.2)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#00E59B]/30 hover:bg-white/[0.07]"
+                            className="flex h-full flex-col border-white/10 bg-white/[0.045] text-white shadow-[0_18px_60px_rgba(0,0,0,0.2)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#00E59B]/30 hover:bg-white/[0.07]"
                         >
                             <CardHeader>
                                 <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl border border-[#00E59B]/20 bg-[#00E59B]/10 ring-1 ring-[#00E59B]/12">
                                     <feature.icon className="h-6 w-6 text-[#00B4FF]" />
                                 </div>
 
-                                <CardTitle className="text-lg text-white">{feature.title}</CardTitle>
+                                <CardTitle className="flex min-h-12 items-start text-lg leading-6 text-white">{feature.title}</CardTitle>
                             </CardHeader>
 
-                            <CardContent>
+                            <CardContent className="flex-1">
                                 <CardDescription className="text-sm leading-relaxed text-white/68">{feature.description}</CardDescription>
                             </CardContent>
                         </Card>

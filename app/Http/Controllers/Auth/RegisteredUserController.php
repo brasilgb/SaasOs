@@ -23,9 +23,16 @@ use Throwable;
 
 class RegisteredUserController extends Controller
 {
-    public function create(): Response
+    public function create(Request $request): Response
     {
-        return Inertia::render('auth/register');
+        $initialData = array_filter([
+            ...((array) $request->session()->get('plan_lead', [])),
+            ...$request->only(['name', 'email', 'whatsapp']),
+        ]);
+
+        return Inertia::render('auth/register', [
+            'initialData' => $initialData,
+        ]);
     }
 
     public function store(Request $request): RedirectResponse

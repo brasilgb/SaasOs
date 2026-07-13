@@ -25,15 +25,15 @@ export function Footer() {
 
                         <ul className="space-y-3 text-sm">
                             <li>
-                                <a href="#recursos" className="text-white/58 transition-colors hover:text-white">
+                                <a href="/#recursos" className="text-white/58 transition-colors hover:text-white">
                                     Recursos
                                 </a>
                             </li>
 
                             <li>
-                                <a href="#precos" className="text-white/58 transition-colors hover:text-white">
-                                    Preços
-                                </a>
+                                <Link href={route('plans.index')} className="text-white/58 transition-colors hover:text-white">
+                                    Planos
+                                </Link>
                             </li>
 
                             <li>
@@ -50,7 +50,7 @@ export function Footer() {
 
                         <ul className="space-y-3 text-sm">
                             <li>
-                                <a href="#contato" className="text-white/58 transition-colors hover:text-white">
+                                <a href="/#contato" className="text-white/58 transition-colors hover:text-white">
                                     Contato
                                 </a>
                             </li>

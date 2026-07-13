@@ -25,8 +25,8 @@ export function CTA() {
 
                     <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
                         <Button size="lg" className="gap-2 rounded-xl bg-[#00E59B] px-8 text-base font-semibold text-slate-950 hover:bg-[#2ff0b1]" asChild>
-                            <Link href={route('register')}>
-                                Começar teste grátis
+                            <Link href={route('plans.index')}>
+                                Conhecer planos e testar grátis
                                 <ArrowRight className="h-5 w-5" />
                             </Link>
                         </Button>

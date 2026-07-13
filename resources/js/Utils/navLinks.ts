@@ -27,6 +27,7 @@ import {
     Smartphone,
     UserCog,
     Users2,
+    UserRoundSearch,
     WalletCards,
     Wrench,
 } from 'lucide-react';
@@ -312,6 +313,12 @@ const mainAdminItems = [
         href: route('admin.tenants.index'),
         icon: Building,
         active: 'admin.tenants.*',
+    },
+    {
+        title: 'Prospects',
+        href: route('admin.prospects.index'),
+        icon: UserRoundSearch,
+        active: 'admin.prospects.*',
     },
     {
         title: 'Notas SaaS',

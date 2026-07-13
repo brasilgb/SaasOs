@@ -4,11 +4,16 @@ use App\Http\Controllers\App\PaymentController;
 use App\Http\Controllers\App\SubscriptionController;
 use App\Http\Controllers\OsController;
 use App\Http\Controllers\Site\HomeController;
+use App\Http\Controllers\Site\PlanController;
 use App\Http\Controllers\TenantFeedbackController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/planos', [PlanController::class, 'index'])->name('plans.index');
+Route::post('/planos', [PlanController::class, 'store'])
+    ->middleware('throttle:10,1')
+    ->name('plans.store');
 Route::get('/os/{token}', [OsController::class, 'index'])->name('os.token');
 Route::post('/os/{token}/access', [OsController::class, 'authorizeAccess'])
     ->middleware('throttle:6,1')

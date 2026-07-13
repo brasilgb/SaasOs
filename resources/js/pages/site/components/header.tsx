@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { BrandHorizontalLogo } from '@/components/brand-logo';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
 
@@ -15,8 +15,6 @@ export function Header() {
 
     return (
         <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#0B1220] text-white shadow-sm">
-            <Head title="Início" />
-
             <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-2">
@@ -26,23 +24,23 @@ export function Header() {
                 {/* Menu Desktop */}
                 <nav className="hidden items-center gap-6 md:flex">
                     <a
-                        href="#recursos"
+                        href="/#recursos"
                         onClick={handleLinkClick}
                         className="text-sm font-medium text-white/62 transition-colors hover:text-white"
                     >
                         Recursos
                     </a>
 
-                    <a
-                        href="#precos"
+                    <Link
+                        href={route('plans.index')}
                         onClick={handleLinkClick}
                         className="text-sm font-medium text-white/62 transition-colors hover:text-white"
                     >
-                        Preços
-                    </a>
+                        Planos
+                    </Link>
 
                     <a
-                        href="#contato"
+                        href="/#contato"
                         onClick={handleLinkClick}
                         className="text-sm font-medium text-white/62 transition-colors hover:text-white"
                     >
@@ -62,8 +60,8 @@ export function Header() {
                                 Entrar
                             </Link>
 
-                            <Link href={route('register')}>
-                                <Button className="bg-[#00E59B] font-semibold text-slate-950 hover:bg-[#2ff0b1]">Começar Grátis</Button>
+                            <Link href={route('plans.index')}>
+                                <Button className="bg-[#00E59B] font-semibold text-slate-950 hover:bg-[#2ff0b1]">Conhecer Planos</Button>
                             </Link>
                         </>
                     )}
@@ -88,23 +86,23 @@ export function Header() {
                 <div id="mobile-site-menu" className="mx-auto max-w-7xl border-t border-white/10 px-4 pb-4 md:hidden">
                     <nav className="flex flex-col gap-4">
                         <a
-                            href="#recursos"
+                            href="/#recursos"
                             onClick={handleLinkClick}
                             className="text-sm font-medium text-white/62 transition-colors hover:text-white"
                         >
                             Recursos
                         </a>
 
-                        <a
-                            href="#precos"
+                        <Link
+                            href={route('plans.index')}
                             onClick={handleLinkClick}
                             className="text-sm font-medium text-white/62 transition-colors hover:text-white"
                         >
-                            Preços
-                        </a>
+                            Planos
+                        </Link>
 
                         <a
-                            href="#contato"
+                            href="/#contato"
                             onClick={handleLinkClick}
                             className="text-sm font-medium text-white/62 transition-colors hover:text-white"
                         >
@@ -125,8 +123,8 @@ export function Header() {
                                     </Button>
                                 </Link>
 
-                                <Link href={route('register')} onClick={handleLinkClick}>
-                                    <Button className="w-full bg-[#00E59B] font-semibold text-slate-950 hover:bg-[#2ff0b1]">Começar Grátis</Button>
+                                <Link href={route('plans.index')} onClick={handleLinkClick}>
+                                    <Button className="w-full bg-[#00E59B] font-semibold text-slate-950 hover:bg-[#2ff0b1]">Conhecer Planos</Button>
                                 </Link>
                             </>
                         )}

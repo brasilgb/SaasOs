@@ -91,7 +91,7 @@ export function OnboardingShowcase() {
                             </Button>
 
                             <Button className="bg-[#00E59B] text-slate-950 hover:bg-[#2ff0b1]" asChild>
-                                <a href="#precos">Ver planos</a>
+                                <a href="/planos">Ver planos</a>
                             </Button>
                         </div>
                     </div>

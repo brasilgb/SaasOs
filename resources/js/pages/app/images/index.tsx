@@ -27,7 +27,7 @@ interface ImageUploadProps {
     errors?: Record<string, string>;
 }
 
-const MAX_IMAGES = 4;
+const MAX_IMAGES = 8;
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
