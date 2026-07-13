@@ -33,7 +33,7 @@ function targetLabel(document: any) {
 }
 
 function providerLabel(provider: string) {
-    return provider === 'manual' ? 'Manual' : 'Focus NFe';
+    return provider === 'manual' ? 'Manual' : 'Integração anterior';
 }
 
 export default function FiscalReportPDF({ data, reportMeta, dateRange, company }: any) {
@@ -97,8 +97,8 @@ export default function FiscalReportPDF({ data, reportMeta, dateRange, company }
                             <Text style={styles.footerCardValue}>{reportMeta?.manual_count || 0}</Text>
                         </View>
                         <View style={styles.footerCard}>
-                            <Text style={styles.footerCardLabel}>Focus NFe</Text>
-                            <Text style={styles.footerCardValue}>{reportMeta?.focus_count || 0}</Text>
+                            <Text style={styles.footerCardLabel}>Integração anterior</Text>
+                            <Text style={styles.footerCardValue}>{reportMeta?.integration_count || 0}</Text>
                         </View>
                         <View style={styles.footerCard}>
                             <Text style={styles.footerCardLabel}>Erros</Text>

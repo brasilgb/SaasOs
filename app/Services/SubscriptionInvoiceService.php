@@ -13,8 +13,6 @@ use Illuminate\Support\Str;
 
 class SubscriptionInvoiceService
 {
-    public function __construct(private readonly AdminFocusNfeService $adminFocusNfeService) {}
-
     public function sendPaidInvoice(Payment $payment, Tenant $tenant, Plan $plan): void
     {
         $payment->refresh();
@@ -63,27 +61,6 @@ class SubscriptionInvoiceService
             return AdminFiscalDocument::query()->find($payment->admin_fiscal_document_id);
         }
 
-        try {
-            $document = $this->adminFocusNfeService->issueTenantSubscriptionNfse(
-                $tenant->loadMissing('plan'),
-                (float) $payment->amount,
-                'Assinatura VetorOS - '.$plan->name,
-                $payment
-            );
-
-            $payment->update([
-                'admin_fiscal_document_id' => $document->id,
-            ]);
-
-            return $document;
-        } catch (\Throwable $exception) {
-            Log::warning('Fatura paga enviada sem NFS-e SaaS emitida.', [
-                'payment_id' => $payment->payment_id,
-                'tenant_id' => $tenant->id,
-                'error' => $exception->getMessage(),
-            ]);
-
-            return null;
-        }
+        return null;
     }
 }

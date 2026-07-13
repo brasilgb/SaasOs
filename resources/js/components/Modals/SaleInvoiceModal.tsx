@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 
 import { maskCpfCnpj, maskMoney } from '@/Utils/mask';
-import { router, useForm, usePage } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 
 interface SaleInvoiceModalProps {
     open: boolean;
@@ -35,8 +35,6 @@ interface SaleInvoiceModalProps {
 }
 
 export default function SaleInvoiceModal({ open, onClose, sale }: SaleInvoiceModalProps) {
-    const { fiscalSetting } = usePage<{ fiscalSetting?: { enabled?: boolean; nfe_enabled?: boolean; has_api_token?: boolean } | null }>().props;
-    const focusEnabled = Boolean(fiscalSetting?.enabled && fiscalSetting?.nfe_enabled && fiscalSetting?.has_api_token);
     const saleId = sale?.numberSale?.id;
     const totalSale = Number(sale?.total ?? 0);
     const canIssueInvoice = totalSale > 0;
@@ -57,23 +55,13 @@ export default function SaleInvoiceModal({ open, onClose, sale }: SaleInvoiceMod
         });
     };
 
-    const handleIssueFocus = () => {
-        if (!saleId || !canIssueInvoice) return;
-
-        router.post(route('app.fiscal-documents.sales.issue', saleId), {}, { preserveScroll: true, onSuccess: () => onClose() });
-    };
-
     return (
         <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className="max-w-md">
+            <DialogContent className="scrollbar-default max-h-[calc(100svh-1rem)] w-[calc(100%-1rem)] max-w-md overflow-y-auto overscroll-contain p-4 sm:max-h-[90svh] sm:w-full sm:p-6">
                 <DialogHeader>
                     <DialogTitle>Emitir Nota de Venda</DialogTitle>
 
-                    <DialogDescription>
-                        {focusEnabled
-                            ? 'A integração Focus NFe está configurada para NF-e. A emissão automática será feita por este módulo.'
-                            : 'Utilize os dados abaixo para emitir a nota fiscal de produto.'}
-                    </DialogDescription>
+                    <DialogDescription>Emita a nota no portal fiscal correspondente e registre o comprovante abaixo.</DialogDescription>
                 </DialogHeader>
 
                 <Card>
@@ -121,11 +109,7 @@ export default function SaleInvoiceModal({ open, onClose, sale }: SaleInvoiceMod
                 </Card>
 
                 <div className="flex justify-end">
-                    {focusEnabled ? (
-                        <Button type="button" onClick={handleIssueFocus} disabled={!saleId || !canIssueInvoice}>
-                            Emitir via Focus NFe
-                        </Button>
-                    ) : !canIssueInvoice ? (
+                    {!canIssueInvoice ? (
                         <Button type="button" disabled>
                             Abrir emissor
                         </Button>
@@ -138,8 +122,7 @@ export default function SaleInvoiceModal({ open, onClose, sale }: SaleInvoiceMod
                     )}
                 </div>
 
-                {(hasRegisteredFiscal || !focusEnabled) && (
-                    <Card>
+                <Card>
                     <CardContent className="space-y-3 pt-4 text-sm">
                         {hasRegisteredFiscal ? (
                             <>
@@ -202,13 +185,12 @@ export default function SaleInvoiceModal({ open, onClose, sale }: SaleInvoiceMod
                         )}
                     </CardContent>
                     </Card>
-                )}
 
-                <DialogFooter className="flex justify-between">
+                <DialogFooter className="bg-background sticky bottom-0 z-10 -mx-4 -mb-4 flex justify-between border-t px-4 py-4 sm:-mx-6 sm:-mb-6 sm:px-6">
                     <Button variant="ghost" onClick={onClose}>
                         Fechar
                     </Button>
-                    {!focusEnabled && !hasRegisteredFiscal && (
+                    {!hasRegisteredFiscal && (
                         <Button onClick={handleRegisterFiscal} disabled={!saleId || processing}>
                             Salvar comprovante
                         </Button>

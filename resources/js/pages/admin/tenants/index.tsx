@@ -9,8 +9,8 @@ import AdminLayout from '@/layouts/admin/admin-layout';
 import { BreadcrumbItem } from '@/types';
 import { statusSaasByValue } from '@/Utils/functions';
 import { maskCnpj, maskPhone, normalizeWhatsappPhone } from '@/Utils/mask';
-import { Head, Link, router } from '@inertiajs/react';
-import { Building, Edit, Eye, FileText, Plus } from 'lucide-react';
+import { Head, Link } from '@inertiajs/react';
+import { Building, Edit, Eye, Plus } from 'lucide-react';
 import moment from 'moment';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -25,33 +25,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function TenantsIndex({ tenants, filters }: any) {
-    const handleFiscalDocument = (tenant: any) => {
-        const fiscalDocument = tenant.latest_admin_fiscal_document;
-
-        if (fiscalDocument?.pdf_url) {
-            window.open(fiscalDocument.pdf_url, '_blank', 'noopener,noreferrer');
-            return;
-        }
-
-        const amount = tenant.plan?.value ?? null;
-        const confirmed = window.confirm(
-            `Emitir NFS-e SaaS para ${tenant.company || tenant.name}${amount ? ` no valor de R$ ${Number(amount).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ''}?`,
-        );
-
-        if (!confirmed) {
-            return;
-        }
-
-        router.post(
-            route('admin.fiscal-documents.tenants.issue', tenant.id),
-            {
-                amount: amount ?? undefined,
-                description: tenant.plan?.name ? `Assinatura VetorOS - ${tenant.plan.name}` : undefined,
-            },
-            { preserveScroll: true },
-        );
-    };
-
     const getRowClassName = (subscriptionStatus: string) => {
         if (subscriptionStatus === 'blocked') {
             return 'bg-rose-50/60 hover:bg-rose-50';
@@ -199,17 +172,6 @@ export default function TenantsIndex({ tenants, filters }: any) {
                                                 <Link href={route('admin.tenants.edit', tenant.id)}>
                                                     <Edit />
                                                 </Link>
-                                            </Button>
-
-                                            <Button
-                                                type="button"
-                                                size="icon"
-                                                variant="outline"
-                                                onClick={() => handleFiscalDocument(tenant)}
-                                                aria-label={tenant.latest_admin_fiscal_document?.pdf_url ? 'Abrir NFS-e SaaS' : 'Emitir NFS-e SaaS'}
-                                                title={tenant.latest_admin_fiscal_document?.pdf_url ? 'Abrir NFS-e SaaS' : 'Emitir NFS-e SaaS'}
-                                            >
-                                                <FileText className="h-4 w-4" />
                                             </Button>
 
                                             <Button asChild size="icon" variant="outline" title="Visualizar e-mail da fatura">

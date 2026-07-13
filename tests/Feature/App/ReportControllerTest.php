@@ -2,9 +2,9 @@
 
 namespace Tests\Feature\App;
 
-use App\Models\App\Order;
 use App\Models\App\FiscalDocument;
 use App\Models\App\FiscalSetting;
+use App\Models\App\Order;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -85,7 +85,7 @@ class ReportControllerTest extends TestCase
             'documentable_type' => Order::class,
             'documentable_id' => $order->id,
             'type' => 'nfe',
-            'provider' => 'focus_nfe',
+            'provider' => 'legacy_integration',
             'provider_reference' => 'nfe-1-1',
             'status' => 'error',
             'created_at' => now()->subDay(),
@@ -103,7 +103,7 @@ class ReportControllerTest extends TestCase
             ->assertViewHas('page.props.reportData', fn ($documents) => count($documents) === 2)
             ->assertViewHas('page.props.reportMeta.documents_count', 2)
             ->assertViewHas('page.props.reportMeta.manual_count', 1)
-            ->assertViewHas('page.props.reportMeta.focus_count', 1)
+            ->assertViewHas('page.props.reportMeta.integration_count', 1)
             ->assertViewHas('page.props.reportMeta.nfe_count', 1)
             ->assertViewHas('page.props.reportMeta.nfse_count', 1)
             ->assertViewHas('page.props.reportMeta.error_count', 1);

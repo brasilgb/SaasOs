@@ -8,7 +8,6 @@ use App\Models\App\Customer;
 use App\Models\App\Equipment;
 use App\Models\App\Expense;
 use App\Models\App\FiscalDocument;
-use App\Models\App\FiscalSetting;
 use App\Models\App\Order;
 use App\Models\App\Other;
 use App\Models\App\Part;
@@ -58,9 +57,8 @@ class ReportController extends Controller
     private function canUseFiscalReports(): bool
     {
         $user = Auth::user();
-        $fiscalSetting = FiscalSetting::query()->first();
 
-        return (bool) ($user?->hasPermission('fiscal_documents') && $fiscalSetting?->enabled);
+        return (bool) $user?->hasPermission('fiscal_documents');
     }
 
     private function canUseQualityReports(): bool
@@ -347,7 +345,7 @@ class ReportController extends Controller
 
                 $threshold = Other::warrantyReturnAlertThreshold();
                 $warrantyOrders = $data->where('is_warranty_return', true)->values();
-                $deliveredOrders = $data->where('service_status', \App\Support\OrderStatus::DELIVERED)->values();
+                $deliveredOrders = $data->where('service_status', OrderStatus::DELIVERED)->values();
                 $feedbackResponses = $deliveredOrders->filter(fn ($order) => ! is_null($order->customer_feedback_submitted_at))->values();
                 $lowFeedbackOrders = $feedbackResponses
                     ->filter(fn ($order) => (int) ($order->customer_feedback_rating ?? 0) <= 3)
@@ -446,7 +444,7 @@ class ReportController extends Controller
                 $reportMeta = [
                     'documents_count' => $data->count(),
                     'manual_count' => $data->where('provider', 'manual')->count(),
-                    'focus_count' => $data->where('provider', 'focus_nfe')->count(),
+                    'integration_count' => $data->where('provider', '!=', 'manual')->count(),
                     'nfe_count' => $data->where('type', 'nfe')->count(),
                     'nfse_count' => $data->where('type', 'nfse')->count(),
                     'error_count' => $data->where('status', 'error')->count(),

@@ -5,8 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
-import { ExternalLink, FileText, ReceiptText, RefreshCw, Settings } from 'lucide-react';
+import { Head } from '@inertiajs/react';
+import { ExternalLink, FileText, ReceiptText } from 'lucide-react';
 
 type FiscalDocument = {
     id: number;
@@ -34,7 +34,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 function sourceLabel(provider: string) {
-    return provider === 'manual' ? 'Manual' : 'Focus NFe';
+    return provider === 'manual' ? 'Manual' : 'Integração anterior';
 }
 
 function documentTargetLabel(document: FiscalDocument) {
@@ -45,10 +45,6 @@ function documentTargetLabel(document: FiscalDocument) {
 }
 
 export default function FiscalDocuments({ documents = [] }: { documents?: FiscalDocument[] }) {
-    const handleSync = (document: FiscalDocument) => {
-        router.post(route('app.fiscal-documents.sync', document.id), {}, { preserveScroll: true });
-    };
-
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Notas fiscais" />
@@ -61,19 +57,10 @@ export default function FiscalDocuments({ documents = [] }: { documents?: Fiscal
             </div>
 
             <div className="space-y-4 p-4">
-                <div className="flex justify-end">
-                    <Button variant="outline" asChild className="w-full whitespace-nowrap sm:w-auto">
-                        <Link href={route('app.fiscal-documents.settings')}>
-                            <Settings className="h-4 w-4" />
-                            Configurações fiscais
-                        </Link>
-                    </Button>
-                </div>
-
                 <Card>
                     <CardHeader>
                         <CardTitle>Documentos fiscais</CardTitle>
-                        <CardDescription>Consulte NF-e e NFS-e registradas manualmente ou emitidas por integração.</CardDescription>
+                        <CardDescription>Consulte NF-e e NFS-e registradas manualmente nas ordens de serviço e vendas.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Table>
@@ -104,18 +91,6 @@ export default function FiscalDocuments({ documents = [] }: { documents?: Fiscal
                                             </TableCell>
                                             <TableCell className="min-w-[140px]">
                                                 <div className="flex flex-wrap justify-end gap-2">
-                                                    {document.provider === 'focus_nfe' && (
-                                                        <Button
-                                                            size="icon"
-                                                            variant="outline"
-                                                            type="button"
-                                                            onClick={() => handleSync(document)}
-                                                            aria-label="Sincronizar com Focus NFe"
-                                                            title="Sincronizar com Focus NFe"
-                                                        >
-                                                            <RefreshCw className="h-4 w-4" />
-                                                        </Button>
-                                                    )}
                                                     {document.pdf_url && (
                                                         <Button size="icon" variant="outline" asChild title="Abrir PDF">
                                                             <a

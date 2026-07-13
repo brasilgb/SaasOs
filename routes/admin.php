@@ -30,10 +30,6 @@ Route::get('/tenant-improvement-requests/{tenantImprovementRequest}/preview/cust
     ->name('tenant-improvement-requests.preview-customer-email');
 Route::patch('/tenant-improvement-requests/{tenantImprovementRequest}', [TenantImprovementRequestController::class, 'update'])->name('tenant-improvement-requests.update');
 Route::get('/fiscal-documents', [FiscalDocumentController::class, 'index'])->name('fiscal-documents.index');
-Route::get('/fiscal-documents/settings', [FiscalDocumentController::class, 'settings'])->name('fiscal-documents.settings');
-Route::put('/fiscal-documents/settings/{adminFiscalSetting}', [FiscalDocumentController::class, 'update'])->name('fiscal-documents.settings.update');
-Route::post('/fiscal-documents/tenants/{tenant}/issue', [FiscalDocumentController::class, 'issueTenant'])->name('fiscal-documents.tenants.issue');
-Route::post('/fiscal-documents/{adminFiscalDocument}/sync', [FiscalDocumentController::class, 'sync'])->name('fiscal-documents.sync');
 Route::resource('/tenants', TenantController::class);
 Route::resource('/branches', BranchController::class);
 Route::resource('/plans', PlanController::class);

@@ -25,13 +25,8 @@ class RegisteredUserController extends Controller
 {
     public function create(Request $request): Response
     {
-        $initialData = array_filter([
-            ...((array) $request->session()->get('plan_lead', [])),
-            ...$request->only(['name', 'email', 'whatsapp']),
-        ]);
-
         return Inertia::render('auth/register', [
-            'initialData' => $initialData,
+            'initialData' => array_filter($request->only(['name', 'email', 'whatsapp'])),
         ]);
     }
 

@@ -4,11 +4,10 @@ namespace App\Http\Middleware;
 
 use App\Models\Admin\Plan;
 use App\Models\Admin\Setting;
-use App\Models\App\Company;
 use App\Models\App\CashSession;
+use App\Models\App\Company;
 use App\Models\App\Customer;
 use App\Models\App\Equipment;
-use App\Models\App\FiscalSetting;
 use App\Models\App\Message;
 use App\Models\App\Order;
 use App\Models\App\OrderLog;
@@ -209,8 +208,8 @@ class HandleInertiaRequests extends Middleware
             'pending' => (clone $openQuery)
                 ->where(function ($query) {
                     $query
-                    ->whereNull('customer_feedback_recovery_status')
-                    ->orWhere('customer_feedback_recovery_status', 'pending');
+                        ->whereNull('customer_feedback_recovery_status')
+                        ->orWhere('customer_feedback_recovery_status', 'pending');
                 })
                 ->count(),
             'overdue' => (clone $openQuery)
@@ -356,22 +355,6 @@ class HandleInertiaRequests extends Middleware
                     ->first(['shortname', 'logo', 'companyname', 'cnpj'])
                 : null,
             'setting' => $user ? Setting::first(['name', 'logo']) : null,
-            'fiscalSetting' => $user ? (function () {
-                $setting = FiscalSetting::query()->first();
-
-                if (! $setting) {
-                    return null;
-                }
-
-                return [
-                    'enabled' => (bool) $setting->enabled,
-                    'provider' => $setting->provider,
-                    'environment' => $setting->environment,
-                    'nfe_enabled' => (bool) $setting->nfe_enabled,
-                    'nfse_enabled' => (bool) $setting->nfse_enabled,
-                    'has_api_token' => ! empty($setting->api_token),
-                ];
-            })() : null,
             'whatsapp' => $user ? WhatsappMessage::first() : null,
             'othersetting' => $otherSetting ? [
                 ...$otherSetting->toArray(),

@@ -19,7 +19,7 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: route('app.dashboard'),
     },
     {
-        title: 'Outras configurações',
+        title: 'Sistema e módulos',
         href: '#',
     },
 ];
@@ -76,11 +76,11 @@ export default function Others({ othersettings, company, time_remaining, mailSet
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Outras configurações" />
+            <Head title="Sistema e módulos" />
             <div className="flex min-h-16 w-full flex-col justify-center gap-1 px-4 py-3">
                 <div className="flex items-center gap-2">
                     <Icon iconNode={CogIcon} className="h-8 w-8" />
-                    <h2 className="text-xl font-semibold tracking-tight">Outras configurações</h2>
+                    <h2 className="text-xl font-semibold tracking-tight">Sistema e módulos</h2>
                 </div>
             </div>
 
@@ -96,7 +96,7 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                     </div>
 
                     <div className="space-y-6">
-                        <HeadingSmall title="Configurações de aparência" description="Altere a aparencia do sistema entre temas claro ou escuro." />
+                        <HeadingSmall title="Aparência do sistema" description="Escolha entre os temas claro e escuro para facilitar o uso diário." />
                         <AppearanceTabs />
                     </div>
 

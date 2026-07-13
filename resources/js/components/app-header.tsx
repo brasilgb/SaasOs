@@ -90,7 +90,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                 <SheetHeader className="flex justify-start text-left">
                                     <AppLogoIcon className="h-6 w-6 fill-current text-black dark:text-white" />
                                 </SheetHeader>
-                                <div className="flex h-full flex-1 flex-col space-y-4 p-4">
+                                <div className="flex h-full flex-1 flex-col space-y-4 overflow-y-auto p-4">
                                     <div className="flex h-full flex-col justify-between text-sm">
                                         <div className="flex flex-col space-y-5">
                                             {mainNavGroups.map((group) => {
@@ -118,6 +118,27 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                                                 {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
                                                                 <span>{item.title}</span>
                                                             </Link>
+                                                        ))}
+                                                    </div>
+                                                );
+                                            })}
+                                            {mainConfItems.map((group) => {
+                                                const visibleItems = group.items.filter(
+                                                    (item) => !item.permission || permissions.includes(item.permission),
+                                                );
+
+                                                if (visibleItems.length === 0) return null;
+
+                                                return (
+                                                    <div key={group.title} className="flex flex-col space-y-3">
+                                                        <span className="text-muted-foreground px-1 text-xs font-medium uppercase">{group.title}</span>
+                                                        {visibleItems.map((item) => (
+                                                            <div key={item.title}>
+                                                                <Link href={item.url} className="flex items-center space-x-2 font-medium">
+                                                                    {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
+                                                                    <span>{item.title}</span>
+                                                                </Link>
+                                                            </div>
                                                         ))}
                                                     </div>
                                                 );

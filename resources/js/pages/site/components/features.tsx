@@ -72,7 +72,7 @@ const features = [
     {
         icon: ReceiptText,
         title: 'Notas Fiscais',
-        description: 'Configure Focus NFe, habilite NF-e de produtos e NFS-e de serviços, ou registre documentos emitidos manualmente.',
+        description: 'Registre NF-e de produtos e NFS-e de serviços emitidas externamente e mantenha os comprovantes vinculados à operação.',
     },
     {
         icon: HandCoins,
@@ -139,7 +139,7 @@ export function Features() {
                         plataforma, com apps auxiliares para atendimento, imagens e equipe técnica.
                     </p>
                     <p className="mt-3 text-xs text-white/45">
-                        Emissão fiscal opcional via integração Focus NFe, mediante contratação e credenciais do serviço de notas da sua empresa.
+                        Os documentos fiscais são emitidos externamente e registrados no VetorOS para consulta e auditoria.
                     </p>
                 </div>
 

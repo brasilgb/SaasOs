@@ -4,7 +4,6 @@ namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PartRequest;
-use App\Models\App\FiscalSetting;
 use App\Models\App\Part;
 use App\Models\App\PartMovement;
 use App\Support\Ean13;
@@ -254,9 +253,6 @@ class PartController extends Controller
 
     private function fiscalNfeEnabled(): bool
     {
-        return FiscalSetting::query()
-            ->where('enabled', true)
-            ->where('nfe_enabled', true)
-            ->exists();
+        return false;
     }
 }

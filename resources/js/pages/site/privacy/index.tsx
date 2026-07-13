@@ -6,7 +6,7 @@ const sections = [
     { id: 'coleta', title: '1. Informações que coletamos' },
     { id: 'uso', title: '2. Como utilizamos os dados' },
     { id: 'papeis', title: '3. Responsabilidades sobre os dados' },
-    { id: 'compartilhamento', title: '4. Compartilhamento e Focus NFe' },
+    { id: 'compartilhamento', title: '4. Compartilhamento de dados' },
     { id: 'seguranca', title: '5. Armazenamento e segurança' },
     { id: 'direitos', title: '6. Direitos do titular dos dados' },
     { id: 'retencao', title: '7. Retenção de dados' },
@@ -95,8 +95,7 @@ export default function Privacy() {
                         <li>Dados cadastrais e fiscais da empresa emissora</li>
                         <li>Dados de clientes ou destinatários constantes em NF-e e NFS-e</li>
                         <li>Produtos, serviços, valores, tributos, endereços e informações dos documentos fiscais</li>
-                        <li>Token de integração fornecido pela Focus NFe</li>
-                        <li>Status, referências e links dos documentos processados</li>
+                        <li>Números, referências e links dos documentos registrados manualmente</li>
                     </ul>
 
                     <h3 className="text-foreground mt-8 mb-2 text-sm font-semibold">Dados técnicos</h3>
@@ -122,7 +121,7 @@ export default function Privacy() {
                         <li>Cumprir obrigações legais</li>
                         <li>Garantir a segurança da plataforma</li>
                         <li>Enviar comunicações operacionais solicitadas pela empresa usuária</li>
-                        <li>Solicitar e acompanhar a emissão de NF-e e NFS-e pela Focus NFe quando a integração estiver habilitada</li>
+                        <li>Armazenar os dados de NF-e e NFS-e registrados manualmente pelo usuário</li>
                     </ul>
 
                     {/* PAPÉIS E RESPONSABILIDADES */}
@@ -145,7 +144,7 @@ export default function Privacy() {
                     {/* COMPARTILHAMENTO */}
 
                     <h2 id="compartilhamento" className="text-foreground border-border mt-14 mb-4 scroll-mt-28 border-b pb-2 text-xl font-semibold">
-                        4. Compartilhamento de dados e Focus NFe
+                        4. Compartilhamento de dados
                     </h2>
 
                     <p className="mb-4">O VetorOS não vende dados pessoais.</p>
@@ -153,28 +152,10 @@ export default function Privacy() {
                     <ul className="mb-10 list-disc space-y-1 pl-6">
                         <li>Prestadores de serviço necessários para operação da plataforma</li>
                         <li>Provedores de hospedagem, envio de e-mail e processamento de pagamentos, conforme as funcionalidades utilizadas</li>
-                        <li>
-                            Focus NFe, exclusivamente quando a integração fiscal estiver habilitada e o usuário solicitar emissão ou sincronização de
-                            NF-e ou NFS-e
-                        </li>
                         <li>Cumprimento de obrigações legais</li>
                         <li>Determinação judicial ou autoridade competente</li>
                     </ul>
 
-                    <p className="mb-10">
-                        Na integração com a Focus NFe, são transmitidos os dados necessários ao documento fiscal, que podem incluir informações da
-                        empresa emissora, clientes ou destinatários, produtos, serviços, valores, tributos e endereços. O tratamento realizado pela
-                        Focus NFe também está sujeito aos{' '}
-                        <a
-                            href="https://focusnfe.com.br/termos-de-uso/"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-primary hover:underline"
-                        >
-                            termos e à política da própria Focus NFe
-                        </a>
-                        .
-                    </p>
 
                     {/* SEGURANÇA */}
 
@@ -184,8 +165,8 @@ export default function Privacy() {
 
                     <p className="mb-10">
                         Adotamos medidas técnicas e administrativas para proteger os dados contra acesso não autorizado, perda, alteração ou
-                        divulgação indevida. As credenciais sensíveis da integração Focus NFe, como o token de API e o segredo de webhook quando
-                        informado, são armazenadas de forma criptografada e não são exibidas novamente em texto aberto após o cadastro.
+                        divulgação indevida. Credenciais sensíveis de integrações, quando existentes, são armazenadas de forma criptografada e não são
+                        exibidas novamente em texto aberto após o cadastro.
                     </p>
 
                     {/* DIREITOS */}

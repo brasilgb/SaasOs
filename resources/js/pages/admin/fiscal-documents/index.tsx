@@ -6,8 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AdminLayout from '@/layouts/admin/admin-layout';
 import { BreadcrumbItem } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
-import { ExternalLink, FileText, ReceiptText, RefreshCw, Settings } from 'lucide-react';
+import { Head } from '@inertiajs/react';
+import { ExternalLink, FileText, ReceiptText } from 'lucide-react';
 import moment from 'moment';
 
 type AdminFiscalDocument = {
@@ -48,11 +48,7 @@ function money(value: string | number) {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value || 0));
 }
 
-export default function AdminFiscalDocumentsIndex({ documents, settingConfigured }: { documents: any; settingConfigured: boolean }) {
-    const handleSync = (document: AdminFiscalDocument) => {
-        router.post(route('admin.fiscal-documents.sync', document.id), {}, { preserveScroll: true });
-    };
-
+export default function AdminFiscalDocumentsIndex({ documents }: { documents: any }) {
     return (
         <AdminLayout breadcrumbs={breadcrumbs}>
             <Head title="Notas SaaS" />
@@ -65,26 +61,6 @@ export default function AdminFiscalDocumentsIndex({ documents, settingConfigured
             </div>
 
             <div className="space-y-4 p-4">
-                <div className="flex justify-end">
-                    <Button variant="outline" asChild className="w-full whitespace-nowrap sm:w-auto">
-                        <Link href={route('admin.fiscal-documents.settings')}>
-                            <Settings className="h-4 w-4" />
-                            Configurações fiscais
-                        </Link>
-                    </Button>
-                </div>
-
-                {!settingConfigured && (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Configuração pendente</CardTitle>
-                            <CardDescription>
-                                Configure a integração fiscal do SaaS antes de emitir NFS-e para as empresas clientes.
-                            </CardDescription>
-                        </CardHeader>
-                    </Card>
-                )}
-
                 <Card>
                     <CardHeader>
                         <CardTitle>Documentos fiscais emitidos pelo SaaS</CardTitle>
@@ -128,18 +104,6 @@ export default function AdminFiscalDocumentsIndex({ documents, settingConfigured
                                             </TableCell>
                                             <TableCell className="min-w-[140px]">
                                                 <div className="flex flex-wrap justify-end gap-2">
-                                                    {document.provider === 'focus_nfe' && (
-                                                        <Button
-                                                            size="icon"
-                                                            variant="outline"
-                                                            type="button"
-                                                            onClick={() => handleSync(document)}
-                                                            aria-label="Sincronizar com Focus NFe"
-                                                            title="Sincronizar com Focus NFe"
-                                                        >
-                                                            <RefreshCw className="h-4 w-4" />
-                                                        </Button>
-                                                    )}
                                                     {document.pdf_url && (
                                                         <Button size="icon" variant="outline" asChild title="Abrir PDF">
                                                             <a

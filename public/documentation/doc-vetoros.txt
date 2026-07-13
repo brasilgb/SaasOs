@@ -1,7 +1,7 @@
 MANUAL DO CLIENTE
 VetorOS - Sistema de Gestão de Ordens de Serviço
 Versão 1.5
-Maio de 2026
+Julho de 2026
 
 Aviso importante
 Este manual descreve o uso prático do VetorOS na rotina da assistência técnica.
@@ -35,6 +35,7 @@ Mantenha este material alinhado com a versão instalada do sistema.
 1. INTRODUÇÃO
 O VetorOS foi desenvolvido para empresas que trabalham com assistência técnica, manutenção, eletrônica, informática, oficinas e atendimentos externos.
 O sistema reúne atendimento, operação, financeiro, comunicação com clientes e gestão interna em um único ambiente.
+Foi pensado também para assistências que estão começando e precisam de uma solução simples, produtiva e que caiba no orçamento.
 Pode ser usado em computadores, tablets e celulares.
 
 2. VISÃO GERAL DO SISTEMA
@@ -85,14 +86,14 @@ Configure mensagens de WhatsApp para orçamento, atualização de status, retira
 Ajuste textos de recibos, comprovantes e etiquetas para manter o padrão da empresa.
 
 3.6 Módulos opcionais
-Em Outras configurações é possível habilitar ou desabilitar recursos como orçamentos, peças/estoque, vendas e partes do menu operacional.
+Em Configurações → Sistema e módulos é possível habilitar ou desabilitar recursos como orçamentos, peças/estoque, vendas e partes do menu operacional.
 
 3.7 Configuração de e-mail
 Para usar e-mails automáticos, configure SMTP com host, porta, usuário, senha, criptografia, endereço remetente e nome do remetente.
 Também existe envio de e-mail de teste para validação.
 
 3.8 Abas de configurações
-As Outras configurações estão divididas em:
+A página Sistema e módulos está dividida em:
 - Sistema e SMTP
 - Operacionais
 
@@ -378,9 +379,9 @@ Itens principais:
 - impressão de etiquetas
 - tipos de equipamento
 - checklists
-- Outras configurações
+- Sistema e módulos
 
-Em Outras configurações também ficam:
+Em Sistema e módulos também ficam:
 - parâmetros de SMTP
 - habilitadores de módulos
 - disparo do e-mail de teste
@@ -433,7 +434,7 @@ Perfis comuns:
 19. APLICATIVO E UPLOAD DE IMAGENS
 As ordens podem receber imagens pela interface do sistema.
 Esse recurso ajuda a documentar o estado de entrada, o defeito e as evidências do serviço executado.
-Há limite máximo de imagens por ordem.
+Cada ordem aceita no máximo oito imagens, inclusive nos envios feitos pelo app Vetor Imagem.
 
 20. IMPORTAÇÃO DE CLIENTES POR CSV
 O sistema permite importar clientes em lote por CSV ou TXT.
@@ -448,32 +449,21 @@ Regras práticas:
 Antes de importar grandes volumes, vale testar com um arquivo menor.
 
 21. EMISSÃO FISCAL
-O VetorOS possui integração com a Focus NFe para emissão de NF-e (modelo 55), usada nas vendas de produtos, e NFS-e, usada na prestação de serviços.
+O VetorOS utiliza registro manual de documentos fiscais e não exige contratação de API fiscal. A empresa emite a nota pelo sistema oficial, prefeitura, Emissor Nacional ou serviço de sua preferência e registra os dados no VetorOS.
 
-Após a emissão, o sistema registra no banco de dados a referência do documento e os links retornados pela Focus, como o DANFE/PDF e o XML, quando disponíveis. Caso o cliente solicite a nota, o DANFE pode ser acessado pelo link salvo no sistema, impresso em A4 ou enviado em PDF.
+21.1 NFS-e da ordem de serviço
+- emita a NFS-e fora do VetorOS
+- abra a ordem correspondente e escolha a opção de registro manual
+- informe número, chave ou código de verificação, data, links disponíveis e observações
+- salve e confira o vínculo com a ordem correta
 
-21.1 Dados fiscais das peças e produtos
-O NCM e o CFOP são informados no cadastro de cada peça ou produto, e não nas configurações da Focus NFe. Essa separação permite que a empresa venda produtos com classificações fiscais diferentes na mesma nota.
+21.2 NF-e da venda
+- emita a NF-e fora do VetorOS
+- abra a venda correspondente e escolha a opção de registro manual
+- informe número, chave, data e links do DANFE ou XML, quando disponíveis
+- salve para manter o histórico junto da venda
 
-- NCM: código de 8 dígitos que classifica fiscalmente a mercadoria
-- CFOP: código de 4 dígitos que identifica a natureza fiscal da operação do produto
-
-Quando a integração fiscal e a emissão de NF-e estiverem habilitadas, NCM e CFOP serão obrigatórios ao cadastrar ou editar uma peça/produto. O sistema não enviará a NF-e se qualquer item da venda estiver sem esses dados.
-
-Os códigos devem ser obtidos na nota fiscal de compra e confirmados com a contabilidade. Serviços de uma ordem não utilizam NCM; para NFS-e, deve ser informado o item da lista de serviço nas configurações fiscais.
-
-É possível usar uma impressora térmica para entregar um resumo da venda ou do serviço. Essa impressão é somente um comprovante e deve conter a identificação "COMPROVANTE NÃO FISCAL — NÃO SUBSTITUI A NOTA FISCAL". Ela não transforma a operação em NFC-e e não substitui o documento fiscal emitido pela Focus.
-
-21.2 NFC-e, cupom fiscal e CSC
-A NFC-e (modelo 65) é o cupom fiscal eletrônico normalmente utilizado no varejo e impresso em bobina. Sua representação, o DANFC-e, possui QR Code para consulta do documento.
-
-O CSC (Código de Segurança do Contribuinte) é fornecido pela SEFAZ e serve para proteger e gerar o QR Code da NFC-e. Ele não é o mesmo token usado para acessar a API da Focus NFe:
-- token da API Focus NFe: autentica a comunicação entre o VetorOS e a Focus
-- CSC e ID do CSC: são usados exclusivamente na emissão e no QR Code da NFC-e
-
-O fluxo atual do VetorOS não emite NFC-e/cupom fiscal; ele emite NF-e e NFS-e. Portanto, não é necessário cadastrar CSC para usar a emissão fiscal existente ou imprimir o comprovante não fiscal em impressora térmica.
-
-O CSC será necessário somente se a emissão de NFC-e for implementada futuramente. Essa implementação também deverá considerar o DANFC-e, as formas de pagamento e as regras estaduais para integração com maquininhas POS ou TEF.
+O VetorOS não transmite, autoriza, cancela ou sincroniza notas com órgãos fiscais. A conferência tributária e o cumprimento das obrigações legais permanecem sob responsabilidade da empresa e de sua contabilidade.
 
 22. BOAS PRÁTICAS DE USO
 - manter clientes e equipamentos sempre atualizados

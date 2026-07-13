@@ -34,8 +34,8 @@ export function Hero() {
                     </h1>
 
                     <p className="mt-5 max-w-2xl text-sm leading-relaxed text-white/72 sm:mt-6 sm:text-lg lg:text-xl">
-                        Centralize atendimento, ordens, clientes, estoque, vendas, financeiro e acompanhamento do cliente, com apps para balcão,
-                        imagens e técnico em campo.
+                        Descomplicamos a gestão da sua assistência técnica — inclusive para quem está começando agora e precisa de um sistema
+                        simples, produtivo e que caiba no bolso. Organize atendimentos, ordens de serviço, clientes e financeiro em um só lugar.
                     </p>
 
                     <div className="mt-8 flex flex-col gap-3 sm:mt-10 sm:flex-row sm:gap-4">

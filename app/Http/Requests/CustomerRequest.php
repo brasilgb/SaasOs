@@ -2,10 +2,8 @@
 
 namespace App\Http\Requests;
 
-use App\Models\App\FiscalSetting;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class CustomerRequest extends FormRequest
 {
@@ -31,22 +29,17 @@ class CustomerRequest extends FormRequest
      */
     public function rules(): array
     {
-        $nfeEnabled = (bool) FiscalSetting::query()
-            ->where('enabled', true)
-            ->where('nfe_enabled', true)
-            ->exists();
-
         return [
             'name' => ['required', 'string', 'max:255'],
             'cpfcnpj' => ['required', 'string', 'max:18'],
             // 'email'  => ($this->getMethod() == 'POST') ? 'required|unique:customers' : 'required|unique:customers,email,' . $this->customer->id,
             'phone' => ['required', 'string', 'max:20'],
-            'zipcode' => [Rule::requiredIf($nfeEnabled), 'nullable', 'string', 'max:20'],
-            'state' => [Rule::requiredIf($nfeEnabled), 'nullable', 'string', 'size:2'],
-            'city' => [Rule::requiredIf($nfeEnabled), 'nullable', 'string', 'max:50'],
-            'district' => [Rule::requiredIf($nfeEnabled), 'nullable', 'string', 'max:50'],
-            'street' => [Rule::requiredIf($nfeEnabled), 'nullable', 'string', 'max:80'],
-            'number' => [Rule::requiredIf($nfeEnabled), 'nullable', 'string', 'max:20'],
+            'zipcode' => ['nullable', 'string', 'max:20'],
+            'state' => ['nullable', 'string', 'size:2'],
+            'city' => ['nullable', 'string', 'max:50'],
+            'district' => ['nullable', 'string', 'max:50'],
+            'street' => ['nullable', 'string', 'max:80'],
+            'number' => ['nullable', 'string', 'max:20'],
             'observations' => 'nullable|string|max:500',
         ];
     }

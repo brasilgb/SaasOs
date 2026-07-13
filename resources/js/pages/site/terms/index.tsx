@@ -6,7 +6,7 @@ const sections = [
     { id: 'descricao', title: '1. Descrição do serviço' },
     { id: 'cadastro', title: '2. Cadastro de conta' },
     { id: 'responsabilidade', title: '3. Responsabilidade do usuário' },
-    { id: 'notas-fiscais', title: '4. Documentos fiscais e Focus NFe' },
+    { id: 'notas-fiscais', title: '4. Documentos fiscais' },
     { id: 'dados-integracoes', title: '5. Dados e integrações de terceiros' },
     { id: 'disponibilidade', title: '6. Disponibilidade do serviço' },
     { id: 'propriedade', title: '7. Propriedade intelectual' },
@@ -84,7 +84,7 @@ export default function Terms() {
                         <li>Controle de peças e estoque</li>
                         <li>Armazenamento de informações de atendimento</li>
                         <li>Controle financeiro, caixa, despesas e vendas</li>
-                        <li>Emissão e acompanhamento de documentos fiscais por integração com a Focus NFe, quando contratada e habilitada</li>
+                        <li>Registro manual de documentos fiscais emitidos em sistemas externos</li>
                         <li>Envio de comunicações operacionais por e-mail e outros canais configurados pelo usuário</li>
                         <li>Acompanhamento público do cliente, acompanhamentos e indicadores operacionais</li>
                     </ul>
@@ -134,43 +134,18 @@ export default function Terms() {
                     {/* NOTAS FISCAIS */}
 
                     <h2 id="notas-fiscais" className="text-foreground border-border mt-16 mb-5 scroll-mt-28 border-b pb-2 text-xl font-semibold">
-                        4. Documentos fiscais e integração com a Focus NFe
+                        4. Documentos fiscais
                     </h2>
 
                     <p>
-                        Quando o módulo fiscal estiver habilitado, o VetorOS poderá transmitir dados para a Focus NFe com a finalidade de solicitar,
-                        consultar, sincronizar e armazenar informações relacionadas à emissão de Nota Fiscal Eletrônica de produtos (NF-e) e Nota
-                        Fiscal de Serviço Eletrônica (NFS-e). No VetorOS, a NF-e é utilizada nas vendas de peças e produtos, enquanto a NFS-e é
-                        utilizada nas ordens de serviço. A Focus NFe atua como prestadora independente da infraestrutura de comunicação com a SEFAZ
-                        e as prefeituras competentes.
-                    </p>
-
-                    <p>
-                        A integração é opcional e depende de contratação e credenciais válidas fornecidas diretamente pela Focus NFe. O usuário é
-                        responsável por configurar corretamente no VetorOS o ambiente de homologação ou produção, token de API, dados cadastrais,
-                        regime tributário, inscrições, códigos fiscais, NCM, CFOP, dados municipais e demais informações solicitadas nos formulários
-                        fiscais da plataforma.
-                    </p>
-
-                    <p>
-                        O envio de uma solicitação não garante autorização fiscal. O documento poderá permanecer em processamento ou ser rejeitado
-                        pela Focus NFe, SEFAZ ou prefeitura. Cabe ao usuário acompanhar o status no VetorOS, conferir os documentos autorizados e
-                        corrigir os dados que causarem rejeições.
+                        O VetorOS permite registrar manualmente informações de NF-e e NFS-e emitidas em sistemas externos. O usuário é responsável
+                        pela emissão, autorização e conferência do documento junto à SEFAZ, prefeitura ou ambiente nacional competente.
                     </p>
 
                     <p>
                         O VetorOS não presta consultoria contábil ou tributária. A definição dos tributos, enquadramentos, códigos e valores, assim
                         como o cumprimento de obrigações principais e acessórias, permanece sob responsabilidade exclusiva do usuário e de seus
-                        assessores contábeis. Tarifas, limites, disponibilidade e condições comerciais da Focus NFe são regidos também pelos{' '}
-                        <a
-                            href="https://focusnfe.com.br/termos-de-uso/"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-primary hover:underline"
-                        >
-                            termos da própria Focus NFe
-                        </a>
-                        .
+                        assessores contábeis.
                     </p>
 
                     {/* DADOS E INTEGRAÇÕES */}
@@ -204,7 +179,7 @@ export default function Terms() {
                         <li>Manutenção técnica programada</li>
                         <li>Falhas de infraestrutura</li>
                         <li>Eventos fora de nosso controle</li>
-                        <li>Indisponibilidade de provedores de e-mail, hospedagem, pagamentos, Focus NFe, SEFAZ, prefeituras ou outras integrações</li>
+                        <li>Indisponibilidade de provedores de e-mail, hospedagem, pagamentos, SEFAZ, prefeituras ou outras integrações</li>
                     </ul>
 
                     {/* PROPRIEDADE */}
