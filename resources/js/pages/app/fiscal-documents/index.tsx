@@ -34,7 +34,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 function sourceLabel(provider: string) {
-    return provider === 'manual' ? 'Manual' : 'Integração anterior';
+    return provider === 'manual' ? 'Emissão assistida' : 'Integração anterior';
 }
 
 function documentTargetLabel(document: FiscalDocument) {
@@ -60,7 +60,7 @@ export default function FiscalDocuments({ documents = [] }: { documents?: Fiscal
                 <Card>
                     <CardHeader>
                         <CardTitle>Documentos fiscais</CardTitle>
-                        <CardDescription>Consulte NF-e e NFS-e registradas manualmente nas ordens de serviço e vendas.</CardDescription>
+                        <CardDescription>Consulte NF-e de produtos e NFS-e Nacional de serviços emitidas ou registradas no sistema.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Table>

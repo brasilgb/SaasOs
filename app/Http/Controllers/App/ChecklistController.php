@@ -52,10 +52,14 @@ class ChecklistController extends Controller
     {
         Gate::authorize('checklists.access');
 
-        $data = $request->all();
         $request->validated();
+        $data = $request->only(['equipment_id', 'checklist']);
         $data['checklist_number'] = TenantSequence::next(Checklist::class, 'checklist_number');
         Checklist::create($data);
+
+        if ($request->query('return_to') === 'receipts') {
+            return redirect()->route('app.receipts.index', ['tab' => 'checklists'])->with('success', 'Checklist cadastrado com sucesso');
+        }
 
         return redirect()->route('app.register-checklists.index')->with('success', 'Checklist cadastrado com sucesso');
     }
@@ -83,9 +87,13 @@ class ChecklistController extends Controller
     {
         Gate::authorize('checklists.access');
 
-        $data = $request->all();
         $request->validated();
+        $data = $request->only(['equipment_id', 'checklist']);
         $checklist->update($data);
+
+        if ($request->query('return_to') === 'receipts') {
+            return redirect()->route('app.receipts.index', ['tab' => 'checklists'])->with('success', 'Checklist editado com sucesso');
+        }
 
         return redirect()->route('app.register-checklists.index')->with('success', 'Checklist editado com sucesso');
     }
@@ -93,11 +101,15 @@ class ChecklistController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Checklist $checklist): RedirectResponse
+    public function destroy(Request $request, Checklist $checklist): RedirectResponse
     {
         Gate::authorize('checklists.access');
 
         $checklist->delete();
+
+        if ($request->query('return_to') === 'receipts') {
+            return redirect()->route('app.receipts.index', ['tab' => 'checklists'])->with('success', 'Checklist excluido com sucesso!');
+        }
 
         return redirect()->route('app.register-checklists.index')->with('success', 'Checklist excluido com sucesso!');
     }

@@ -1,3 +1,4 @@
+import { toastWarning } from '@/components/app-toast-messages';
 import { generateEan13 } from '@/components/ean13-barcode';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -6,12 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 import { apios } from '@/Utils/connectApi';
 import { partsType } from '@/Utils/dataSelect';
 import { maskMoney, maskMoneyDot } from '@/Utils/mask';
 import { useForm } from '@inertiajs/react';
-import { Barcode, Info, Save } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Barcode, Info, Save, UploadCloud } from 'lucide-react';
+import { DragEvent, useEffect, useRef, useState } from 'react';
 
 interface PartFormProps {
     categories: any;
@@ -20,19 +22,24 @@ interface PartFormProps {
     fiscalNfeEnabled?: boolean;
 }
 
-export default function PartForm({ initialData, fiscalNfeEnabled = false }: PartFormProps) {
+export default function PartForm({ initialData }: PartFormProps) {
     const isEdit = !!initialData;
     const [disableInput, setDisableInput] = useState(false);
+    const [isDraggingImage, setIsDraggingImage] = useState(false);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const imageInputRef = useRef<HTMLInputElement>(null);
 
     const generateReferenceNumber = () => generateEan13(String(Date.now()).slice(-12));
 
-    const { data, setData, post, patch, progress, processing, reset, errors } = useForm({
+    const { data, setData, post, progress, processing, reset, errors } = useForm({
+        _method: isEdit ? 'put' : '',
         category: initialData?.category ?? '',
         type: initialData?.type ?? '',
         is_sellable: Boolean(initialData?.is_sellable ?? false),
         reference_number: initialData?.reference_number ?? '',
         name: initialData?.name ?? '',
         description: initialData?.description ?? '',
+        image: null as File | null,
         ncm: initialData?.ncm ?? '',
         cfop: initialData?.cfop ?? '',
         manufacturer: initialData?.manufacturer ?? '',
@@ -48,14 +55,46 @@ export default function PartForm({ initialData, fiscalNfeEnabled = false }: Part
     const defaultPartsType = partsType?.filter((part: any) => Number(part.value) === initialData?.type);
     const [selectedPartsType, setSelectedPartsType] = useState<any>(defaultPartsType);
     const [insertStock, setInsertStock] = useState<any>(false);
+    const currentImageSrc = initialData?.image ? `/storage/parts/${initialData.image}` : '/images/default.png';
+
+    const handleImageFile = (file?: File) => {
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            toastWarning('Erro', 'Apenas imagens são permitidas.');
+            return;
+        }
+
+        if (file.size > 2 * 1024 * 1024) {
+            toastWarning('Erro', 'A imagem deve ter no máximo 2 MB.');
+            return;
+        }
+
+        if (imagePreview) {
+            URL.revokeObjectURL(imagePreview);
+        }
+
+        setData('image', file);
+        setImagePreview(URL.createObjectURL(file));
+    };
+
+    const handleImageDrop = (e: DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        setIsDraggingImage(false);
+        handleImageFile(e.dataTransfer.files?.[0]);
+    };
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
 
         if (isEdit) {
-            patch(route('app.parts.update', initialData.id));
+            post(route('app.parts.update', initialData.id), {
+                forceFormData: true,
+            });
         } else {
-            post(route('app.parts.store'));
+            post(route('app.parts.store'), {
+                forceFormData: true,
+            });
         }
     };
 
@@ -77,6 +116,7 @@ export default function PartForm({ initialData, fiscalNfeEnabled = false }: Part
                     type: parts.type,
                     name: parts.name,
                     description: parts.description,
+                    image: null,
                     ncm: parts.ncm ?? '',
                     cfop: parts.cfop ?? '',
                     manufacturer: parts.manufacturer,
@@ -93,7 +133,7 @@ export default function PartForm({ initialData, fiscalNfeEnabled = false }: Part
                 setDisableInput(false);
 
                 reset('name', 'description', 'manufacturer', 'model_compatibility', 'quantity', 'location', 'type');
-                setData((data) => ({ ...data, is_sellable: false, status: true }));
+                setData((data) => ({ ...data, image: null, is_sellable: false, status: true }));
             }
         } catch (error) {
             console.error(error);
@@ -110,6 +150,14 @@ export default function PartForm({ initialData, fiscalNfeEnabled = false }: Part
             setData('reference_number', generateReferenceNumber());
         }
     }, [isEdit]);
+
+    useEffect(() => {
+        return () => {
+            if (imagePreview) {
+                URL.revokeObjectURL(imagePreview);
+            }
+        };
+    }, [imagePreview]);
 
     return (
         <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
@@ -260,6 +308,69 @@ export default function PartForm({ initialData, fiscalNfeEnabled = false }: Part
                         </div>
                     </div>
 
+                    <div className="mt-4 grid gap-2">
+                        <Label htmlFor="image">Imagem do produto</Label>
+                        <div
+                            onDragEnter={(e) => {
+                                e.preventDefault();
+                                if (!disableInput) setIsDraggingImage(true);
+                            }}
+                            onDragOver={(e) => {
+                                e.preventDefault();
+                                if (!disableInput) setIsDraggingImage(true);
+                            }}
+                            onDragLeave={(e) => {
+                                e.preventDefault();
+                                if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+                                setIsDraggingImage(false);
+                            }}
+                            onDrop={handleImageDrop}
+                            onClick={() => !disableInput && imageInputRef.current?.click()}
+                            onKeyDown={(e) => {
+                                if (disableInput) return;
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    imageInputRef.current?.click();
+                                }
+                            }}
+                            role="button"
+                            tabIndex={disableInput ? -1 : 0}
+                            aria-disabled={disableInput}
+                            className={cn(
+                                'border-muted-foreground/30 bg-muted/20 flex min-h-36 items-center gap-4 rounded-lg border-2 border-dashed p-4 transition-colors',
+                                disableInput ? 'cursor-not-allowed opacity-70' : 'cursor-pointer',
+                                isDraggingImage && 'border-primary bg-primary/5',
+                            )}
+                        >
+                            <div className="bg-background flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-md border p-2">
+                                <img
+                                    src={imagePreview ?? currentImageSrc}
+                                    alt="Imagem do produto"
+                                    className="max-h-full max-w-full object-contain"
+                                    onError={(event) => {
+                                        event.currentTarget.src = '/images/default.png';
+                                    }}
+                                />
+                            </div>
+                            <div className="min-w-0">
+                                <UploadCloud className="text-muted-foreground mb-2 h-6 w-6" />
+                                <p className="text-sm font-medium">Arraste a imagem aqui ou clique para selecionar</p>
+                                <p className="text-muted-foreground mt-1 text-xs">PNG, JPG, WEBP, GIF ou SVG até 2 MB.</p>
+                                {data.image && <p className="text-muted-foreground mt-2 truncate text-xs">{data.image.name}</p>}
+                            </div>
+                            <Input
+                                ref={imageInputRef}
+                                type="file"
+                                id="image"
+                                accept="image/*"
+                                onChange={(e) => handleImageFile(e.target.files?.[0])}
+                                className="sr-only"
+                                disabled={disableInput}
+                            />
+                        </div>
+                        <InputError message={errors.image} />
+                    </div>
+
                     <div className="mt-4 grid gap-4 md:grid-cols-2">
                         <div className="grid gap-2">
                             <Label htmlFor="model_compatibility">Modelos compatíveis</Label>
@@ -281,48 +392,6 @@ export default function PartForm({ initialData, fiscalNfeEnabled = false }: Part
                                 onChange={(e) => setData('location', e.target.value)}
                                 readOnly={disableInput}
                             />
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-
-            <Card>
-                <CardTitle className="border-b px-6 pb-4">Dados fiscais do produto</CardTitle>
-                <CardContent className="space-y-4 pt-6">
-                    <p className="text-muted-foreground text-sm">
-                        {fiscalNfeEnabled
-                            ? 'Obrigatórios porque a emissão de NF-e está habilitada.'
-                            : 'Serão obrigatórios quando a emissão de NF-e for habilitada.'}
-                    </p>
-                    <div className="grid gap-4 md:grid-cols-2">
-                        <div className="grid gap-2">
-                            <Label htmlFor="ncm">NCM{fiscalNfeEnabled ? ' *' : ''}</Label>
-                            <Input
-                                type="text"
-                                inputMode="numeric"
-                                id="ncm"
-                                value={data.ncm}
-                                onChange={(e) => setData('ncm', e.target.value.replace(/\D/g, '').slice(0, 8))}
-                                maxLength={8}
-                                placeholder="8 dígitos"
-                                required={fiscalNfeEnabled}
-                            />
-                            <InputError message={errors.ncm} />
-                        </div>
-
-                        <div className="grid gap-2">
-                            <Label htmlFor="cfop">CFOP{fiscalNfeEnabled ? ' *' : ''}</Label>
-                            <Input
-                                type="text"
-                                inputMode="numeric"
-                                id="cfop"
-                                value={data.cfop}
-                                onChange={(e) => setData('cfop', e.target.value.replace(/\D/g, '').slice(0, 4))}
-                                maxLength={4}
-                                placeholder="4 dígitos"
-                                required={fiscalNfeEnabled}
-                            />
-                            <InputError message={errors.cfop} />
                         </div>
                     </div>
                 </CardContent>

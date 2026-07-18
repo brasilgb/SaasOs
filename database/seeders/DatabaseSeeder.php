@@ -231,16 +231,16 @@ class DatabaseSeeder extends Seeder
 
         DB::table('receipts')->insert([
             'tenant_id' => $tenantId,
-            'receivingequipment' => 'Recebemos seu equipamento para avaliacao.',
-            'equipmentdelivery' => 'Seu equipamento foi entregue.',
-            'budgetissuance' => 'Seu orçamento foi emitido.',
+            'receivingequipment' => 'Eu {{ cliente }}, inscrito(a) sob CPF/CNPJ numero {{ cpf_cnpj }}, me responsabilizo por eventuais perdas e/ou danos de arquivos, fotos, agenda, ou quaisquer outros dados armazenados no HD, SSD, cartao de memoria ou memoria interna do meu equipamento, inclusive peliculas ou adesivos, capas e demais acessorios, ficando a Mega System Informatica isenta de qualquer responsabilidade. E obrigatoria a apresentacao desta Ordem de Servico (O.S.) no ato da retirada para que o equipamento seja liberado pela empresa. Caso o aparelho nao seja retirado em ate 90 dias, a contar da presente data, tal fato sera considerado como abandono, estando a empresa apta a descarta-lo. O(A) cliente declara e reconhece que todas as informacoes aqui fornecidas sao verdadeiras e que entendeu e aceitou todos os termos desta Ordem de Servico.',
+            'equipmentdelivery' => 'Eu {{ cliente }}, inscrito(a) sob CPF/CNPJ numero {{ cpf_cnpj }}, declaro estar ciente de que, de acordo com o Codigo de Defesa do Consumidor (Lei n. 8.078/90, secao IV, Art. 26), tenho o direito de solicitar a garantia pelo servico executado em 30 (trinta) dias, tratando-se de servicos e de produtos nao duraveis (relacionado a sistema); e em 90 (noventa) dias, tratando-se de fornecimento de servico e de produtos duraveis (relacionado a pecas).',
+            'budgetissuance' => 'Equipamento analisado preliminarmente. Segue orcamento inicial para reparo conforme diagnostico tecnico apresentado nesta O.S. O servico sera executado somente mediante aprovacao do cliente. Valores e prazo podem sofrer alteracoes caso sejam identificadas necessidades adicionais durante o reparo.',
             'created_at' => $now,
             'updated_at' => $now,
         ]);
 
         DB::table('whatsapp_messages')->insert($this->withExistingColumns('whatsapp_messages', [
             'tenant_id' => $tenantId,
-            'generatedbudget' => 'Ola {{ cliente }}, seu orçamento da OS {{ ordem }} esta pronto.',
+            'generatedbudget' => "{{ saudacao }}, {{ cliente }}!\nEquipamento analisado preliminarmente. Segue orçamento inicial para reparo conforme diagnóstico técnico apresentado na OS {{ ordem }}.\nO serviço será executado somente mediante sua aprovação. Valores e prazo podem sofrer alterações caso sejam identificadas necessidades adicionais durante o reparo.\nVocê pode acompanhar pelo link: {{ link_os }}",
             'servicecompleted' => 'Ola {{ cliente }}, sua OS {{ ordem }} foi concluida.',
             'feedback' => 'Ola {{ cliente }}, avalie seu atendimento da OS {{ ordem }}.',
             'defaultmessage' => 'Ola {{ cliente }}, acompanhe sua OS {{ ordem }} pelo link {{ link_os }}.',

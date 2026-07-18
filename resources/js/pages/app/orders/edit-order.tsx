@@ -26,6 +26,7 @@ import moment from 'moment';
 import { useEffect, useState } from 'react';
 import Select from 'react-select';
 import AddPartsModal from './add-parts';
+import EquipmentTypesModal from './equipment-types-modal';
 import OrderPaymentsModal from './order-payments-modal';
 
 function formatRelativeTimePtBr(value?: string | Date | null) {
@@ -112,6 +113,7 @@ export default function EditOrder({
 
     const { othersetting, auth, fiscalSetting } = usePage().props as any;
     const canManageOrders = auth?.role !== 'technician' && auth?.permissions?.includes('orders');
+    const canManageEquipments = auth?.permissions?.includes('register_equipments');
     const canAccessSalesModules =
         auth?.role === 'administrator' || auth?.role === 'operator' || auth?.role === 'root_app' || auth?.role === 'root_system';
     const canManagePayments = canManageOrders && canAccessSalesModules && Boolean(othersetting?.enable_finance) && Boolean(auth?.permissions?.includes('finance'));
@@ -242,7 +244,7 @@ export default function EditOrder({
     };
 
     const changeEquipment = (selected: any) => {
-        setData('equipment_id', selected?.value);
+        setData('equipment_id', selected?.value ?? '');
     };
 
     const changeServiceStatus = (selected: any) => {
@@ -265,7 +267,7 @@ export default function EditOrder({
     };
 
     const defaultCustomer = optionsCustomer?.find((o: any) => o.value == order?.customer_id) ?? null;
-    const defaultEquipament = optionsEquipment?.find((o: any) => o.value == order?.equipment_id) ?? null;
+    const selectedEquipment = optionsEquipment?.find((o: any) => String(o.value) === String(data.equipment_id)) ?? null;
     const statusDefault = statusServico
         ?.filter((o: any) => o.value == order?.service_status)
         .map((opt: any) => ({ value: opt.value, label: opt.label }));
@@ -453,15 +455,24 @@ export default function EditOrder({
 
                                             <div className="grid gap-2 md:col-span-2">
                                                 <Label htmlFor="equipment">Equipamento</Label>
-                                                <Select
-                                                    menuPosition="fixed"
-                                                    defaultValue={defaultEquipament}
-                                                    options={optionsEquipment}
-                                                    onChange={changeEquipment}
-                                                    placeholder="Selecione o equipamento"
-                                                    className="min-w-0"
-                                                    styles={selectStyles}
-                                                />
+                                                <div className="flex min-w-0 items-center gap-2">
+                                                    <Select
+                                                        menuPosition="fixed"
+                                                        value={selectedEquipment}
+                                                        options={optionsEquipment}
+                                                        onChange={changeEquipment}
+                                                        placeholder="Selecione o equipamento"
+                                                        className="min-w-0 flex-1"
+                                                        styles={selectStyles}
+                                                    />
+                                                    {canManageEquipments && (
+                                                        <EquipmentTypesModal
+                                                            equipments={equipments}
+                                                            selectedEquipmentId={data.equipment_id}
+                                                            onSelectEquipment={(equipmentId) => setData('equipment_id', equipmentId)}
+                                                        />
+                                                    )}
+                                                </div>
                                                 {errors.equipment_id && <div className="text-sm text-red-500">{errors.equipment_id}</div>}
                                             </div>
 

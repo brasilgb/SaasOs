@@ -15,9 +15,9 @@ class ReceiptFactory extends Factory
     public function definition(): array
     {
         return [
-            'receivingequipment' => 'Recebi o equipamento descrito para diagnostico e manutencao.',
-            'equipmentdelivery' => 'Entreguei o equipamento em perfeitas condicoes de funcionamento.',
-            'budgetissuance' => 'Orcamento emitido e validado com o cliente.',
+            'receivingequipment' => 'Eu {{ cliente }}, inscrito(a) sob CPF/CNPJ numero {{ cpf_cnpj }}, me responsabilizo por eventuais perdas e/ou danos de arquivos, fotos, agenda, ou quaisquer outros dados armazenados no HD, SSD, cartao de memoria ou memoria interna do meu equipamento.',
+            'equipmentdelivery' => 'Eu {{ cliente }}, inscrito(a) sob CPF/CNPJ numero {{ cpf_cnpj }}, declaro estar ciente dos prazos de garantia conforme o Codigo de Defesa do Consumidor.',
+            'budgetissuance' => 'Equipamento analisado preliminarmente. Segue orcamento inicial para reparo conforme diagnostico tecnico apresentado nesta O.S.',
         ];
     }
 

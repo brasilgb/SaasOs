@@ -4,10 +4,11 @@ import { Icon } from '@/components/icon';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import AppLayout from '@/layouts/app-layout';
+import { cn } from '@/lib/utils';
 import { BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, Expand, Save, Wrench } from 'lucide-react';
-import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
+import { ArrowLeft, Expand, Save, UploadCloud, Wrench } from 'lucide-react';
+import { ChangeEvent, DragEvent, FormEvent, useEffect, useRef, useState } from 'react';
 
 interface ImageData {
     file: File;
@@ -46,6 +47,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 const ImageUpload = ({ savedimages, orderid, ordernumber, errors }: ImageUploadProps) => {
     const [fileKey, setFileKey] = useState(0);
     const [selectedImage, setSelectedImage] = useState<{ src: string; alt: string } | null>(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const {
         data,
@@ -60,17 +63,17 @@ const ImageUpload = ({ savedimages, orderid, ordernumber, errors }: ImageUploadP
     });
 
     const [imagePreviews, setImagePreviews] = useState<ImageData[]>([]);
+    const imagePreviewsRef = useRef<ImageData[]>([]);
 
-    /* =========================
-       HANDLE FILE CHANGE
-    ========================= */
-    const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const files = Array.from(e.target.files ?? []);
+    useEffect(() => {
+        imagePreviewsRef.current = imagePreviews;
+    }, [imagePreviews]);
+
+    const addFiles = (files: File[]) => {
         if (!files.length) return;
 
         if (files.some((file) => !file.type.startsWith('image/'))) {
             toastWarning('Erro', 'Apenas imagens são permitidas.');
-            e.target.value = '';
             return;
         }
 
@@ -88,20 +91,40 @@ const ImageUpload = ({ savedimages, orderid, ordernumber, errors }: ImageUploadP
             const preview = URL.createObjectURL(file);
             return { file, preview, id: preview };
         });
+        const nextImages = [...data.images, ...files];
 
         setImagePreviews((prev) => [...prev, ...previews]);
-        setData('images', [...data.images, ...files]);
+        setData('images', nextImages);
+    };
+
+    /* =========================
+       HANDLE FILE CHANGE
+    ========================= */
+    const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+        addFiles(Array.from(e.target.files ?? []));
+        e.target.value = '';
+    };
+
+    const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        setIsDragging(false);
+        addFiles(Array.from(e.dataTransfer.files ?? []));
     };
 
     /* =========================
        REMOVE PREVIEW IMAGE
     ========================= */
     const handleRemoveImage = (id: string) => {
-        setImagePreviews((prev) => prev.filter((img) => img.id !== id));
+        const imageToRemove = imagePreviews.find((img) => img.id === id);
+        if (imageToRemove) {
+            URL.revokeObjectURL(imageToRemove.preview);
+        }
 
+        const nextPreviews = imagePreviews.filter((img) => img.id !== id);
+        setImagePreviews(nextPreviews);
         setData(
             'images',
-            data.images.filter((_, index) => imagePreviews[index]?.id !== id),
+            nextPreviews.map((img) => img.file),
         );
     };
 
@@ -120,6 +143,7 @@ const ImageUpload = ({ savedimages, orderid, ordernumber, errors }: ImageUploadP
             forceFormData: true,
             onSuccess: () => {
                 toastSuccess('Sucesso', 'Imagens enviadas com sucesso.');
+                imagePreviews.forEach((img) => URL.revokeObjectURL(img.preview));
                 reset();
                 setImagePreviews([]);
                 setFileKey((prev) => prev + 1);
@@ -144,9 +168,9 @@ const ImageUpload = ({ savedimages, orderid, ordernumber, errors }: ImageUploadP
     ========================= */
     useEffect(() => {
         return () => {
-            imagePreviews.forEach((img) => URL.revokeObjectURL(img.preview));
+            imagePreviewsRef.current.forEach((img) => URL.revokeObjectURL(img.preview));
         };
-    }, [imagePreviews]);
+    }, []);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -174,15 +198,51 @@ const ImageUpload = ({ savedimages, orderid, ordernumber, errors }: ImageUploadP
                     <HeadingSmall title="Imagens da Ordem de Serviço" description={`Envie até ${MAX_IMAGES} imagens.`} />
 
                     <form onSubmit={handleSubmit} className="mt-4">
-                        <input
-                            key={fileKey}
-                            type="file"
-                            name="images[]"
-                            multiple
-                            accept="image/*"
-                            onChange={handleFileChange}
-                            className="w-full rounded border p-2"
-                        />
+                        <div
+                            onDragEnter={(e) => {
+                                e.preventDefault();
+                                setIsDragging(true);
+                            }}
+                            onDragOver={(e) => {
+                                e.preventDefault();
+                                setIsDragging(true);
+                            }}
+                            onDragLeave={(e) => {
+                                e.preventDefault();
+                                if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+                                setIsDragging(false);
+                            }}
+                            onDrop={handleDrop}
+                            className={cn(
+                                'border-muted-foreground/30 bg-muted/20 flex min-h-44 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 text-center transition-colors',
+                                isDragging && 'border-primary bg-primary/5',
+                            )}
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => fileInputRef.current?.click()}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    fileInputRef.current?.click();
+                                }
+                            }}
+                        >
+                            <UploadCloud className="text-muted-foreground h-10 w-10" />
+                            <p className="mt-3 text-sm font-medium">Arraste as imagens aqui ou clique para selecionar</p>
+                            <p className="text-muted-foreground mt-1 text-xs">
+                                JPG, PNG, GIF ou SVG. Restam {Math.max(0, MAX_IMAGES - savedimages.length - data.images.length)} imagem(ns).
+                            </p>
+                            <input
+                                ref={fileInputRef}
+                                key={fileKey}
+                                type="file"
+                                name="images[]"
+                                multiple
+                                accept="image/*"
+                                onChange={handleFileChange}
+                                className="sr-only"
+                            />
+                        </div>
 
                         {errors?.images && <p className="mt-1 text-sm text-red-500">{errors.images}</p>}
 

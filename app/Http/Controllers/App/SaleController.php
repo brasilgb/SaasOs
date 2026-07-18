@@ -6,7 +6,8 @@ use App\Events\SaleCancelled;
 use App\Events\SaleCreated;
 use App\Events\SaleDeleted;
 use App\Http\Controllers\Controller;
-use App\Models\App\CashSession;
+use App\Models\App\Customer;
+use App\Models\App\Part;
 use App\Models\App\Sale;
 use App\Services\FiscalDocumentService;
 use App\Services\SaleService;
@@ -84,6 +85,8 @@ class SaleController extends Controller
 
         return Inertia::render('app/sales/index', [
             'sales' => $sales,
+            'parts' => Part::where('is_sellable', true)->get(),
+            'customers' => Customer::get(),
             'search' => $search,
             'financial_status' => $financialStatus,
             'financial_counts' => $counts,

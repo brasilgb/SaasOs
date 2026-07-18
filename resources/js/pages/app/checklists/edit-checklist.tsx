@@ -4,21 +4,24 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import { Pencil, Save } from 'lucide-react';
 import { useState } from 'react';
+import EquipmentTypesModal from '../orders/equipment-types-modal';
 
-export default function EditChecklist({ equipments, checklist }: any) {
+export default function EditChecklist({ equipments, checklist, returnTo }: any) {
+    const { auth } = usePage<{ auth?: { permissions?: string[] } }>().props;
+    const canManageEquipments = auth?.permissions?.includes('register_equipments');
     const [open, setOpen] = useState(false);
 
-    const { data, setData, processing, patch, errors, reset } = useForm({
+    const { data, setData, processing, patch, errors } = useForm({
         equipment_id: checklist?.equipment_id,
         checklist: checklist?.checklist,
     });
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
-        patch(route('app.register-checklists.update', checklist.id), {
+        patch(route('app.register-checklists.update', { checklist: checklist.id, ...(returnTo ? { return_to: returnTo } : {}) }), {
             onSuccess: () => {
                 (toastSuccess('Sucesso', 'Edição realizada com sucesso'), setOpen(false));
             },
@@ -29,14 +32,6 @@ export default function EditChecklist({ equipments, checklist }: any) {
         value: equipment.id,
         label: equipment.equipment,
     }));
-
-    const changeEquipment = (selected: any) => {
-        setData('equipment_id', selected?.value);
-    };
-
-    const defaultEquipment = optionsEquipment
-        ?.filter((o: any) => o.value == checklist?.equipment_id)
-        .map((opt: any) => ({ value: opt.value, label: opt.label }));
 
     return (
         <div>
@@ -53,22 +48,29 @@ export default function EditChecklist({ equipments, checklist }: any) {
                     <form onSubmit={handleSubmit} autoComplete="off">
                         <div className="grid gap-2 md:col-span-2">
                             <Label htmlFor="customer_id">Equipamento</Label>
-                            <Select
-                                onValueChange={(value) => setData('equipment_id', value)}
-                                defaultValue={`${data.equipment_id}`}
-                                value={`${data.equipment_id}`}
-                            >
-                                <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Selecione o equipamento" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        {optionsEquipment.map((opt: any) => (
-                                            <SelectItem value={`${opt.value}`}>{opt.label}</SelectItem>
-                                        ))}
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
+                            <div className="flex min-w-0 items-center gap-2">
+                                <Select onValueChange={(value) => setData('equipment_id', value)} value={`${data.equipment_id}`}>
+                                    <SelectTrigger className="min-w-0 flex-1">
+                                        <SelectValue placeholder="Selecione o equipamento" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            {optionsEquipment.map((opt: any) => (
+                                                <SelectItem key={opt.value} value={`${opt.value}`}>
+                                                    {opt.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                                {canManageEquipments && (
+                                    <EquipmentTypesModal
+                                        equipments={equipments}
+                                        selectedEquipmentId={data.equipment_id}
+                                        onSelectEquipment={(equipmentId) => setData('equipment_id', equipmentId)}
+                                    />
+                                )}
+                            </div>
                             {errors.equipment_id && <div className="text-sm text-red-500">{errors.equipment_id}</div>}
                         </div>
 

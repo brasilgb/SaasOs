@@ -6,6 +6,56 @@ import { ArrowLeft, Printer, Square } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import OrderReceiptPDF from './pdf/OrderReceiptPDF';
 
+const normalizePlaceholderKey = (key: string) =>
+    key
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/\s+/g, '_')
+        .replace(/-/g, '_');
+
+function receiptTextByType(type: string, receipt: any) {
+    if (type === 'oraberta') return receipt?.receivingequipment ?? '';
+    if (type === 'orentrega') return receipt?.equipmentdelivery ?? '';
+    if (type === 'ororcamento') return receipt?.budgetissuance ?? '';
+    if (type === 'orchecklist') return 'checklist';
+
+    return '';
+}
+
+function titleByType(type: string) {
+    if (type === 'oraberta') return 'Recibo de Entrada de Equipamento';
+    if (type === 'orentrega') return 'Recibo de Entrega de Equipamento';
+    if (type === 'ororcamento') return 'Orçamento ao Cliente';
+    if (type === 'orchecklist') return 'Checklist para Conferência do Equipamento';
+
+    return 'Recibo';
+}
+
+function renderReceiptTemplate(template: string, order: any) {
+    const values = {
+        cliente: order?.customer?.name ?? '',
+        cpf_cnpj: order?.customer?.cpfcnpj ?? '',
+        defeito: order?.defect ?? '',
+        equipamento: order?.equipment?.equipment ?? '',
+        modelo: order?.model ?? '',
+        ordem: String(order?.order_number ?? ''),
+        prazo: order?.delivery_forecast ?? '',
+        valor_orcamento: maskMoney(order?.budget_value),
+    };
+
+    return template.replace(/\{\{\s*([^}]+?)\s*\}\}/g, (_, key) => {
+        const normalizedKey = normalizePlaceholderKey(String(key));
+
+        if (normalizedKey in values) {
+            return values[normalizedKey as keyof typeof values];
+        }
+
+        return '';
+    });
+}
+
 function ReceiptCopy({
     order,
     company,
@@ -31,6 +81,8 @@ function ReceiptCopy({
     const partQuantity = (part: any) => Number(part?.pivot?.quantity ?? part?.quantity ?? 1) || 1;
     const partTotal = (part: any) => Number(part?.sale_price ?? 0) * partQuantity(part);
     const partsValue = orderParts.length > 0 ? orderParts.reduce((total: number, part: any) => total + partTotal(part), 0) : order?.parts_value;
+    const receiptText = renderReceiptTemplate(receiptTextByType(type, receipt), order);
+    const title = titleByType(type);
 
     const option = {
         year: 'numeric',
@@ -40,112 +92,96 @@ function ReceiptCopy({
     const locale = 'pt-BR';
 
     return (
-        <div className="flex h-[50vh] flex-col justify-between border-b-2 border-dashed border-gray-400 p-6 text-gray-700 print:border-black">
-            {/* Cabeçalho */}
-            <div className="mb-1.5 bg-gray-100 py-0.5 text-center text-[10px] font-semibold text-gray-500 uppercase">
-                {type === 'oraberta' && 'Recibo de Entrada de Equipamento'}
-                {type === 'orentrega' && 'Recibo de Entrega de Equipamento'}
-                {type === 'ororcamento' && 'Orçamento ao cliente'}
-                {type === 'orchecklist' && 'Checklist para Entrega do Equipamento'}
-            </div>
-            <div className="mb-1.5 flex items-start justify-between">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-200 print:bg-gray-300">
-                    <span className="text-[10px] font-bold">
+        <div className="flex min-h-[50vh] flex-col border-b-2 border-dashed border-gray-300 bg-white p-6 text-[11px] text-gray-800 print:border-black">
+            <div className="mb-4 flex items-start justify-between gap-4 border-b border-gray-300 pb-3">
+                <div className="flex items-start gap-3">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md border border-gray-200 bg-white p-1">
                         <img
                             src={`${company?.logo ? `/storage/logos/${company.logo}` : '/images/default.png'}`}
                             alt={company?.companyname ? `Logo ${company.companyname}` : 'Logo da empresa'}
-                            className="h-12 w-12 object-contain"
+                            className="h-full w-full object-contain"
+                            onError={(event) => {
+                                event.currentTarget.src = '/images/default.png';
+                            }}
                         />
-                    </span>
-                </div>
-                <div className="flex flex-1 items-center justify-around gap-4 text-[10px]">
-                    <div className="grid w-full md:grid-cols-2">
-                        <div className="flex flex-1 flex-col items-center">
-                            <span className="font-medium">{company?.companyname}</span>
-                            <span className="font-medium">{company?.cnpj}</span>
-                        </div>
-                        <div className="flex flex-1 flex-col items-center">
-                            <span className="font-medium">
-                                {company?.street}, {company?.number} - {company?.district}
-                            </span>
-                            <span className="font-medium">
-                                {company?.city} - {company?.telephone}
-                            </span>
-                        </div>
+                    </div>
+                    <div className="space-y-0.5">
+                        <h1 className="text-sm font-bold text-gray-950">{company?.companyname ?? '-'}</h1>
+                        <p>CNPJ: {company?.cnpj ?? '-'}</p>
+                        <p>
+                            {company?.street ?? '-'}, {company?.number ?? '-'} - {company?.district ?? '-'}
+                        </p>
+                        <p>
+                            {company?.city ?? '-'} {company?.state ? `- ${company.state}` : ''} | {company?.telephone ?? '-'}
+                        </p>
                     </div>
                 </div>
-                <div className="flex-none">
-                    <p className="text-[10px] font-bold">O.S</p>
-                    <p className="text-[10px] font-bold text-blue-600">#{order.order_number}</p>
+                <div className="min-w-36 rounded-md border border-gray-300 p-2 text-right">
+                    <p className="text-[9px] font-semibold tracking-wide text-gray-500 uppercase">Ordem de Serviço</p>
+                    <p className="text-base font-bold text-gray-950">#{order?.order_number ?? '-'}</p>
+                    <p className="text-[10px] text-gray-500">{new Date().toLocaleDateString(locale)}</p>
                 </div>
             </div>
 
-            {/* Dados do cliente */}
-            <div className="mb-1.5">
-                <h2 className="mb-1.5 border-b border-gray-100 bg-gray-50 p-1 text-[10px] font-semibold">Dados do Cliente</h2>
-                <div className="grid md:grid-cols-2">
-                    <div className="grid gap-1 text-[10px] md:grid-cols-1">
+            <div className="mb-3 rounded-md border border-gray-300">
+                <div className="border-b border-gray-300 bg-gray-100 px-3 py-1.5 text-center text-[11px] font-bold tracking-wide text-gray-950 uppercase">
+                    {title}
+                </div>
+                <div className="grid gap-x-6 gap-y-1 p-3 md:grid-cols-2">
+                    <div className="space-y-1">
                         <p>
-                            <span className="font-medium">Nome cliente:</span> {order?.customer?.name}
+                            <span className="font-semibold">Cliente:</span> {order?.customer?.name ?? '-'}
                         </p>
                         <p>
-                            <span className="font-medium">Endereço:</span> {order?.customer?.street}, {order?.customer?.number} -{' '}
-                            {order?.customer?.district}
+                            <span className="font-semibold">CPF/CNPJ:</span> {order?.customer?.cpfcnpj ?? '-'}
                         </p>
                     </div>
-                    <div className="grid gap-1 text-[10px] md:grid-cols-1">
+                    <div className="space-y-1">
                         <p>
-                            <span className="font-medium">CPF/CNPJ:</span> {order?.customer?.cpfcnpj}
+                            <span className="font-semibold">Telefone:</span> {order?.customer?.phone ?? '-'}
                         </p>
                         <p>
-                            <span className="font-medium">Telefone:</span> {order?.customer?.phone}
+                            <span className="font-semibold">Endereço:</span> {order?.customer?.street ?? '-'}, {order?.customer?.number ?? '-'} -{' '}
+                            {order?.customer?.district ?? '-'}
                         </p>
                     </div>
                 </div>
             </div>
 
-            {/* Dados do equipamento */}
-            <div className="mb-1.5">
-                <h2 className="mb-1.5 border-b border-gray-100 bg-gray-50 p-1 text-[10px] font-semibold">Informações do equipamento</h2>
-                <div className="grid text-[10px] md:grid-cols-3">
+            <div className="mb-3 rounded-md border border-gray-300">
+                <h2 className="border-b border-gray-300 bg-gray-50 px-3 py-1.5 text-[11px] font-bold text-gray-950">Informações do Equipamento</h2>
+                <div className="grid gap-x-4 gap-y-1 p-3 md:grid-cols-3">
                     <p>
-                        <span className="font-medium">Equipamento:</span> {order?.equipment?.equipment}
+                        <span className="font-semibold">Equipamento:</span> {order?.equipment?.equipment ?? '-'}
                     </p>
                     <p>
-                        <span className="font-medium">Modelo:</span> {order?.model}
+                        <span className="font-semibold">Modelo:</span> {order?.model ?? '-'}
                     </p>
                     <p>
-                        <span className="font-medium">Defeito:</span> {order?.defect}
+                        <span className="font-semibold">Defeito:</span> {order?.defect ?? '-'}
                     </p>
-                </div>
-                <p className="flex items-center justify-between gap-2 py-1 text-[10px]">
-                    <span className="font-medium">Pré-orçamento: {order?.budget_description}</span>
-                    <span className="font-medium">Valor: R$ {order?.budget_value}</span>
-                </p>
-            </div>
-
-            {/* GArantias e observações */}
-            <div className="mb-1.5">
-                <h2 className="mb-1.5 border-b border-gray-100 bg-gray-50 p-1 text-[10px] font-semibold">Garantias e/ou observações</h2>
-                <div className="rounded-lg bg-gray-50 print:bg-gray-100">
-                    <p className="mb-1.5 text-[10px]">
-                        {type === 'oraberta' && receipt?.receivingequipment}
-                        {type === 'orentrega' && receipt?.equipmentdelivery}
-                        {type === 'ororcamento' && receipt?.budgetissuance}
-                        {type === 'orchecklist' && 'checklist'}
+                    <p className="md:col-span-2">
+                        <span className="font-semibold">Pré-orçamento:</span> {order?.budget_description ?? '-'}
+                    </p>
+                    <p>
+                        <span className="font-semibold">Valor:</span> R$ {maskMoney(order?.budget_value)}
                     </p>
                 </div>
             </div>
 
-            {/* Geraçaõ de checklist */}
+            <div className="mb-3 rounded-md border border-gray-300">
+                <h2 className="border-b border-gray-300 bg-gray-50 px-3 py-1.5 text-[11px] font-bold text-gray-950">Garantias e Observações</h2>
+                <p className="min-h-10 p-3 leading-relaxed whitespace-pre-wrap">{receiptText || '-'}</p>
+            </div>
+
             {type === 'orchecklist' && (
-                <div className="mb-1.5">
-                    <h2 className="mb-1.5 border-b border-gray-100 bg-gray-50 p-1 text-[10px] font-semibold">Checklist</h2>
-                    <div className="rounded-lg print:bg-gray-100">
-                        <ul className="flex flex-wrap items-center justify-start gap-1">
-                            {checklistItems.map((list: string) => (
-                                <li key={list} className="flex items-center gap-2 text-xs">
-                                    <Square className="h-3 w-3" /> {list}
+                <div className="mb-3 rounded-md border border-gray-300">
+                    <h2 className="border-b border-gray-300 bg-gray-50 px-3 py-1.5 text-[11px] font-bold text-gray-950">Checklist de Conferência</h2>
+                    <div className="p-3">
+                        <ul className="grid gap-x-6 gap-y-2 md:grid-cols-2">
+                            {(checklistItems.length > 0 ? checklistItems : ['Sem itens cadastrados']).map((list: string) => (
+                                <li key={list} className="flex items-center gap-2">
+                                    <Square className="h-3.5 w-3.5 shrink-0" /> <span>{list}</span>
                                 </li>
                             ))}
                         </ul>
@@ -153,78 +189,69 @@ function ReceiptCopy({
                 </div>
             )}
 
-            {/* Orçamento gerado */}
             {type === 'ororcamento' && (
-                <div className="mb-1.5">
-                    <h2 className="mb-1.5 border-b border-gray-100 bg-gray-50 p-1 text-[10px] font-semibold">Orçamento gerado</h2>
-                    <div className="rounded-lg bg-gray-50 print:bg-gray-100">
-                        <p className="mb-1.5 text-[10px]">{order?.budget_description}</p>
-                        <div className="flex items-center justify-between border-t border-gray-300">
-                            <div className="flex items-center justify-between gap-2 pt-2"></div>
-                            <div className="flex items-center justify-between gap-2 pt-2">
-                                <span className="text-xs font-medium">Valor: </span>
-                                <span className="text-xs font-bold text-gray-600">R$ {maskMoney(order?.budget_value)}</span>
-                            </div>
-                        </div>
+                <div className="mb-3 rounded-md border border-gray-300">
+                    <h2 className="border-b border-gray-300 bg-gray-50 px-3 py-1.5 text-[11px] font-bold text-gray-950">Orçamento Gerado</h2>
+                    <div className="p-3">
+                        <p className="mb-2 whitespace-pre-wrap">{order?.budget_description ?? '-'}</p>
+                        <p className="border-t border-gray-300 pt-2 text-right font-bold">Valor: R$ {maskMoney(order?.budget_value)}</p>
                     </div>
                 </div>
             )}
 
-            {/* Serviço Prestado */}
             {type === 'orentrega' && (
-                <div className="mb-1.5">
-                    <h2 className="mb-1.5 border-b border-gray-100 bg-gray-50 p-1 text-[10px] font-semibold">Serviço Prestado</h2>
-                    <div className="rounded-lg bg-gray-50 print:bg-gray-100">
-                        <p className="mb-1.5 text-[10px]">{order?.services_performed}</p>
+                <div className="mb-3 rounded-md border border-gray-300">
+                    <h2 className="border-b border-gray-300 bg-gray-50 px-3 py-1.5 text-[11px] font-bold text-gray-950">Serviço Prestado</h2>
+                    <div className="p-3">
+                        <p className="mb-2 whitespace-pre-wrap">{order?.services_performed ?? '-'}</p>
                         {orderParts.length > 0 ? (
-                            <p className="mb-1.5 text-[10px]">
-                                <span className="font-bold">Peças adiciondas: </span>
-                                {orderParts.map((part: any) => {
-                                    const quantity = partQuantity(part);
-                                    return quantity > 1 ? `${quantity}x ${part.name}` : part.name;
-                                }).join(', ')}
+                            <p className="mb-2">
+                                <span className="font-bold">Peças adicionadas: </span>
+                                {orderParts
+                                    .map((part: any) => {
+                                        const quantity = partQuantity(part);
+                                        return quantity > 1 ? `${quantity}x ${part.name}` : part.name;
+                                    })
+                                    .join(', ')}
                             </p>
                         ) : (
-                            <p className="mb-1.5 text-[10px]">
-                                <span className="font-bold">Peças adiciondas: </span>
-                                {order?.parts}
+                            <p className="mb-2">
+                                <span className="font-bold">Peças adicionadas: </span>
+                                {order?.parts ?? '-'}
                             </p>
                         )}
-                        <div className="flex items-center justify-between border-t border-gray-300">
-                            <div className="flex items-center justify-between gap-2 pt-2">
-                                <span className="text-xs font-medium">Peças: </span>
-                                <span className="text-xs font-medium text-gray-600">R$ {maskMoney(partsValue)}</span>
+                        <div className="grid grid-cols-3 border-t border-gray-300 pt-2 text-right">
+                            <div>
+                                <span className="block text-[10px] text-gray-500">Peças</span>
+                                <span className="font-semibold">R$ {maskMoney(partsValue)}</span>
                             </div>
-                            <div className="flex items-center justify-between gap-2 pt-2">
-                                <span className="text-xs font-medium">Serviço: </span>
-                                <span className="text-xs font-medium text-gray-600">R$ {maskMoney(order?.service_value)}</span>
+                            <div>
+                                <span className="block text-[10px] text-gray-500">Serviço</span>
+                                <span className="font-semibold">R$ {maskMoney(order?.service_value)}</span>
                             </div>
-                            <div className="flex items-center justify-between gap-2 pt-2">
-                                <span className="text-xs font-medium">Total: </span>
-                                <span className="text-xs font-bold text-gray-600">R$ {maskMoney(order?.service_cost)}</span>
+                            <div>
+                                <span className="block text-[10px] text-gray-500">Total</span>
+                                <span className="font-bold">R$ {maskMoney(order?.service_cost)}</span>
                             </div>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Rodapé */}
             <div className="mt-auto w-full">
                 {type === 'oraberta' && (
-                    <div className="flex items-center justify-start gap-2 text-[10px]">
-                        <span>
-                            Acompanhe o status de sua ordem de serviço em{' '}
-                            <span className="text-red-500">https://vetoros.com.br/os/{order?.tracking_token}</span>
-                        </span>
+                    <div className="mb-4 rounded-md border border-gray-300 px-3 py-2 text-[10px]">
+                        Acompanhe o status da ordem de serviço em{' '}
+                        <span className="font-semibold">https://vetoros.com.br/os/{order?.tracking_token}</span>
                     </div>
                 )}
-                <div className="flex items-center justify-between">
-                    <div className="w-96 text-center text-[10px]">
+                <div className="grid grid-cols-2 items-end gap-8 pt-5">
+                    <div className="text-center">
                         {company?.city}, {new Date().toLocaleDateString(locale, option)}
                     </div>
                     <div className="text-center">
-                        <div className="mb-1 w-48 border-t border-black"></div>
-                        <p className="text-[10px]">Assinatura do Cliente</p>
+                        <div className="mb-1 border-t border-black"></div>
+                        <p>Assinatura do Cliente</p>
                     </div>
                 </div>
             </div>
@@ -289,7 +316,7 @@ export default function Receipt({
     if (openAsPdf) {
         return (
             <div className="mx-auto flex min-h-[60vh] max-w-4xl items-center justify-center p-6">
-                <p className="text-sm text-muted-foreground">{isGeneratingPdf ? 'Gerando recibo PDF...' : 'Abrindo recibo PDF...'}</p>
+                <p className="text-muted-foreground text-sm">{isGeneratingPdf ? 'Gerando recibo PDF...' : 'Abrindo recibo PDF...'}</p>
             </div>
         );
     }

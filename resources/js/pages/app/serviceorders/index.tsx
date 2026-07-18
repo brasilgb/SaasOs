@@ -115,9 +115,7 @@ function getRemainingTime(deliveryDate?: string) {
     today.setHours(0, 0, 0, 0);
 
     const dateOnly = deliveryDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    const delivery = dateOnly
-        ? new Date(Number(dateOnly[1]), Number(dateOnly[2]) - 1, Number(dateOnly[3]))
-        : new Date(deliveryDate);
+    const delivery = dateOnly ? new Date(Number(dateOnly[1]), Number(dateOnly[2]) - 1, Number(dateOnly[3])) : new Date(deliveryDate);
     delivery.setHours(0, 0, 0, 0);
 
     const diff = delivery.getTime() - today.getTime();
@@ -385,18 +383,25 @@ function ServiceOrders({ order }: { order: Order }) {
                                                         src={`/storage/logos/${company.logo}`}
                                                         alt={companyName ? `Logo ${companyName}` : 'Logo da empresa'}
                                                         className="h-12 rounded-md bg-white/90 p-2"
+                                                        onError={(event) => {
+                                                            event.currentTarget.src = '/images/default.png';
+                                                        }}
                                                     />
                                                 )}
                                                 {(companyName || company?.cnpj) && (
                                                     <div className="min-w-0">
-                                                        {companyName && <p className="text-base font-semibold leading-tight text-white">{companyName}</p>}
-                                                        {company?.cnpj && <p className="mt-1 text-xs font-medium text-slate-300">CNPJ: {company.cnpj}</p>}
+                                                        {companyName && (
+                                                            <p className="text-base leading-tight font-semibold text-white">{companyName}</p>
+                                                        )}
+                                                        {company?.cnpj && (
+                                                            <p className="mt-1 text-xs font-medium text-slate-300">CNPJ: {company.cnpj}</p>
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>
                                         )}
                                         <div>
-                                            <p className="text-sm font-medium uppercase tracking-[0.25em] text-amber-200">Acompanhamento online</p>
+                                            <p className="text-sm font-medium tracking-[0.25em] text-amber-200 uppercase">Acompanhamento online</p>
                                             <h1 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl">
                                                 Ordem de serviço #{order.order_number}
                                             </h1>
@@ -405,9 +410,13 @@ function ServiceOrders({ order }: { order: Order }) {
                                     </div>
 
                                     <div className="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 backdrop-blur">
-                                        <p className="text-xs uppercase tracking-[0.2em] text-slate-300">Status atual</p>
+                                        <p className="text-xs tracking-[0.2em] text-slate-300 uppercase">Status atual</p>
                                         <div className="mt-2 flex items-center gap-2 md:flex-col md:items-stretch">
-                                            <StatusBadge category="ordem" value={order.service_status} className="border-white/20 bg-white/10 px-3 py-1.5 text-white" />
+                                            <StatusBadge
+                                                category="ordem"
+                                                value={order.service_status}
+                                                className="border-white/20 bg-white/10 px-3 py-1.5 text-white"
+                                            />
                                             {hasBudgetReceipt && (
                                                 <Button
                                                     type="button"
@@ -425,19 +434,19 @@ function ServiceOrders({ order }: { order: Order }) {
 
                                 <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                                     <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                                        <p className="text-xs uppercase tracking-[0.18em] text-slate-300">Aberta em</p>
+                                        <p className="text-xs tracking-[0.18em] text-slate-300 uppercase">Aberta em</p>
                                         <p className="mt-2 text-sm font-medium">{formatDate(order.created_at)}</p>
                                     </div>
                                     <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                                        <p className="text-xs uppercase tracking-[0.18em] text-slate-300">Equipamento</p>
+                                        <p className="text-xs tracking-[0.18em] text-slate-300 uppercase">Equipamento</p>
                                         <p className="mt-2 text-sm font-medium">{order.equipment?.equipment ?? '-'}</p>
                                     </div>
                                     <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                                        <p className="text-xs uppercase tracking-[0.18em] text-slate-300">Modelo</p>
+                                        <p className="text-xs tracking-[0.18em] text-slate-300 uppercase">Modelo</p>
                                         <p className="mt-2 text-sm font-medium">{order.model || '-'}</p>
                                     </div>
                                     <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                                        <p className="text-xs uppercase tracking-[0.18em] text-slate-300">Previsão</p>
+                                        <p className="text-xs tracking-[0.18em] text-slate-300 uppercase">Previsão</p>
                                         <p className="mt-2 text-sm font-medium">{formatDate(order.delivery_forecast)}</p>
                                         {remaining && <p className="mt-1 text-xs text-amber-200">{remaining}</p>}
                                     </div>
@@ -485,10 +494,18 @@ function ServiceOrders({ order }: { order: Order }) {
                                                             </p>
                                                         </div>
                                                         <div className="flex flex-wrap gap-2">
-                                                            <Button onClick={handleApprove} disabled={loadingA} className="bg-green-600 text-white hover:bg-green-700">
+                                                            <Button
+                                                                onClick={handleApprove}
+                                                                disabled={loadingA}
+                                                                className="bg-green-600 text-white hover:bg-green-700"
+                                                            >
                                                                 {loadingA ? 'Aprovando...' : 'Aprovar orçamento'}
                                                             </Button>
-                                                            <Button onClick={handleReject} disabled={loadingR} className="bg-red-600 text-white hover:bg-red-700">
+                                                            <Button
+                                                                onClick={handleReject}
+                                                                disabled={loadingR}
+                                                                className="bg-red-600 text-white hover:bg-red-700"
+                                                            >
                                                                 {loadingR ? 'Reprovando...' : 'Reprovar orçamento'}
                                                             </Button>
                                                         </div>
@@ -506,7 +523,8 @@ function ServiceOrders({ order }: { order: Order }) {
                                                         <div>
                                                             <p className="font-medium text-slate-900">Confirmação de aviso</p>
                                                             <p className="text-sm text-slate-600">
-                                                                Use este botão para confirmar que você recebeu o aviso de conclusão e retirada do equipamento.
+                                                                Use este botão para confirmar que você recebeu o aviso de conclusão e retirada do
+                                                                equipamento.
                                                             </p>
                                                         </div>
 
@@ -515,7 +533,11 @@ function ServiceOrders({ order }: { order: Order }) {
                                                                 Aviso confirmado em {formatDateTime(order.customer_notification_acknowledged_at)}.
                                                             </div>
                                                         ) : (
-                                                            <Button onClick={handleAcknowledgeNotification} disabled={loadingAck} className="bg-cyan-600 text-white hover:bg-cyan-700">
+                                                            <Button
+                                                                onClick={handleAcknowledgeNotification}
+                                                                disabled={loadingAck}
+                                                                className="bg-cyan-600 text-white hover:bg-cyan-700"
+                                                            >
                                                                 {loadingAck ? 'Confirmando...' : 'Recebi o aviso'}
                                                             </Button>
                                                         )}
@@ -630,27 +652,27 @@ function ServiceOrders({ order }: { order: Order }) {
                                 <div className="grid min-w-0 gap-4 sm:grid-cols-2">
                                     <div className="min-w-0">
                                         <p className="text-sm text-slate-500">Cliente</p>
-                                        <p className="break-words font-medium text-slate-900">{order.customer?.name || '-'}</p>
+                                        <p className="font-medium break-words text-slate-900">{order.customer?.name || '-'}</p>
                                     </div>
                                     <div className="min-w-0">
                                         <p className="text-sm text-slate-500">Tipo</p>
-                                        <p className="break-words font-medium text-slate-900">{order.equipment?.equipment || '-'}</p>
+                                        <p className="font-medium break-words text-slate-900">{order.equipment?.equipment || '-'}</p>
                                     </div>
                                     <div className="min-w-0">
                                         <p className="text-sm text-slate-500">Modelo</p>
-                                        <p className="break-words font-medium text-slate-900">{order.model || '-'}</p>
+                                        <p className="font-medium break-words text-slate-900">{order.model || '-'}</p>
                                     </div>
                                     <div className="min-w-0">
                                         <p className="text-sm text-slate-500">Acessórios</p>
-                                        <p className="break-words font-medium text-slate-900">{order.accessories || '-'}</p>
+                                        <p className="font-medium break-words text-slate-900">{order.accessories || '-'}</p>
                                     </div>
                                     <div className="min-w-0 sm:col-span-2">
                                         <p className="text-sm text-slate-500">Estado informado na entrada</p>
-                                        <p className="break-words font-medium text-slate-900">{order.state_conservation || '-'}</p>
+                                        <p className="font-medium break-words text-slate-900">{order.state_conservation || '-'}</p>
                                     </div>
                                     <div className="min-w-0 sm:col-span-2">
                                         <p className="text-sm text-slate-500">Defeito relatado</p>
-                                        <p className="break-words font-medium text-slate-900">{order.defect || '-'}</p>
+                                        <p className="font-medium break-words text-slate-900">{order.defect || '-'}</p>
                                     </div>
                                 </div>
                             </section>
@@ -663,15 +685,13 @@ function ServiceOrders({ order }: { order: Order }) {
                                     </div>
 
                                     <div className="grid min-w-0 gap-4 md:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-                                        <div className="min-w-0 break-words rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700">
+                                        <div className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 break-words text-slate-700">
                                             {order.budget_description || 'Sem descrição detalhada do orçamento.'}
                                         </div>
                                         <div className="min-w-0 rounded-2xl border border-red-200 bg-red-50 p-4">
                                             <p className="text-sm text-slate-500">Valor do orçamento</p>
-                                            <p className="mt-2 text-2xl font-semibold text-red-600">
-                                                {formatCurrency(order.budget_value)}
-                                            </p>
-                                            <p className="mt-3 break-words text-sm text-slate-600">
+                                            <p className="mt-2 text-2xl font-semibold text-red-600">{formatCurrency(order.budget_value)}</p>
+                                            <p className="mt-3 text-sm break-words text-slate-600">
                                                 Status atual: <span className="font-medium">{orderStatusLabel(order.service_status)}</span>
                                             </p>
                                         </div>
@@ -724,7 +744,11 @@ function ServiceOrders({ order }: { order: Order }) {
                                                 onClick={() => setSelectedImage({ src: image.src, alt: image.alt })}
                                                 className="group relative overflow-hidden rounded-2xl border border-slate-200 text-left"
                                             >
-                                                <img src={image.src} alt={image.alt} className="h-52 w-full object-cover transition duration-300 group-hover:scale-[1.02]" />
+                                                <img
+                                                    src={image.src}
+                                                    alt={image.alt}
+                                                    className="h-52 w-full object-cover transition duration-300 group-hover:scale-[1.02]"
+                                                />
                                                 <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-slate-950/75 to-transparent px-4 py-3 text-sm text-white">
                                                     <span>Visualizar imagem</span>
                                                     <Expand className="h-4 w-4" />
@@ -757,7 +781,9 @@ function ServiceOrders({ order }: { order: Order }) {
                                                 ? formatDateTime(order.customer_pickup_acknowledged_at)
                                                 : 'Aguardando confirmação do cliente'}
                                         </p>
-                                        {order.delivery_date && <p className="mt-1 text-sm text-slate-600">Entrega registrada em {formatDate(order.delivery_date)}</p>}
+                                        {order.delivery_date && (
+                                            <p className="mt-1 text-sm text-slate-600">Entrega registrada em {formatDate(order.delivery_date)}</p>
+                                        )}
                                     </div>
 
                                     <div className="rounded-2xl border border-slate-200 p-4">
@@ -773,8 +799,10 @@ function ServiceOrders({ order }: { order: Order }) {
                                             <p className="font-medium text-slate-900">Retorno em garantia</p>
                                             <p className="mt-1 text-sm text-slate-700">
                                                 Esta ordem foi identificada como retorno em garantia
-                                                {order.warranty_source_order?.order_number ? ` da OS #${order.warranty_source_order.order_number}` : ''}.
-                                                Esse vínculo é permanente para preservar o histórico do atendimento.
+                                                {order.warranty_source_order?.order_number
+                                                    ? ` da OS #${order.warranty_source_order.order_number}`
+                                                    : ''}
+                                                . Esse vínculo é permanente para preservar o histórico do atendimento.
                                             </p>
                                         </div>
                                     )}
@@ -856,7 +884,11 @@ function ServiceOrders({ order }: { order: Order }) {
                                                     Retirada confirmada em {formatDateTime(order.customer_pickup_acknowledged_at)}.
                                                 </div>
                                             ) : (
-                                                <Button onClick={handleAcknowledgePickup} disabled={loadingPickup} className="mt-3 bg-emerald-600 text-white hover:bg-emerald-700">
+                                                <Button
+                                                    onClick={handleAcknowledgePickup}
+                                                    disabled={loadingPickup}
+                                                    className="mt-3 bg-emerald-600 text-white hover:bg-emerald-700"
+                                                >
                                                     {loadingPickup ? 'Confirmando retirada...' : 'Confirmar que retirei o equipamento'}
                                                 </Button>
                                             )}
@@ -888,25 +920,25 @@ function ServiceOrders({ order }: { order: Order }) {
                                                         <>
                                                             <div className="rounded-2xl border border-violet-200 bg-white p-4">
                                                                 <div className="flex flex-wrap gap-2">
-                                                                {[1, 2, 3, 4, 5].map((rating) => {
-                                                                    const selected = feedbackRating === rating;
+                                                                    {[1, 2, 3, 4, 5].map((rating) => {
+                                                                        const selected = feedbackRating === rating;
 
-                                                                    return (
-                                                                        <button
-                                                                            key={rating}
-                                                                            type="button"
-                                                                            onClick={() => setFeedbackRating(rating)}
-                                                                            aria-label={`${rating} estrela${rating > 1 ? 's' : ''}`}
-                                                                            className={`inline-flex items-center justify-center rounded-xl border p-3 transition ${
-                                                                                selected
-                                                                                    ? 'border-violet-600 bg-violet-600 text-white'
-                                                                                    : 'border-violet-200 bg-white text-violet-500 hover:border-violet-300 hover:bg-violet-100'
-                                                                            }`}
-                                                                        >
-                                                                            <Star className={`h-5 w-5 ${selected ? 'fill-current' : ''}`} />
-                                                                        </button>
-                                                                    );
-                                                                })}
+                                                                        return (
+                                                                            <button
+                                                                                key={rating}
+                                                                                type="button"
+                                                                                onClick={() => setFeedbackRating(rating)}
+                                                                                aria-label={`${rating} estrela${rating > 1 ? 's' : ''}`}
+                                                                                className={`inline-flex items-center justify-center rounded-xl border p-3 transition ${
+                                                                                    selected
+                                                                                        ? 'border-violet-600 bg-violet-600 text-white'
+                                                                                        : 'border-violet-200 bg-white text-violet-500 hover:border-violet-300 hover:bg-violet-100'
+                                                                                }`}
+                                                                            >
+                                                                                <Star className={`h-5 w-5 ${selected ? 'fill-current' : ''}`} />
+                                                                            </button>
+                                                                        );
+                                                                    })}
                                                                 </div>
                                                             </div>
 
@@ -916,11 +948,15 @@ function ServiceOrders({ order }: { order: Order }) {
                                                                 rows={4}
                                                                 maxLength={500}
                                                                 placeholder="Se quiser, deixe um comentário rápido sobre o atendimento."
-                                                                className="w-full rounded-2xl border border-violet-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-violet-400"
+                                                                className="w-full rounded-2xl border border-violet-200 bg-white px-4 py-3 text-sm text-slate-700 transition outline-none focus:border-violet-400"
                                                             />
                                                             <p className="mt-1 text-right text-xs text-slate-500">{feedbackComment.length}/500</p>
 
-                                                            <Button onClick={handleSubmitFeedback} disabled={loadingFeedback || !feedbackRating} className="bg-violet-600 text-white hover:bg-violet-700">
+                                                            <Button
+                                                                onClick={handleSubmitFeedback}
+                                                                disabled={loadingFeedback || !feedbackRating}
+                                                                className="bg-violet-600 text-white hover:bg-violet-700"
+                                                            >
                                                                 {loadingFeedback ? 'Enviando avaliação...' : 'Enviar avaliação'}
                                                             </Button>
                                                         </>
@@ -949,7 +985,9 @@ function ServiceOrders({ order }: { order: Order }) {
                                     </div>
                                     <div className="rounded-2xl border border-slate-200 p-4">
                                         <p className="text-sm text-slate-500">Saldo</p>
-                                        <p className={`mt-2 font-semibold ${financialSummary.remaining > 0.009 ? 'text-rose-600' : 'text-emerald-700'}`}>
+                                        <p
+                                            className={`mt-2 font-semibold ${financialSummary.remaining > 0.009 ? 'text-rose-600' : 'text-emerald-700'}`}
+                                        >
                                             {formatCurrency(financialSummary.remaining)}
                                         </p>
                                     </div>
@@ -972,13 +1010,12 @@ function ServiceOrders({ order }: { order: Order }) {
                                     </div>
                                 )}
                             </section>
-
                         </div>
                     </div>
 
                     <section className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
                         <div className="flex items-center gap-4">
-                            <h2 className="whitespace-nowrap text-lg font-semibold text-slate-900">Andamento da ordem</h2>
+                            <h2 className="text-lg font-semibold whitespace-nowrap text-slate-900">Andamento da ordem</h2>
                             <div className="h-px flex-1 bg-slate-200" />
                         </div>
                         <div className="mt-4 border-t border-slate-100 pt-4">

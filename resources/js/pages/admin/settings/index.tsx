@@ -73,9 +73,12 @@ export default function SettingsIndex({ settings }: { settings: Settings }) {
                             <Label>Imagem de logo</Label>
                             <div className="bg-muted/30 flex h-28 w-28 items-center justify-center overflow-hidden rounded-2xl border p-3">
                                 <img
-                                    src={`/storage/logos/${settings.logo ? settings.logo : 'default.png'}`}
+                                    src={settings.logo ? `/storage/logos/${settings.logo}` : '/images/default.png'}
                                     alt="Imagem de logo"
                                     className="max-h-full max-w-full object-contain"
+                                    onError={(event) => {
+                                        event.currentTarget.src = '/images/default.png';
+                                    }}
                                 />
                             </div>
                         </div>

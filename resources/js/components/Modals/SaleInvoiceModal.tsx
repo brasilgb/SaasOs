@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 
 import { maskCpfCnpj, maskMoney } from '@/Utils/mask';
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 
 interface SaleInvoiceModalProps {
     open: boolean;
@@ -35,6 +35,7 @@ interface SaleInvoiceModalProps {
 }
 
 export default function SaleInvoiceModal({ open, onClose, sale }: SaleInvoiceModalProps) {
+    const { fiscalSetting } = usePage().props as any;
     const saleId = sale?.numberSale?.id;
     const totalSale = Number(sale?.total ?? 0);
     const canIssueInvoice = totalSale > 0;
@@ -59,9 +60,9 @@ export default function SaleInvoiceModal({ open, onClose, sale }: SaleInvoiceMod
         <Dialog open={open} onOpenChange={onClose}>
             <DialogContent className="scrollbar-default max-h-[calc(100svh-1rem)] w-[calc(100%-1rem)] max-w-md overflow-y-auto overscroll-contain p-4 sm:max-h-[90svh] sm:w-full sm:p-6">
                 <DialogHeader>
-                    <DialogTitle>Emitir Nota de Venda</DialogTitle>
+                    <DialogTitle>Emitir NF-e de produtos</DialogTitle>
 
-                    <DialogDescription>Emita a nota no portal fiscal correspondente e registre o comprovante abaixo.</DialogDescription>
+                    <DialogDescription>Use os dados da venda para emitir a NF-e no portal fiscal do emissor e registre o comprovante abaixo.</DialogDescription>
                 </DialogHeader>
 
                 <Card>
@@ -77,6 +78,10 @@ export default function SaleInvoiceModal({ open, onClose, sale }: SaleInvoiceMod
                         <Separator />
 
                         <div className="font-medium">Produtos</div>
+
+                        <div>
+                            <span className="font-medium">Série padrão:</span> {fiscalSetting?.default_nfe_series || 'Não configurada'}
+                        </div>
 
                         {sale.items?.map((item, index: number) => (
                             <div key={index} className="flex justify-between text-sm">
@@ -115,8 +120,8 @@ export default function SaleInvoiceModal({ open, onClose, sale }: SaleInvoiceMod
                         </Button>
                     ) : (
                         <Button asChild>
-                            <a href="https://www.nfe.fazenda.gov.br" target="_blank" rel="noopener noreferrer">
-                                Abrir emissor
+                            <a href="https://www.nfe.fazenda.gov.br/portal/principal.aspx" target="_blank" rel="noopener noreferrer">
+                                Abrir portal NF-e
                             </a>
                         </Button>
                     )}
@@ -150,7 +155,7 @@ export default function SaleInvoiceModal({ open, onClose, sale }: SaleInvoiceMod
                             </>
                         ) : (
                             <>
-                                <div className="font-medium">Registrar comprovante fiscal no banco para consulta e auditoria</div>
+                                <div className="font-medium">Registrar NF-e emitida para consulta e auditoria</div>
                                 <div className="space-y-1">
                                     <Label htmlFor="fiscal_document_number">Número do documento</Label>
                                     <Input

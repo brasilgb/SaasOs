@@ -4,10 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
+import { cn } from '@/lib/utils';
 import { BreadcrumbItem } from '@/types';
 import { maskCep, maskCnpj, maskPhone, unMask } from '@/Utils/mask';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
-import { Building, Save } from 'lucide-react';
+import { Building, Save, UploadCloud } from 'lucide-react';
+import { DragEvent, useEffect, useRef, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -23,6 +25,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Company({ company }: any) {
     const { auth } = usePage<{ auth?: { permissions?: string[] } }>().props;
     const canManageCompany = auth?.permissions?.includes('company');
+    const [isDraggingLogo, setIsDraggingLogo] = useState(false);
+    const [logoPreview, setLogoPreview] = useState<string | null>(null);
+    const logoInputRef = useRef<HTMLInputElement>(null);
     const { data, setData, processing, errors } = useForm({
         shortname: company?.shortname,
         companyname: company?.companyname,
@@ -40,6 +45,45 @@ export default function Company({ company }: any) {
         site: company?.site,
         email: company?.email,
     });
+    const currentLogoSrc = company?.logo ? `/storage/logos/${company.logo}` : '/images/default.png';
+
+    const handleLogoFile = (file?: File) => {
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            toastWarning('Erro', 'Apenas imagens são permitidas para o logotipo.');
+            return;
+        }
+
+        if (file.size > 2 * 1024 * 1024) {
+            toastWarning('Erro', 'O logotipo deve ter no máximo 2 MB.');
+            return;
+        }
+
+        if (logoPreview) {
+            URL.revokeObjectURL(logoPreview);
+        }
+
+        setData('logo', file as any);
+        setLogoPreview(URL.createObjectURL(file));
+    };
+
+    const handleLogoDrop = (e: DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        setIsDraggingLogo(false);
+
+        if (!canManageCompany) return;
+
+        handleLogoFile(e.dataTransfer.files?.[0]);
+    };
+
+    useEffect(() => {
+        return () => {
+            if (logoPreview) {
+                URL.revokeObjectURL(logoPreview);
+            }
+        };
+    }, [logoPreview]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -69,6 +113,10 @@ export default function Company({ company }: any) {
                 preserveScroll: true,
                 onSuccess: () => {
                     toastSuccess('Sucesso', 'Dados da empresa ajustados com sucesso');
+                    if (logoPreview) {
+                        URL.revokeObjectURL(logoPreview);
+                        setLogoPreview(null);
+                    }
                 },
                 onError: (errors: any) => {
                     toastWarning('Erro ao validar:', errors);
@@ -107,18 +155,72 @@ export default function Company({ company }: any) {
 
             <div className="p-4">
                 <div className="rounded-lg border p-2">
-                    <div className="my-10 w-24">
-                        <img src={`${company?.logo ? `/storage/logos/${company?.logo}` : '/images/default.png'}`} alt="Imagem de logo" />
-                    </div>
                     <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
-                        <div className="mt-4 grid gap-4 md:grid-cols-6">
-                            <div className="grid gap-2">
-                                <Label htmlFor="logo">Logotipo</Label>
-                                <Input type="file" id="logo" disabled={!canManageCompany} onChange={(e: any) => setData('logo', e.target.files[0])} />
-                                {errors.logo && <div className="text-sm text-red-500">{errors.logo}</div>}
+                        <div className="grid gap-2">
+                            <Label htmlFor="logo">Logotipo</Label>
+                            <div
+                                onDragEnter={(e) => {
+                                    e.preventDefault();
+                                    if (canManageCompany) setIsDraggingLogo(true);
+                                }}
+                                onDragOver={(e) => {
+                                    e.preventDefault();
+                                    if (canManageCompany) setIsDraggingLogo(true);
+                                }}
+                                onDragLeave={(e) => {
+                                    e.preventDefault();
+                                    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+                                    setIsDraggingLogo(false);
+                                }}
+                                onDrop={handleLogoDrop}
+                                onClick={() => canManageCompany && logoInputRef.current?.click()}
+                                onKeyDown={(e) => {
+                                    if (!canManageCompany) return;
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                        e.preventDefault();
+                                        logoInputRef.current?.click();
+                                    }
+                                }}
+                                role="button"
+                                tabIndex={canManageCompany ? 0 : -1}
+                                aria-disabled={!canManageCompany}
+                                className={cn(
+                                    'border-muted-foreground/30 bg-muted/20 flex min-h-36 items-center gap-4 rounded-lg border-2 border-dashed p-4 transition-colors',
+                                    canManageCompany ? 'cursor-pointer' : 'cursor-not-allowed opacity-70',
+                                    isDraggingLogo && 'border-primary bg-primary/5',
+                                )}
+                            >
+                                <div className="bg-background flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-md border p-2">
+                                    <img
+                                        src={logoPreview ?? currentLogoSrc}
+                                        alt="Imagem de logo"
+                                        className="max-h-full max-w-full object-contain"
+                                        onError={(event) => {
+                                            event.currentTarget.src = '/images/default.png';
+                                        }}
+                                    />
+                                </div>
+                                <div className="min-w-0">
+                                    <UploadCloud className="text-muted-foreground mb-2 h-6 w-6" />
+                                    <p className="text-sm font-medium">Arraste o logotipo aqui ou clique para selecionar</p>
+                                    <p className="text-muted-foreground mt-1 text-xs">PNG, JPG, WEBP ou SVG até 2 MB.</p>
+                                    {data.logo && <p className="text-muted-foreground mt-2 truncate text-xs">{(data.logo as File).name}</p>}
+                                </div>
+                                <Input
+                                    ref={logoInputRef}
+                                    type="file"
+                                    id="logo"
+                                    accept="image/*"
+                                    disabled={!canManageCompany}
+                                    onChange={(e) => handleLogoFile(e.target.files?.[0])}
+                                    className="sr-only"
+                                />
                             </div>
+                            {errors.logo && <div className="text-sm text-red-500">{errors.logo}</div>}
+                        </div>
 
-                            <div className="grid gap-2 md:col-span-2">
+                        <div className="mt-4 grid gap-4 md:grid-cols-3">
+                            <div className="grid gap-2">
                                 <Label htmlFor="name">CPF/CNPJ</Label>
                                 <Input
                                     type="text"
@@ -142,7 +244,7 @@ export default function Company({ company }: any) {
                                 />
                             </div>
 
-                            <div className="grid gap-2 md:col-span-2">
+                            <div className="grid gap-2">
                                 <Label htmlFor="companyname">Razão social</Label>
                                 <Input
                                     type="text"

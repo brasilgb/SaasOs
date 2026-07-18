@@ -252,6 +252,7 @@ export default function Parts({ parts, search }: any) {
                         <TableHeader>
                             <TableRow>
                                 <TableHead className="min-w-max">#</TableHead>
+                                <TableHead className="w-[72px]">Imagem</TableHead>
                                 <TableHead>Item</TableHead>
                                 <TableHead>Classificação</TableHead>
                                 <TableHead>Valores</TableHead>
@@ -265,6 +266,18 @@ export default function Parts({ parts, search }: any) {
                                 parts?.data?.map((part: any) => (
                                     <TableRow key={part.id}>
                                         <TableCell>{part.part_number}</TableCell>
+                                        <TableCell>
+                                            <div className="bg-muted flex h-12 w-12 items-center justify-center overflow-hidden rounded-md border">
+                                                <img
+                                                    src={part.image ? `/storage/parts/${part.image}` : '/images/default.png'}
+                                                    alt={part.image ? `Imagem de ${part.name}` : 'Imagem padrão do produto'}
+                                                    className="h-full w-full object-contain p-1"
+                                                    onError={(event) => {
+                                                        event.currentTarget.src = '/images/default.png';
+                                                    }}
+                                                />
+                                            </div>
+                                        </TableCell>
                                         <TableCell>
                                             <div className="space-y-1">
                                                 <div className="font-medium">{part.name}</div>
@@ -332,7 +345,7 @@ export default function Parts({ parts, search }: any) {
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={7} className="flex h-16 w-full items-center justify-center">
+                                    <TableCell colSpan={8} className="flex h-16 w-full items-center justify-center">
                                         Não há dados a serem mostrados no momento.
                                     </TableCell>
                                 </TableRow>
@@ -340,7 +353,7 @@ export default function Parts({ parts, search }: any) {
                         </TableBody>
                         <TableFooter>
                             <TableRow>
-                                <TableCell colSpan={7}>
+                                <TableCell colSpan={8}>
                                     <AppPagination data={parts} />
                                 </TableCell>
                             </TableRow>

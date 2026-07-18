@@ -85,9 +85,11 @@ interface SalesProductsProps {
     parts: Part[];
     customers: Customer[];
     iconSize?: number;
+    triggerLabel?: string;
+    triggerClassName?: string;
 }
 
-export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps) {
+export function SalesProducts({ parts, customers, iconSize, triggerLabel, triggerClassName }: SalesProductsProps) {
     const { auth, cashier } = usePage<PageProps<{ auth: { user: User & { tenant?: CompanyData } }; cashier?: { isOpen?: boolean } }>>().props;
     const companyData = auth?.user?.tenant;
     const isCashierOpen = Boolean(cashier?.isOpen);
@@ -348,8 +350,12 @@ export function SalesProducts({ parts, customers, iconSize }: SalesProductsProps
         <Dialog open={open} onOpenChange={setOpen}>
             <Tooltip>
                 <TooltipTrigger asChild>
-                    <DialogTrigger className="flex h-full cursor-pointer items-center justify-center" aria-label="Abrir frente de caixa">
+                    <DialogTrigger
+                        className={triggerClassName ?? 'flex h-full cursor-pointer items-center justify-center'}
+                        aria-label="Abrir frente de caixa"
+                    >
                         <ShoppingCartIcon size={iconSize} className={isCashierOpen ? 'text-green-300' : 'text-amber-400 opacity-70'} />
+                        {triggerLabel && <span>{triggerLabel}</span>}
                     </DialogTrigger>
                 </TooltipTrigger>
                 <TooltipContent>Abrir frente de caixa (PDV)</TooltipContent>

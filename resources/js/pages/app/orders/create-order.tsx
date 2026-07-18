@@ -14,6 +14,7 @@ import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { ArrowLeft, Printer, Save, Wrench } from 'lucide-react';
 import { useEffect } from 'react';
 import Select from 'react-select';
+import EquipmentTypesModal from './equipment-types-modal';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -48,7 +49,8 @@ export default function CreateOrder({
         warranty_expires_at: string;
     }>;
 }) {
-    const { flash } = usePage().props as any;
+    const { flash, auth } = usePage().props as any;
+    const canManageEquipments = auth?.permissions?.includes('register_equipments');
 
     const optionsCustomer: OptionType[] = customers.map((customer) => ({
         value: customer.id,
@@ -112,6 +114,7 @@ export default function CreateOrder({
     };
 
     const defaultCustomer = optionsCustomer.find((option) => String(option.value) === String(data.customer_id)) ?? null;
+    const selectedEquipment = optionsEquipment.find((option) => String(option.value) === String(data.equipment_id)) ?? null;
     const eligibleWarrantyOrders = warrantySourceOrders.filter(
         (item) => String(item.customer_id) === String(data.customer_id) && String(item.equipment_id) === String(data.equipment_id),
     );
@@ -180,14 +183,24 @@ export default function CreateOrder({
 
                             <div className="grid gap-2 md:col-span-2">
                                 <Label htmlFor="equipment">Equipamento</Label>
-                                <Select<OptionType, false>
-                                    menuPosition="fixed"
-                                    options={optionsEquipment}
-                                    onChange={changeEquipment}
-                                    placeholder="Selecione o equipamento"
-                                    className="text-gray-700"
-                                    styles={selectStyles}
-                                />
+                                <div className="flex min-w-0 items-center gap-2">
+                                    <Select<OptionType, false>
+                                        menuPosition="fixed"
+                                        value={selectedEquipment}
+                                        options={optionsEquipment}
+                                        onChange={changeEquipment}
+                                        placeholder="Selecione o equipamento"
+                                        className="min-w-0 flex-1 text-gray-700"
+                                        styles={selectStyles}
+                                    />
+                                    {canManageEquipments && (
+                                        <EquipmentTypesModal
+                                            equipments={equipments}
+                                            selectedEquipmentId={data.equipment_id}
+                                            onSelectEquipment={(equipmentId) => setData('equipment_id', equipmentId)}
+                                        />
+                                    )}
+                                </div>
                                 {errors.equipment_id && <div className="text-sm text-red-500">{errors.equipment_id}</div>}
                             </div>
 

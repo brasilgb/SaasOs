@@ -32,7 +32,7 @@ type WhatsappMessageSettings = {
 
 const DEFAULT_MESSAGES = {
     generatedbudget:
-        '{{ saudacao }}, {{ cliente }}!\n\nSeu orçamento da OS {{ ordem }} já está disponível.\n\nVocê pode acompanhar pelo link: {{ link_os }}\n\nSe tiver dúvidas, estamos à disposição.',
+        '{{ saudacao }}, {{ cliente }}!\n\nEquipamento analisado preliminarmente. Segue orçamento inicial para reparo conforme diagnóstico técnico apresentado na OS {{ ordem }}.\n\nO serviço será executado somente mediante sua aprovação. Valores e prazo podem sofrer alterações caso sejam identificadas necessidades adicionais durante o reparo.\n\nVocê pode acompanhar pelo link: {{ link_os }}',
     servicecompleted:
         '{{ saudacao }}, {{ cliente }}!\n\nSua OS {{ ordem }} foi concluída com sucesso.\n\nVocê pode acompanhar pelo link: {{ link_os }}\n\nQualquer dúvida, conte com a gente.',
     feedback:
@@ -125,9 +125,10 @@ export default function WhatsappMessage({ whatsappmessage }: { whatsappmessage: 
                     <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
                         <div className="mt-4 grid gap-4">
                             <div className="text-muted-foreground rounded-md border border-dashed p-3 text-sm">
-                                Você pode usar placeholders nas mensagens: <code>{'{{ cliente }}'}</code>, <code>{'{{ ordem }}'}</code>,{' '}
-                                <code>{'{{ link_os }}'}</code>, <code>{'{{ saudacao }}'}</code>, <code>{'{{ saldo }}'}</code> e{' '}
-                                <code>{'{{ dias_pendentes }}'}</code>.
+                                Para usar as mensagens padrão, basta clicar em salvar. Se precisar, altere os textos conforme a necessidade. Os
+                                templates inserem automaticamente informações do cliente e da O.S. pelos placeholders: <code>{'{{ cliente }}'}</code>,{' '}
+                                <code>{'{{ ordem }}'}</code>, <code>{'{{ link_os }}'}</code>, <code>{'{{ saudacao }}'}</code>,{' '}
+                                <code>{'{{ saldo }}'}</code> e <code>{'{{ dias_pendentes }}'}</code>.
                             </div>
 
                             <div className="grid gap-2 md:col-span-2">

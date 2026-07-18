@@ -18,8 +18,16 @@ class FiscalSetting extends Model
             'enabled' => 'boolean',
             'nfe_enabled' => 'boolean',
             'nfse_enabled' => 'boolean',
+            'nfse_simple_option' => 'integer',
+            'nfse_special_tax_regime' => 'integer',
+            'default_iss_rate' => 'decimal:4',
             'api_token' => 'encrypted',
             'webhook_secret' => 'encrypted',
         ];
+    }
+
+    public function usesNationalNfse(): bool
+    {
+        return $this->nfse_enabled && ($this->nfse_mode ?? 'national') === 'national';
     }
 }

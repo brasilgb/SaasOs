@@ -8,6 +8,7 @@ use App\Models\App\CashSession;
 use App\Models\App\Company;
 use App\Models\App\Customer;
 use App\Models\App\Equipment;
+use App\Models\App\FiscalSetting;
 use App\Models\App\Message;
 use App\Models\App\Order;
 use App\Models\App\OrderLog;
@@ -286,6 +287,9 @@ class HandleInertiaRequests extends Middleware
             'authorization_error',
             'import_success',
             'import_error',
+            'equipment_saved',
+            'equipment_updated',
+            'equipment_deleted',
         ])->contains(fn (string $key): bool => $request->session()->has($key));
         $flashId = $hasFlashMessage ? (string) Str::uuid() : null;
 
@@ -309,6 +313,7 @@ class HandleInertiaRequests extends Middleware
 
         $otherSetting = null;
         $openCashSession = null;
+        $fiscalSetting = null;
         if ($user) {
             $otherSetting = Other::query()->firstOrCreate([
                 'tenant_id' => $user->tenant_id,
@@ -327,6 +332,18 @@ class HandleInertiaRequests extends Middleware
                 ->where('status', 'open')
                 ->latest('opened_at')
                 ->first();
+            if ($user->tenant_id) {
+                $fiscalSetting = FiscalSetting::query()->firstOrCreate([
+                    'tenant_id' => $user->tenant_id,
+                ], [
+                    'enabled' => false,
+                    'provider' => 'manual',
+                    'environment' => 'production',
+                    'nfe_enabled' => false,
+                    'nfse_enabled' => false,
+                    'nfse_mode' => 'national',
+                ]);
+            }
         }
 
         return [
@@ -345,6 +362,9 @@ class HandleInertiaRequests extends Middleware
                 'authorization_error' => fn () => $request->session()->get('authorization_error'),
                 'import_success' => fn () => $request->session()->get('import_success'),
                 'import_error' => fn () => $request->session()->get('import_error'),
+                'equipment_saved' => fn () => $request->session()->get('equipment_saved'),
+                'equipment_updated' => fn () => $request->session()->get('equipment_updated'),
+                'equipment_deleted' => fn () => $request->session()->get('equipment_deleted'),
                 'label_print' => fn () => $request->session()->get('label_print'),
             ],
             'subscription' => $subscription,
@@ -370,6 +390,22 @@ class HandleInertiaRequests extends Middleware
             'cashier' => $user ? [
                 'isOpen' => (bool) $openCashSession,
                 'openedAt' => $openCashSession?->opened_at?->toIso8601String(),
+            ] : null,
+            'fiscalSetting' => $fiscalSetting ? [
+                'enabled' => (bool) $fiscalSetting->enabled,
+                'provider' => $fiscalSetting->provider,
+                'environment' => $fiscalSetting->environment,
+                'nfe_enabled' => (bool) $fiscalSetting->nfe_enabled,
+                'nfse_enabled' => (bool) $fiscalSetting->nfse_enabled,
+                'nfse_mode' => $fiscalSetting->nfse_mode ?? 'national',
+                'company_tax_regime' => $fiscalSetting->company_tax_regime,
+                'state_registration' => $fiscalSetting->state_registration,
+                'municipal_registration' => $fiscalSetting->municipal_registration,
+                'service_city_code' => $fiscalSetting->service_city_code,
+                'service_list_item' => $fiscalSetting->service_list_item,
+                'default_iss_rate' => $fiscalSetting->default_iss_rate,
+                'default_nfe_series' => $fiscalSetting->default_nfe_series,
+                'default_nfse_series' => $fiscalSetting->default_nfse_series,
             ] : null,
             'performanceAlert' => $this->commercialPerformanceAlert($user),
             'customerFeedbackAlert' => $this->customerFeedbackAlert($user),

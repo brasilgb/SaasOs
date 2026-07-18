@@ -5,7 +5,6 @@ import {
     BookOpenText,
     Building,
     Calendar,
-    ClipboardCheck,
     ClipboardList,
     Cog,
     CogIcon,
@@ -17,7 +16,7 @@ import {
     MessageCircle,
     MessageCircleCode,
     MessageSquareMore,
-    Monitor,
+    NotebookPen,
     PackageCheck,
     Printer,
     ReceiptText,
@@ -26,8 +25,8 @@ import {
     ShoppingCartIcon,
     Smartphone,
     UserCog,
-    Users2,
     UserRoundSearch,
+    Users2,
     WalletCards,
     Wrench,
 } from 'lucide-react';
@@ -169,12 +168,6 @@ const mainNavGroups: NavGroup[] = [
                 enabled: 'finance',
                 permission: 'finance',
             },
-        ],
-    },
-    {
-        title: 'Vendas / PDV',
-        icon: ShoppingCartIcon,
-        items: [
             {
                 title: 'PDV e vendas',
                 href: route('app.sales.index'),
@@ -242,20 +235,6 @@ const mainConfItems = [
                 permission: 'other_settings',
             },
             {
-                title: 'Tipos de equipamento',
-                url: route('app.register-equipments.index'),
-                icon: Monitor,
-                active: 'app.register-equipments.*',
-                permission: 'register_equipments',
-            },
-            {
-                title: 'Checklists',
-                url: route('app.register-checklists.index'),
-                icon: ClipboardCheck,
-                active: 'app.register-checklists.*',
-                permission: 'register_checklists',
-            },
-            {
                 title: 'Mensagens do WhatsApp',
                 url: route('app.whatsapp-message.index'),
                 icon: MessageCircleCode,
@@ -263,7 +242,7 @@ const mainConfItems = [
                 permission: 'whatsapp_messages',
             },
             {
-                title: 'Recibos',
+                title: 'Recibos / Checklist',
                 url: route('app.receipts.index'),
                 icon: Printer,
                 active: 'app.receipts.*',

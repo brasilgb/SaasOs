@@ -24,7 +24,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Others({ othersettings, company, time_remaining, mailSettings, businessMetrics }: any) {
+export default function Others({ othersettings, company, time_remaining, mailSettings, businessMetrics, fiscalSetting }: any) {
     const { auth } = usePage().props as any;
     const canManageOtherSettings = auth?.permissions?.includes('other_settings');
     const initialTab =
@@ -57,6 +57,24 @@ export default function Others({ othersettings, company, time_remaining, mailSet
         budget_conversion_target: businessMetrics?.budget_conversion_target ?? 60,
         payment_recovery_target: businessMetrics?.payment_recovery_target ?? 70,
         records_per_page: businessMetrics?.records_per_page ?? 20,
+        fiscal_enabled: fiscalSetting?.enabled ?? false,
+        fiscal_nfe_enabled: fiscalSetting?.nfe_enabled ?? false,
+        fiscal_nfse_enabled: fiscalSetting?.nfse_enabled ?? false,
+        fiscal_provider: fiscalSetting?.provider ?? 'manual',
+        fiscal_environment: fiscalSetting?.environment ?? 'production',
+        fiscal_nfse_mode: fiscalSetting?.nfse_mode ?? 'national',
+        fiscal_company_tax_regime: fiscalSetting?.company_tax_regime ?? '',
+        fiscal_state_registration: fiscalSetting?.state_registration ?? '',
+        fiscal_municipal_registration: fiscalSetting?.municipal_registration ?? '',
+        fiscal_service_city_code: fiscalSetting?.service_city_code ?? '',
+        fiscal_service_list_item: fiscalSetting?.service_list_item ?? '',
+        fiscal_default_iss_rate: fiscalSetting?.default_iss_rate ?? '',
+        fiscal_default_nfe_series: fiscalSetting?.default_nfe_series ?? '',
+        fiscal_default_nfse_series: fiscalSetting?.default_nfse_series ?? '',
+        fiscal_nfse_simple_option: fiscalSetting?.nfse_simple_option ?? '',
+        fiscal_nfse_special_tax_regime: fiscalSetting?.nfse_special_tax_regime ?? 0,
+        fiscal_nfse_ibs_cbs_situation: fiscalSetting?.nfse_ibs_cbs_situation ?? '',
+        fiscal_nfse_ibs_cbs_classification: fiscalSetting?.nfse_ibs_cbs_classification ?? '',
     });
 
     const handleSubmit = (e: any) => {
@@ -102,8 +120,9 @@ export default function Others({ othersettings, company, time_remaining, mailSet
 
                     <form onSubmit={handleSubmit} autoComplete="off" className="mt-8 w-full space-y-8">
                         <Tabs defaultValue={initialTab} className="w-full space-y-6">
-                            <TabsList className="grid w-full grid-cols-2 lg:w-fit lg:min-w-[420px]">
+                            <TabsList className="grid w-full grid-cols-3 lg:w-fit lg:min-w-[560px]">
                                 <TabsTrigger value="system">Sistema e SMTP</TabsTrigger>
+                                <TabsTrigger value="fiscal">Fiscal</TabsTrigger>
                                 <TabsTrigger value="operational">Operacionais</TabsTrigger>
                             </TabsList>
 
@@ -305,6 +324,288 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                                 onChange={(e) => setData('mail_from_name', e.target.value)}
                                                 placeholder="Nome da empresa"
                                             />
+                                        </div>
+                                    </div>
+                                </div>
+                            </TabsContent>
+
+                            <TabsContent value="fiscal" className="w-full space-y-8">
+                                <div className="space-y-6 rounded-2xl border p-5">
+                                    <HeadingSmall
+                                        title="Emissão fiscal para clientes"
+                                        description="Habilite NF-e para vendas de produtos e NFS-e Nacional para serviços prestados nas ordens."
+                                    />
+
+                                    <div className="grid gap-4 xl:grid-cols-3">
+                                        <div className="bg-card text-card-foreground flex items-center justify-between gap-4 rounded-2xl border p-4 shadow-sm">
+                                            <div>
+                                                <p className="font-medium">Módulo fiscal</p>
+                                                <p className="text-muted-foreground text-sm">Mostra o menu fiscal e libera os botões de emissão nas telas.</p>
+                                            </div>
+                                            <Switch
+                                                id="fiscal_enabled"
+                                                checked={data.fiscal_enabled}
+                                                disabled={!canManageOtherSettings}
+                                                onCheckedChange={(checked) => setData('fiscal_enabled', checked)}
+                                            />
+                                        </div>
+
+                                        <div className="bg-card text-card-foreground flex items-center justify-between gap-4 rounded-2xl border p-4 shadow-sm">
+                                            <div>
+                                                <p className="font-medium">NF-e de produtos</p>
+                                                <p className="text-muted-foreground text-sm">Libera emissão assistida nas vendas do PDV.</p>
+                                            </div>
+                                            <Switch
+                                                id="fiscal_nfe_enabled"
+                                                checked={data.fiscal_nfe_enabled}
+                                                disabled={!canManageOtherSettings || !data.fiscal_enabled}
+                                                onCheckedChange={(checked) => setData('fiscal_nfe_enabled', checked)}
+                                            />
+                                        </div>
+
+                                        <div className="bg-card text-card-foreground flex items-center justify-between gap-4 rounded-2xl border p-4 shadow-sm">
+                                            <div>
+                                                <p className="font-medium">NFS-e Nacional</p>
+                                                <p className="text-muted-foreground text-sm">Libera emissão assistida para serviços das ordens.</p>
+                                            </div>
+                                            <Switch
+                                                id="fiscal_nfse_enabled"
+                                                checked={data.fiscal_nfse_enabled}
+                                                disabled={!canManageOtherSettings || !data.fiscal_enabled}
+                                                onCheckedChange={(checked) => {
+                                                    setData((current: any) => ({
+                                                        ...current,
+                                                        fiscal_nfse_enabled: checked,
+                                                        fiscal_nfse_mode: checked ? 'national' : current.fiscal_nfse_mode,
+                                                    }));
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-6 rounded-2xl border p-5">
+                                    <HeadingSmall
+                                        title="Dados do emissor"
+                                        description="Essas informações serão usadas como referência para preencher o emissor nacional, o portal NF-e e os comprovantes salvos no sistema."
+                                    />
+
+                                    <div className="grid w-full gap-4 xl:grid-cols-3">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="fiscal_provider">Modo de emissão</Label>
+                                            <Select
+                                                value={data.fiscal_provider}
+                                                disabled={!canManageOtherSettings}
+                                                onValueChange={(value) => setData('fiscal_provider', value)}
+                                            >
+                                                <SelectTrigger id="fiscal_provider" className="w-full">
+                                                    <SelectValue placeholder="Selecione" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="manual">Assistida com comprovante</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label htmlFor="fiscal_environment">Ambiente</Label>
+                                            <Select
+                                                value={data.fiscal_environment}
+                                                disabled={!canManageOtherSettings}
+                                                onValueChange={(value) => setData('fiscal_environment', value)}
+                                            >
+                                                <SelectTrigger id="fiscal_environment" className="w-full">
+                                                    <SelectValue placeholder="Selecione" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="production">Produção</SelectItem>
+                                                    <SelectItem value="sandbox">Homologação</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label htmlFor="fiscal_company_tax_regime">Regime tributário</Label>
+                                            <Input
+                                                id="fiscal_company_tax_regime"
+                                                value={data.fiscal_company_tax_regime}
+                                                disabled={!canManageOtherSettings}
+                                                onChange={(e) => setData('fiscal_company_tax_regime', e.target.value)}
+                                                placeholder="Simples Nacional, Lucro Presumido..."
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label htmlFor="fiscal_state_registration">Inscrição estadual</Label>
+                                            <Input
+                                                id="fiscal_state_registration"
+                                                value={data.fiscal_state_registration}
+                                                disabled={!canManageOtherSettings}
+                                                onChange={(e) => setData('fiscal_state_registration', e.target.value)}
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label htmlFor="fiscal_municipal_registration">Inscrição municipal</Label>
+                                            <Input
+                                                id="fiscal_municipal_registration"
+                                                value={data.fiscal_municipal_registration}
+                                                disabled={!canManageOtherSettings}
+                                                onChange={(e) => setData('fiscal_municipal_registration', e.target.value)}
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label htmlFor="fiscal_service_city_code">Código IBGE do município</Label>
+                                            <Input
+                                                id="fiscal_service_city_code"
+                                                value={data.fiscal_service_city_code}
+                                                disabled={!canManageOtherSettings}
+                                                onChange={(e) => setData('fiscal_service_city_code', e.target.value)}
+                                                placeholder="Ex.: 3550308"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="grid gap-6 xl:grid-cols-2">
+                                    <div className="space-y-6 rounded-2xl border p-5">
+                                        <HeadingSmall
+                                            title="Padrões de NF-e"
+                                            description="Use estes dados como referência para as vendas de produtos e peças."
+                                        />
+
+                                        <div className="grid gap-4 md:grid-cols-2">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="fiscal_default_nfe_series">Série padrão</Label>
+                                                <Input
+                                                    id="fiscal_default_nfe_series"
+                                                    value={data.fiscal_default_nfe_series}
+                                                    disabled={!canManageOtherSettings}
+                                                    onChange={(e) => setData('fiscal_default_nfe_series', e.target.value)}
+                                                    placeholder="1"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="fiscal_state_registration_nfe">IE do emitente</Label>
+                                                <Input
+                                                    id="fiscal_state_registration_nfe"
+                                                    value={data.fiscal_state_registration}
+                                                    disabled={!canManageOtherSettings}
+                                                    onChange={(e) => setData('fiscal_state_registration', e.target.value)}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-6 rounded-2xl border p-5">
+                                        <HeadingSmall
+                                            title="Padrões de NFS-e Nacional"
+                                            description="Use estes dados para emitir serviços pelo Emissor Nacional da NFS-e."
+                                        />
+
+                                        <div className="grid gap-4 md:grid-cols-2">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="fiscal_nfse_mode">Modelo NFS-e</Label>
+                                                <Select
+                                                    value={data.fiscal_nfse_mode}
+                                                    disabled={!canManageOtherSettings}
+                                                    onValueChange={(value) => setData('fiscal_nfse_mode', value)}
+                                                >
+                                                    <SelectTrigger id="fiscal_nfse_mode" className="w-full">
+                                                        <SelectValue placeholder="Selecione" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="national">Nacional</SelectItem>
+                                                        <SelectItem value="municipal">Municipal</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <Label htmlFor="fiscal_default_nfse_series">Série padrão</Label>
+                                                <Input
+                                                    id="fiscal_default_nfse_series"
+                                                    value={data.fiscal_default_nfse_series}
+                                                    disabled={!canManageOtherSettings}
+                                                    onChange={(e) => setData('fiscal_default_nfse_series', e.target.value)}
+                                                    placeholder="NFS"
+                                                />
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <Label htmlFor="fiscal_service_list_item">Item da lista de serviço</Label>
+                                                <Input
+                                                    id="fiscal_service_list_item"
+                                                    value={data.fiscal_service_list_item}
+                                                    disabled={!canManageOtherSettings}
+                                                    onChange={(e) => setData('fiscal_service_list_item', e.target.value)}
+                                                    placeholder="Ex.: 14.01"
+                                                />
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <Label htmlFor="fiscal_default_iss_rate">ISS padrão (%)</Label>
+                                                <Input
+                                                    id="fiscal_default_iss_rate"
+                                                    type="number"
+                                                    min="0"
+                                                    max="100"
+                                                    step="0.0001"
+                                                    value={data.fiscal_default_iss_rate}
+                                                    disabled={!canManageOtherSettings}
+                                                    onChange={(e) => setData('fiscal_default_iss_rate', e.target.value)}
+                                                    placeholder="2.0000"
+                                                />
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <Label htmlFor="fiscal_nfse_simple_option">Opção pelo Simples</Label>
+                                                <Input
+                                                    id="fiscal_nfse_simple_option"
+                                                    type="number"
+                                                    min="1"
+                                                    max="3"
+                                                    value={data.fiscal_nfse_simple_option}
+                                                    disabled={!canManageOtherSettings}
+                                                    onChange={(e) => setData('fiscal_nfse_simple_option', e.target.value)}
+                                                />
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <Label htmlFor="fiscal_nfse_special_tax_regime">Regime especial</Label>
+                                                <Input
+                                                    id="fiscal_nfse_special_tax_regime"
+                                                    type="number"
+                                                    min="0"
+                                                    max="99"
+                                                    value={data.fiscal_nfse_special_tax_regime}
+                                                    disabled={!canManageOtherSettings}
+                                                    onChange={(e) => setData('fiscal_nfse_special_tax_regime', e.target.value)}
+                                                />
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <Label htmlFor="fiscal_nfse_ibs_cbs_situation">Situação IBS/CBS</Label>
+                                                <Input
+                                                    id="fiscal_nfse_ibs_cbs_situation"
+                                                    value={data.fiscal_nfse_ibs_cbs_situation}
+                                                    disabled={!canManageOtherSettings}
+                                                    onChange={(e) => setData('fiscal_nfse_ibs_cbs_situation', e.target.value)}
+                                                    maxLength={3}
+                                                />
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <Label htmlFor="fiscal_nfse_ibs_cbs_classification">Classificação IBS/CBS</Label>
+                                                <Input
+                                                    id="fiscal_nfse_ibs_cbs_classification"
+                                                    value={data.fiscal_nfse_ibs_cbs_classification}
+                                                    disabled={!canManageOtherSettings}
+                                                    onChange={(e) => setData('fiscal_nfse_ibs_cbs_classification', e.target.value)}
+                                                    maxLength={6}
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

@@ -4,11 +4,14 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import { Plus, Save } from 'lucide-react';
 import { useState } from 'react';
+import EquipmentTypesModal from '../orders/equipment-types-modal';
 
-export default function CreateChecklist({ equipments }: any) {
+export default function CreateChecklist({ equipments, returnTo }: any) {
+    const { auth } = usePage<{ auth?: { permissions?: string[] } }>().props;
+    const canManageEquipments = auth?.permissions?.includes('register_equipments');
     const [open, setOpen] = useState(false);
 
     const { data, setData, processing, post, errors, reset } = useForm({
@@ -18,7 +21,7 @@ export default function CreateChecklist({ equipments }: any) {
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
-        post(route('app.register-checklists.store'), {
+        post(route('app.register-checklists.store', returnTo ? { return_to: returnTo } : undefined), {
             onSuccess: () => {
                 (toastSuccess('Sucesso', 'Cadastro realizado com sucesso'), reset(), setOpen(false));
             },
@@ -29,10 +32,6 @@ export default function CreateChecklist({ equipments }: any) {
         value: equipment.id,
         label: equipment.equipment,
     }));
-
-    const changeEquipment = (selected: any) => {
-        setData('equipment_id', selected);
-    };
 
     return (
         <div className="w-full md:w-auto">
@@ -50,18 +49,29 @@ export default function CreateChecklist({ equipments }: any) {
                     <form onSubmit={handleSubmit} autoComplete="off">
                         <div className="grid gap-2 md:col-span-2">
                             <Label htmlFor="customer_id">Equipamento</Label>
-                            <Select onValueChange={(value) => setData('equipment_id', value)} defaultValue={data.equipment_id}>
-                                <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Selecione o equipamento" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        {optionsEquipment.map((opt: any) => (
-                                            <SelectItem value={`${opt.value}`}>{opt.label}</SelectItem>
-                                        ))}
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
+                            <div className="flex min-w-0 items-center gap-2">
+                                <Select onValueChange={(value) => setData('equipment_id', value)} value={String(data.equipment_id ?? '')}>
+                                    <SelectTrigger className="min-w-0 flex-1">
+                                        <SelectValue placeholder="Selecione o equipamento" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            {optionsEquipment.map((opt: any) => (
+                                                <SelectItem key={opt.value} value={`${opt.value}`}>
+                                                    {opt.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                                {canManageEquipments && (
+                                    <EquipmentTypesModal
+                                        equipments={equipments}
+                                        selectedEquipmentId={data.equipment_id}
+                                        onSelectEquipment={(equipmentId) => setData('equipment_id', equipmentId)}
+                                    />
+                                )}
+                            </div>
                             {errors.equipment_id && <div className="text-sm text-red-500">{errors.equipment_id}</div>}
                         </div>
 

@@ -15,7 +15,7 @@ class WhatsappMessageFactory extends Factory
     public function definition(): array
     {
         return [
-            'generatedbudget' => 'Seu orcamento foi gerado e esta disponivel para aprovacao.',
+            'generatedbudget' => "{{ saudacao }}, {{ cliente }}!\nEquipamento analisado preliminarmente. Segue orcamento inicial para reparo conforme diagnostico tecnico apresentado na OS {{ ordem }}.",
             'servicecompleted' => 'Seu equipamento esta pronto para retirada.',
             'feedback' => 'Como foi sua experiencia com nosso atendimento?',
             'defaultmessage' => 'Atualizacao da sua ordem de servico.',

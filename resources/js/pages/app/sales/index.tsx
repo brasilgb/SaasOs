@@ -4,6 +4,7 @@ import { Icon } from '@/components/icon';
 import InputSearch from '@/components/inputSearch';
 import SaleInvoiceModal from '@/components/Modals/SaleInvoiceModal';
 import SaleReceiptPDF from '@/components/SaleReceiptPDF';
+import { SalesProducts } from '@/components/sales-products';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -29,10 +30,12 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Sales({ sales, search, financial_status, financial_counts }: any) {
-    const { auth } = usePage().props as any;
+export default function Sales({ sales, parts, customers, search, financial_status, financial_counts }: any) {
+    const { auth, fiscalSetting } = usePage().props as any;
     const companyData = auth?.user?.tenant;
     const acessDenied = auth?.user?.roles === 9 || auth?.user?.roles === 1 ? true : false;
+    const canIssueProductInvoice =
+        Boolean(fiscalSetting?.enabled) && Boolean(fiscalSetting?.nfe_enabled) && auth?.permissions?.includes('fiscal_documents');
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedSale, setSelectedSale] = useState(null);
@@ -173,6 +176,13 @@ export default function Sales({ sales, search, financial_status, financial_count
                     <InputSearch placeholder="Buscar vendas por número e cliente" url="app.sales.index" />
                 </div>
                 <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap lg:w-auto lg:shrink-0 lg:justify-end">
+                    <SalesProducts
+                        parts={parts ?? []}
+                        customers={customers ?? []}
+                        iconSize={18}
+                        triggerLabel="Abrir PDV"
+                        triggerClassName="border-input bg-background hover:bg-accent hover:text-accent-foreground inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors sm:w-auto"
+                    />
                     <Button variant={financial_status === 'paid' ? 'default' : 'outline'} asChild className="w-full whitespace-nowrap sm:w-auto">
                         <Link href={route('app.sales.index', { search, financial_status: 'paid' })}>Pago ({financial_counts?.paid ?? 0})</Link>
                     </Button>
@@ -274,15 +284,17 @@ export default function Sales({ sales, search, financial_status, financial_count
                                                         Recibo PDF
                                                     </Button>
 
-                                                    <Button
-                                                        type="button"
-                                                        onClick={() => handleOpenInvoiceModal(sale)}
-                                                        className="rounded-lg py-2 text-sm font-medium"
-                                                        disabled={isGeneratingCurrentPdf || isPrintingCurrentThermal}
-                                                    >
-                                                        <FileText className="size-4" />
-                                                        Nota fiscal
-                                                    </Button>
+                                                    {canIssueProductInvoice && (
+                                                        <Button
+                                                            type="button"
+                                                            onClick={() => handleOpenInvoiceModal(sale)}
+                                                            className="rounded-lg py-2 text-sm font-medium"
+                                                            disabled={isGeneratingCurrentPdf || isPrintingCurrentThermal}
+                                                        >
+                                                            <FileText className="size-4" />
+                                                            NF-e
+                                                        </Button>
+                                                    )}
 
                                                     <Button
                                                         onClick={() => handlePrintReceipt(sale)}

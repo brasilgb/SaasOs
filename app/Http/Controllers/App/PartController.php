@@ -13,12 +13,15 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 
 class PartController extends Controller
 {
+    private const PART_IMAGES_PATH = 'storage/parts';
+
     private function currentTenantId(): ?int
     {
         return Auth::user()?->tenant_id ? (int) Auth::user()->tenant_id : null;
@@ -96,7 +99,9 @@ class PartController extends Controller
         Gate::authorize('parts.access');
 
         $data = $request->validated();
-        DB::transaction(function () use ($data) {
+        $image = $this->storePartImage($request);
+
+        DB::transaction(function () use ($data, $image) {
             $part = Part::firstOrCreate(
                 [
                     'tenant_id' => $this->currentTenantId(),
@@ -109,6 +114,7 @@ class PartController extends Controller
                     'category' => $data['category'],
                     'name' => $data['name'],
                     'description' => $data['description'],
+                    'image' => $image,
                     'ncm' => $data['ncm'] ?? null,
                     'cfop' => $data['cfop'] ?? null,
                     'manufacturer' => $data['manufacturer'],
@@ -121,6 +127,11 @@ class PartController extends Controller
                     'status' => $data['status'],
                 ]
             );
+
+            if ($image && ! $part->wasRecentlyCreated) {
+                $this->deletePartImage($part->image);
+                $part->update(['image' => $image]);
+            }
 
             // O `update` com `increment` é seguro em concorrência
             $part->increment('quantity', $data['quantity']);
@@ -189,9 +200,17 @@ class PartController extends Controller
         Gate::authorize('parts.access');
 
         $data = $request->validated();
+        $image = $this->storePartImage($request);
 
-        DB::transaction(function () use ($part, $data) {
+        DB::transaction(function () use ($part, $data, $image) {
             $oldQuantity = $part->quantity;
+            if ($image) {
+                $this->deletePartImage($part->image);
+                $data['image'] = $image;
+            } else {
+                unset($data['image']);
+            }
+
             $part->update($data);
             $newQuantity = $part->quantity;
 
@@ -227,6 +246,7 @@ class PartController extends Controller
                 'reason' => 'Exclusão de peça',
             ]);
 
+            $this->deletePartImage($part->image);
             $part->delete();
         });
 
@@ -254,5 +274,35 @@ class PartController extends Controller
     private function fiscalNfeEnabled(): bool
     {
         return false;
+    }
+
+    private function storePartImage(PartRequest $request): ?string
+    {
+        if (! $request->hasFile('image')) {
+            return null;
+        }
+
+        $storePath = public_path(self::PART_IMAGES_PATH);
+        if (! File::exists($storePath)) {
+            File::makeDirectory($storePath, 0777, true);
+        }
+
+        $file = $request->file('image');
+        $filename = uniqid('part_', true).'.'.$file->getClientOriginalExtension();
+        $file->move($storePath, $filename);
+
+        return $filename;
+    }
+
+    private function deletePartImage(?string $filename): void
+    {
+        if (! $filename) {
+            return;
+        }
+
+        $path = public_path(self::PART_IMAGES_PATH.DIRECTORY_SEPARATOR.$filename);
+        if (File::exists($path)) {
+            File::delete($path);
+        }
     }
 }

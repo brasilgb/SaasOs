@@ -1,4 +1,5 @@
 import { toastSuccess } from '@/components/app-toast-messages';
+import FormFieldHelp from '@/components/form-field-help';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -47,7 +48,10 @@ export default function CreateEquipment() {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="chart">Adicionar ao gráfico do dashboard</Label>
+                                <FormFieldHelp
+                                    label="Adicionar ao gráfico do dashboard"
+                                    content="Quando ativado, este tipo de equipamento será considerado no gráfico do dashboard."
+                                />
                                 <Switch id="chart" checked={data.chart} onCheckedChange={(checked: any) => setData('chart', checked)} />
                             </div>
                         </div>

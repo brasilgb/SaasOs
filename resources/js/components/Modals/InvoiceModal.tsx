@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { maskCpfCnpj, maskMoney } from '@/Utils/mask';
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import { useEffect } from 'react';
 
 interface InvoiceModalProps {
@@ -36,6 +36,7 @@ interface InvoiceModalProps {
 }
 
 export default function InvoiceModal({ open, onClose, order, summary = null }: InvoiceModalProps) {
+    const { fiscalSetting } = usePage().props as any;
     const orderId = order?.id;
     const partsValue = Number(summary?.parts_value ?? order.parts_value ?? 0);
     const serviceValue = Number(summary?.service_value ?? order.service_value ?? 0);
@@ -73,9 +74,9 @@ export default function InvoiceModal({ open, onClose, order, summary = null }: I
         <Dialog open={open} onOpenChange={onClose}>
             <DialogContent className="scrollbar-default max-h-[calc(100svh-1rem)] w-[calc(100%-1rem)] max-w-md overflow-y-auto overscroll-contain p-4 sm:max-h-[90svh] sm:w-full sm:p-6">
                 <DialogHeader>
-                    <DialogTitle>Emitir Nota de Serviço</DialogTitle>
+                    <DialogTitle>Emitir NFS-e Nacional de serviço</DialogTitle>
 
-                    <DialogDescription>Emita a nota no portal fiscal correspondente e registre o comprovante abaixo.</DialogDescription>
+                    <DialogDescription>Use os dados da OS para emitir no Emissor Nacional da NFS-e e registre o comprovante abaixo.</DialogDescription>
                 </DialogHeader>
 
                 <Card>
@@ -92,6 +93,14 @@ export default function InvoiceModal({ open, onClose, order, summary = null }: I
 
                         <div>
                             <span className="font-medium">Serviço:</span> {order.services_performed}
+                        </div>
+
+                        <div>
+                            <span className="font-medium">Item da lista:</span> {fiscalSetting?.service_list_item || 'Não configurado'}
+                        </div>
+
+                        <div>
+                            <span className="font-medium">Município do serviço:</span> {fiscalSetting?.service_city_code || 'Não configurado'}
                         </div>
 
                         <div className="font-medium">Resumo para emissão da NFS-e</div>
@@ -131,7 +140,7 @@ export default function InvoiceModal({ open, onClose, order, summary = null }: I
                     ) : (
                         <Button asChild>
                             <a href="https://www.nfse.gov.br/EmissorNacional" target="_blank" rel="noopener noreferrer">
-                                Abrir emissor
+                                Abrir Emissor Nacional
                             </a>
                         </Button>
                     )}
@@ -165,7 +174,7 @@ export default function InvoiceModal({ open, onClose, order, summary = null }: I
                             </>
                         ) : (
                             <>
-                                <div className="font-medium">Registrar comprovante fiscal no banco para consulta e auditoria</div>
+                                <div className="font-medium">Registrar NFS-e emitida para consulta e auditoria</div>
 
                                 <div className="space-y-1">
                                     <Label htmlFor="fiscal_document_number">Número do documento</Label>

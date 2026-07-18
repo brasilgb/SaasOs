@@ -45,10 +45,18 @@ class EquipmentController extends Controller
     {
         Gate::authorize('equipments.access');
 
-        $data = $request->all();
         $request->validated();
+        $data = $request->only(['equipment', 'chart']);
+        $data['chart'] = $request->boolean('chart');
         $data['equipment_number'] = TenantSequence::next(Equipment::class, 'equipment_number');
-        Equipment::create($data);
+        $equipment = Equipment::create($data);
+
+        if ($request->boolean('_inline')) {
+            return back()->with('equipment_saved', [
+                'id' => $equipment->id,
+                'equipment' => $equipment->equipment,
+            ]);
+        }
 
         return redirect()->route('app.register-equipments.index')->with('success', 'Equipamento cadastrado com sucesso');
     }
@@ -76,9 +84,17 @@ class EquipmentController extends Controller
     {
         Gate::authorize('equipments.access');
 
-        $data = $request->all();
         $request->validated();
+        $data = $request->only(['equipment', 'chart']);
+        $data['chart'] = $request->boolean('chart');
         $equipment->update($data);
+
+        if ($request->boolean('_inline')) {
+            return back()->with('equipment_updated', [
+                'id' => $equipment->id,
+                'equipment' => $equipment->equipment,
+            ]);
+        }
 
         return redirect()->route('app.register-equipments.index')->with('success', 'Marca editada com sucesso');
     }
@@ -86,11 +102,18 @@ class EquipmentController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Equipment $equipment)
+    public function destroy(Request $request, Equipment $equipment)
     {
         Gate::authorize('equipments.access');
 
+        $equipmentId = $equipment->id;
         $equipment->delete();
+
+        if ($request->boolean('_inline')) {
+            return back()->with('equipment_deleted', [
+                'id' => $equipmentId,
+            ]);
+        }
 
         return redirect()->route('app.register-equipments.index')->with('success', 'Marca excluida com sucesso!');
     }
