@@ -433,6 +433,7 @@ export default function Schedules({ schedules, search, status, tab }: any) {
                     <Icon iconNode={Calendar} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Agendamentos</h2>
                 </div>
+                <p className="text-muted-foreground text-sm">Organize os atendimentos, acompanhe os horários e distribua as atividades da equipe.</p>
             </div>
 
             <div className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:justify-between">

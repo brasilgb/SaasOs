@@ -60,7 +60,7 @@ export default function Others({ othersettings, company, time_remaining, mailSet
         fiscal_enabled: fiscalSetting?.enabled ?? false,
         fiscal_nfe_enabled: fiscalSetting?.nfe_enabled ?? false,
         fiscal_nfse_enabled: fiscalSetting?.nfse_enabled ?? false,
-        fiscal_provider: fiscalSetting?.provider ?? 'manual',
+        fiscal_provider: 'manual',
         fiscal_environment: fiscalSetting?.environment ?? 'production',
         fiscal_nfse_mode: fiscalSetting?.nfse_mode ?? 'national',
         fiscal_company_tax_regime: fiscalSetting?.company_tax_regime ?? '',
@@ -333,14 +333,14 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                 <div className="space-y-6 rounded-2xl border p-5">
                                     <HeadingSmall
                                         title="Emissão fiscal para clientes"
-                                        description="Habilite NF-e para vendas de produtos e NFS-e Nacional para serviços prestados nas ordens."
+                                        description="Habilite o registro manual de NF-e para vendas e NFS-e para serviços prestados nas ordens."
                                     />
 
                                     <div className="grid gap-4 xl:grid-cols-3">
                                         <div className="bg-card text-card-foreground flex items-center justify-between gap-4 rounded-2xl border p-4 shadow-sm">
                                             <div>
                                                 <p className="font-medium">Módulo fiscal</p>
-                                                <p className="text-muted-foreground text-sm">Mostra o menu fiscal e libera os botões de emissão nas telas.</p>
+                                                <p className="text-muted-foreground text-sm">Mostra o menu fiscal e libera o registro manual nas telas.</p>
                                             </div>
                                             <Switch
                                                 id="fiscal_enabled"
@@ -353,7 +353,7 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                         <div className="bg-card text-card-foreground flex items-center justify-between gap-4 rounded-2xl border p-4 shadow-sm">
                                             <div>
                                                 <p className="font-medium">NF-e de produtos</p>
-                                                <p className="text-muted-foreground text-sm">Libera emissão assistida nas vendas do PDV.</p>
+                                                <p className="text-muted-foreground text-sm">Libera o registro manual de notas nas vendas do PDV.</p>
                                             </div>
                                             <Switch
                                                 id="fiscal_nfe_enabled"
@@ -366,7 +366,7 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                         <div className="bg-card text-card-foreground flex items-center justify-between gap-4 rounded-2xl border p-4 shadow-sm">
                                             <div>
                                                 <p className="font-medium">NFS-e Nacional</p>
-                                                <p className="text-muted-foreground text-sm">Libera emissão assistida para serviços das ordens.</p>
+                                                <p className="text-muted-foreground text-sm">Libera o registro manual de notas de serviço nas ordens.</p>
                                             </div>
                                             <Switch
                                                 id="fiscal_nfse_enabled"
@@ -386,8 +386,8 @@ export default function Others({ othersettings, company, time_remaining, mailSet
 
                                 <div className="space-y-6 rounded-2xl border p-5">
                                     <HeadingSmall
-                                        title="Dados do emissor"
-                                        description="Essas informações serão usadas como referência para preencher o emissor nacional, o portal NF-e e os comprovantes salvos no sistema."
+                                        title="Modo de emissão"
+                                        description="As notas são emitidas externamente e registradas manualmente no sistema para consulta e auditoria."
                                     />
 
                                     <div className="grid w-full gap-4 xl:grid-cols-3">
@@ -395,19 +395,19 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                             <Label htmlFor="fiscal_provider">Modo de emissão</Label>
                                             <Select
                                                 value={data.fiscal_provider}
-                                                disabled={!canManageOtherSettings}
+                                                disabled
                                                 onValueChange={(value) => setData('fiscal_provider', value)}
                                             >
                                                 <SelectTrigger id="fiscal_provider" className="w-full">
                                                     <SelectValue placeholder="Selecione" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="manual">Assistida com comprovante</SelectItem>
+                                                    <SelectItem value="manual">Manual com registro de comprovante</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
 
-                                        <div className="space-y-2">
+                                        <div className="hidden space-y-2">
                                             <Label htmlFor="fiscal_environment">Ambiente</Label>
                                             <Select
                                                 value={data.fiscal_environment}
@@ -424,7 +424,7 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                             </Select>
                                         </div>
 
-                                        <div className="space-y-2">
+                                        <div className="hidden space-y-2">
                                             <Label htmlFor="fiscal_company_tax_regime">Regime tributário</Label>
                                             <Input
                                                 id="fiscal_company_tax_regime"
@@ -435,7 +435,7 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                             />
                                         </div>
 
-                                        <div className="space-y-2">
+                                        <div className="hidden space-y-2">
                                             <Label htmlFor="fiscal_state_registration">Inscrição estadual</Label>
                                             <Input
                                                 id="fiscal_state_registration"
@@ -445,7 +445,7 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                             />
                                         </div>
 
-                                        <div className="space-y-2">
+                                        <div className="hidden space-y-2">
                                             <Label htmlFor="fiscal_municipal_registration">Inscrição municipal</Label>
                                             <Input
                                                 id="fiscal_municipal_registration"
@@ -455,7 +455,7 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                             />
                                         </div>
 
-                                        <div className="space-y-2">
+                                        <div className="hidden space-y-2">
                                             <Label htmlFor="fiscal_service_city_code">Código IBGE do município</Label>
                                             <Input
                                                 id="fiscal_service_city_code"
@@ -468,7 +468,7 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                     </div>
                                 </div>
 
-                                <div className="grid gap-6 xl:grid-cols-2">
+                                <div className="hidden gap-6 xl:grid-cols-2">
                                     <div className="space-y-6 rounded-2xl border p-5">
                                         <HeadingSmall
                                             title="Padrões de NF-e"

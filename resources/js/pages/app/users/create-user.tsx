@@ -1,12 +1,10 @@
 import { toastSuccess } from '@/components/app-toast-messages';
 import { Icon } from '@/components/icon';
 import InputError from '@/components/input-error';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { useInitials } from '@/hooks/use-initials';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { rolesUser } from '@/Utils/dataSelect';
@@ -16,6 +14,7 @@ import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { ArrowLeft, Eye, EyeClosed, Save, UserCog } from 'lucide-react';
 import { useState } from 'react';
 import Select from 'react-select';
+import AvatarDropzone from './avatar-dropzone';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -35,7 +34,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function CreateUser() {
     const [showPassword, setShowPassword] = useState<boolean>(false);
     const { flash, auth } = usePage().props as any;
-    const getInitials = useInitials();
     const isOperator = auth?.role === 'operator';
 
     const { data, setData, post, progress, processing, reset, errors } = useForm<any>({
@@ -108,21 +106,12 @@ export default function CreateUser() {
                     <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
                         <div className="mt-4 grid gap-4 md:grid-cols-6">
                             <div className="grid gap-2 md:col-span-6">
-                                <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-6">
-                                    <Avatar className="size-16">
-                                        <AvatarFallback>{getInitials(data.name || 'Usuário')}</AvatarFallback>
-                                    </Avatar>
-                                    <div className="grid flex-1 gap-2">
-                                        <Input
-                                            id="avatar"
-                                            type="file"
-                                            accept="image/png,image/jpeg,image/jpg,image/webp"
-                                            onChange={(e) => setData('avatar', e.target.files?.[0] ?? null)}
-                                        />
-                                        <p className="text-muted-foreground text-xs">Use JPG, PNG ou WebP até 2 MB.</p>
-                                        <InputError className="mt-2" message={errors.avatar} />
-                                    </div>
-                                </div>
+                                <AvatarDropzone
+                                    file={data.avatar}
+                                    name={data.name}
+                                    error={errors.avatar}
+                                    onChange={(file) => setData('avatar', file)}
+                                />
                             </div>
 
                             <div className="grid gap-2 md:col-span-2">

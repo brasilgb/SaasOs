@@ -461,8 +461,8 @@
             <p>Manual do cliente com foco operacional, financeiro e de configuração do sistema.</p>
 
             <div class="meta">
-                <div><strong>Versão do manual</strong>2.0</div>
-                <div><strong>Atualizado em</strong>Julho de 2026</div>
+                <div><strong>Versão do manual</strong>2.1</div>
+                <div><strong>Atualizado em</strong>18 de julho de 2026</div>
                 <div><strong>Formato</strong>HTML navegável</div>
             </div>
 
@@ -616,9 +616,10 @@
                         serviço escolhido pela empresa e depois registre no VetorOS o número, a chave, a data, os links
                         dos arquivos e as observações. Não é necessário contratar uma API fiscal para usar esse registro.</p>
                     <h4>3.9 Abas de configurações</h4>
-                    <p>A página <strong>Sistema e módulos</strong> está dividida em duas abas. Em <strong>Sistema e SMTP</strong> ficam
-                        os habilitadores gerais e os dados do servidor de e-mail. Em <strong>Operacionais</strong>
-                        ficam metas, indicadores, visibilidade de menus e regras de acompanhamento.</p>
+                    <p>A página <strong>Sistema e módulos</strong> está dividida em três abas. Em <strong>Sistema e SMTP</strong> ficam
+                        os habilitadores gerais e os dados do servidor de e-mail. Em <strong>Fiscal</strong> ficam os
+                        habilitadores para registro manual de NF-e e NFS-e. Em <strong>Operacionais</strong> ficam metas,
+                        indicadores, visibilidade de menus e regras de acompanhamento.</p>
                     <h4>3.10 Ordem de implantação sugerida</h4>
                     <ol>
                         <li>Configurar dados da empresa e validar os textos de recibo.</li>
@@ -977,6 +978,9 @@
                     <p>No formulário de orçamento, campos como cliente, equipamento, garantia, marca e modelo usam seleção
                         pesquisável. Digite parte do nome ou do modelo para localizar opções cadastradas sem precisar
                         percorrer listas longas.</p>
+                    <p>Usuários com permissão para gerenciar equipamentos também encontram o botão <strong>+</strong>
+                        ao lado do campo Equipamento. Ele abre o mesmo cadastro rápido usado nas ordens de serviço. Ao
+                        salvar um novo tipo, o equipamento é incluído na lista e selecionado no orçamento.</p>
                     <h4>8.4 Consulta de orçamentos no app autoatendimento</h4>
                     <p>Quando a empresa usa o app de autoatendimento, a equipe pode consultar informações de orçamento pelo
                         celular. Esse recurso ajuda em atendimentos rápidos, principalmente quando o colaborador precisa
@@ -994,6 +998,8 @@
                     </ul>
                     <p>Os status usuais do agendamento são aberto, em atendimento e fechado.</p>
                     <p>Esse módulo é útil para assistência externa, coleta, entrega técnica e visitas programadas.</p>
+                    <p>A listagem, o cadastro e a edição exibem uma breve descrição no topo para indicar o objetivo de
+                        cada tela. Use a busca e os filtros para localizar rapidamente atendimentos da equipe.</p>
                     <p>No cadastro e edição, cliente, técnico responsável e status usam campos de seleção. Técnico e
                         status são obrigatórios; se algum deles ficar em branco, o sistema exibe a validação antes de
                         salvar. A data e hora podem ser escolhidas em um componente de calendário e horário para agilizar
@@ -1218,6 +1224,9 @@
                         remetente pode editar ou excluir a mensagem, e o destinatário pode marcar como lida.</p>
                     <p>Esse recurso é indicado para alinhamentos rápidos da equipe sem misturar a comunicação interna
                         com as mensagens enviadas ao cliente.</p>
+                    <p>Na listagem, use os filtros para consultar mensagens recebidas, enviadas ou relacionadas ao seu
+                        usuário, além de separar mensagens lidas e não lidas. Administradores podem ter uma visão mais
+                        ampla conforme as permissões da conta.</p>
                     <h4>13.1 Modelos de WhatsApp</h4>
                     <p>O módulo de mensagens do WhatsApp armazena textos padrão para comunicação com clientes, como
                         orçamento, cobrança, aviso de conclusão e pedido de feedback.</p>
@@ -1448,6 +1457,11 @@
                             Reúne habilitadores gerais do sistema, configurações de envio de e-mail e teste SMTP.
                         </div>
                         <div class="card">
+                            <strong>Fiscal</strong>
+                            Habilita o registro manual de NF-e de produtos e NFS-e de serviços. A emissão acontece fora
+                            do VetorOS e o comprovante é registrado depois no sistema.
+                        </div>
+                        <div class="card">
                             <strong>Operacionais</strong>
                             Reúne metas, indicadores, regras de avaliação, intervalo de acompanhamento e visibilidade dos
                             menus operacionais.
@@ -1593,6 +1607,9 @@
                         edição de usuários, inclusive para técnicos.</p>
                     <p>As imagens aceitas são JPG, PNG ou WebP, com limite de 2 MB. Caso a pasta de armazenamento de
                         avatares ainda não exista, o sistema cria automaticamente no primeiro envio.</p>
+                    <p>Para selecionar a imagem, arraste o arquivo até a área tracejada ou clique nela para procurar no
+                        dispositivo. A prévia aparece antes do salvamento e pode ser removida pelo botão <strong>×</strong>.
+                        No cabeçalho do sistema, passe o mouse sobre o avatar para visualizar uma versão ampliada.</p>
                 </section>
 
                 <section id="aplicativos">
@@ -1699,6 +1716,12 @@
                     <p>O VetorOS não emite notas automaticamente nem exige contratação de API fiscal. A empresa pode
                         emitir seus documentos pelo sistema oficial, prefeitura, Emissor Nacional ou serviço de sua
                         preferência e manter os dados registrados junto da operação.</p>
+                    <div class="callout">
+                        <strong>Links oficiais:</strong> para serviços, o botão abre o Emissor Nacional da NFS-e. Para
+                        produtos, o Portal Nacional da NF-e é oficial para informações e consultas, mas não funciona
+                        como emissor web nacional. A NF-e deve ser emitida pelo software da empresa, emissor autorizado
+                        ou solução indicada pela SEFAZ estadual.
+                    </div>
                     <h4>24.1 Como registrar uma NFS-e da ordem</h4>
                     <ol>
                         <li>Emita a NFS-e fora do VetorOS pelo emissor utilizado pela empresa.</li>
@@ -1722,6 +1745,11 @@
                         <li>Confira o vínculo com a ordem ou venda antes de salvar.</li>
                         <li>A responsabilidade pela conferência tributária, alíquotas, códigos fiscais e obrigações legais permanece com a empresa e sua contabilidade.</li>
                     </ul>
+                    <h4>24.5 Configuração do modo manual</h4>
+                    <p>Em <strong>Sistema e módulos &gt; Fiscal</strong>, habilite o módulo fiscal e os tipos de documento
+                        usados pela empresa. O modo exibido é <strong>Manual com registro de comprovante</strong>. Os
+                        parâmetros de integração automática permanecem preservados internamente, mas não aparecem na
+                        operação atual.</p>
                 </section>
 
                 <section id="botoes">
@@ -1850,6 +1878,13 @@
                         que o sistema receber novos fluxos, telas ou automações, o ideal é atualizar também esta página
                         para que o time continue operando com segurança.
                     </div>
+                    <h4>27.1 Informações úteis ao solicitar suporte</h4>
+                    <ul>
+                        <li>Informe a tela e a ação que estava executando.</li>
+                        <li>Anote a mensagem exibida e o horário aproximado da ocorrência.</li>
+                        <li>Confirme se o problema acontece novamente após atualizar a página.</li>
+                        <li>Não envie senhas, tokens, certificados digitais ou dados sensíveis em capturas de tela.</li>
+                    </ul>
                 </section>
             </article>
         </main>

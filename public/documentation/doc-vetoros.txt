@@ -1,7 +1,7 @@
 MANUAL DO CLIENTE
 VetorOS - Sistema de Gestão de Ordens de Serviço
-Versão 1.5
-Julho de 2026
+Versão 2.1
+Atualizado em 18 de julho de 2026
 
 Aviso importante
 Este manual descreve o uso prático do VetorOS na rotina da assistência técnica.
@@ -95,7 +95,10 @@ Também existe envio de e-mail de teste para validação.
 3.8 Abas de configurações
 A página Sistema e módulos está dividida em:
 - Sistema e SMTP
+- Fiscal
 - Operacionais
+
+Na aba Fiscal, o modo atual é Manual com registro de comprovante. A emissão ocorre fora do VetorOS; o sistema mantém o documento vinculado à ordem ou venda.
 
 4. DASHBOARD
 O dashboard reúne indicadores operacionais e financeiros com gráficos, métricas e atalhos rápidos.
@@ -219,6 +222,8 @@ O módulo de orçamentos permite:
 O orçamento pode fazer parte do fluxo da ordem de serviço.
 Na área pública do cliente também pode haver aprovação ou reprovação do orçamento.
 
+No campo Equipamento, usuários com permissão encontram o botão + para cadastrar rapidamente um novo tipo. Depois de salvo, ele é selecionado no orçamento.
+
 9. AGENDAMENTOS DE VISITAS
 O módulo de agendamentos organiza visitas técnicas e atendimentos externos.
 
@@ -229,6 +234,8 @@ Funções:
 - vincular cliente e técnico
 - acompanhar status
 - enviar mensagem ao técnico por WhatsApp
+
+A busca e os filtros ajudam a localizar atendimentos. As descrições no topo explicam o objetivo da listagem, do cadastro e da edição.
 
 Status comuns:
 - aberto
@@ -256,6 +263,7 @@ Dependendo do status da ordem, o cliente também pode:
 O sistema possui um módulo de comunicação interna entre usuários.
 O remetente pode editar ou excluir a mensagem e o destinatário pode marcá-la como lida.
 Esse recurso é indicado para alinhamentos internos sem misturar com a comunicação enviada ao cliente.
+Use os filtros para separar mensagens recebidas, enviadas, lidas e não lidas.
 
 12. PEÇAS, PRODUTOS E ESTOQUE
 O sistema permite cadastrar peças e produtos para uso em ordens e em vendas.
@@ -392,6 +400,11 @@ Sistema e SMTP:
 - dados do servidor de e-mail
 - teste SMTP
 
+Fiscal:
+- habilitação do registro manual de NF-e e NFS-e
+- emissão realizada fora do VetorOS
+- vínculo do comprovante com a ordem ou venda
+
 Operacionais:
 - metas
 - indicadores
@@ -431,6 +444,12 @@ Perfis comuns:
 - Operador / atendente
 - Técnico
 
+Avatar do usuário:
+- arraste uma imagem até a área tracejada ou clique para selecionar
+- formatos aceitos: JPG, PNG e WebP, até 2 MB
+- confira a prévia antes de salvar
+- passe o mouse sobre o avatar no cabeçalho para visualizar a imagem ampliada
+
 19. APLICATIVO E UPLOAD DE IMAGENS
 As ordens podem receber imagens pela interface do sistema.
 Esse recurso ajuda a documentar o estado de entrada, o defeito e as evidências do serviço executado.
@@ -450,6 +469,8 @@ Antes de importar grandes volumes, vale testar com um arquivo menor.
 
 21. EMISSÃO FISCAL
 O VetorOS utiliza registro manual de documentos fiscais e não exige contratação de API fiscal. A empresa emite a nota pelo sistema oficial, prefeitura, Emissor Nacional ou serviço de sua preferência e registra os dados no VetorOS.
+
+Para serviços, o botão abre o Emissor Nacional da NFS-e. Para produtos, o Portal Nacional da NF-e é oficial para consulta e informações, mas não é um emissor web nacional. A NF-e deve ser emitida pelo software da empresa, emissor autorizado ou solução indicada pela SEFAZ estadual.
 
 21.1 NFS-e da ordem de serviço
 - emita a NFS-e fora do VetorOS
@@ -479,3 +500,5 @@ O VetorOS não transmite, autoriza, cancela ou sincroniza notas com órgãos fis
 
 23. SUPORTE
 Em caso de dúvidas de uso, configuração ou melhoria, mantenha este manual atualizado junto da versão instalada do sistema e utilize o canal de suporte definido pela empresa.
+
+Ao solicitar suporte, informe a tela, a ação executada, a mensagem exibida e o horário aproximado. Não envie senhas, tokens, certificados digitais ou outros dados sensíveis.

@@ -9,19 +9,22 @@ import { Budget, OptionType } from '@/types';
 import { warrantyOptions } from '@/Utils/dataSelect';
 import { maskMoney, maskMoneyDot, unMask } from '@/Utils/mask';
 import selectStyles from '@/Utils/selectStyles';
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import { Save } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Select from 'react-select';
+import EquipmentTypesModal from '../orders/equipment-types-modal';
 
 interface BudgetFormProps {
     initialData?: Budget;
     budgets: Array<Budget | string | null>;
-    equipments: { id: number; equipment: string }[];
+    equipments: { id: number; equipment: string; equipment_number?: number; chart?: boolean }[];
 }
 
 export default function BudgetForm({ initialData, equipments }: BudgetFormProps) {
     const isEdit = !!initialData;
+    const { auth } = usePage().props as any;
+    const canManageEquipments = auth?.permissions?.includes('register_equipments');
 
     const optionsEquipment: OptionType[] = equipments?.map((equipment) => ({
         value: equipment.id,
@@ -49,9 +52,9 @@ export default function BudgetForm({ initialData, equipments }: BudgetFormProps)
      SELECT OPTIONS
   ========================= */
     const defaultWarranty = warrantyOptions.find((o) => o.value === initialData?.warranty) ?? null;
-    const defaultEquipament = optionsEquipment.find((o) => o.value == initialData?.equipment_id) ?? null;
 
     const [selectedWarranty, setSelectedWarranty] = useState<OptionType | null>(defaultWarranty);
+    const selectedEquipment = optionsEquipment.find((option) => String(option.value) === String(data.equipment_id)) ?? null;
 
     useEffect(() => {
         const part = Number(unMask(String(data.part_value))) || 0;
@@ -109,15 +112,24 @@ export default function BudgetForm({ initialData, equipments }: BudgetFormProps)
             <div className="grid gap-4 md:grid-cols-3">
                 <div className="grid gap-2">
                     <Label htmlFor="equipment">Equipamento</Label>
-                    <Select<OptionType, false>
-                        menuPosition="fixed"
-                        defaultValue={defaultEquipament}
-                        options={optionsEquipment}
-                        onChange={changeEquipment}
-                        placeholder="Selecione o equipamento"
-                        className="min-w-0"
-                        styles={selectStyles}
-                    />
+                    <div className="flex min-w-0 items-center gap-2">
+                        <Select<OptionType, false>
+                            menuPosition="fixed"
+                            value={selectedEquipment}
+                            options={optionsEquipment}
+                            onChange={changeEquipment}
+                            placeholder="Selecione o equipamento"
+                            className="min-w-0 flex-1"
+                            styles={selectStyles}
+                        />
+                        {canManageEquipments && (
+                            <EquipmentTypesModal
+                                equipments={equipments}
+                                selectedEquipmentId={data.equipment_id}
+                                onSelectEquipment={(equipmentId) => setData('equipment_id', equipmentId)}
+                            />
+                        )}
+                    </div>
                     {errors.equipment_id && <div className="text-sm text-red-500">{errors.equipment_id}</div>}
                 </div>
 

@@ -315,13 +315,24 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                     <div className="ml-auto flex items-center space-x-2">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="size-10 rounded-full p-1">
+                                <Button variant="ghost" className="group/avatar relative size-10 rounded-full p-1">
                                     <Avatar className="size-8 overflow-hidden rounded-full">
                                         <AvatarImage src={auth.user.avatar} alt={auth.user.name} />
                                         <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
                                             {getInitials(auth.user.name)}
                                         </AvatarFallback>
                                     </Avatar>
+                                    <span
+                                        aria-hidden="true"
+                                        className="bg-popover invisible pointer-events-none absolute top-1/2 right-full z-50 mr-2 -translate-y-1/2 rounded-lg border p-2 opacity-0 shadow-lg transition-opacity group-hover/avatar:visible group-hover/avatar:opacity-100 group-focus-visible/avatar:visible group-focus-visible/avatar:opacity-100"
+                                    >
+                                        <Avatar className="size-24 overflow-hidden rounded-lg">
+                                            <AvatarImage src={auth.user.avatar} alt="" className="object-cover" />
+                                            <AvatarFallback className="rounded-lg bg-neutral-200 text-xl text-black dark:bg-neutral-700 dark:text-white">
+                                                {getInitials(auth.user.name)}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                    </span>
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="w-56" align="end">

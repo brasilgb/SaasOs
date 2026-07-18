@@ -30,6 +30,7 @@ export default function CreateBudget({ budgets, equipments }: any) {
                     <Icon iconNode={ScrollText} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Orçamentos</h2>
                 </div>
+                <p className="text-muted-foreground text-sm">Crie um orçamento com os serviços, valores, condições e prazo estimado.</p>
             </div>
 
             <div className="flex items-center justify-between p-4">

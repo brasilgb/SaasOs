@@ -74,6 +74,7 @@ export default function Messages({ messages, search }: any) {
                     <Icon iconNode={MessageSquareMore} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Mensagens</h2>
                 </div>
+                <p className="text-muted-foreground text-sm">Envie e receba mensagens internas entre os usuários do sistema.</p>
             </div>
 
             <div className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:justify-between">

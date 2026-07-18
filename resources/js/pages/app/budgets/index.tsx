@@ -32,6 +32,7 @@ export default function CheckList({ budgets, company, search }: any) {
                     <Icon iconNode={ScrollText} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Orçamentos</h2>
                 </div>
+                <p className="text-muted-foreground text-sm">Consulte e acompanhe os orçamentos de serviços cadastrados no sistema.</p>
             </div>
 
             <div className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:justify-between">

@@ -30,6 +30,7 @@ export default function EditSchedule({ customers, parts, schedule, technicals, p
                     <Icon iconNode={Calendar} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Agendamentos</h2>
                 </div>
+                <p className="text-muted-foreground text-sm">Atualize os dados, o responsável e o andamento deste atendimento.</p>
             </div>
 
             <div className="flex items-center justify-between p-4">

@@ -30,6 +30,7 @@ export default function CreateSchedule({ customers, parts, technicals, enableTec
                     <Icon iconNode={Calendar} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Agendamentos</h2>
                 </div>
+                <p className="text-muted-foreground text-sm">Cadastre um novo atendimento com cliente, data, horário e responsável.</p>
             </div>
 
             <div className="flex items-center justify-between p-4">

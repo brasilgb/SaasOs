@@ -36,6 +36,7 @@ export default function EditBudget({ budgets, budget, equipments, page, search }
                     <Icon iconNode={ScrollText} className="h-8 w-8" />
                     <h2 className="text-xl font-semibold tracking-tight">Orçamentos</h2>
                 </div>
+                <p className="text-muted-foreground text-sm">Atualize os serviços, valores e condições deste orçamento.</p>
             </div>
 
             <div className="flex items-center justify-between p-4">
