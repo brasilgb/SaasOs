@@ -49,6 +49,7 @@ class OtherController extends Controller
             ->where('tenant_id', $tenantId)
             ->first();
         $tenant = $tenantId ? Tenant::query()->find($tenantId) : null;
+        $automaticFiscalEmissionEnabled = (bool) ($tenant?->automatic_fiscal_emission_enabled ?? false);
         $fiscalSetting = $tenantId ? FiscalSetting::query()->firstOrCreate([
             'tenant_id' => $tenantId,
         ], [
@@ -106,7 +107,10 @@ class OtherController extends Controller
             'businessMetrics' => $businessMetrics,
             'fiscalSetting' => $fiscalSetting ? [
                 'enabled' => (bool) $fiscalSetting->enabled,
-                'provider' => $fiscalSetting->provider ?? 'manual',
+                'automatic_emission_enabled' => $automaticFiscalEmissionEnabled,
+                'provider' => $automaticFiscalEmissionEnabled
+                    ? ($fiscalSetting->provider ?? FiscalSetting::PROVIDER_MANUAL)
+                    : FiscalSetting::PROVIDER_MANUAL,
                 'environment' => $fiscalSetting->environment ?? 'production',
                 'nfe_enabled' => (bool) $fiscalSetting->nfe_enabled,
                 'nfse_enabled' => (bool) $fiscalSetting->nfse_enabled,
@@ -135,6 +139,14 @@ class OtherController extends Controller
         Gate::authorize('other-settings.access');
 
         abort_if((int) $other->tenant_id !== (int) $this->currentTenantId(), 403);
+
+        $automaticFiscalEmissionEnabled = (bool) Tenant::query()
+            ->whereKey($this->currentTenantId())
+            ->value('automatic_fiscal_emission_enabled');
+
+        $allowedFiscalProviders = $automaticFiscalEmissionEnabled
+            ? [FiscalSetting::PROVIDER_MANUAL, FiscalSetting::PROVIDER_GOVERNMENT_API]
+            : [FiscalSetting::PROVIDER_MANUAL];
 
         $data = $request->validate([
             'navigation' => 'sometimes|boolean',
@@ -167,7 +179,7 @@ class OtherController extends Controller
             'fiscal_enabled' => 'sometimes|boolean',
             'fiscal_nfe_enabled' => 'sometimes|boolean',
             'fiscal_nfse_enabled' => 'sometimes|boolean',
-            'fiscal_provider' => ['nullable', 'string', Rule::in(['manual'])],
+            'fiscal_provider' => ['nullable', 'string', Rule::in($allowedFiscalProviders)],
             'fiscal_environment' => ['nullable', 'string', Rule::in(['production', 'sandbox'])],
             'fiscal_nfse_mode' => ['nullable', 'string', Rule::in(['national', 'municipal'])],
             'fiscal_company_tax_regime' => 'nullable|string|max:50',
@@ -215,7 +227,9 @@ class OtherController extends Controller
 
         $fiscalPayload = [
             'enabled' => (bool) ($data['fiscal_enabled'] ?? false),
-            'provider' => 'manual',
+            'provider' => $automaticFiscalEmissionEnabled
+                ? ($data['fiscal_provider'] ?? FiscalSetting::PROVIDER_MANUAL)
+                : FiscalSetting::PROVIDER_MANUAL,
             'environment' => $data['fiscal_environment'] ?? 'production',
             'nfe_enabled' => (bool) ($data['fiscal_nfe_enabled'] ?? false),
             'nfse_enabled' => (bool) ($data['fiscal_nfse_enabled'] ?? false),

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\App;
 
+use App\Models\App\FiscalSetting;
 use App\Models\App\Other;
 use App\Models\Tenant;
 use App\Models\User;
@@ -36,6 +37,58 @@ class OtherControllerTest extends TestCase
             ->assertOk()
             ->assertViewHas('page.props.businessMetrics.warranty_return_alert_threshold', 10)
             ->assertViewHas('page.props.businessMetrics.communication_follow_up_cooldown_days', 2);
+    }
+
+    public function test_automatic_fiscal_emission_is_hidden_by_default(): void
+    {
+        FiscalSetting::query()->create([
+            'provider' => FiscalSetting::PROVIDER_GOVERNMENT_API,
+        ]);
+
+        $this->get(route('app.other-settings.index'))
+            ->assertOk()
+            ->assertViewHas('page.props.fiscalSetting.automatic_emission_enabled', false)
+            ->assertViewHas('page.props.fiscalSetting.provider', FiscalSetting::PROVIDER_MANUAL);
+    }
+
+    public function test_automatic_fiscal_emission_is_exposed_for_subscribed_tenant(): void
+    {
+        $this->tenant->update(['automatic_fiscal_emission_enabled' => true]);
+        FiscalSetting::query()->create([
+            'provider' => FiscalSetting::PROVIDER_GOVERNMENT_API,
+        ]);
+
+        $this->get(route('app.other-settings.index'))
+            ->assertOk()
+            ->assertViewHas('page.props.fiscalSetting.automatic_emission_enabled', true)
+            ->assertViewHas('page.props.fiscalSetting.provider', FiscalSetting::PROVIDER_GOVERNMENT_API);
+    }
+
+    public function test_it_rejects_automatic_fiscal_provider_without_subscription(): void
+    {
+        $other = Other::query()->create();
+
+        $this->from(route('app.other-settings.index'))
+            ->put(route('app.other-settings.update', $other), [
+                'fiscal_provider' => FiscalSetting::PROVIDER_GOVERNMENT_API,
+            ])
+            ->assertRedirect(route('app.other-settings.index'))
+            ->assertSessionHasErrors('fiscal_provider');
+    }
+
+    public function test_it_accepts_automatic_fiscal_provider_for_subscribed_tenant(): void
+    {
+        $this->tenant->update(['automatic_fiscal_emission_enabled' => true]);
+        $other = Other::query()->create();
+
+        $this->put(route('app.other-settings.update', $other), [
+            'fiscal_provider' => FiscalSetting::PROVIDER_GOVERNMENT_API,
+        ])->assertRedirect(route('app.other-settings.index', ['other' => $other->id]));
+
+        $this->assertDatabaseHas('fiscal_settings', [
+            'tenant_id' => $this->tenant->id,
+            'provider' => FiscalSetting::PROVIDER_GOVERNMENT_API,
+        ]);
     }
 
     public function test_it_updates_warranty_return_alert_threshold(): void

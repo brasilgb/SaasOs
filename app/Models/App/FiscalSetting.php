@@ -10,6 +10,10 @@ class FiscalSetting extends Model
 {
     use HasFactory, Tenantable;
 
+    public const PROVIDER_MANUAL = 'manual';
+
+    public const PROVIDER_GOVERNMENT_API = 'government_api';
+
     protected $guarded = ['id'];
 
     protected function casts(): array
@@ -29,5 +33,10 @@ class FiscalSetting extends Model
     public function usesNationalNfse(): bool
     {
         return $this->nfse_enabled && ($this->nfse_mode ?? 'national') === 'national';
+    }
+
+    public function usesAutomaticGovernmentApi(): bool
+    {
+        return $this->provider === self::PROVIDER_GOVERNMENT_API;
     }
 }

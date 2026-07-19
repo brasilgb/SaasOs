@@ -37,6 +37,7 @@ CREATE TABLE tenants (
     number VARCHAR(50),
     complement VARCHAR(80),
     subscription_status VARCHAR(40) DEFAULT 'active',
+    automatic_fiscal_emission_enabled SMALLINT DEFAULT 0 NOT NULL,
     expires_at TIMESTAMP,
     last_subscription_notice_key VARCHAR(120),
     last_subscription_notice_sent_at TIMESTAMP,

@@ -27,6 +27,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Others({ othersettings, company, time_remaining, mailSettings, businessMetrics, fiscalSetting }: any) {
     const { auth } = usePage().props as any;
     const canManageOtherSettings = auth?.permissions?.includes('other_settings');
+    const automaticFiscalEmissionEnabled = Boolean(fiscalSetting?.automatic_emission_enabled);
     const initialTab =
         typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('tab') === 'operational' ? 'operational' : 'system';
 
@@ -60,7 +61,8 @@ export default function Others({ othersettings, company, time_remaining, mailSet
         fiscal_enabled: fiscalSetting?.enabled ?? false,
         fiscal_nfe_enabled: fiscalSetting?.nfe_enabled ?? false,
         fiscal_nfse_enabled: fiscalSetting?.nfse_enabled ?? false,
-        fiscal_provider: 'manual',
+        fiscal_provider:
+            automaticFiscalEmissionEnabled && fiscalSetting?.provider === 'government_api' ? 'government_api' : 'manual',
         fiscal_environment: fiscalSetting?.environment ?? 'production',
         fiscal_nfse_mode: fiscalSetting?.nfse_mode ?? 'national',
         fiscal_company_tax_regime: fiscalSetting?.company_tax_regime ?? '',
@@ -91,6 +93,8 @@ export default function Others({ othersettings, company, time_remaining, mailSet
             },
         );
     };
+
+    const usesAutomaticFiscalEmission = automaticFiscalEmissionEnabled && data.fiscal_provider === 'government_api';
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -387,7 +391,11 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                 <div className="space-y-6 rounded-2xl border p-5">
                                     <HeadingSmall
                                         title="Modo de emissão"
-                                        description="As notas são emitidas externamente e registradas manualmente no sistema para consulta e auditoria."
+                                        description={
+                                            automaticFiscalEmissionEnabled
+                                                ? 'Escolha entre o registro manual e a emissão automática contratada pelas APIs governamentais.'
+                                                : 'As notas são emitidas externamente e registradas manualmente no sistema para consulta e auditoria.'
+                                        }
                                     />
 
                                     <div className="grid w-full gap-4 xl:grid-cols-3">
@@ -395,7 +403,7 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                             <Label htmlFor="fiscal_provider">Modo de emissão</Label>
                                             <Select
                                                 value={data.fiscal_provider}
-                                                disabled
+                                                disabled={!canManageOtherSettings || !automaticFiscalEmissionEnabled}
                                                 onValueChange={(value) => setData('fiscal_provider', value)}
                                             >
                                                 <SelectTrigger id="fiscal_provider" className="w-full">
@@ -403,11 +411,14 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectItem value="manual">Manual com registro de comprovante</SelectItem>
+                                                    {automaticFiscalEmissionEnabled && (
+                                                        <SelectItem value="government_api">Automática pelas APIs governamentais</SelectItem>
+                                                    )}
                                                 </SelectContent>
                                             </Select>
                                         </div>
 
-                                        <div className="hidden space-y-2">
+                                        <div className={usesAutomaticFiscalEmission ? 'space-y-2' : 'hidden'}>
                                             <Label htmlFor="fiscal_environment">Ambiente</Label>
                                             <Select
                                                 value={data.fiscal_environment}
@@ -424,7 +435,7 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                             </Select>
                                         </div>
 
-                                        <div className="hidden space-y-2">
+                                        <div className={usesAutomaticFiscalEmission ? 'space-y-2' : 'hidden'}>
                                             <Label htmlFor="fiscal_company_tax_regime">Regime tributário</Label>
                                             <Input
                                                 id="fiscal_company_tax_regime"
@@ -435,7 +446,7 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                             />
                                         </div>
 
-                                        <div className="hidden space-y-2">
+                                        <div className={usesAutomaticFiscalEmission ? 'space-y-2' : 'hidden'}>
                                             <Label htmlFor="fiscal_state_registration">Inscrição estadual</Label>
                                             <Input
                                                 id="fiscal_state_registration"
@@ -445,7 +456,7 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                             />
                                         </div>
 
-                                        <div className="hidden space-y-2">
+                                        <div className={usesAutomaticFiscalEmission ? 'space-y-2' : 'hidden'}>
                                             <Label htmlFor="fiscal_municipal_registration">Inscrição municipal</Label>
                                             <Input
                                                 id="fiscal_municipal_registration"
@@ -455,7 +466,7 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                             />
                                         </div>
 
-                                        <div className="hidden space-y-2">
+                                        <div className={usesAutomaticFiscalEmission ? 'space-y-2' : 'hidden'}>
                                             <Label htmlFor="fiscal_service_city_code">Código IBGE do município</Label>
                                             <Input
                                                 id="fiscal_service_city_code"
@@ -468,7 +479,7 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                     </div>
                                 </div>
 
-                                <div className="hidden gap-6 xl:grid-cols-2">
+                                <div className={usesAutomaticFiscalEmission ? 'grid gap-6 xl:grid-cols-2' : 'hidden'}>
                                     <div className="space-y-6 rounded-2xl border p-5">
                                         <HeadingSmall
                                             title="Padrões de NF-e"

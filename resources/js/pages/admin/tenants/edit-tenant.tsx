@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import AdminLayout from '@/layouts/admin/admin-layout';
 import { BreadcrumbItem } from '@/types';
@@ -53,6 +54,7 @@ export default function EditTenant({ plans, tenant }: any) {
         number: tenant.number,
         plan_id: tenant.plan_id,
         status: tenant.status,
+        automatic_fiscal_emission_enabled: Boolean(tenant.automatic_fiscal_emission_enabled),
         observations: tenant.observations,
     });
 
@@ -343,6 +345,31 @@ export default function EditTenant({ plans, tenant }: any) {
                                 />
                                 <InputError className="mt-2" message={errors.status} />
                             </div>
+                        </div>
+
+                        <div className="rounded-lg border p-4">
+                            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                                <div>
+                                    <Label htmlFor="automatic_fiscal_emission_enabled">Emissão fiscal automática por assinatura</Label>
+                                    <p className="text-muted-foreground mt-1 text-sm">
+                                        Libera para esta empresa as configurações de emissão direta pelas APIs governamentais de NF-e e NFS-e.
+                                    </p>
+                                    <p className="text-muted-foreground mt-1 text-xs">
+                                        Desativada, a empresa continua apenas com o registro manual de comprovantes.
+                                    </p>
+                                </div>
+                                <div className="flex shrink-0 items-center gap-3">
+                                    <Switch
+                                        id="automatic_fiscal_emission_enabled"
+                                        checked={data.automatic_fiscal_emission_enabled}
+                                        onCheckedChange={(checked) => setData('automatic_fiscal_emission_enabled', checked)}
+                                    />
+                                    <span className="text-muted-foreground text-sm">
+                                        {data.automatic_fiscal_emission_enabled ? 'Liberada' : 'Não contratada'}
+                                    </span>
+                                </div>
+                            </div>
+                            <InputError className="mt-2" message={errors.automatic_fiscal_emission_enabled} />
                         </div>
 
                         <div className="grid gap-2">

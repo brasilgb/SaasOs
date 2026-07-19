@@ -42,6 +42,7 @@ class TenantRequest extends FormRequest
                 }),
             ],
             'status' => 'required',
+            'automatic_fiscal_emission_enabled' => 'sometimes|boolean',
             'observations' => 'nullable|string|max:500',
         ];
     }
@@ -55,6 +56,7 @@ class TenantRequest extends FormRequest
             'phone' => 'telefone',
             'status' => 'status',
             'plan_id' => 'plano',
+            'automatic_fiscal_emission_enabled' => 'emissão fiscal automática',
             'period_id' => 'período',
             'observations' => 'observações',
         ];

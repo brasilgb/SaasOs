@@ -98,7 +98,7 @@ A página Sistema e módulos está dividida em:
 - Fiscal
 - Operacionais
 
-Na aba Fiscal, o modo atual é Manual com registro de comprovante. A emissão ocorre fora do VetorOS; o sistema mantém o documento vinculado à ordem ou venda.
+Na aba Fiscal, o modo padrão é Manual com registro de comprovante. A emissão ocorre fora do VetorOS; o sistema mantém o documento vinculado à ordem ou venda. Quando o Root Admin libera a assinatura fiscal automática para a empresa, a opção Automática pelas APIs governamentais e seus parâmetros ficam visíveis. Sem a flag, essas opções permanecem ocultas.
 
 4. DASHBOARD
 O dashboard reúne indicadores operacionais e financeiros com gráficos, métricas e atalhos rápidos.

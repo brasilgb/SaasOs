@@ -8,6 +8,7 @@ use App\Mail\SubscriptionInvoicePaidMail;
 use App\Mail\SubscriptionStatusMail;
 use App\Models\Admin\Plan;
 use App\Models\Admin\Period;
+use App\Models\App\FiscalSetting;
 use App\Models\App\Payment;
 use App\Models\Tenant;
 use Carbon\Carbon;
@@ -378,6 +379,12 @@ class TenantController extends Controller
         $data['expires_at'] = $this->resolveExpirationDate($data['plan_id'], $data['period_id'], $tenant);
 
         $tenant->update($data);
+
+        if (! $tenant->automatic_fiscal_emission_enabled) {
+            FiscalSetting::withoutGlobalScopes()
+                ->where('tenant_id', $tenant->id)
+                ->update(['provider' => FiscalSetting::PROVIDER_MANUAL]);
+        }
 
         return redirect()->route('admin.tenants.show', ['tenant' => $tenant->id])->with('success', 'Empresa atualizada com sucess!');
     }

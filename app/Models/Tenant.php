@@ -24,6 +24,7 @@ class Tenant extends Model
     protected $guarded = ['_method'];
 
     protected $casts = [
+        'automatic_fiscal_emission_enabled' => 'boolean',
         'expires_at' => 'datetime',
         'last_subscription_notice_sent_at' => 'datetime',
     ];
