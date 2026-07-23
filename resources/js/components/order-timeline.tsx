@@ -1,9 +1,11 @@
 import { StatusBadge } from '@/components/StatusBadge';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { orderStatusLabel } from '@/Utils/order-status';
-import { Camera, Clock3, FileText, MessageSquareMore, Package, ReceiptText, ShieldCheck, Wallet } from 'lucide-react';
+import { Camera, ChevronDown, ChevronUp, Clock3, FileText, MessageSquareMore, Package, ReceiptText, ShieldCheck, Wallet } from 'lucide-react';
 import moment from 'moment';
+import { useState } from 'react';
 
 type TimelineUser = {
     name?: string | null;
@@ -79,9 +81,7 @@ function describeLog(log: OrderLogItem): Omit<TimelineEvent, 'id' | 'createdAt' 
             return {
                 title: 'Status alterado',
                 description:
-                    typeof data.from_label === 'string' && typeof data.to_label === 'string'
-                        ? `${data.from_label} -> ${data.to_label}`
-                        : undefined,
+                    typeof data.from_label === 'string' && typeof data.to_label === 'string' ? `${data.from_label} -> ${data.to_label}` : undefined,
                 category: 'status',
                 statusValue: typeof data.to === 'number' ? data.to : undefined,
             };
@@ -98,40 +98,33 @@ function describeLog(log: OrderLogItem): Omit<TimelineEvent, 'id' | 'createdAt' 
                 category: 'payment',
             };
         case 'payment_reminder_sent': {
-            const triggerLabel =
-                data.trigger === 'automatic'
-                    ? 'automático'
-                    : data.trigger === 'manual'
-                      ? 'manual'
-                      : null;
+            const triggerLabel = data.trigger === 'automatic' ? 'automático' : data.trigger === 'manual' ? 'manual' : null;
 
             return {
                 title: 'Lembrete de cobrança enviado',
-                description: [
-                    triggerLabel,
-                    typeof data.recipient === 'string' ? data.recipient : null,
-                    formatMoney(data.remaining),
-                    data.is_overdue ? 'cobrança vencida' : 'lembrete',
-                ]
-                    .filter(Boolean)
-                    .join(' • ') || undefined,
+                description:
+                    [
+                        triggerLabel,
+                        typeof data.recipient === 'string' ? data.recipient : null,
+                        formatMoney(data.remaining),
+                        data.is_overdue ? 'cobrança vencida' : 'lembrete',
+                    ]
+                        .filter(Boolean)
+                        .join(' • ') || undefined,
                 category: 'communication',
             };
         }
         case 'budget_follow_up_sent':
             return {
                 title: 'Acompanhamento de orçamento enviado',
-                description: [
-                    data.trigger === 'automatic'
-                        ? 'automático'
-                        : data.trigger === 'manual'
-                          ? 'manual'
-                          : null,
-                    typeof data.recipient === 'string' ? data.recipient : null,
-                    typeof data.days_pending === 'number' ? `${data.days_pending} dia(s) sem retorno` : null,
-                ]
-                    .filter(Boolean)
-                    .join(' • ') || undefined,
+                description:
+                    [
+                        data.trigger === 'automatic' ? 'automático' : data.trigger === 'manual' ? 'manual' : null,
+                        typeof data.recipient === 'string' ? data.recipient : null,
+                        typeof data.days_pending === 'number' ? `${data.days_pending} dia(s) sem retorno` : null,
+                    ]
+                        .filter(Boolean)
+                        .join(' • ') || undefined,
                 category: 'communication',
             };
         case 'budget_follow_up_paused':
@@ -176,23 +169,25 @@ function describeLog(log: OrderLogItem): Omit<TimelineEvent, 'id' | 'createdAt' 
         case 'payment_follow_up_task_completed':
             return {
                 title: 'Tarefa de cobrança concluída no dia',
-                description: [
-                    typeof data.reason === 'string' ? data.reason : null,
-                    typeof data.assigned_to === 'string' ? `Responsável: ${data.assigned_to}` : null,
-                ]
-                    .filter(Boolean)
-                    .join(' • ') || undefined,
+                description:
+                    [
+                        typeof data.reason === 'string' ? data.reason : null,
+                        typeof data.assigned_to === 'string' ? `Responsável: ${data.assigned_to}` : null,
+                    ]
+                        .filter(Boolean)
+                        .join(' • ') || undefined,
                 category: 'communication',
             };
         case 'budget_follow_up_task_snoozed':
             return {
                 title: 'Tarefa de orçamento adiada',
-                description: [
-                    typeof data.days === 'number' ? `${data.days} dia(s)` : null,
-                    typeof data.snoozed_until === 'string' ? `até ${moment(data.snoozed_until).format('DD/MM/YYYY HH:mm')}` : null,
-                ]
-                    .filter(Boolean)
-                    .join(' • ') || undefined,
+                description:
+                    [
+                        typeof data.days === 'number' ? `${data.days} dia(s)` : null,
+                        typeof data.snoozed_until === 'string' ? `até ${moment(data.snoozed_until).format('DD/MM/YYYY HH:mm')}` : null,
+                    ]
+                        .filter(Boolean)
+                        .join(' • ') || undefined,
                 category: 'communication',
             };
         case 'budget_follow_up_task_assigned':
@@ -210,42 +205,45 @@ function describeLog(log: OrderLogItem): Omit<TimelineEvent, 'id' | 'createdAt' 
         case 'payment_follow_up_task_snoozed':
             return {
                 title: 'Tarefa de cobrança adiada',
-                description: [
-                    typeof data.days === 'number' ? `${data.days} dia(s)` : null,
-                    typeof data.snoozed_until === 'string' ? `até ${moment(data.snoozed_until).format('DD/MM/YYYY HH:mm')}` : null,
-                ]
-                    .filter(Boolean)
-                    .join(' • ') || undefined,
+                description:
+                    [
+                        typeof data.days === 'number' ? `${data.days} dia(s)` : null,
+                        typeof data.snoozed_until === 'string' ? `até ${moment(data.snoozed_until).format('DD/MM/YYYY HH:mm')}` : null,
+                    ]
+                        .filter(Boolean)
+                        .join(' • ') || undefined,
                 category: 'communication',
             };
         case 'part_removed':
             return {
                 title: 'Peça removida da ordem',
-                description: [typeof data.part_name === 'string' ? data.part_name : null, formatMoney(data.removed_total)]
-                    .filter(Boolean)
-                    .join(' • ') || undefined,
+                description:
+                    [typeof data.part_name === 'string' ? data.part_name : null, formatMoney(data.removed_total)].filter(Boolean).join(' • ') ||
+                    undefined,
                 category: 'parts',
             };
         case 'parts_synced':
             return {
                 title: 'Peças da ordem sincronizadas',
-                description: [
-                    typeof data.items_count === 'number' ? `${data.items_count} item(ns)` : null,
-                    typeof data.total_quantity === 'number' ? `${data.total_quantity} unidade(s)` : null,
-                ]
-                    .filter(Boolean)
-                    .join(' • ') || undefined,
+                description:
+                    [
+                        typeof data.items_count === 'number' ? `${data.items_count} item(ns)` : null,
+                        typeof data.total_quantity === 'number' ? `${data.total_quantity} unidade(s)` : null,
+                    ]
+                        .filter(Boolean)
+                        .join(' • ') || undefined,
                 category: 'parts',
             };
         case 'image_uploaded':
             return {
                 title: 'Imagem adicionada à ordem',
-                description: [
-                    typeof data.count === 'number' ? `${data.count} arquivo(s)` : null,
-                    typeof data.total_images === 'number' ? `${data.total_images} imagem(ns) no total` : null,
-                ]
-                    .filter(Boolean)
-                    .join(' • ') || undefined,
+                description:
+                    [
+                        typeof data.count === 'number' ? `${data.count} arquivo(s)` : null,
+                        typeof data.total_images === 'number' ? `${data.total_images} imagem(ns) no total` : null,
+                    ]
+                        .filter(Boolean)
+                        .join(' • ') || undefined,
                 category: 'image',
             };
         case 'image_deleted':
@@ -281,29 +279,20 @@ function describeLog(log: OrderLogItem): Omit<TimelineEvent, 'id' | 'createdAt' 
     }
 }
 
-const publicAllowedActions = new Set([
-    'created',
-    'payment_registered',
-    'payment_removed',
-    'image_uploaded',
-    'image_deleted',
-    'fiscal_registered',
-]);
+const publicAllowedActions = new Set(['created', 'payment_registered', 'payment_removed', 'image_uploaded', 'image_deleted', 'fiscal_registered']);
 
 const internalHiddenActions = new Set(['updated']);
 
 export function OrderTimeline({ statusHistory = [], logs = [], mode = 'internal' }: OrderTimelineProps) {
+    const [expanded, setExpanded] = useState(false);
     const creationLog = logs.find((item) => item.action === 'created');
-    const creationStatus =
-        creationLog && typeof creationLog.data?.status === 'number'
-            ? creationLog.data.status
-            : null;
+    const creationStatus = creationLog && typeof creationLog.data?.status === 'number' ? creationLog.data.status : null;
     const initialStatusHistoryId =
         creationStatus === null
             ? null
-            : [...statusHistory]
+            : ([...statusHistory]
                   .sort((left, right) => moment(left.created_at).valueOf() - moment(right.created_at).valueOf())
-                  .find((item) => item.status === creationStatus)?.id ?? null;
+                  .find((item) => item.status === creationStatus)?.id ?? null);
 
     const visibleStatusHistory =
         mode === 'public'
@@ -341,18 +330,24 @@ export function OrderTimeline({ statusHistory = [], logs = [], mode = 'internal'
     });
 
     const events = [...statusEvents, ...logEvents].sort((a, b) => moment(b.createdAt).valueOf() - moment(a.createdAt).valueOf());
+    const collapsedLimit = mode === 'public' ? 6 : 5;
+    const hasMoreEvents = events.length > collapsedLimit;
+    const visibleEvents = expanded ? events : events.slice(0, collapsedLimit);
 
     return (
         <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between gap-3">
                 <CardTitle>{mode === 'public' ? 'Andamento da ordem' : 'Linha do tempo da ordem'}</CardTitle>
+                <Badge variant="secondary" className="tabular-nums">
+                    {events.length} {events.length === 1 ? 'evento' : 'eventos'}
+                </Badge>
             </CardHeader>
             <CardContent>
                 {events.length === 0 ? (
                     <div className="text-muted-foreground text-sm">Nenhum evento registrado até o momento.</div>
                 ) : (
                     <div className="space-y-4">
-                        {events.map((event, index) => {
+                        {visibleEvents.map((event, index) => {
                             const meta = categoryMeta[event.category];
                             const Icon = meta.icon;
 
@@ -362,7 +357,7 @@ export function OrderTimeline({ statusHistory = [], logs = [], mode = 'internal'
                                         <div className="bg-muted flex h-9 w-9 items-center justify-center rounded-full border">
                                             <Icon className="h-4 w-4" />
                                         </div>
-                                        {index < events.length - 1 && <div className="bg-border mt-2 h-full min-h-6 w-px" />}
+                                        {index < visibleEvents.length - 1 && <div className="bg-border mt-2 h-full min-h-6 w-px" />}
                                     </div>
 
                                     <div className="flex-1 rounded-lg border p-3">
@@ -370,9 +365,7 @@ export function OrderTimeline({ statusHistory = [], logs = [], mode = 'internal'
                                             <div className="flex flex-wrap items-center gap-2">
                                                 <span className="font-medium">{event.title}</span>
                                                 <Badge variant="outline">{meta.badge}</Badge>
-                                                {typeof event.statusValue === 'number' && (
-                                                    <StatusBadge category="ordem" value={event.statusValue} />
-                                                )}
+                                                {typeof event.statusValue === 'number' && <StatusBadge category="ordem" value={event.statusValue} />}
                                             </div>
 
                                             {event.description && <p className="text-muted-foreground text-sm">{event.description}</p>}
@@ -386,6 +379,23 @@ export function OrderTimeline({ statusHistory = [], logs = [], mode = 'internal'
                                 </div>
                             );
                         })}
+                        {hasMoreEvents && (
+                            <div className="flex justify-center border-t pt-4">
+                                <Button type="button" variant="ghost" size="sm" onClick={() => setExpanded((current) => !current)}>
+                                    {expanded ? (
+                                        <>
+                                            <ChevronUp className="h-4 w-4" />
+                                            Mostrar somente os recentes
+                                        </>
+                                    ) : (
+                                        <>
+                                            <ChevronDown className="h-4 w-4" />
+                                            Ver histórico completo ({events.length})
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
+                        )}
                     </div>
                 )}
             </CardContent>

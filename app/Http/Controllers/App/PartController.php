@@ -53,8 +53,13 @@ class PartController extends Controller
         Gate::authorize('parts.access');
 
         $search = $request->search;
+        $filter = $request->get('filter');
 
         $query = Part::orderBy('id', 'DESC');
+
+        if ($filter === 'low_stock') {
+            $query->whereColumn('quantity', '<=', 'minimum_stock_level');
+        }
 
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -71,6 +76,7 @@ class PartController extends Controller
         return Inertia::render('app/parts/index', [
             'parts' => $parts,
             'search' => $search,
+            'filter' => $filter,
         ]);
     }
 

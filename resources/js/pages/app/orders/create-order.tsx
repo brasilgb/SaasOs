@@ -1,6 +1,7 @@
 import { DatePicker } from '@/components/date-picker';
 import { Icon } from '@/components/icon';
 import InputError from '@/components/input-error';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,7 +12,7 @@ import { statusOrcamento } from '@/Utils/dataSelect';
 import { maskMoney, maskMoneyDot } from '@/Utils/mask';
 import selectStyles from '@/Utils/selectStyles';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, Printer, Save, Wrench } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Printer, Save, Wrench } from 'lucide-react';
 import { useEffect } from 'react';
 import Select from 'react-select';
 import EquipmentTypesModal from './equipment-types-modal';
@@ -36,6 +37,7 @@ export default function CreateOrder({
     equipments,
     sourceSchedule,
     warrantySourceOrders,
+    activeOrders,
 }: {
     customers: { id: number; name: string }[];
     equipments: { id: number; equipment: string }[];
@@ -47,6 +49,15 @@ export default function CreateOrder({
         equipment_id: number;
         model?: string | null;
         warranty_expires_at: string;
+    }>;
+    activeOrders: Array<{
+        id: number;
+        order_number: number;
+        customer_id: number;
+        equipment_id: number | null;
+        model?: string | null;
+        service_status: number;
+        updated_at: string;
     }>;
 }) {
     const { flash, auth } = usePage().props as any;
@@ -118,7 +129,12 @@ export default function CreateOrder({
     const eligibleWarrantyOrders = warrantySourceOrders.filter(
         (item) => String(item.customer_id) === String(data.customer_id) && String(item.equipment_id) === String(data.equipment_id),
     );
-
+    const possibleDuplicateOrders = activeOrders.filter(
+        (item) =>
+            String(item.customer_id) === String(data.customer_id) &&
+            String(item.equipment_id ?? '') === String(data.equipment_id) &&
+            (!data.model.trim() || !item.model || item.model.toLocaleLowerCase().includes(data.model.trim().toLocaleLowerCase())),
+    );
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Ordens" />
@@ -144,11 +160,13 @@ export default function CreateOrder({
                 <div className="rounded-lg border p-2">
                     <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
                         {flash?.label_print && (
-                            <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+                            <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-900/70 dark:bg-emerald-950/30">
                                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                                     <div>
-                                        <p className="font-medium text-emerald-900">Ordem #{flash.label_print.order_number} cadastrada</p>
-                                        <p className="text-sm text-emerald-700">Etiqueta pronta para impressão.</p>
+                                        <p className="font-medium text-emerald-900 dark:text-emerald-100">
+                                            Ordem #{flash.label_print.order_number} cadastrada
+                                        </p>
+                                        <p className="text-sm text-emerald-700 dark:text-emerald-300">Etiqueta pronta para impressão.</p>
                                     </div>
                                     <Button type="button" asChild className="bg-emerald-600 text-white hover:bg-emerald-700">
                                         <a href={flash.label_print.print_url} target="_blank" rel="noopener noreferrer">
@@ -246,6 +264,26 @@ export default function CreateOrder({
                             </div>
                         </div>
 
+                        {possibleDuplicateOrders.length > 0 && (
+                            <div className="flex flex-col gap-3 rounded-lg border border-amber-200 bg-amber-50/80 px-4 py-3 text-amber-950 md:flex-row md:items-center md:justify-between dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-100">
+                                <div className="flex items-start gap-2">
+                                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                                    <div>
+                                        <p className="text-sm font-medium">Já existe OS ativa para este cliente e equipamento</p>
+                                        <p className="mt-1 text-xs opacity-80">Confira antes de criar outra ordem. O aviso não impede o cadastro.</p>
+                                    </div>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    {possibleDuplicateOrders.slice(0, 3).map((order) => (
+                                        <Button key={order.id} type="button" size="sm" variant="outline" asChild>
+                                            <Link href={route('app.orders.edit', order.id)}>Abrir OS #{order.order_number}</Link>
+                                        </Button>
+                                    ))}
+                                    {possibleDuplicateOrders.length > 3 && <Badge variant="secondary">+{possibleDuplicateOrders.length - 3}</Badge>}
+                                </div>
+                            </div>
+                        )}
+
                         <div className="mt-4 grid gap-4 md:grid-cols-3">
                             <div className="grid gap-2">
                                 <Label htmlFor="defect">Defeito relatado</Label>
@@ -325,14 +363,17 @@ export default function CreateOrder({
                                         <option value="">Selecione a OS de origem</option>
                                         {eligibleWarrantyOrders.map((item) => (
                                             <option key={item.id} value={item.id}>
-                                                OS #{item.order_number}{item.model ? ` • ${item.model}` : ''} • garantia até{' '}
+                                                OS #{item.order_number}
+                                                {item.model ? ` • ${item.model}` : ''} • garantia até{' '}
                                                 {new Date(item.warranty_expires_at).toLocaleDateString('pt-BR')}
                                             </option>
                                         ))}
                                     </select>
                                 )}
                                 {data.is_warranty_return && eligibleWarrantyOrders.length === 0 && (
-                                    <p className="text-sm text-amber-700">Não há OS entregue com garantia ativa para este cliente e equipamento.</p>
+                                    <p className="text-sm text-amber-700 dark:text-amber-300">
+                                        Não há OS entregue com garantia ativa para este cliente e equipamento.
+                                    </p>
                                 )}
                                 {errors.warranty_source_order_id && <div className="text-sm text-red-500">{errors.warranty_source_order_id}</div>}
                             </div>

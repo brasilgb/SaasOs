@@ -85,6 +85,17 @@ class DashboardController extends Controller
             'numorde_warranty_return' => (clone $ordersQuery)->where('is_warranty_return', true)->count(),
             'numorde_due_today' => (clone $pendingOrdersQuery)->whereDate('delivery_forecast', $today)->count(),
             'numorde_due_tomorrow' => (clone $pendingOrdersQuery)->whereDate('delivery_forecast', $tomorrow)->count(),
+            'numorde_overdue' => (clone $pendingOrdersQuery)->whereDate('delivery_forecast', '<', $today)->count(),
+            'numorde_unassigned' => (clone $ordersQuery)
+                ->whereNull('user_id')
+                ->whereNotIn('service_status', [OrderStatus::CANCELLED, OrderStatus::SERVICE_NOT_EXECUTED, OrderStatus::DELIVERED])
+                ->count(),
+            'numorde_awaiting_pickup' => (clone $ordersQuery)->where('service_status', OrderStatus::CUSTOMER_NOTIFIED)->count(),
+            'numorde_awaiting_approval' => (clone $ordersQuery)->where('service_status', OrderStatus::BUDGET_GENERATED)->count(),
+            'numparts_low_stock' => Part::query()
+                ->where('is_sellable', true)
+                ->whereColumn('quantity', '<=', 'minimum_stock_level')
+                ->count(),
             'numshed' => (clone $schedulesQuery)->count(),
             'numshed_open' => (clone $schedulesQuery)->where('status', 1)->count(),
             'numshed_in_progress' => (clone $schedulesQuery)->where('status', 2)->count(),

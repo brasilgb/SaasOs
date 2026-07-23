@@ -34,7 +34,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Parts({ parts, search }: any) {
+export default function Parts({ parts, search, filter }: any) {
     const { auth } = usePage<{ auth?: { permissions?: string[] } }>().props;
     const canManageParts = auth?.permissions?.includes('parts');
     const barcodeForm = useForm({
@@ -211,6 +211,11 @@ export default function Parts({ parts, search }: any) {
                     </form>
                 </div>
                 <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:shrink-0 lg:justify-end">
+                    <Button variant={filter === 'low_stock' ? 'default' : 'outline'} asChild className="w-full whitespace-nowrap sm:w-auto">
+                        <Link href={route('app.parts.index', { search, filter: filter === 'low_stock' ? undefined : 'low_stock' })}>
+                            {filter === 'low_stock' ? 'Mostrar todos' : 'Estoque baixo'}
+                        </Link>
+                    </Button>
                     {canManageParts && (
                         <Button variant={'default'} asChild className="w-full whitespace-nowrap sm:w-auto">
                             <Link href={route('app.parts.create')}>
@@ -300,7 +305,12 @@ export default function Parts({ parts, search }: any) {
                                         </TableCell>
                                         <TableCell>
                                             {part.quantity <= part.minimum_stock_level ? (
-                                                <Badge variant={'destructive'}>{part.quantity}</Badge>
+                                                <div className="space-y-1">
+                                                    <Badge variant={'destructive'}>{part.quantity}</Badge>
+                                                    <div className="text-muted-foreground text-xs">
+                                                        Repor pelo menos {Math.max(1, Number(part.minimum_stock_level) - Number(part.quantity) + 1)}
+                                                    </div>
+                                                </div>
                                             ) : (
                                                 <Badge variant={'default'}>{part.quantity}</Badge>
                                             )}

@@ -154,7 +154,12 @@ class BudgetController extends Controller
         $search = $request->search;
         $query = Budget::orderBy('id', 'DESC');
         if ($search) {
-            $query->where('service', 'like', '%'.$search.'%');
+            $query->where(function ($query) use ($search) {
+                $query->where('budget_number', $search)
+                    ->orWhere('service', 'like', '%'.$search.'%')
+                    ->orWhere('model', 'like', '%'.$search.'%')
+                    ->orWhereHas('equipment', fn ($equipmentQuery) => $equipmentQuery->where('equipment', 'like', '%'.$search.'%'));
+            });
         }
         $budgets = $query->with('equipment')->paginate(\App\Support\Pagination::perPage())->withQueryString();
         $company = Company::query()

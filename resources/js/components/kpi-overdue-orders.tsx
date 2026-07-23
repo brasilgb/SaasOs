@@ -34,19 +34,25 @@ export function KpiOverdueOrders({ title, icon, link, ordersToday = 0, ordersTom
                 <div className="grid gap-2 sm:grid-cols-2">
                     <div
                         className={`rounded-lg border p-3 ${
-                            hasTodayOrders ? 'border-red-200 bg-red-50 text-red-950' : 'border-border bg-background'
+                            hasTodayOrders
+                                ? 'border-red-200 bg-red-50 text-red-950 dark:border-red-900/70 dark:bg-red-950/30 dark:text-red-100'
+                                : 'border-border bg-background'
                         }`}
                     >
-                        <div className={`text-xs ${hasTodayOrders ? 'text-red-700' : 'text-muted-foreground'}`}>Vencendo hoje</div>
+                        <div className={`text-xs ${hasTodayOrders ? 'text-red-700 dark:text-red-300' : 'text-muted-foreground'}`}>Vencendo hoje</div>
                         <div className="mt-1 text-lg font-semibold tabular-nums">{ordersToday}</div>
                     </div>
 
                     <div
                         className={`rounded-lg border p-3 ${
-                            hasTomorrowOrders ? 'border-amber-200 bg-amber-50 text-amber-950' : 'border-border bg-background'
+                            hasTomorrowOrders
+                                ? 'border-amber-200 bg-amber-50 text-amber-950 dark:border-amber-900/70 dark:bg-amber-950/30 dark:text-amber-100'
+                                : 'border-border bg-background'
                         }`}
                     >
-                        <div className={`text-xs ${hasTomorrowOrders ? 'text-amber-700' : 'text-muted-foreground'}`}>Vencendo amanhã</div>
+                        <div className={`text-xs ${hasTomorrowOrders ? 'text-amber-700 dark:text-amber-300' : 'text-muted-foreground'}`}>
+                            Vencendo amanhã
+                        </div>
                         <div className="mt-1 text-lg font-semibold tabular-nums">{ordersTomorrow}</div>
                     </div>
                 </div>

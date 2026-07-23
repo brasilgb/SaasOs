@@ -138,7 +138,12 @@ class ScheduleController extends Controller
                     })
                     ->orWhereHas('customer', function ($subQuery) use ($search) {
                         $subQuery->where('name', 'like', "%$search%")
-                            ->orWhere('cpfcnpj', 'like', '%'.$search.'%');
+                            ->orWhere('cpfcnpj', 'like', '%'.$search.'%')
+                            ->orWhere('phone', 'like', '%'.$search.'%')
+                            ->orWhere('whatsapp', 'like', '%'.$search.'%');
+                    })
+                    ->orWhereHas('user', function ($subQuery) use ($search) {
+                        $subQuery->where('name', 'like', "%$search%");
                     });
             });
         }

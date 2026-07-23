@@ -314,6 +314,14 @@ class OrderController extends Controller
             ->get(['id', 'order_number', 'customer_id', 'equipment_id', 'model', 'delivery_date', 'warranty_expires_at']);
     }
 
+    private function activeOrderOptions()
+    {
+        return $this->scopeOrdersQuery(Order::query())
+            ->whereNotIn('service_status', [OrderStatus::CANCELLED, OrderStatus::SERVICE_NOT_EXECUTED, OrderStatus::DELIVERED])
+            ->latest('updated_at')
+            ->get(['id', 'order_number', 'customer_id', 'equipment_id', 'model', 'service_status', 'updated_at']);
+    }
+
     private function logOrderAction(Order $order, string $action, array $data = []): void
     {
         OrderLog::create([
@@ -518,6 +526,15 @@ class OrderController extends Controller
             $query->whereNotNull('delivery_forecast')
                 ->whereNotIn('service_status', [OrderStatus::CANCELLED, OrderStatus::SERVICE_NOT_EXECUTED, OrderStatus::DELIVERED])
                 ->whereBetween('delivery_forecast', [$today->toDateString(), $tomorrow->toDateString()]);
+        } elseif ($filter === 'overdue') {
+            $query->whereNotNull('delivery_forecast')
+                ->whereDate('delivery_forecast', '<', Carbon::today())
+                ->whereNotIn('service_status', [OrderStatus::CANCELLED, OrderStatus::SERVICE_NOT_EXECUTED, OrderStatus::DELIVERED]);
+        } elseif ($filter === 'unassigned') {
+            $query->whereNull('user_id')
+                ->whereNotIn('service_status', [OrderStatus::CANCELLED, OrderStatus::SERVICE_NOT_EXECUTED, OrderStatus::DELIVERED]);
+        } elseif ($filter === 'awaiting_pickup') {
+            $query->where('service_status', OrderStatus::CUSTOMER_NOTIFIED);
         } elseif ($filter === 'feedback') {
             $query->where('service_status', OrderStatus::DELIVERED)
                 ->whereNotNull('delivery_date')
@@ -560,15 +577,22 @@ class OrderController extends Controller
             $query->where(function ($q) use ($orderNumberSearch, $search, $barcodeSearch) {
                 $q->where('order_number', $orderNumberSearch)
                     ->when($barcodeSearch !== null, fn ($barcodeQuery) => $barcodeQuery->orWhere('barcode', $barcodeSearch))
+                    ->orWhere('model', 'like', "%$search%")
                     ->orWhereHas('customer', function ($subQuery) use ($search) {
                         $subQuery->where('name', 'like', "%$search%")
-                            ->orWhere('cpfcnpj', 'like', '%'.$search.'%');
+                            ->orWhere('cpfcnpj', 'like', '%'.$search.'%')
+                            ->orWhere('phone', 'like', '%'.$search.'%')
+                            ->orWhere('whatsapp', 'like', '%'.$search.'%');
+                    })
+                    ->orWhereHas('equipment', function ($subQuery) use ($search) {
+                        $subQuery->where('equipment', 'like', "%$search%");
                     });
             });
         }
 
         $orders = $query
             ->with('equipment', 'customer')
+            ->withMax('statusHistory as status_changed_at', 'created_at')
             ->withCount('images')
             ->withSum('orderPayments as total_paid', 'amount')
             ->paginate(Pagination::perPage())
@@ -627,6 +651,7 @@ class OrderController extends Controller
             'models' => $models,
             'sourceSchedule' => $sourceSchedule,
             'warrantySourceOrders' => $this->warrantySourceOptions(),
+            'activeOrders' => $this->activeOrderOptions(),
         ]);
     }
 

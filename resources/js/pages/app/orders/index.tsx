@@ -1,4 +1,3 @@
-import ActionDelete from '@/components/action-delete';
 import AppPagination, { PaginationSummary } from '@/components/app-pagination';
 import { isValidEan13 } from '@/components/ean13-barcode';
 import { Icon } from '@/components/icon';
@@ -6,8 +5,19 @@ import InputSearch from '@/components/inputSearch';
 import InvoiceModal from '@/components/Modals/InvoiceModal';
 import SelectFilter from '@/components/SelectFilter';
 import { StatusBadge } from '@/components/StatusBadge';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -18,7 +28,23 @@ import { statusServico } from '@/Utils/dataSelect';
 import { maskPhone } from '@/Utils/mask';
 import { ORDER_STATUS, ORDER_STATUSES_READY_FOR_INVOICE } from '@/Utils/order-status';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
-import { AlertTriangle, Barcode, Camera, Edit, FileTextIcon, ImageUp, LinkIcon, Mail, Plus, Wrench, X } from 'lucide-react';
+import {
+    AlertTriangle,
+    Barcode,
+    Camera,
+    Clock3,
+    Edit,
+    FileTextIcon,
+    ImageUp,
+    LinkIcon,
+    Mail,
+    MoreHorizontal,
+    Plus,
+    Printer,
+    Trash2,
+    Wrench,
+    X,
+} from 'lucide-react';
 import moment from 'moment';
 import { useEffect, useRef, useState } from 'react';
 import ModalReceipt from '../receipts/modal-receipt';
@@ -62,6 +88,8 @@ export default function Orders({ orders, whats, feedback, search, status, filter
     }>().props;
     const [openInvoiceModal, setOpenInvoiceModal] = useState(false);
     const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState<any | null>(null);
+    const [receiptOrderId, setReceiptOrderId] = useState<number | null>(null);
+    const [deleteOrder, setDeleteOrder] = useState<{ id: number; number: number } | null>(null);
     const barcodeForm = useForm({
         barcode: '',
     });
@@ -245,7 +273,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                 {/* Busca */}
                 <div className="flex w-full min-w-0 flex-col gap-2 lg:max-w-[790px] lg:flex-1 lg:flex-row">
                     <div className="w-full min-w-0 lg:max-w-[420px] lg:flex-1">
-                        <InputSearch placeholder="Buscar por núm. ordem, cliente ou cpf/cnpj" url="app.orders.index" />
+                        <InputSearch placeholder="Buscar OS, cliente, telefone, equipamento ou modelo" url="app.orders.index" />
                     </div>
                     {showBarcodeReader && (
                         <form onSubmit={handleBarcodeSubmit} className="w-full min-w-0 lg:max-w-[360px] lg:flex-1">
@@ -300,6 +328,9 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                     <SelectFilter
                         dataStatus={statusServico}
                         specialFilters={[
+                            { value: 'overdue', label: 'Prazo vencido' },
+                            { value: 'unassigned', label: 'Sem técnico' },
+                            { value: 'awaiting_pickup', label: 'Aguardando retirada' },
                             { value: 'feedback', label: 'Feedback pendente' },
                             { value: 'budget_follow_up', label: 'Orçamento parado' },
                             { value: 'pending_payment_follow_up', label: 'Cobrança pendente' },
@@ -391,6 +422,16 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                     });
                                     const equipmentTitle = order.equipment?.equipment ?? 'Equipamento não informado';
                                     const equipmentSubtitle = order.model || 'Modelo não informado';
+                                    const statusReference = order.status_changed_at || order.updated_at || order.created_at;
+                                    const statusAgeDays = Math.max(0, moment().diff(moment(statusReference), 'days'));
+                                    const statusAgeLabel =
+                                        Number(order.service_status) === ORDER_STATUS.CUSTOMER_NOTIFIED
+                                            ? statusAgeDays === 0
+                                                ? 'Pronto para retirada hoje'
+                                                : `Aguardando retirada há ${statusAgeDays} ${statusAgeDays === 1 ? 'dia' : 'dias'}`
+                                            : statusAgeDays === 0
+                                              ? 'Atualizado hoje'
+                                              : `${statusAgeDays} ${statusAgeDays === 1 ? 'dia' : 'dias'} neste status`;
 
                                     return (
                                         <TableRow key={order.id} className={rowClassName}>
@@ -448,16 +489,33 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                             <TableCell>
                                                 <div className="flex flex-wrap items-center gap-2">
                                                     <StatusBadge category="ordem" value={order.service_status} />
+                                                    {!isDelivered && (
+                                                        <span
+                                                            className="text-muted-foreground inline-flex items-center gap-1 text-xs"
+                                                            title={`Última mudança de status em ${moment(statusReference).format('DD/MM/YYYY [às] HH:mm')}`}
+                                                        >
+                                                            <Clock3 className="h-3.5 w-3.5" />
+                                                            {statusAgeLabel}
+                                                        </span>
+                                                    )}
                                                     {hasPendingPaymentFollowUp && (
-                                                        <Badge className="bg-rose-100 text-rose-800 hover:bg-rose-100">Cobrança pendente</Badge>
+                                                        <Badge className="bg-rose-100 text-rose-800 hover:bg-rose-100 dark:bg-rose-500/20 dark:text-rose-200 dark:hover:bg-rose-500/20">
+                                                            Cobrança pendente
+                                                        </Badge>
                                                     )}
                                                     {Boolean(order.is_warranty_return) && (
-                                                        <Badge variant="secondary" className="w-fit bg-amber-100 text-amber-900 hover:bg-amber-100">
+                                                        <Badge
+                                                            variant="secondary"
+                                                            className="w-fit bg-amber-100 text-amber-900 hover:bg-amber-100 dark:bg-amber-500/20 dark:text-amber-200 dark:hover:bg-amber-500/20"
+                                                        >
                                                             Retorno garantia
                                                         </Badge>
                                                     )}
                                                     {order.warranty_expires_at && moment(order.warranty_expires_at).isSameOrAfter(moment()) && (
-                                                        <Badge variant="secondary" className="w-fit bg-emerald-100 text-emerald-900 hover:bg-emerald-100">
+                                                        <Badge
+                                                            variant="secondary"
+                                                            className="w-fit bg-emerald-100 text-emerald-900 hover:bg-emerald-100 dark:bg-emerald-500/20 dark:text-emerald-200 dark:hover:bg-emerald-500/20"
+                                                        >
                                                             Garantia até {moment(order.warranty_expires_at).format('DD/MM/YYYY')}
                                                         </Badge>
                                                     )}
@@ -469,7 +527,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                     {hasBudgetFollowUp && (
                                                         <Tooltip>
                                                             <TooltipTrigger asChild>
-                                                                <Badge className="cursor-help bg-yellow-100 text-yellow-900 hover:bg-yellow-100">
+                                                                <Badge className="cursor-help bg-yellow-100 text-yellow-900 hover:bg-yellow-100 dark:bg-yellow-500/20 dark:text-yellow-200 dark:hover:bg-yellow-500/20">
                                                                     <AlertTriangle className="mr-1 h-3.5 w-3.5" />
                                                                     Orçamento parado
                                                                 </Badge>
@@ -493,31 +551,21 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                     )}
 
                                                     {!hasCustomerFeedback && isFeedbackWindowOpen && (
-                                                        <Badge className="bg-sky-100 text-sky-800 hover:bg-sky-100">
+                                                        <Badge className="bg-sky-100 text-sky-800 hover:bg-sky-100 dark:bg-sky-500/20 dark:text-sky-200 dark:hover:bg-sky-500/20">
                                                             {feedbackDaysPending > 0 ? `Aguardando ${feedbackDaysPending} dias` : 'Aguardando'}
                                                         </Badge>
                                                     )}
                                                 </TableCell>
                                             )}
-                                            <TableCell className="min-w-[280px]">
+                                            <TableCell className="min-w-[190px]">
                                                 <div className="flex flex-wrap justify-end gap-2">
                                                     {canManageOrders && hasFiscalRegistered && (
-                                                        <Badge variant="secondary" className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">
+                                                        <Badge
+                                                            variant="secondary"
+                                                            className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-500/20 dark:text-emerald-200 dark:hover:bg-emerald-500/20"
+                                                        >
                                                             NFSe registrada
                                                         </Badge>
-                                                    )}
-
-                                                    {canManageOrders && hasBudgetFollowUp && order.can_send_budget_follow_up && (
-                                                        <Button
-                                                            type="button"
-                                                            size="icon"
-                                                            variant="outline"
-                                                            title="Enviar acompanhamento de orçamento"
-                                                            aria-label={`Enviar acompanhamento de orçamento da ordem ${order.order_number}`}
-                                                            onClick={() => handleBudgetFollowUp(order.id)}
-                                                        >
-                                                            <Mail className="h-4 w-4" />
-                                                        </Button>
                                                     )}
 
                                                     {canShowPendingPaymentButton && isDelivered && hasFinancialValuesFilled && hasPendingPayment && (
@@ -530,38 +578,6 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                             compactTriggerTitle="Pagamento pendente"
                                                         />
                                                     )}
-
-                                                    {canManageOrders && (
-                                                        <Button
-                                                            asChild
-                                                            size="icon"
-                                                            className="bg-sky-700 text-white hover:bg-sky-800"
-                                                            title="Abrir página pública da ordem"
-                                                        >
-                                                            <a
-                                                                target="_blank"
-                                                                href={route('os.token', order?.tracking_token)}
-                                                                aria-label={`Abrir link do cliente da ordem ${order.order_number}`}
-                                                            >
-                                                                <LinkIcon className="h-4 w-4 text-white" />
-                                                            </a>
-                                                        </Button>
-                                                    )}
-                                                    {canIssueServiceInvoice &&
-                                                        ORDER_STATUSES_READY_FOR_INVOICE.includes(Number(order.service_status)) &&
-                                                        canIssueInvoiceWithValue && (
-                                                            <Button
-                                                                size="icon"
-                                                                title="Emitir NFSe"
-                                                                aria-label={`Emitir NFSe da ordem ${order.order_number}`}
-                                                                onClick={() => {
-                                                                    setSelectedInvoiceOrder(order);
-                                                                    setOpenInvoiceModal(true);
-                                                                }}
-                                                            >
-                                                                <FileTextIcon className="h-4 w-4" />
-                                                            </Button>
-                                                        )}
 
                                                     {canManageOrders && (
                                                         <WhatsAppButton
@@ -587,26 +603,6 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                         />
                                                     )}
 
-                                                    {canManageOrders && <ModalReceipt orderid={order.id} />}
-                                                    <Button
-                                                        asChild
-                                                        size="icon"
-                                                        className="relative bg-fuchsia-700 text-white hover:bg-fuchsia-700"
-                                                        title={`${imagesCount} imagem(ns) adicionada(s)`}
-                                                    >
-                                                        <Link
-                                                            href={route('app.images.index', { or: order.id })}
-                                                            aria-label={`Enviar imagens da ordem ${order.order_number}. ${imagesCount} imagem(ns) adicionada(s).`}
-                                                        >
-                                                            <ImageUp className="h-4 w-4" />
-                                                            {imagesCount > 0 && (
-                                                                <span className="border-background absolute -top-2 -right-2 flex h-5 min-w-5 items-center justify-center rounded-full border bg-emerald-600 px-1 text-[10px] leading-none font-semibold text-white shadow-sm">
-                                                                    {imagesCount > 99 ? '99+' : imagesCount}
-                                                                </span>
-                                                            )}
-                                                        </Link>
-                                                    </Button>
-
                                                     <Button
                                                         asChild
                                                         size="icon"
@@ -623,7 +619,69 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                     </Button>
 
                                                     {canManageOrders && (
-                                                        <ActionDelete title={'esta ordem'} url={'app.orders.destroy'} param={order.id} />
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <Button
+                                                                    type="button"
+                                                                    size="icon"
+                                                                    variant="outline"
+                                                                    title="Mais ações"
+                                                                    aria-label={`Mais ações da ordem ${order.order_number}`}
+                                                                >
+                                                                    <MoreHorizontal className="h-4 w-4" />
+                                                                </Button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent align="end" className="w-56">
+                                                                <DropdownMenuItem asChild>
+                                                                    <a target="_blank" href={route('os.token', order?.tracking_token)}>
+                                                                        <LinkIcon />
+                                                                        Acompanhamento público
+                                                                    </a>
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem onSelect={() => setReceiptOrderId(order.id)}>
+                                                                    <Printer />
+                                                                    Imprimir recibo
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem asChild>
+                                                                    <Link href={route('app.images.index', { or: order.id })}>
+                                                                        <ImageUp />
+                                                                        Imagens
+                                                                        {imagesCount > 0 && (
+                                                                            <Badge variant="secondary" className="ml-auto">
+                                                                                {imagesCount}
+                                                                            </Badge>
+                                                                        )}
+                                                                    </Link>
+                                                                </DropdownMenuItem>
+                                                                {hasBudgetFollowUp && order.can_send_budget_follow_up && (
+                                                                    <DropdownMenuItem onSelect={() => handleBudgetFollowUp(order.id)}>
+                                                                        <Mail />
+                                                                        Cobrar orçamento
+                                                                    </DropdownMenuItem>
+                                                                )}
+                                                                {canIssueServiceInvoice &&
+                                                                    ORDER_STATUSES_READY_FOR_INVOICE.includes(Number(order.service_status)) &&
+                                                                    canIssueInvoiceWithValue && (
+                                                                        <DropdownMenuItem
+                                                                            onSelect={() => {
+                                                                                setSelectedInvoiceOrder(order);
+                                                                                setOpenInvoiceModal(true);
+                                                                            }}
+                                                                        >
+                                                                            <FileTextIcon />
+                                                                            Emitir NFSe
+                                                                        </DropdownMenuItem>
+                                                                    )}
+                                                                <DropdownMenuSeparator />
+                                                                <DropdownMenuItem
+                                                                    variant="destructive"
+                                                                    onSelect={() => setDeleteOrder({ id: order.id, number: order.order_number })}
+                                                                >
+                                                                    <Trash2 />
+                                                                    Excluir OS
+                                                                </DropdownMenuItem>
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
                                                     )}
                                                 </div>
                                             </TableCell>
@@ -658,6 +716,41 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                     order={selectedInvoiceOrder}
                 />
             )}
+            {receiptOrderId !== null && (
+                <ModalReceipt
+                    orderid={receiptOrderId}
+                    open
+                    hideTrigger
+                    onOpenChange={(open) => {
+                        if (!open) setReceiptOrderId(null);
+                    }}
+                />
+            )}
+            <AlertDialog open={deleteOrder !== null} onOpenChange={(open) => !open && setDeleteOrder(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Excluir a OS #{deleteOrder?.number}?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Esta ação não pode ser desfeita e removerá permanentemente os dados associados à ordem.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                            className="bg-red-600 text-white hover:bg-red-700"
+                            onClick={() => {
+                                if (!deleteOrder) return;
+                                router.delete(route('app.orders.destroy', deleteOrder.id), {
+                                    preserveScroll: true,
+                                    onFinish: () => setDeleteOrder(null),
+                                });
+                            }}
+                        >
+                            Excluir
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
             {cameraOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4">
                     <div className="bg-background w-full max-w-md rounded-xl p-4 shadow-xl">

@@ -1,9 +1,21 @@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Loader2, Printer } from 'lucide-react';
-import { useState } from 'react';
+import { ReactNode, useState } from 'react';
 
-export default function ModalReceipt({ orderid }: { orderid: number }) {
+export default function ModalReceipt({
+    orderid,
+    open,
+    onOpenChange,
+    hideTrigger = false,
+    trigger,
+}: {
+    orderid: number;
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
+    hideTrigger?: boolean;
+    trigger?: ReactNode;
+}) {
     const [loadingType, setLoadingType] = useState<string | null>(null);
 
     const handlePrintReceipt = (e: any, type: string) => {
@@ -17,12 +29,16 @@ export default function ModalReceipt({ orderid }: { orderid: number }) {
     };
 
     return (
-        <Dialog>
-            <DialogTrigger asChild>
-                <Button variant="default" size="icon" className="bg-sky-700 text-white hover:bg-sky-700">
-                    <Printer className="h-4 w-4" />
-                </Button>
-            </DialogTrigger>
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            {!hideTrigger && (
+                <DialogTrigger asChild>
+                    {trigger ?? (
+                        <Button variant="default" size="icon" className="bg-sky-700 text-white hover:bg-sky-700">
+                            <Printer className="h-4 w-4" />
+                        </Button>
+                    )}
+                </DialogTrigger>
+            )}
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle>Selecione o Recibo Desejado</DialogTitle>

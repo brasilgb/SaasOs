@@ -461,8 +461,8 @@
             <p>Manual do cliente com foco operacional, financeiro e de configuração do sistema.</p>
 
             <div class="meta">
-                <div><strong>Versão do manual</strong>2.1</div>
-                <div><strong>Atualizado em</strong>18 de julho de 2026</div>
+                <div><strong>Versão do manual</strong>2.2</div>
+                <div><strong>Atualizado em</strong>23 de julho de 2026</div>
                 <div><strong>Formato</strong>HTML navegável</div>
             </div>
 
@@ -532,6 +532,12 @@
                     notificações de agendamento, mensagens amigáveis em falhas de operação e confirmação visual após
                     pagamento de assinatura. O fluxo fiscal foi simplificado para registrar manualmente NF-e nas
                     vendas e NFS-e nas ordens, sem contratação obrigatória de API dentro do VetorOS.
+                </div>
+                <div class="callout">
+                    Novidades operacionais desta versão: painel com prioridades do dia, filtros rápidos de ordens,
+                    tempo no status, conferência orientativa na entrada do equipamento, aviso de possível OS duplicada,
+                    alerta de estoque baixo, ações secundárias agrupadas e linha do tempo recolhível. As telas respeitam
+                    os temas claro e escuro configurados pelo usuário.
                 </div>
 
                 <section id="introducao">
@@ -637,6 +643,11 @@
                     <p>O app técnico usa o mesmo login do sistema e mostra somente os atendimentos permitidos para o
                         usuário autenticado. Técnicos comuns veem a própria agenda; técnicos com liberação master podem
                         ter visibilidade ampliada conforme a configuração da empresa.</p>
+                    <h4>3.12 Tema da interface</h4>
+                    <p>O seletor de aparência permite usar o tema <strong>Claro</strong>, <strong>Escuro</strong> ou
+                        <strong>Sistema</strong>. No modo Sistema, o VetorOS acompanha a preferência do dispositivo.
+                        A escolha é mantida durante a navegação e também se aplica aos cartões, alertas, filtros e
+                        indicadores do painel.</p>
                 </section>
 
                 <section id="dashboard">
@@ -664,20 +675,32 @@
                     </div>
                     <p>O dashboard também pode mostrar indicadores de acompanhamento, fila de retorno em garantia,
                         recuperação de avaliações críticas e métricas comerciais conforme os módulos habilitados.</p>
-                    <h4>4.1 O que analisar todos os dias</h4>
+                    <h4>4.1 Prioridades de hoje</h4>
+                    <p>A faixa <strong>Prioridades de hoje</strong> concentra somente situações que podem exigir uma
+                        ação da equipe. Cada item é clicável e abre a listagem já filtrada.</p>
+                    <ul>
+                        <li><strong>Prazo vencido:</strong> OS abertas com previsão de entrega anterior ao dia atual.</li>
+                        <li><strong>Aguardando aprovação:</strong> orçamentos enviados que ainda estão no status de orçamento gerado.</li>
+                        <li><strong>Aguardando retirada:</strong> serviços concluídos em que o cliente já foi avisado.</li>
+                        <li><strong>Sem técnico:</strong> ordens ativas ainda sem responsável definido.</li>
+                        <li><strong>Estoque baixo:</strong> peças ou produtos cuja quantidade chegou ao estoque mínimo configurado.</li>
+                    </ul>
+                    <p>O vermelho é reservado para prazos efetivamente vencidos. Os demais itens usam cores neutras
+                        para facilitar a leitura sem transformar o painel em uma tela de alertas.</p>
+                    <h4>4.2 O que analisar todos os dias</h4>
                     <ul>
                         <li><strong>Ordens em atraso:</strong> ajudam a priorizar atendimento, peças pendentes e retorno ao cliente.</li>
                         <li><strong>Saldos pendentes:</strong> mostram onde há cobrança em aberto e necessidade de contato.</li>
                         <li><strong>Indicadores de garantia:</strong> sinalizam risco de retrabalho técnico.</li>
                         <li><strong>Avaliações críticas:</strong> apontam clientes que podem exigir tratativa rápida.</li>
                     </ul>
-                    <h4>4.2 Quem usa esta tela</h4>
+                    <h4>4.3 Quem usa esta tela</h4>
                     <ul>
                         <li><strong>Administrador:</strong> acompanha resultado geral da operação, qualidade e financeiro.</li>
                         <li><strong>Atendente:</strong> usa os atalhos para abrir OS, consultar clientes e localizar pendências.</li>
                         <li><strong>Gestor:</strong> identifica gargalos, acompanha metas e decide prioridades do dia.</li>
                     </ul>
-                    <h4>4.3 Dashboard de vendas</h4>
+                    <h4>4.4 Dashboard de vendas</h4>
                     <p>Quando o módulo de vendas está ativo, o dashboard financeiro apresenta leituras próprias para o
                         comercial. O gráfico <strong>Meios de pagamento</strong> mostra a distribuição das vendas por
                         Pix, cartão, dinheiro, transferência, boleto e outros meios no período selecionado.</p>
@@ -840,6 +863,8 @@
                         <li><strong>Registrar fiscal:</strong> salva dados do comprovante ou documento fiscal vinculado à OS.</li>
                         <li><strong>Imprimir recibo:</strong> abre a versão de impressão do comprovante da ordem.</li>
                         <li><strong>Visualizar detalhes:</strong> exibe histórico, pagamentos e dados operacionais.</li>
+                        <li><strong>Mais ações:</strong> reúne acompanhamento público, recibo, imagens, cobrança de
+                            orçamento, emissão fiscal e exclusão, conforme as permissões do usuário.</li>
                     </ul>
                     <h4>6.2 O que acontece por trás</h4>
                     <ul>
@@ -894,6 +919,36 @@
                         <strong>Garantia encerrada em</strong>. Use o filtro <strong>Garantia ativa</strong> para mostrar
                         somente as OS que ainda estão dentro do prazo. O filtro <strong>Retorno em garantia</strong>
                         continua separado e mostra as novas OS vinculadas a uma garantia anterior.</p>
+                    <h4>6.8 Conferência de entrada</h4>
+                    <p>Ao abrir uma nova OS, a faixa <strong>Conferência de entrada</strong> acompanha o preenchimento
+                        de cliente, equipamento, marca e modelo, defeito relatado, conservação, acessórios e previsão.
+                        O contador é orientativo: ele ajuda a evitar esquecimentos, mas não torna obrigatórios campos
+                        que a empresa decidiu manter como opcionais.</p>
+                    <ol>
+                        <li>Selecione o cliente e o tipo de equipamento.</li>
+                        <li>Informe marca, modelo e o defeito relatado com as palavras do cliente.</li>
+                        <li>Registre o estado de conservação e os acessórios recebidos.</li>
+                        <li>Defina a previsão e confira o contador antes de salvar.</li>
+                        <li>Use imagens quando houver avarias, trincas ou outros detalhes que precisem de evidência.</li>
+                    </ol>
+                    <h4>6.9 Aviso de possível duplicidade</h4>
+                    <p>Quando já existe uma OS ativa para o mesmo cliente e equipamento, o formulário mostra um aviso
+                        com links para consultar as ordens encontradas. O aviso não bloqueia o cadastro, porque um mesmo
+                        equipamento pode ter atendimentos simultâneos legítimos, mas a equipe deve conferir antes de
+                        criar outra OS.</p>
+                    <h4>6.10 Busca, filtros e tempo no status</h4>
+                    <p>A busca da listagem aceita número da OS, cliente, documento, telefone, WhatsApp, equipamento e
+                        modelo. Além dos status normais, estão disponíveis filtros para <strong>Prazo vencido</strong>,
+                        <strong>Sem técnico</strong>, <strong>Aguardando retirada</strong>, feedback, orçamento parado,
+                        cobrança pendente, garantia e financeiro em aberto.</p>
+                    <p>Ao lado do status, o sistema informa há quantos dias a ordem permanece naquela etapa. Passe o
+                        cursor sobre a informação para consultar a data e hora da última mudança. Esse indicador ajuda
+                        a encontrar gargalos, mas não altera automaticamente o status da OS.</p>
+                    <h4>6.11 Linha do tempo</h4>
+                    <p>A linha do tempo reúne mudanças de status, pagamentos, peças, imagens, documentos fiscais,
+                        comunicações e outras ações registradas. Para manter a tela limpa, são mostrados inicialmente
+                        os eventos mais recentes. Use <strong>Ver histórico completo</strong> para expandir e
+                        <strong>Mostrar somente os recentes</strong> para recolher novamente.</p>
                 </section>
 
                 <section id="pagamentos-ordens">

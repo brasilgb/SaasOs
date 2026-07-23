@@ -132,17 +132,20 @@ export default function Dashboard({
                     </div>
 
                     {tenantFeedbackRequest?.hasPending && (
-                        <div className="mb-4 flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+                        <div className="mb-4 flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/70 dark:bg-amber-950/30">
                             <div className="flex items-center gap-3">
-                                <MessageSquareHeart className="h-5 w-5 text-amber-900" />
-                                <div className="text-sm text-amber-900">
+                                <MessageSquareHeart className="h-5 w-5 text-amber-900 dark:text-amber-300" />
+                                <div className="text-sm text-amber-900 dark:text-amber-100">
                                     Queremos ouvir sua experiência com o VetorOS.
-                                    <Badge variant="secondary" className="ml-2 bg-white text-amber-900">
+                                    <Badge variant="secondary" className="ml-2 bg-white text-amber-900 dark:bg-amber-900/50 dark:text-amber-100">
                                         Leva menos de 1 minuto
                                     </Badge>
                                 </div>
                             </div>
-                            <a href={tenantFeedbackRequest.url} className="text-sm font-medium text-amber-900 underline underline-offset-4">
+                            <a
+                                href={tenantFeedbackRequest.url}
+                                className="text-sm font-medium text-amber-900 underline underline-offset-4 dark:text-amber-200"
+                            >
                                 Enviar feedback
                             </a>
                         </div>

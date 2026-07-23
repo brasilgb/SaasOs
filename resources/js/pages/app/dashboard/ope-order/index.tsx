@@ -12,7 +12,20 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { connectBackend } from '@/Utils/connectApi';
 import { Link } from '@inertiajs/react';
-import { Activity, AlertTriangle, Calendar, Check, Clock, MemoryStickIcon, MessageSquareMore, ShieldAlert, Star, Users, Wrench } from 'lucide-react';
+import {
+    Activity,
+    AlertTriangle,
+    Calendar,
+    Check,
+    Clock,
+    MemoryStickIcon,
+    MessageSquareMore,
+    ShieldAlert,
+    Star,
+    UserRoundX,
+    Users,
+    Wrench,
+} from 'lucide-react';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
 
@@ -165,6 +178,40 @@ export default function OrderDashboard({
     ];
     const operationCount = operationStatuses.reduce((total, status) => total + status.items.length, 0);
     const activeOperation = operationStatuses.find((status) => status.key === selectedOperation);
+    const todayPriorities = [
+        {
+            label: 'Prazo vencido',
+            value: Number(acount?.numorde_overdue ?? 0),
+            href: route('app.orders.index', { filter: 'overdue' }),
+            icon: AlertTriangle,
+            urgent: true,
+        },
+        {
+            label: 'Aguardando aprovação',
+            value: Number(acount?.numorde_awaiting_approval ?? 0),
+            href: route('app.orders.index', { status: 3 }),
+            icon: Clock,
+        },
+        {
+            label: 'Aguardando retirada',
+            value: Number(acount?.numorde_awaiting_pickup ?? 0),
+            href: route('app.orders.index', { filter: 'awaiting_pickup' }),
+            icon: Check,
+        },
+        {
+            label: 'Sem técnico',
+            value: Number(acount?.numorde_unassigned ?? 0),
+            href: route('app.orders.index', { filter: 'unassigned' }),
+            icon: UserRoundX,
+        },
+        {
+            label: 'Estoque baixo',
+            value: Number(acount?.numparts_low_stock ?? 0),
+            href: route('app.parts.index', { filter: 'low_stock' }),
+            icon: MemoryStickIcon,
+        },
+    ];
+    const todayPriorityCount = todayPriorities.reduce((total, priority) => total + priority.value, 0);
 
     const renderOperationLink = (status: OperationStatusKey, item: OperationItem, index: number) => {
         if (status === 'va' || status === 'ea' || status === 'aa') {
@@ -217,6 +264,48 @@ export default function OrderDashboard({
     return (
         <div className="min-w-0">
             <div className="flex flex-col gap-4">
+                <Card className="gap-0 overflow-hidden py-0">
+                    <div className="flex flex-col gap-3 px-4 py-3 lg:flex-row lg:items-center">
+                        <div className="flex min-w-[180px] items-center gap-3">
+                            <div className="bg-primary/10 text-primary flex h-9 w-9 shrink-0 items-center justify-center rounded-lg">
+                                <Activity className="h-4 w-4" />
+                            </div>
+                            <div>
+                                <div className="text-sm font-semibold">Prioridades de hoje</div>
+                                <div className="text-muted-foreground text-xs">
+                                    {todayPriorityCount > 0 ? `${todayPriorityCount} itens pedem atenção` : 'Operação em dia'}
+                                </div>
+                            </div>
+                        </div>
+                        <div className="grid flex-1 grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-5">
+                            {todayPriorities.map((priority) => {
+                                const PriorityIcon = priority.icon;
+
+                                return (
+                                    <Link
+                                        key={priority.label}
+                                        href={priority.href}
+                                        className={`hover:bg-muted/60 flex min-w-0 items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm transition-colors ${
+                                            priority.urgent && priority.value > 0
+                                                ? 'border-red-200 bg-red-50/70 dark:border-red-900/70 dark:bg-red-950/30'
+                                                : ''
+                                        }`}
+                                    >
+                                        <span className="flex min-w-0 items-center gap-2">
+                                            <PriorityIcon
+                                                className={`h-4 w-4 shrink-0 ${
+                                                    priority.urgent && priority.value > 0 ? 'text-red-600 dark:text-red-400' : 'text-muted-foreground'
+                                                }`}
+                                            />
+                                            <span className="truncate">{priority.label}</span>
+                                        </span>
+                                        <span className="font-semibold tabular-nums">{priority.value}</span>
+                                    </Link>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </Card>
                 <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                     <KpiDashboard
                         link={route('app.customers.index')}
@@ -242,10 +331,10 @@ export default function OrderDashboard({
                                 <span className="bg-primary/10 text-primary rounded-md px-1.5 py-0.5 font-semibold tabular-nums">
                                     Abertos {acount?.numshed_open ?? 0}
                                 </span>
-                                <span className="rounded-md bg-sky-100 px-1.5 py-0.5 font-semibold text-sky-700 tabular-nums">
+                                <span className="rounded-md bg-sky-100 px-1.5 py-0.5 font-semibold text-sky-700 tabular-nums dark:bg-sky-500/20 dark:text-sky-200">
                                     Em atendimento {acount?.numshed_in_progress ?? 0}
                                 </span>
-                                <span className="rounded-md bg-red-100 px-1.5 py-0.5 font-semibold text-red-700 tabular-nums">
+                                <span className="rounded-md bg-red-100 px-1.5 py-0.5 font-semibold text-red-700 tabular-nums dark:bg-red-500/20 dark:text-red-200">
                                     Atrasados {acount?.numshed_overdue ?? 0}
                                 </span>
                             </span>
@@ -310,7 +399,11 @@ export default function OrderDashboard({
                                 {showFinanceShortcut && (
                                     <div className="w-full rounded-lg border p-3 text-center">
                                         <div className="text-sm font-medium">Caixa</div>
-                                        <div className={`text-xs ${isCashierOpen ? 'text-emerald-600' : 'text-amber-600'}`}>
+                                        <div
+                                            className={`text-xs ${
+                                                isCashierOpen ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'
+                                            }`}
+                                        >
                                             {isCashierOpen ? 'Aberto' : 'Fechado'}
                                         </div>
                                         {!isCashierOpen && (

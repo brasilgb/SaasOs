@@ -1,15 +1,25 @@
-import ActionDelete from '@/components/action-delete';
 import AppPagination, { PaginationSummary } from '@/components/app-pagination';
 import { Icon } from '@/components/icon';
 import InputSearch from '@/components/inputSearch';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { maskCpfCnpj, maskPhone, normalizeWhatsappPhone, unMask } from '@/Utils/mask';
-import { Head, Link, usePage } from '@inertiajs/react';
-import { Calendar, Edit, Plus, Upload, Users2, Wrench } from 'lucide-react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Calendar, Edit, MoreHorizontal, Plus, Trash2, Upload, Users2, Wrench } from 'lucide-react';
 import moment from 'moment';
 import { useState } from 'react';
 import ImportCustomersModal from './import-customers-modal';
@@ -37,6 +47,7 @@ function getWhatsappGreeting(name: string) {
 export default function Customers({ customers, search, pending }: any) {
     const { auth } = usePage().props as any;
     const [modalAberto, setModalAberto] = useState(false);
+    const [deleteCustomer, setDeleteCustomer] = useState<{ id: number; name: string } | null>(null);
     const canManageCustomers = auth?.permissions?.includes('customers');
 
     return (
@@ -51,7 +62,7 @@ export default function Customers({ customers, search, pending }: any) {
 
             <div className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:justify-between">
                 <div className="w-full min-w-0 lg:max-w-[420px] lg:flex-1">
-                    <InputSearch placeholder="Pesquisar cliente por nome ou cpf/cnpj" url="app.customers.index" />
+                    <InputSearch placeholder="Pesquisar por nome, documento, telefone ou e-mail" url="app.customers.index" />
                 </div>
                 <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto lg:shrink-0 lg:justify-end">
                     <Button variant={pending === '1' ? 'default' : 'outline'} asChild className="w-full whitespace-nowrap sm:w-auto">
@@ -88,7 +99,7 @@ export default function Customers({ customers, search, pending }: any) {
                                 <TableHead>Contato</TableHead>
                                 <TableHead>Saldo pendente</TableHead>
                                 <TableHead>Cadastro</TableHead>
-                                <TableHead className="min-w-[220px]"></TableHead>
+                                <TableHead className="min-w-[140px]"></TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -122,7 +133,7 @@ export default function Customers({ customers, search, pending }: any) {
                                             )}
                                         </TableCell>
                                         <TableCell>{moment(customer.created_at).format('DD/MM/YYYY')}</TableCell>
-                                        <TableCell className="min-w-[220px]">
+                                        <TableCell className="min-w-[140px]">
                                             <div className="flex flex-wrap justify-end gap-2">
                                                 <Button
                                                     asChild
@@ -148,29 +159,6 @@ export default function Customers({ customers, search, pending }: any) {
                                                         </svg>
                                                     </a>
                                                 </Button>
-                                                <Button
-                                                    asChild
-                                                    size="icon"
-                                                    className="bg-sky-500 text-white hover:bg-sky-600"
-                                                    title="Ver agendamentos"
-                                                >
-                                                    <Link
-                                                        href={route('app.schedules.index', { search: customer.name })}
-                                                        aria-label={`Ver agendamentos de ${customer.name}`}
-                                                    >
-                                                        <Calendar className="h-4 w-4" />
-                                                    </Link>
-                                                </Button>
-
-                                                <Button asChild size="icon" className="bg-sky-500 text-white hover:bg-sky-600" title="Ver ordens">
-                                                    <Link
-                                                        href={route('app.orders.index', { search: customer.name })}
-                                                        aria-label={`Ver ordens de ${customer.name}`}
-                                                    >
-                                                        <Wrench className="h-4 w-4" />
-                                                    </Link>
-                                                </Button>
-
                                                 {canManageCustomers && (
                                                     <Button
                                                         asChild
@@ -188,9 +176,45 @@ export default function Customers({ customers, search, pending }: any) {
                                                     </Button>
                                                 )}
 
-                                                {canManageCustomers && (
-                                                    <ActionDelete title={'este cliente'} url={'app.customers.destroy'} param={customer.id} />
-                                                )}
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button
+                                                            type="button"
+                                                            size="icon"
+                                                            variant="outline"
+                                                            title="Mais ações"
+                                                            aria-label={`Mais ações de ${customer.name}`}
+                                                        >
+                                                            <MoreHorizontal className="h-4 w-4" />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end" className="w-52">
+                                                        <DropdownMenuItem asChild>
+                                                            <Link href={route('app.schedules.index', { search: customer.name })}>
+                                                                <Calendar />
+                                                                Ver agendamentos
+                                                            </Link>
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem asChild>
+                                                            <Link href={route('app.orders.index', { search: customer.name })}>
+                                                                <Wrench />
+                                                                Ver ordens
+                                                            </Link>
+                                                        </DropdownMenuItem>
+                                                        {canManageCustomers && (
+                                                            <>
+                                                                <DropdownMenuSeparator />
+                                                                <DropdownMenuItem
+                                                                    variant="destructive"
+                                                                    onSelect={() => setDeleteCustomer({ id: customer.id, name: customer.name })}
+                                                                >
+                                                                    <Trash2 />
+                                                                    Excluir cliente
+                                                                </DropdownMenuItem>
+                                                            </>
+                                                        )}
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
                                             </div>
                                         </TableCell>
                                     </TableRow>
@@ -213,6 +237,31 @@ export default function Customers({ customers, search, pending }: any) {
                     </Table>
                 </div>
             </div>
+            <AlertDialog open={deleteCustomer !== null} onOpenChange={(open) => !open && setDeleteCustomer(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Excluir {deleteCustomer?.name}?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Esta ação não pode ser desfeita e removerá permanentemente os dados associados ao cliente.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                            className="bg-red-600 text-white hover:bg-red-700"
+                            onClick={() => {
+                                if (!deleteCustomer) return;
+                                router.delete(route('app.customers.destroy', deleteCustomer.id), {
+                                    preserveScroll: true,
+                                    onFinish: () => setDeleteCustomer(null),
+                                });
+                            }}
+                        >
+                            Excluir
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </AppLayout>
     );
 }

@@ -59,6 +59,7 @@ Route::post('/follow-ups/{order}/snooze-task', [FollowUpController::class, 'snoo
 Route::post('/follow-ups/{order}/assign-task', [FollowUpController::class, 'assignTask'])->name('follow-ups.assign-task');
 Route::post('/follow-ups/assign-selected', [FollowUpController::class, 'assignSelectedTasks'])->name('follow-ups.assign-selected');
 
+Route::get('customers-duplicate-check', [CustomerController::class, 'duplicateCheck'])->name('customers.duplicate-check');
 Route::resource('customers', CustomerController::class);
 Route::post('customers/import-customer', [CustomerController::class, 'ImportCustomer'])->name('import.customer');
 Route::resource('messages', MessageController::class);

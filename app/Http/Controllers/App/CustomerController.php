@@ -18,6 +18,36 @@ use Inertia\Inertia;
 
 class CustomerController extends Controller
 {
+    public function duplicateCheck(Request $request)
+    {
+        Gate::authorize('customers.access');
+
+        $cpfcnpj = preg_replace('/\D+/', '', (string) $request->input('cpfcnpj'));
+        $phone = preg_replace('/\D+/', '', (string) $request->input('phone'));
+        $whatsapp = preg_replace('/\D+/', '', (string) $request->input('whatsapp'));
+        $email = mb_strtolower(trim((string) $request->input('email')));
+        $excludeId = $request->integer('exclude_id');
+
+        if ($cpfcnpj === '' && $phone === '' && $whatsapp === '' && $email === '') {
+            return response()->json(['matches' => []]);
+        }
+
+        $matches = Customer::query()
+            ->when($excludeId, fn ($query) => $query->whereKeyNot($excludeId))
+            ->where(function ($query) use ($cpfcnpj, $phone, $whatsapp, $email) {
+                $query
+                    ->when($cpfcnpj !== '', fn ($query) => $query->orWhere('cpfcnpj', $cpfcnpj))
+                    ->when($phone !== '', fn ($query) => $query->orWhere('phone', $phone)->orWhere('whatsapp', $phone))
+                    ->when($whatsapp !== '', fn ($query) => $query->orWhere('whatsapp', $whatsapp)->orWhere('phone', $whatsapp))
+                    ->when($email !== '', fn ($query) => $query->orWhereRaw('LOWER(email) = ?', [$email]));
+            })
+            ->latest('id')
+            ->limit(5)
+            ->get(['id', 'customer_number', 'name', 'cpfcnpj', 'phone', 'whatsapp', 'email']);
+
+        return response()->json(['matches' => $matches]);
+    }
+
     // public function ImportCustomer(Request $request)
     // {
     //     try {
@@ -437,7 +467,10 @@ class CustomerController extends Controller
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('customers.name', 'like', '%' . $search . '%')
-                    ->orWhere('customers.cpfcnpj', 'like', '%' . $search . '%');
+                    ->orWhere('customers.cpfcnpj', 'like', '%' . $search . '%')
+                    ->orWhere('customers.phone', 'like', '%' . $search . '%')
+                    ->orWhere('customers.whatsapp', 'like', '%' . $search . '%')
+                    ->orWhere('customers.email', 'like', '%' . $search . '%');
             });
         }
 
