@@ -10,15 +10,32 @@ export function Footer() {
                     {/* Logo + descrição */}
                     <div className="space-y-4">
                         <div className="flex items-center gap-2">
-                            <BrandHorizontalLogo />
+                            <BrandHorizontalLogo inverse />
                         </div>
 
                         <p className="text-sm leading-relaxed text-white/58">
                             Sistema de gestão para assistências técnicas de celulares, informática e eletrônicos com mais controle sobre ordens,
                             clientes, vendas e financeiro.
                         </p>
-                        <a href="https://abrasilsistemas.com.br" target="_blank" rel="noreferrer" className="inline-flex text-xs font-semibold tracking-wide text-white/45 transition hover:text-white">
-                            Uma solução ABrasil Sistemas
+                        <a
+                            href="https://abrasilsistemas.com.br"
+                            target="_blank"
+                            rel="noreferrer"
+                            title="Desenvolvido por ABrasil Sistemas"
+                            className="group inline-flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-2.5 pr-4 transition hover:border-white/20 hover:bg-white/10"
+                        >
+                            <span className="grid size-10 place-items-center overflow-hidden rounded-lg bg-white p-1">
+                                <img
+                                    src="/images/logo_ab.png"
+                                    alt="Desenvolvido por ABrasil Sistemas"
+                                    title="Desenvolvido por ABrasil Sistemas"
+                                    className="size-full object-contain"
+                                />
+                            </span>
+                            <span className="text-xs font-semibold tracking-wide text-white/58 transition group-hover:text-white">
+                                Desenvolvido por
+                                <strong className="mt-0.5 block text-white">ABrasil Sistemas</strong>
+                            </span>
                         </a>
                     </div>
 

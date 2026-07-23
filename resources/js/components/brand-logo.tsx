@@ -13,12 +13,12 @@ function BrandMark({ compact = false }: { compact?: boolean }) {
     );
 }
 
-export function BrandHorizontalLogo() {
+export function BrandHorizontalLogo({ inverse = false }: { inverse?: boolean }) {
     return (
         <span className="inline-flex items-center gap-2 text-current">
             <BrandMark />
             <span className="font-brand text-xl font-bold tracking-normal" aria-label={brandName}>
-                <span className="text-white">Vetor</span>
+                <span className={inverse ? 'text-white' : 'text-slate-950'}>Vetor</span>
                 <span className="text-[#00B4FF]">OS</span>
             </span>
         </span>

@@ -18,11 +18,6 @@ const sidebarNavItems: NavItem[] = [
         href: '/settings/password',
         icon: null,
     },
-    {
-        title: 'Aparência',
-        href: '/settings/appearance',
-        icon: null,
-    },
 ];
 
 export default function SettingsLayout({ children }: PropsWithChildren) {
@@ -53,7 +48,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
             </div>
 
             <div className="flex w-full max-w-none flex-col gap-8 lg:flex-row lg:items-start lg:gap-12">
-                <aside className="w-full rounded-2xl border bg-card p-3 lg:sticky lg:top-6 lg:w-60 lg:min-w-60">
+                <aside className="bg-card w-full rounded-2xl border p-3 lg:sticky lg:top-6 lg:w-60 lg:min-w-60">
                     <nav className="flex flex-col space-y-1 space-x-0">
                         {sidebarNavItems.map((item, index) => (
                             <Button
@@ -62,7 +57,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                                 variant="ghost"
                                 asChild
                                 className={cn('w-full justify-start rounded-xl px-3 py-2 text-sm', {
-                                    'bg-muted font-medium text-foreground': currentPath === item.href,
+                                    'bg-muted text-foreground font-medium': currentPath === item.href,
                                 })}
                             >
                                 <Link href={item.href} prefetch>
@@ -76,7 +71,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                 <Separator className="my-6 md:hidden" />
 
                 <div className="w-full max-w-none flex-1">
-                    <section className="w-full max-w-none rounded-2xl border bg-card p-5 sm:p-6">{children}</section>
+                    <section className="bg-card w-full max-w-none rounded-2xl border p-5 sm:p-6">{children}</section>
                 </div>
             </div>
         </div>

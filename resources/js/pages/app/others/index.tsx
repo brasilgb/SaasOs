@@ -1,4 +1,3 @@
-import AppearanceTabs from '@/components/appearance-tabs';
 import HeadingSmall from '@/components/heading-small';
 import { Icon } from '@/components/icon';
 import { Button } from '@/components/ui/button';
@@ -61,8 +60,7 @@ export default function Others({ othersettings, company, time_remaining, mailSet
         fiscal_enabled: fiscalSetting?.enabled ?? false,
         fiscal_nfe_enabled: fiscalSetting?.nfe_enabled ?? false,
         fiscal_nfse_enabled: fiscalSetting?.nfse_enabled ?? false,
-        fiscal_provider:
-            automaticFiscalEmissionEnabled && fiscalSetting?.provider === 'government_api' ? 'government_api' : 'manual',
+        fiscal_provider: automaticFiscalEmissionEnabled && fiscalSetting?.provider === 'government_api' ? 'government_api' : 'manual',
         fiscal_environment: fiscalSetting?.environment ?? 'production',
         fiscal_nfse_mode: fiscalSetting?.nfse_mode ?? 'national',
         fiscal_company_tax_regime: fiscalSetting?.company_tax_regime ?? '',
@@ -117,12 +115,7 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                         />
                     </div>
 
-                    <div className="space-y-6">
-                        <HeadingSmall title="Aparência do sistema" description="Escolha entre os temas claro e escuro para facilitar o uso diário." />
-                        <AppearanceTabs />
-                    </div>
-
-                    <form onSubmit={handleSubmit} autoComplete="off" className="mt-8 w-full space-y-8">
+                    <form onSubmit={handleSubmit} autoComplete="off" className="w-full space-y-8">
                         <Tabs defaultValue={initialTab} className="w-full space-y-6">
                             <TabsList className="grid w-full grid-cols-3 lg:w-fit lg:min-w-[560px]">
                                 <TabsTrigger value="system">Sistema e SMTP</TabsTrigger>
@@ -344,7 +337,9 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                         <div className="bg-card text-card-foreground flex items-center justify-between gap-4 rounded-2xl border p-4 shadow-sm">
                                             <div>
                                                 <p className="font-medium">Módulo fiscal</p>
-                                                <p className="text-muted-foreground text-sm">Mostra o menu fiscal e libera o registro manual nas telas.</p>
+                                                <p className="text-muted-foreground text-sm">
+                                                    Mostra o menu fiscal e libera o registro manual nas telas.
+                                                </p>
                                             </div>
                                             <Switch
                                                 id="fiscal_enabled"
@@ -370,7 +365,9 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                         <div className="bg-card text-card-foreground flex items-center justify-between gap-4 rounded-2xl border p-4 shadow-sm">
                                             <div>
                                                 <p className="font-medium">NFS-e Nacional</p>
-                                                <p className="text-muted-foreground text-sm">Libera o registro manual de notas de serviço nas ordens.</p>
+                                                <p className="text-muted-foreground text-sm">
+                                                    Libera o registro manual de notas de serviço nas ordens.
+                                                </p>
                                             </div>
                                             <Switch
                                                 id="fiscal_nfse_enabled"

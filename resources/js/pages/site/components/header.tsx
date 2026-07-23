@@ -1,6 +1,5 @@
-import { Button } from '@/components/ui/button';
-import AppearanceToggleDropdown from '@/components/appearance-dropdown';
 import { BrandHorizontalLogo } from '@/components/brand-logo';
+import { Button } from '@/components/ui/button';
 import { Link, usePage } from '@inertiajs/react';
 import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
@@ -15,7 +14,7 @@ export function Header() {
     const handleLinkClick = () => setIsMenuOpen(false);
 
     return (
-        <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 bg-white/95 text-slate-900 shadow-sm backdrop-blur-xl">
+        <header className="fixed inset-x-0 top-0 z-50 w-full border-b border-slate-200/80 bg-white/95 text-slate-900 backdrop-blur-xl">
             <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 sm:px-8 lg:px-12">
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-2">
@@ -51,14 +50,16 @@ export function Header() {
 
                 {/* Ações */}
                 <div className="flex items-center gap-4">
-                    <AppearanceToggleDropdown />
                     {auth?.user ? (
                         <Link href={route(`${auth?.user?.tenant_id === null ? 'admin.dashboard' : 'app.dashboard'}`)} className="hidden md:inline">
                             <Button variant="ghost">{auth.user.name}</Button>
                         </Link>
                     ) : (
                         <>
-                            <Link href={route('login')} className="hidden text-sm font-semibold text-slate-600 transition-colors hover:text-blue-700 md:inline">
+                            <Link
+                                href={route('login')}
+                                className="hidden text-sm font-semibold text-slate-600 transition-colors hover:text-blue-700 md:inline"
+                            >
                                 Entrar
                             </Link>
 

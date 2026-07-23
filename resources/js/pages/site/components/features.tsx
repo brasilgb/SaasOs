@@ -87,7 +87,8 @@ const features = [
     {
         icon: Bell,
         title: 'Operação Simples e Produtiva',
-        description: 'Execute as tarefas diárias da sua empresa de manutenção com facilidade, desde o atendimento até a entrega, mantendo a equipe organizada e produtiva.',
+        description:
+            'Execute as tarefas diárias da sua empresa de manutenção com facilidade, desde o atendimento até a entrega, mantendo a equipe organizada e produtiva.',
     },
     {
         icon: CalendarCheck,
@@ -118,45 +119,35 @@ const features = [
 
 export function Features() {
     return (
-        <section id="recursos" className="public-light-section relative overflow-hidden bg-white py-20 text-slate-900 sm:py-28">
-            <div className="absolute inset-0">
-                <div className="absolute top-0 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-blue-100 blur-3xl" />
-                <div className="absolute inset-0 bg-linear-to-b from-white/40 via-white/80 to-white" />
-            </div>
+        <section id="recursos" className="relative overflow-hidden bg-white py-24 text-slate-900 sm:py-32">
+            <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-12">
+                <div className="mx-auto mb-16 max-w-3xl text-center">
+                    <p className="text-sm font-bold text-blue-700">Recursos essenciais</p>
 
-            <div className="relative mx-auto max-w-7xl px-4">
-                <div className="mx-auto mb-16 max-w-2xl text-center">
-                    <span className="inline-flex rounded-full border border-white/12 bg-white/6 px-4 py-1 text-[0.7rem] font-semibold tracking-[0.26em] text-[#7ee7ff] uppercase">
-                        Recursos essenciais
-                    </span>
-
-                    <h2 className="mt-5 text-3xl font-bold tracking-tight sm:text-4xl">
+                    <h2 className="mt-3 text-4xl font-bold tracking-[-0.04em] text-balance text-slate-950 sm:text-5xl">
                         Plataforma web e apps móveis para atendimento técnico, financeiro, campo e relacionamento com clientes
                     </h2>
 
-                    <p className="mt-4 text-lg leading-relaxed text-white/72">
+                    <p className="mt-5 text-lg leading-8 text-slate-600">
                         Da entrada do equipamento ao fechamento do caixa, o VetorOS reúne os módulos mais importantes da rotina em uma única
                         plataforma, com apps auxiliares para atendimento, imagens e equipe técnica.
                     </p>
-                    <p className="mt-3 text-xs text-white/45">
+                    <p className="mt-3 text-xs text-slate-400">
                         Os documentos fiscais são emitidos externamente e registrados no VetorOS para consulta e auditoria.
                     </p>
                 </div>
 
                 <div className="mb-12 grid gap-6 md:grid-cols-3">
                     {appFeatures.map((app) => (
-                        <Card
-                            key={app.title}
-                            className="border-[#00E59B]/20 bg-[#00E59B]/8 text-white shadow-[0_18px_60px_rgba(0,0,0,0.2)] backdrop-blur-sm"
-                        >
+                        <Card key={app.title} className="border-slate-800 bg-slate-950 text-white shadow-xl shadow-slate-900/10">
                             <CardHeader>
-                                <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl border border-[#00E59B]/24 bg-[#00E59B]/12">
-                                    <app.icon className="h-6 w-6 text-[#00B4FF]" />
+                                <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/15">
+                                    <app.icon className="h-6 w-6 text-blue-300" />
                                 </div>
                                 <CardTitle className="text-lg text-white">{app.title}</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <CardDescription className="text-sm leading-relaxed text-white/72">{app.description}</CardDescription>
+                                <CardDescription className="text-sm leading-6 text-slate-400">{app.description}</CardDescription>
                             </CardContent>
                         </Card>
                     ))}
@@ -166,18 +157,18 @@ export function Features() {
                     {features.map((feature, index) => (
                         <Card
                             key={index}
-                            className="flex h-full flex-col border-white/10 bg-white/[0.045] text-white shadow-[0_18px_60px_rgba(0,0,0,0.2)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#00E59B]/30 hover:bg-white/[0.07]"
+                            className="flex h-full flex-col border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl hover:shadow-slate-900/5"
                         >
                             <CardHeader>
-                                <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl border border-[#00E59B]/20 bg-[#00E59B]/10 ring-1 ring-[#00E59B]/12">
-                                    <feature.icon className="h-6 w-6 text-[#00B4FF]" />
+                                <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50">
+                                    <feature.icon className="h-6 w-6 text-blue-700" />
                                 </div>
 
-                                <CardTitle className="flex min-h-12 items-start text-lg leading-6 text-white">{feature.title}</CardTitle>
+                                <CardTitle className="flex min-h-12 items-start text-lg leading-6 text-slate-950">{feature.title}</CardTitle>
                             </CardHeader>
 
                             <CardContent className="flex-1">
-                                <CardDescription className="text-sm leading-relaxed text-white/68">{feature.description}</CardDescription>
+                                <CardDescription className="text-sm leading-6 text-slate-600">{feature.description}</CardDescription>
                             </CardContent>
                         </Card>
                     ))}

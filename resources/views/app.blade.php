@@ -11,8 +11,7 @@
     $metaRobots = $meta['robots'] ?? 'index, follow, max-image-preview:large';
 @endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
-    class="{{ ($appearance ?? 'system') === 'dark' ? 'dark' : '' }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
     <meta charset="utf-8">
@@ -25,12 +24,11 @@
     <meta name="robots" content="{{ $metaRobots }}">
     <meta name="author" content="{{ $metaSiteName }}">
     <meta name="language" content="pt-BR">
-    <meta name="app-appearance" content="{{ $appearance ?? 'system' }}">
 
     <link rel="canonical" href="{{ $metaUrl }}">
     <link rel="alternate" hreflang="pt-BR" href="{{ rtrim(config('app.url', url('/')), '/') }}">
 
-    <meta name="theme-color" content="#0B1220">
+    <meta name="theme-color" content="#ffffff">
 
     <link rel="icon" type="image/png" href="{{ asset('images/vetor.png') }}" sizes="any">
     <link rel="icon" type="image/png" href="{{ asset('favicon-48x48.png') }}" sizes="48x48">
@@ -71,35 +69,10 @@
     <meta name="twitter:image" content="{{ $metaImage }}">
     <meta name="twitter:image:alt" content="{{ $metaImageAlt }}">
 
-    {{-- Dark mode detection --}}
-    <script>
-        (function() {
-            
-            const appearance = document
-                .querySelector('meta[name="app-appearance"]')
-                ?.getAttribute('content') ?? 'system';
-
-            if (appearance === 'system') {
-
-                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-                if (prefersDark) {
-                    document.documentElement.classList.add('dark');
-                }
-
-            }
-
-        })();
-    </script>
-
     {{-- Background color before CSS loads --}}
     <style>
         html {
             background-color: oklch(1 0 0);
-        }
-
-        html.dark {
-            background-color: oklch(0.145 0 0);
         }
     </style>
 

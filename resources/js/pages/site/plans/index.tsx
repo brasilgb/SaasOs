@@ -14,32 +14,38 @@ const benefits = [
 
 export default function Plans() {
     return (
-        <main className="min-h-screen bg-[#0B1220] text-white">
-            <Head title="Planos" />
+        <main className="min-h-screen bg-white text-slate-900">
+            <Head title="Planos do VetorOS">
+                <meta name="description" content="Conheça os planos do VetorOS e teste a plataforma gratuitamente por 14 dias." />
+                <meta name="theme-color" content="#ffffff" />
+            </Head>
             <Header />
 
-            <section className="relative overflow-hidden px-4 pt-20 pb-8 text-center sm:pt-28 sm:pb-12">
-                <div className="absolute top-0 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-[#00E59B]/10 blur-3xl" />
+            <section className="relative overflow-hidden px-5 pt-36 pb-20 text-center sm:px-8 sm:pt-44 sm:pb-24">
+                <div className="absolute inset-x-0 top-0 -z-0 h-[36rem] bg-linear-to-b from-blue-50 via-white to-white" />
                 <div className="relative mx-auto max-w-4xl">
-                    <span className="inline-flex rounded-full border border-white/12 bg-white/6 px-4 py-1 text-xs font-semibold tracking-[0.22em] text-[#7ee7ff] uppercase">
-                        Planos simples e transparentes
-                    </span>
-                    <h1 className="mt-6 text-4xl font-bold tracking-tight sm:text-5xl">Escolha a melhor forma de usar o VetorOS</h1>
-                    <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-white/76">
-                        Simplifique as operações diárias da sua empresa de manutenção e mantenha atendimento, serviços e financeiro organizados em
-                        um só lugar.
+                    <p className="text-sm font-bold text-blue-700">Planos simples e transparentes</p>
+                    <h1 className="mt-3 text-5xl font-bold tracking-[-0.05em] text-balance text-slate-950 sm:text-6xl">
+                        Escolha a melhor forma de usar o VetorOS
+                    </h1>
+                    <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-slate-600">
+                        Simplifique as operações diárias da sua empresa de manutenção e mantenha atendimento, serviços e financeiro organizados em um
+                        só lugar.
                     </p>
 
                     <div className="mx-auto mt-8 grid max-w-3xl gap-3 text-left sm:grid-cols-2">
                         {benefits.map((benefit) => (
-                            <div key={benefit} className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-4 text-sm text-white/82">
-                                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-[#00E59B]" />
+                            <div
+                                key={benefit}
+                                className="flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-700 shadow-sm"
+                            >
+                                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
                                 <span>{benefit}</span>
                             </div>
                         ))}
                     </div>
 
-                    <Button asChild size="lg" className="mt-9 bg-[#00E59B] font-semibold text-slate-950 hover:bg-[#2ff0b1]">
+                    <Button asChild size="lg" className="mt-9 rounded-lg bg-blue-700 font-bold text-white hover:bg-blue-800">
                         <Link href={route('register')}>
                             Testar grátis por 14 dias
                             <ArrowRight className="ml-2 h-4 w-4" />
@@ -50,15 +56,26 @@ export default function Plans() {
 
             <Pricing />
 
-            <section className="border-t border-white/10 bg-[#08101d] px-4 py-16 text-center">
-                <h2 className="text-2xl font-bold">Ainda tem dúvidas?</h2>
-                <p className="mt-3 text-white/62">Converse diretamente com nossa equipe antes de começar.</p>
-                <Button asChild variant="outline" size="lg" className="mt-6 border-white/16 bg-white/6 text-white hover:bg-white/12 hover:text-white">
-                    <a href="https://wa.me/5551998931325?text=Quero%20mais%20informações%20sobre%20VetorOS" target="_blank" rel="noopener noreferrer">
-                        <MessageCircle className="mr-2 h-5 w-5" />
-                        Falar no WhatsApp
-                    </a>
-                </Button>
+            <section className="px-5 py-24 text-center sm:px-8">
+                <div className="mx-auto max-w-5xl rounded-3xl bg-blue-700 px-6 py-14 text-white shadow-2xl shadow-blue-700/15 sm:px-12">
+                    <h2 className="text-3xl font-bold">Ainda tem dúvidas?</h2>
+                    <p className="mt-3 text-blue-100">Converse diretamente com nossa equipe antes de começar.</p>
+                    <Button
+                        asChild
+                        variant="outline"
+                        size="lg"
+                        className="mt-6 border-white bg-white font-bold text-blue-800 hover:bg-blue-50 hover:text-blue-900"
+                    >
+                        <a
+                            href="https://wa.me/5551998931325?text=Quero%20mais%20informações%20sobre%20VetorOS"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            <MessageCircle className="mr-2 h-5 w-5" />
+                            Falar no WhatsApp
+                        </a>
+                    </Button>
+                </div>
             </section>
 
             <Footer />
