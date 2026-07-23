@@ -6,7 +6,7 @@ use App\Http\Controllers\Admin\FeatureController;
 use App\Http\Controllers\Admin\FiscalDocumentController;
 use App\Http\Controllers\Admin\PeriodController;
 use App\Http\Controllers\Admin\PlanController;
-use App\Http\Controllers\Admin\ProspectController;
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\TenantController;
 use App\Http\Controllers\Admin\TenantFeedbackController;
@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
 Route::get('/tenants/{tenant}/subscription-email-preview/{scenario}', [TenantController::class, 'previewSubscriptionEmail'])
     ->name('tenants.subscription-email-preview');
 Route::get('/tenants/{tenant}/subscription-invoice-email-preview', [TenantController::class, 'previewSubscriptionInvoiceEmail'])
@@ -33,8 +34,6 @@ Route::get('/fiscal-documents', [FiscalDocumentController::class, 'index'])->nam
 Route::resource('/tenants', TenantController::class);
 Route::resource('/branches', BranchController::class);
 Route::resource('/plans', PlanController::class);
-Route::patch('/prospects/{prospect}/contact', [ProspectController::class, 'contact'])->name('prospects.contact');
-Route::resource('/prospects', ProspectController::class)->except(['create', 'show', 'edit']);
 Route::resource('/features', FeatureController::class);
 Route::resource('/periods', PeriodController::class);
 Route::resource('/settings', SettingController::class);

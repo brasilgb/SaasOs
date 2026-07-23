@@ -4,8 +4,9 @@ namespace App\Models;
 
 use App\Models\Admin\AdminFiscalDocument;
 use App\Models\Admin\Branch;
-use App\Models\Admin\Plan;
 use App\Models\Admin\Period;
+use App\Models\Admin\Plan;
+use App\Models\App\Order;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,7 +19,9 @@ class Tenant extends Model
     use HasFactory;
 
     public const SUBSCRIPTION_ACTIVE = 'active';
+
     public const SUBSCRIPTION_GRACE = 'grace';
+
     public const SUBSCRIPTION_BLOCKED = 'blocked';
 
     protected $guarded = ['_method'];
@@ -67,6 +70,16 @@ class Tenant extends Model
     public function user(): HasOne
     {
         return $this->hasOne(User::class)->whereNull('roles');
+    }
+
+    public function users(): HasMany
+    {
+        return $this->hasMany(User::class);
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
     }
 
     public function getGraceDaysRemainingAttribute()

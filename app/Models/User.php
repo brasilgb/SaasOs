@@ -3,11 +3,11 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use App\Tenantable;
+use App\Models\App\Expense;
 use App\Models\App\Message;
 use App\Models\App\Order;
-use App\Models\App\Expense;
 use App\Models\App\Schedule;
+use App\Tenantable;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -22,9 +22,13 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable, Tenantable;
 
     public const ROLE_ROOT_SYSTEM = 99;
+
     public const ROLE_ROOT_APP = 9;
+
     public const ROLE_ADMIN = 1;
+
     public const ROLE_OPERATOR = 2;
+
     public const ROLE_TECHNICIAN = 3;
 
     /**
@@ -44,6 +48,7 @@ class User extends Authenticatable
         'roles',
         'can_view_all_orders',
         'status',
+        'last_login_at',
     ];
 
     /**
@@ -67,6 +72,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'can_view_all_orders' => 'boolean',
+            'last_login_at' => 'datetime',
         ];
     }
 
