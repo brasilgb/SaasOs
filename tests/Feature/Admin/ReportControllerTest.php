@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Models\App\Customer;
 use App\Models\App\Order;
 use App\Models\Tenant;
 use App\Models\User;
@@ -31,12 +32,16 @@ class ReportControllerTest extends TestCase
     public function test_root_can_view_tenant_usage_report(): void
     {
         $tenant = Tenant::factory()->create(['company' => 'Oficina Teste']);
+        $newCustomer = Customer::factory()->forTenant($tenant->id)->create(['created_at' => now()->subDays(2)]);
+        $oldCustomer = Customer::factory()->forTenant($tenant->id)->create(['created_at' => now()->subDays(45)]);
         User::factory()->forTenant($tenant->id)->create(['last_login_at' => now()->subDay()]);
         Order::factory()->forTenant($tenant->id)->create([
+            'customer_id' => $newCustomer->id,
             'service_status' => OrderStatus::DELIVERED,
             'created_at' => now()->subDays(2),
         ]);
         Order::factory()->forTenant($tenant->id)->create([
+            'customer_id' => $oldCustomer->id,
             'service_status' => OrderStatus::OPEN,
             'created_at' => now()->subDays(40),
         ]);
@@ -53,11 +58,17 @@ class ReportControllerTest extends TestCase
                 ->where('summary.tenants', 1)
                 ->where('summary.users', 1)
                 ->where('summary.active_users', 1)
+                ->where('summary.customers', 2)
+                ->where('summary.new_customers', 1)
+                ->where('summary.customers_with_orders', 1)
                 ->where('summary.orders', 1)
                 ->where('summary.delivered_orders', 1)
                 ->where('summary.open_orders', 1)
                 ->has('tenants', 1)
                 ->where('tenants.0.company', 'Oficina Teste')
+                ->where('tenants.0.customers_count', 2)
+                ->where('tenants.0.period_customers_count', 1)
+                ->where('tenants.0.customers_with_period_orders_count', 1)
                 ->where('tenants.0.period_orders_count', 1)
                 ->where('tenants.0.orders_count', 2));
     }

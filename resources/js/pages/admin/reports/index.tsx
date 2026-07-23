@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AdminLayout from '@/layouts/admin/admin-layout';
 import { Head, Link, router } from '@inertiajs/react';
-import { Building2, CalendarDays, CheckCircle2, ClipboardList, Printer, Search, Users } from 'lucide-react';
+import { Building2, CalendarDays, CheckCircle2, ClipboardList, ContactRound, Printer, Search, Users } from 'lucide-react';
 import moment from 'moment';
 import { FormEvent, useState } from 'react';
 
@@ -18,12 +18,16 @@ type TenantReport = {
     users_count: number;
     active_users_count: number;
     branches_count: number;
+    customers_count: number;
+    period_customers_count: number;
+    customers_with_period_orders_count: number;
     orders_count: number;
     period_orders_count: number;
     delivered_orders_count: number;
     open_orders_count: number;
     last_login_at: string | null;
     last_order_at: string | null;
+    last_customer_at: string | null;
 };
 
 type Props = {
@@ -32,6 +36,9 @@ type Props = {
         tenants: number;
         users: number;
         active_users: number;
+        customers: number;
+        new_customers: number;
+        customers_with_orders: number;
         orders: number;
         delivered_orders: number;
         open_orders: number;
@@ -55,6 +62,12 @@ export default function AdminReports({ filters, summary, tenants, generated_at }
     const cards = [
         { label: 'Tenants encontrados', value: summary.tenants, detail: 'empresas no filtro', icon: Building2 },
         { label: 'Usuários', value: summary.users, detail: `${summary.active_users} acessaram nos últimos 30 dias`, icon: Users },
+        {
+            label: 'Clientes',
+            value: summary.customers,
+            detail: `${summary.new_customers} novos · ${summary.customers_with_orders} com OS no período`,
+            icon: ContactRound,
+        },
         { label: 'OS no período', value: summary.orders, detail: `${summary.delivered_orders} entregues`, icon: ClipboardList },
         { label: 'OS em andamento', value: summary.open_orders, detail: 'pendentes em todas as datas', icon: CheckCircle2 },
     ];
@@ -120,7 +133,7 @@ export default function AdminReports({ filters, summary, tenants, generated_at }
                     </div>
                 </form>
 
-                <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                     {cards.map(({ label, value, detail, icon: Icon }) => (
                         <div key={label} className="bg-card rounded-xl border p-4">
                             <div className="flex items-start justify-between">
@@ -152,10 +165,13 @@ export default function AdminReports({ filters, summary, tenants, generated_at }
                                     <TableHead>Tenant</TableHead>
                                     <TableHead>Plano / situação</TableHead>
                                     <TableHead className="text-center">Usuários</TableHead>
+                                    <TableHead className="text-center">Clientes</TableHead>
+                                    <TableHead className="text-center">Clientes ativos</TableHead>
                                     <TableHead className="text-center">OS período</TableHead>
                                     <TableHead className="text-center">Entregues</TableHead>
                                     <TableHead className="text-center">Em andamento</TableHead>
                                     <TableHead>Último acesso</TableHead>
+                                    <TableHead>Último cliente</TableHead>
                                     <TableHead>Última OS</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -179,16 +195,22 @@ export default function AdminReports({ filters, summary, tenants, generated_at }
                                                 <strong>{tenant.users_count}</strong>
                                                 <div className="text-muted-foreground text-xs">{tenant.active_users_count} habilitados</div>
                                             </TableCell>
+                                            <TableCell className="text-center">
+                                                <strong>{tenant.customers_count}</strong>
+                                                <div className="text-muted-foreground text-xs">{tenant.period_customers_count} novos</div>
+                                            </TableCell>
+                                            <TableCell className="text-center">{tenant.customers_with_period_orders_count}</TableCell>
                                             <TableCell className="text-center font-medium">{tenant.period_orders_count}</TableCell>
                                             <TableCell className="text-center">{tenant.delivered_orders_count}</TableCell>
                                             <TableCell className="text-center">{tenant.open_orders_count}</TableCell>
                                             <TableCell className="text-sm whitespace-nowrap">{formatDateTime(tenant.last_login_at)}</TableCell>
+                                            <TableCell className="text-sm whitespace-nowrap">{formatDateTime(tenant.last_customer_at)}</TableCell>
                                             <TableCell className="text-sm whitespace-nowrap">{formatDateTime(tenant.last_order_at)}</TableCell>
                                         </TableRow>
                                     ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={8} className="text-muted-foreground h-24 text-center">
+                                        <TableCell colSpan={11} className="text-muted-foreground h-24 text-center">
                                             Nenhum tenant encontrado para os filtros escolhidos.
                                         </TableCell>
                                     </TableRow>

@@ -6,6 +6,7 @@ use App\Models\Admin\AdminFiscalDocument;
 use App\Models\Admin\Branch;
 use App\Models\Admin\Period;
 use App\Models\Admin\Plan;
+use App\Models\App\Customer;
 use App\Models\App\Order;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -80,6 +81,11 @@ class Tenant extends Model
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function customers(): HasMany
+    {
+        return $this->hasMany(Customer::class);
     }
 
     public function getGraceDaysRemainingAttribute()

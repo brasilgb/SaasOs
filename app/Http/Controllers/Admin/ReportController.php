@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\App\Customer;
 use App\Models\App\Order;
 use App\Models\Tenant;
 use App\Models\User;
@@ -41,6 +42,12 @@ class ReportController extends Controller
                 'users',
                 'users as active_users_count' => fn (Builder $query) => $query->where('status', 1),
                 'orders',
+                'customers',
+                'customers as period_customers_count' => fn (Builder $query) => $query->whereBetween('created_at', [$start, $end]),
+                'customers as customers_with_period_orders_count' => fn (Builder $query) => $query->whereHas(
+                    'orders',
+                    fn (Builder $query) => $query->whereBetween('created_at', [$start, $end])
+                ),
                 'orders as period_orders_count' => fn (Builder $query) => $query->whereBetween('created_at', [$start, $end]),
                 'orders as delivered_orders_count' => fn (Builder $query) => $query
                     ->whereBetween('created_at', [$start, $end])
@@ -54,6 +61,7 @@ class ReportController extends Controller
             ])
             ->withMax('users', 'last_login_at')
             ->withMax('orders', 'created_at')
+            ->withMax('customers', 'created_at')
             ->when($search !== '', fn (Builder $query) => $query->where(function (Builder $query) use ($search) {
                 $query->where('company', 'like', "%{$search}%")
                     ->orWhere('name', 'like', "%{$search}%")
@@ -83,12 +91,16 @@ class ReportController extends Controller
             'users_count' => $tenant->users_count,
             'active_users_count' => $tenant->active_users_count,
             'branches_count' => $tenant->branches_count,
+            'customers_count' => $tenant->customers_count,
+            'period_customers_count' => $tenant->period_customers_count,
+            'customers_with_period_orders_count' => $tenant->customers_with_period_orders_count,
             'orders_count' => $tenant->orders_count,
             'period_orders_count' => $tenant->period_orders_count,
             'delivered_orders_count' => $tenant->delivered_orders_count,
             'open_orders_count' => $tenant->open_orders_count,
             'last_login_at' => $tenant->users_max_last_login_at,
             'last_order_at' => $tenant->orders_max_created_at,
+            'last_customer_at' => $tenant->customers_max_created_at,
         ]);
 
         $tenantIds = $tenants->pluck('id');
@@ -96,6 +108,7 @@ class ReportController extends Controller
             ->whereIn('tenant_id', $tenantIds)
             ->whereBetween('created_at', [$start, $end]);
         $userQuery = User::query()->whereIn('tenant_id', $tenantIds);
+        $customerQuery = Customer::query()->whereIn('tenant_id', $tenantIds);
 
         return Inertia::render('admin/reports/index', [
             'filters' => [
@@ -108,6 +121,12 @@ class ReportController extends Controller
                 'tenants' => $tenants->count(),
                 'users' => (clone $userQuery)->count(),
                 'active_users' => (clone $userQuery)->where('last_login_at', '>=', $activeSince)->count(),
+                'customers' => (clone $customerQuery)->count(),
+                'new_customers' => (clone $customerQuery)->whereBetween('created_at', [$start, $end])->count(),
+                'customers_with_orders' => (clone $customerQuery)->whereHas(
+                    'orders',
+                    fn (Builder $query) => $query->whereBetween('created_at', [$start, $end])
+                )->count(),
                 'orders' => (clone $periodOrders)->count(),
                 'delivered_orders' => (clone $periodOrders)->where('service_status', OrderStatus::DELIVERED)->count(),
                 'open_orders' => Order::query()->whereIn('tenant_id', $tenantIds)->whereNotIn('service_status', [
