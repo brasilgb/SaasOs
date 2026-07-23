@@ -17,11 +17,11 @@ export function Testimonials({ testimonials }: { testimonials: TestimonialItem[]
     const [featuredTestimonial, ...secondaryTestimonials] = testimonials;
 
     return (
-        <section className="relative overflow-hidden bg-[#0B1220] py-20 text-white sm:py-28">
+        <section className="public-light-section relative overflow-hidden bg-slate-50 py-20 text-slate-900 sm:py-28">
             <div className="absolute inset-0">
-                <div className="absolute left-[12%] top-8 h-56 w-56 rounded-full bg-[#00E59B]/10 blur-3xl" />
-                <div className="absolute right-[8%] bottom-10 h-64 w-64 rounded-full bg-[#00E59B]/10 blur-3xl" />
-                <div className="absolute inset-0 bg-linear-to-b from-[#0B1220] via-[#0B1220] to-[#08101d]" />
+                <div className="absolute left-[12%] top-8 h-56 w-56 rounded-full bg-blue-100 blur-3xl" />
+                <div className="absolute right-[8%] bottom-10 h-64 w-64 rounded-full bg-sky-100 blur-3xl" />
+                <div className="absolute inset-0 bg-linear-to-b from-slate-50/30 via-slate-50/80 to-slate-50" />
             </div>
 
             <div className="relative mx-auto max-w-7xl px-4">

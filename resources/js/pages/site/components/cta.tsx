@@ -4,9 +4,9 @@ import { ArrowRight, MessageCircle } from 'lucide-react';
 
 export function CTA() {
     return (
-        <section className="relative overflow-hidden bg-[#0B1220] py-20 text-white sm:py-32">
+        <section className="relative overflow-hidden bg-blue-800 py-20 text-white sm:py-28">
             <div className="absolute inset-0">
-                <div className="absolute left-1/2 h-full w-full -translate-x-1/2 bg-linear-to-r from-[#0B1220] via-[#0D47A1] to-[#0D47A1]" />
+                <div className="absolute left-1/2 h-full w-full -translate-x-1/2 bg-linear-to-r from-blue-900 via-blue-800 to-blue-700" />
                 <div className="absolute top-1/2 left-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#00E59B]/14 blur-3xl" />
             </div>
 
@@ -16,7 +16,7 @@ export function CTA() {
                         Teste completo
                     </span>
 
-                    <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Pronto para transformar sua gestão?</h2>
+                    <h2 className="mt-5 text-3xl font-bold tracking-tight sm:text-4xl">Pronto para transformar sua gestão?</h2>
 
                     <p className="mt-6 text-lg leading-relaxed text-white/76">
                         Centralize atendimento, ordens, estoque, financeiro, vendas, campo técnico e relacionamento com clientes em uma plataforma

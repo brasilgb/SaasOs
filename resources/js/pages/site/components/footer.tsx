@@ -17,6 +17,9 @@ export function Footer() {
                             Sistema de gestão para assistências técnicas de celulares, informática e eletrônicos com mais controle sobre ordens,
                             clientes, vendas e financeiro.
                         </p>
+                        <a href="https://abrasilsistemas.com.br" target="_blank" rel="noreferrer" className="inline-flex text-xs font-semibold tracking-wide text-white/45 transition hover:text-white">
+                            Uma solução ABrasil Sistemas
+                        </a>
                     </div>
 
                     {/* Produto */}

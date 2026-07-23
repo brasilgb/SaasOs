@@ -23,7 +23,7 @@ const audiences = [
 
 export function AudienceStrip() {
     return (
-        <section className="border-b border-white/10 bg-[#0B1220] py-16 text-white sm:py-20">
+        <section className="public-light-section border-b border-slate-200 bg-slate-50 py-16 text-slate-900 sm:py-24">
             <div className="mx-auto max-w-7xl px-4">
                 <div className="mx-auto max-w-3xl text-center">
                     <span className="inline-flex rounded-full border border-white/12 bg-white/6 px-4 py-1 text-[0.7rem] font-semibold tracking-[0.26em] text-[#7ee7ff] uppercase">

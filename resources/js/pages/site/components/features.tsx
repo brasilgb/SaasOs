@@ -118,10 +118,10 @@ const features = [
 
 export function Features() {
     return (
-        <section id="recursos" className="relative overflow-hidden bg-[#0B1220] py-20 text-white sm:py-32">
+        <section id="recursos" className="public-light-section relative overflow-hidden bg-white py-20 text-slate-900 sm:py-28">
             <div className="absolute inset-0">
-                <div className="absolute top-0 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-[#00E59B]/12 blur-3xl" />
-                <div className="absolute inset-0 bg-linear-to-b from-[#0d1c33] via-[#0B1220] to-[#08101d]" />
+                <div className="absolute top-0 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-blue-100 blur-3xl" />
+                <div className="absolute inset-0 bg-linear-to-b from-white/40 via-white/80 to-white" />
             </div>
 
             <div className="relative mx-auto max-w-7xl px-4">

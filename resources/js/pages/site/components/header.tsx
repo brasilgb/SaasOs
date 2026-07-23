@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import AppearanceToggleDropdown from '@/components/appearance-dropdown';
 import { BrandHorizontalLogo } from '@/components/brand-logo';
 import { Link, usePage } from '@inertiajs/react';
 import { Menu, X } from 'lucide-react';
@@ -14,8 +15,8 @@ export function Header() {
     const handleLinkClick = () => setIsMenuOpen(false);
 
     return (
-        <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#0B1220] text-white shadow-sm">
-            <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
+        <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 bg-white/95 text-slate-900 shadow-sm backdrop-blur-xl">
+            <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 sm:px-8 lg:px-12">
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-2">
                     <BrandHorizontalLogo />
@@ -26,7 +27,7 @@ export function Header() {
                     <a
                         href="/#recursos"
                         onClick={handleLinkClick}
-                        className="text-sm font-medium text-white/62 transition-colors hover:text-white"
+                        className="text-sm font-semibold text-slate-600 transition-colors hover:text-blue-700"
                     >
                         Recursos
                     </a>
@@ -34,7 +35,7 @@ export function Header() {
                     <Link
                         href={route('plans.index')}
                         onClick={handleLinkClick}
-                        className="text-sm font-medium text-white/62 transition-colors hover:text-white"
+                        className="text-sm font-semibold text-slate-600 transition-colors hover:text-blue-700"
                     >
                         Planos
                     </Link>
@@ -42,7 +43,7 @@ export function Header() {
                     <a
                         href="/#contato"
                         onClick={handleLinkClick}
-                        className="text-sm font-medium text-white/62 transition-colors hover:text-white"
+                        className="text-sm font-semibold text-slate-600 transition-colors hover:text-blue-700"
                     >
                         Contato
                     </a>
@@ -50,18 +51,19 @@ export function Header() {
 
                 {/* Ações */}
                 <div className="flex items-center gap-4">
+                    <AppearanceToggleDropdown />
                     {auth?.user ? (
                         <Link href={route(`${auth?.user?.tenant_id === null ? 'admin.dashboard' : 'app.dashboard'}`)} className="hidden md:inline">
                             <Button variant="ghost">{auth.user.name}</Button>
                         </Link>
                     ) : (
                         <>
-                            <Link href={route('login')} className="hidden text-sm font-medium text-white/62 transition-colors hover:text-white md:inline">
+                            <Link href={route('login')} className="hidden text-sm font-semibold text-slate-600 transition-colors hover:text-blue-700 md:inline">
                                 Entrar
                             </Link>
 
                             <Link href={route('plans.index')}>
-                                <Button className="bg-[#00E59B] font-semibold text-slate-950 hover:bg-[#2ff0b1]">Conhecer Planos</Button>
+                                <Button className="rounded-lg bg-blue-700 font-semibold text-white hover:bg-blue-800">Testar grátis</Button>
                             </Link>
                         </>
                     )}
@@ -70,7 +72,7 @@ export function Header() {
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="text-white hover:bg-white/10 hover:text-white md:hidden"
+                        className="border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-950 md:hidden"
                         onClick={handleMenuToggle}
                         aria-expanded={isMenuOpen}
                         aria-controls="mobile-site-menu"
@@ -83,12 +85,12 @@ export function Header() {
 
             {/* Menu Mobile */}
             {isMenuOpen && (
-                <div id="mobile-site-menu" className="mx-auto max-w-7xl border-t border-white/10 px-4 pb-4 md:hidden">
+                <div id="mobile-site-menu" className="mx-auto max-w-7xl border-t border-slate-100 bg-white px-5 py-5 md:hidden">
                     <nav className="flex flex-col gap-4">
                         <a
                             href="/#recursos"
                             onClick={handleLinkClick}
-                            className="text-sm font-medium text-white/62 transition-colors hover:text-white"
+                            className="rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:text-blue-700"
                         >
                             Recursos
                         </a>
@@ -96,7 +98,7 @@ export function Header() {
                         <Link
                             href={route('plans.index')}
                             onClick={handleLinkClick}
-                            className="text-sm font-medium text-white/62 transition-colors hover:text-white"
+                            className="rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:text-blue-700"
                         >
                             Planos
                         </Link>
@@ -104,13 +106,13 @@ export function Header() {
                         <a
                             href="/#contato"
                             onClick={handleLinkClick}
-                            className="text-sm font-medium text-white/62 transition-colors hover:text-white"
+                            className="rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:text-blue-700"
                         >
                             Contato
                         </a>
                     </nav>
 
-                    <div className="flex flex-col gap-3 border-t border-white/10 pt-4">
+                    <div className="flex flex-col gap-3 border-t border-slate-100 pt-4">
                         {auth?.user ? (
                             <Link href={route(`${auth?.user?.tenant_id === null ? 'admin.dashboard' : 'app.dashboard'}`)} onClick={handleLinkClick}>
                                 <Button className="w-full">{auth.user.name}</Button>
@@ -118,13 +120,13 @@ export function Header() {
                         ) : (
                             <>
                                 <Link href={route('login')} onClick={handleLinkClick}>
-                                    <Button variant="outline" className="w-full border-white/14 bg-white/6 text-white hover:bg-white/12 hover:text-white">
+                                    <Button variant="outline" className="w-full border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
                                         Entrar
                                     </Button>
                                 </Link>
 
                                 <Link href={route('plans.index')} onClick={handleLinkClick}>
-                                    <Button className="w-full bg-[#00E59B] font-semibold text-slate-950 hover:bg-[#2ff0b1]">Conhecer Planos</Button>
+                                    <Button className="w-full bg-blue-700 font-semibold text-white hover:bg-blue-800">Testar grátis</Button>
                                 </Link>
                             </>
                         )}

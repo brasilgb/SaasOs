@@ -9,8 +9,11 @@ import { Head } from '@inertiajs/react';
 
 export default function Home({ testimonials = [] }: { testimonials?: TestimonialItem[] }) {
     return (
-        <main className="min-h-screen">
-            <Head title="Início" />
+        <main className="ab-public-site min-h-screen bg-white text-slate-900 selection:bg-blue-100 selection:text-blue-950">
+            <Head title="VetorOS — Gestão para assistências técnicas">
+                <meta name="description" content="Organize ordens de serviço, clientes, estoque, financeiro e equipe com o VetorOS." />
+                <meta name="theme-color" content="#ffffff" />
+            </Head>
             <Header />
             <Hero />
             <AudienceStrip />
