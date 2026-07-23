@@ -9,9 +9,12 @@
     $metaImageAlt = $meta['imageAlt'] ?? 'Banner do VetorOS com destaque para o sistema de ordem de serviço.';
     $metaSiteName = $meta['siteName'] ?? 'VetorOS';
     $metaRobots = $meta['robots'] ?? 'index, follow, max-image-preview:large';
+    $isPublicSite = str_starts_with((string) data_get($page, 'component', ''), 'site/');
 @endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
+    data-force-theme="{{ $isPublicSite ? 'light' : '' }}"
+    class="{{ !$isPublicSite && ($appearance ?? 'system') === 'dark' ? 'dark' : '' }}">
 
 <head>
     <meta charset="utf-8">
@@ -24,6 +27,7 @@
     <meta name="robots" content="{{ $metaRobots }}">
     <meta name="author" content="{{ $metaSiteName }}">
     <meta name="language" content="pt-BR">
+    <meta name="app-appearance" content="{{ $isPublicSite ? 'light' : ($appearance ?? 'system') }}">
 
     <link rel="canonical" href="{{ $metaUrl }}">
     <link rel="alternate" hreflang="pt-BR" href="{{ rtrim(config('app.url', url('/')), '/') }}">
@@ -69,10 +73,28 @@
     <meta name="twitter:image" content="{{ $metaImage }}">
     <meta name="twitter:image:alt" content="{{ $metaImageAlt }}">
 
+    @unless ($isPublicSite)
+        <script>
+            (function() {
+                const appearance = document
+                    .querySelector('meta[name="app-appearance"]')
+                    ?.getAttribute('content') ?? 'system';
+
+                if (appearance === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.documentElement.classList.add('dark');
+                }
+            })();
+        </script>
+    @endunless
+
     {{-- Background color before CSS loads --}}
     <style>
         html {
             background-color: oklch(1 0 0);
+        }
+
+        html.dark {
+            background-color: oklch(0.145 0 0);
         }
     </style>
 

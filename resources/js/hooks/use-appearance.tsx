@@ -20,6 +20,11 @@ const setCookie = (name: string, value: string, days = 365) => {
 };
 
 const applyTheme = (appearance: Appearance) => {
+    if (document.documentElement.dataset.forceTheme === 'light') {
+        document.documentElement.classList.remove('dark');
+        return;
+    }
+
     const isDark = appearance === 'dark' || (appearance === 'system' && prefersDark());
 
     document.documentElement.classList.toggle('dark', isDark);

@@ -1,3 +1,4 @@
+import AppearanceTabs from '@/components/appearance-tabs';
 import HeadingSmall from '@/components/heading-small';
 import { Icon } from '@/components/icon';
 import { Button } from '@/components/ui/button';
@@ -113,6 +114,11 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                             license={auth.user.tenant.plan.name}
                             time_remaining={time_remaining}
                         />
+                    </div>
+
+                    <div className="mb-8 space-y-6">
+                        <HeadingSmall title="Aparência do sistema" description="Escolha o tema claro, escuro ou o padrão do dispositivo." />
+                        <AppearanceTabs />
                     </div>
 
                     <form onSubmit={handleSubmit} autoComplete="off" className="w-full space-y-8">

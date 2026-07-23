@@ -1,6 +1,7 @@
 import { BrandLoginLogo } from '@/components/brand-logo';
 import { FlashToastMessages } from '@/components/flash-toast-messages';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAppearance } from '@/hooks/use-appearance';
 import authImage from '@/images/auth-images.jpg';
 import { cn } from '@/lib/utils';
 import { Link } from '@inertiajs/react';
@@ -14,6 +15,8 @@ interface AuthLayoutProps {
 }
 
 export default function AuthSimpleLayout({ children, title, description, width = 'w-full max-w-md' }: PropsWithChildren<AuthLayoutProps>) {
+    const { appearance } = useAppearance();
+
     return (
         <div className="relative flex min-h-svh min-w-0 items-center justify-center overflow-hidden p-3 sm:p-6">
             {/* Background Image */}
@@ -51,7 +54,7 @@ export default function AuthSimpleLayout({ children, title, description, width =
                 <div className="scrollbar-thin scrollbar-thumb-border relative z-10 min-w-0 overflow-y-auto px-3 sm:px-6">{children}</div>
             </Card>
             <FlashToastMessages />
-            <Toaster theme="light" />
+            <Toaster theme={appearance} />
         </div>
     );
 }

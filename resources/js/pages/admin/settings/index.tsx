@@ -1,4 +1,6 @@
 import { toastSuccess } from '@/components/app-toast-messages';
+import AppearanceTabs from '@/components/appearance-tabs';
+import HeadingSmall from '@/components/heading-small';
 import { Icon } from '@/components/icon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -61,7 +63,12 @@ export default function SettingsIndex({ settings }: { settings: Settings }) {
 
             <div className="w-full p-4">
                 <div className="bg-card w-full rounded-2xl border p-5 shadow-sm sm:p-6">
-                    <form onSubmit={handleSubmit} autoComplete="off" className="w-full space-y-8">
+                    <div className="space-y-6">
+                        <HeadingSmall title="Configurações de aparência" description="Escolha o tema claro, escuro ou o padrão do dispositivo." />
+                        <AppearanceTabs />
+                    </div>
+
+                    <form onSubmit={handleSubmit} autoComplete="off" className="mt-8 w-full space-y-8">
                         <div className="space-y-3">
                             <Label>Imagem de logo</Label>
                             <div className="bg-muted/30 flex h-28 w-28 items-center justify-center overflow-hidden rounded-2xl border p-3">
