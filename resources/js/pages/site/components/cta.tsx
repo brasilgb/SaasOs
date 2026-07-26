@@ -4,9 +4,9 @@ import { ArrowRight, MessageCircle } from 'lucide-react';
 
 export function CTA() {
     return (
-        <section className="relative overflow-hidden bg-blue-800 py-20 text-white sm:py-28">
+        <section className="relative overflow-hidden bg-[#08111f] py-20 text-white sm:py-28">
             <div className="absolute inset-0">
-                <div className="absolute left-1/2 h-full w-full -translate-x-1/2 bg-linear-to-r from-blue-900 via-blue-800 to-blue-700" />
+                <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.035)_1px,transparent_1px)] bg-[size:44px_44px]" />
                 <div className="absolute top-1/2 left-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#00E59B]/14 blur-3xl" />
             </div>
 
@@ -24,7 +24,11 @@ export function CTA() {
                     </p>
 
                     <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                        <Button size="lg" className="gap-2 rounded-xl bg-[#00E59B] px-8 text-base font-semibold text-slate-950 hover:bg-[#2ff0b1]" asChild>
+                        <Button
+                            size="lg"
+                            className="gap-2 rounded-full bg-cyan-300 px-8 text-base font-extrabold text-slate-950 hover:bg-cyan-200"
+                            asChild
+                        >
                             <Link href={route('plans.index')}>
                                 Conhecer planos e testar grátis
                                 <ArrowRight className="h-5 w-5" />
@@ -34,10 +38,10 @@ export function CTA() {
                         <Button
                             size="lg"
                             variant="outline"
-                            className="gap-2 rounded-xl border-white/18 bg-white/8 px-8 text-base font-semibold text-white hover:bg-white/14 hover:text-white"
+                            className="gap-2 rounded-full border-white/18 bg-white/8 px-8 text-base font-semibold text-white hover:bg-white/14 hover:text-white"
                             asChild
                         >
-                                <a
+                            <a
                                 href="https://wa.me/5551998931325?text=Quero%20mais%20informações%20sobre%20VetorOS"
                                 target="_blank"
                                 rel="noopener noreferrer"

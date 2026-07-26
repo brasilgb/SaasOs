@@ -23,11 +23,13 @@ const audiences = [
 
 export function AudienceStrip() {
     return (
-        <section className="border-b border-slate-200 bg-slate-50 py-20 text-slate-900 sm:py-24">
-            <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-12">
-                <div className="mx-auto max-w-3xl text-center">
-                    <p className="text-sm font-bold text-blue-700">Feito para sua realidade</p>
-                    <h2 className="mt-3 text-4xl font-bold tracking-[-0.04em] text-balance text-slate-950 sm:text-5xl">
+        <section className="border-b border-slate-200 bg-white py-24 text-slate-900 sm:py-32">
+            <div className="mx-auto max-w-[86rem] px-5 sm:px-8 lg:px-12">
+                <div className="max-w-3xl">
+                    <p className="flex items-center gap-3 text-xs font-extrabold tracking-[0.18em] text-blue-700 uppercase before:h-px before:w-8 before:bg-blue-600">
+                        Feito para sua realidade
+                    </p>
+                    <h2 className="mt-5 text-4xl leading-[1.02] font-black tracking-[-0.055em] text-balance text-slate-950 sm:text-6xl">
                         Para quem o VetorOS foi feito
                     </h2>
                     <p className="mt-5 text-lg leading-8 text-slate-600">
@@ -36,13 +38,10 @@ export function AudienceStrip() {
                     </p>
                 </div>
 
-                <div className="mt-10 grid gap-6 md:grid-cols-3">
+                <div className="mt-14 grid border-y border-slate-300 md:grid-cols-3 md:divide-x md:divide-slate-300">
                     {audiences.map((audience) => (
-                        <article
-                            key={audience.title}
-                            className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl hover:shadow-slate-900/5"
-                        >
-                            <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50">
+                        <article key={audience.title} className="group px-2 py-9 md:px-8">
+                            <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-100 transition group-hover:bg-cyan-200">
                                 <audience.icon className="h-6 w-6 text-blue-700" />
                             </div>
 
