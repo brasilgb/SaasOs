@@ -43,13 +43,17 @@ const handleSystemThemeChange = () => {
     applyTheme(currentAppearance || 'system');
 };
 
+let systemThemeListenerInitialized = false;
+
 export function initializeTheme() {
     const savedAppearance = (localStorage.getItem('appearance') as Appearance) || 'system';
 
     applyTheme(savedAppearance);
 
-    // Add the event listener for system theme changes...
-    mediaQuery()?.addEventListener('change', handleSystemThemeChange);
+    if (!systemThemeListenerInitialized) {
+        mediaQuery()?.addEventListener('change', handleSystemThemeChange);
+        systemThemeListenerInitialized = true;
+    }
 }
 
 export function useAppearance() {
@@ -64,14 +68,14 @@ export function useAppearance() {
         // Store in cookie for SSR...
         setCookie('appearance', mode);
 
+        // A navegação do Inertia pode manter este atributo da página pública.
+        delete document.documentElement.dataset.forceTheme;
         applyTheme(mode);
     }, []);
 
     useEffect(() => {
         const savedAppearance = localStorage.getItem('appearance') as Appearance | null;
         updateAppearance(savedAppearance || 'system');
-
-        return () => mediaQuery()?.removeEventListener('change', handleSystemThemeChange);
     }, [updateAppearance]);
 
     return { appearance, updateAppearance } as const;
