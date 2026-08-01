@@ -29,7 +29,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Parts() {
+export default function Reports() {
     const { company, auth, othersetting, fiscalSetting } = usePage().props as any;
     const [dateRange, setDateRange] = useRemember<any>({
         from: new Date(),

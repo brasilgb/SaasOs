@@ -1,5 +1,15 @@
 import InputError from '@/components/input-error';
 import InvoiceModal from '@/components/Modals/InvoiceModal';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -27,6 +37,7 @@ export default function OrderPaymentsModal({
     const [loading, setLoading] = useState(false);
     const [localPayments, setLocalPayments] = useState<any[]>(orderPayments || []);
     const [pendingMobilePayment, setPendingMobilePayment] = useState<any | null>(null);
+    const [paymentToRemove, setPaymentToRemove] = useState<number | null>(null);
     const [localSummary, setLocalSummary] = useState<any>(
         paymentSummary || { parts_value: 0, service_value: 0, total_order: 0, total_paid: 0, remaining: 0 },
     );
@@ -137,13 +148,13 @@ export default function OrderPaymentsModal({
     };
 
     const handleRemovePayment = (paymentId: number) => {
-        if (!confirm('Deseja remover este pagamento da ordem?')) return;
         router.delete(route('app.orders.payments.destroy', { order: order.id, payment: paymentId }), {
             preserveScroll: true,
             onSuccess: () => {
                 paymentForm.clearErrors();
                 loadPaymentsData();
             },
+            onFinish: () => setPaymentToRemove(null),
         });
     };
 
@@ -169,6 +180,7 @@ export default function OrderPaymentsModal({
     };
 
     return (
+        <>
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 {compactTrigger ? (
@@ -376,7 +388,7 @@ export default function OrderPaymentsModal({
                                     size="sm"
                                     variant="outline"
                                     className="w-full sm:w-auto"
-                                    onClick={() => handleRemovePayment(payment.id)}
+                                    onClick={() => setPaymentToRemove(payment.id)}
                                     disabled={!isCashierOpen}
                                 >
                                     Remover
@@ -395,5 +407,28 @@ export default function OrderPaymentsModal({
                 </DialogFooter>
             </DialogContent>
         </Dialog>
+
+        <AlertDialog open={paymentToRemove !== null} onOpenChange={(open) => !open && setPaymentToRemove(null)}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Remover pagamento?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Esta ação não pode ser desfeita e o valor pago deixará de ser considerado no saldo da ordem.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction
+                        className="bg-red-600 text-white hover:bg-red-700"
+                        onClick={() => {
+                            if (paymentToRemove !== null) handleRemovePayment(paymentToRemove);
+                        }}
+                    >
+                        Remover
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+        </>
     );
 }

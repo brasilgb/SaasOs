@@ -1,5 +1,7 @@
 # Integração fiscal com a Focus NFe
 
+> **Desatualizado (2026-08-01):** a integração via Focus NFe descrita neste documento foi removida do código em 2026-07-13 (`FocusNfeService`, `AdminFocusNfeService`). A decisão do produto foi não depender de atravessador e integrar direto com as APIs governamentais — esse projeto está pausado por causa das mudanças em curso na Reforma Tributária, com intenção de retomada. O fluxo fiscal atual é manual: o VetorOS leva o usuário a um clique dos emissores oficiais do governo (`nfse.gov.br` e `nfe.fazenda.gov.br`) e registra o comprovante informado manualmente. Veja a seção "Emissão fiscal e comprovantes" no [README.md](../README.md) para a descrição atual. Este arquivo fica como referência histórica para quando a integração direta com o governo for retomada.
+
 Este guia descreve a configuração e a operação da NF-e de produtos e da NFS-e de serviços no VetorOS.
 
 > A classificação fiscal, os regimes, as alíquotas e os códigos tributários devem ser confirmados com a contabilidade. Homologação serve para testes; produção gera documentos com validade fiscal.

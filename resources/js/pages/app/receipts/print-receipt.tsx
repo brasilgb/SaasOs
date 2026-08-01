@@ -1,4 +1,6 @@
+import { toastError } from '@/components/app-toast-messages';
 import { Button } from '@/components/ui/button';
+import { Toaster } from '@/components/ui/sonner';
 import { maskMoney } from '@/Utils/mask';
 import { Link } from '@inertiajs/react';
 import { pdf } from '@react-pdf/renderer';
@@ -301,7 +303,7 @@ export default function Receipt({
                 setTimeout(() => URL.revokeObjectURL(url), 60_000);
             } catch (error) {
                 console.error('Erro ao gerar recibo em PDF:', error);
-                alert('Erro ao gerar recibo em PDF.');
+                toastError('Erro ao gerar recibo em PDF.');
             } finally {
                 if (isMounted) setIsGeneratingPdf(false);
             }
@@ -316,6 +318,7 @@ export default function Receipt({
     if (openAsPdf) {
         return (
             <div className="mx-auto flex min-h-[60vh] max-w-4xl items-center justify-center p-6">
+                <Toaster />
                 <p className="text-muted-foreground text-sm">{isGeneratingPdf ? 'Gerando recibo PDF...' : 'Abrindo recibo PDF...'}</p>
             </div>
         );

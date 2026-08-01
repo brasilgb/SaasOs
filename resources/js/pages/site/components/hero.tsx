@@ -51,6 +51,14 @@ export function Hero() {
                         <CheckCircle2 className="size-4 text-cyan-300" />
                         Cadastro online e 14 dias para testar gratuitamente.
                     </p>
+
+                    <Link
+                        href={route('plans.index')}
+                        className="mt-3 inline-flex items-center gap-2 text-xs font-bold text-sky-300 underline-offset-4 hover:underline"
+                    >
+                        A partir de R$49,90/mês, sem taxa por usuário
+                        <ArrowRight className="size-3.5" />
+                    </Link>
                 </div>
 
                 <div className="relative mx-auto w-full">

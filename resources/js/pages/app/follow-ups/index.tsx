@@ -3,6 +3,16 @@ import { ChartFollowUpTrend } from '@/components/Charts/chart-follow-up-trend';
 import { DatePicker } from '@/components/date-picker';
 import { Icon } from '@/components/icon';
 import { StatusBadge } from '@/components/StatusBadge';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -110,6 +120,7 @@ function FollowUpTable({
     const pauseKey = type === 'budget' ? 'budget_follow_up_paused' : 'payment_follow_up_paused';
     const pauseReasonKey = type === 'budget' ? 'budget_follow_up_pause_reason' : 'payment_follow_up_pause_reason';
     const responseKey = type === 'budget' ? 'budget_follow_up_response_label' : 'payment_follow_up_response_label';
+    const [orderToResume, setOrderToResume] = useState<number | null>(null);
 
     const handleResponse = (orderId: number) => {
         const choice = window.prompt('Informe o retorno do cliente: respondeu, sem_interesse, aguardando_peca ou prometeu_pagar');
@@ -178,10 +189,6 @@ function FollowUpTable({
     };
 
     const handleResume = (orderId: number) => {
-        if (!window.confirm('Deseja reativar a automação desta ordem?')) {
-            return;
-        }
-
         router.post(
             route('app.follow-ups.resume', orderId),
             {
@@ -190,11 +197,13 @@ function FollowUpTable({
             {
                 preserveScroll: true,
                 preserveState: true,
+                onFinish: () => setOrderToResume(null),
             },
         );
     };
 
     return (
+        <>
         <Card className="h-full">
             <CardHeader>
                 <CardTitle className="text-base">{title}</CardTitle>
@@ -315,7 +324,7 @@ function FollowUpTable({
                                                                 variant="outline"
                                                                 title="Retomar automação"
                                                                 aria-label={`Retomar automação da ordem ${order.order_number}`}
-                                                                onClick={() => handleResume(order.id)}
+                                                                onClick={() => setOrderToResume(order.id)}
                                                             >
                                                                 <PlayCircle className="h-4 w-4" />
                                                             </Button>
@@ -366,6 +375,28 @@ function FollowUpTable({
                 )}
             </CardContent>
         </Card>
+
+        <AlertDialog open={orderToResume !== null} onOpenChange={(open) => !open && setOrderToResume(null)}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Reativar automação?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        O envio automático de acompanhamento desta ordem voltará a seguir o intervalo configurado.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction
+                        onClick={() => {
+                            if (orderToResume !== null) handleResume(orderToResume);
+                        }}
+                    >
+                        Reativar
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+        </>
     );
 }
 

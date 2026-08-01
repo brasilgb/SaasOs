@@ -5,6 +5,7 @@ import { Footer } from '../components/footer';
 import { Header } from '../components/header';
 import { Hero } from '../components/hero';
 import { Testimonials, type TestimonialItem } from '../components/testimonials';
+import { WhatsAppFloat } from '../components/whatsapp-float';
 import { Head } from '@inertiajs/react';
 
 export default function Home({ testimonials = [] }: { testimonials?: TestimonialItem[] }) {
@@ -21,6 +22,7 @@ export default function Home({ testimonials = [] }: { testimonials?: Testimonial
             <Testimonials testimonials={testimonials} />
             <CTA />
             <Footer />
+            <WhatsAppFloat />
         </main>
     );
 }

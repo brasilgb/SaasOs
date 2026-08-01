@@ -1,5 +1,6 @@
 import ActionCancelSale from '@/components/action-cancel-sale';
 import AppPagination, { PaginationSummary } from '@/components/app-pagination';
+import { toastError } from '@/components/app-toast-messages';
 import { Icon } from '@/components/icon';
 import InputSearch from '@/components/inputSearch';
 import SaleInvoiceModal from '@/components/Modals/SaleInvoiceModal';
@@ -141,7 +142,7 @@ export default function Sales({ sales, parts, customers, search, financial_statu
         } catch (error) {
             previewWindow.close();
             console.error('Erro ao gerar PDF:', error);
-            alert('Erro ao gerar o PDF.');
+            toastError('Erro ao gerar o PDF.');
         } finally {
             setGeneratingPdfSaleId(null);
         }

@@ -106,32 +106,46 @@ export function ChartAreaDashboard({ timerange, dateRange, customRange }: { time
             </CardHeader>
 
             <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-                <ChartContainer config={chartConfig} className="aspect-auto h-[200px] w-full">
-                    <BarChart data={barData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-                        <CartesianGrid vertical={false} />
-                        <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} minTickGap={12} tickFormatter={formatAxisLabel} />
-                        <YAxis tickLine={false} axisLine={false} width={28} allowDecimals={false} />
-                        <ChartTooltip
-                            cursor={false}
-                            content={
-                                <ChartTooltipContent
-                                    hideLabel
-                                    formatter={(value, _, item) => (
-                                        <div className="flex w-full items-center justify-between gap-3">
-                                            <span>{String(item.payload.label)}</span>
-                                            <span className="font-mono font-medium tabular-nums">{Number(value || 0)}</span>
-                                        </div>
-                                    )}
-                                />
-                            }
-                        />
-                        <Bar dataKey="value" name="value" radius={[4, 4, 0, 0]} maxBarSize={32}>
-                            {barData.map((item) => (
-                                <Cell key={item.key} fill={item.fill} />
-                            ))}
-                        </Bar>
-                    </BarChart>
-                </ChartContainer>
+                {barData.length === 0 ? (
+                    <div className="flex h-[200px] w-full flex-col items-center justify-center rounded-md border border-dashed px-4 text-center">
+                        <p className="text-sm font-medium">Sem equipamentos recebidos no período</p>
+                        <p className="text-muted-foreground mt-1 text-xs">Altere o período ou registre uma ordem para gerar o gráfico.</p>
+                    </div>
+                ) : (
+                    <ChartContainer config={chartConfig} className="aspect-auto h-[200px] w-full">
+                        <BarChart data={barData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+                            <CartesianGrid vertical={false} />
+                            <XAxis
+                                dataKey="label"
+                                tickLine={false}
+                                axisLine={false}
+                                tickMargin={8}
+                                minTickGap={12}
+                                tickFormatter={formatAxisLabel}
+                            />
+                            <YAxis tickLine={false} axisLine={false} width={28} allowDecimals={false} />
+                            <ChartTooltip
+                                cursor={false}
+                                content={
+                                    <ChartTooltipContent
+                                        hideLabel
+                                        formatter={(value, _, item) => (
+                                            <div className="flex w-full items-center justify-between gap-3">
+                                                <span>{String(item.payload.label)}</span>
+                                                <span className="font-mono font-medium tabular-nums">{Number(value || 0)}</span>
+                                            </div>
+                                        )}
+                                    />
+                                }
+                            />
+                            <Bar dataKey="value" name="value" radius={[4, 4, 0, 0]} maxBarSize={32}>
+                                {barData.map((item) => (
+                                    <Cell key={item.key} fill={item.fill} />
+                                ))}
+                            </Bar>
+                        </BarChart>
+                    </ChartContainer>
+                )}
             </CardContent>
         </Card>
     );

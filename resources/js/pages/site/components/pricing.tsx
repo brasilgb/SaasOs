@@ -8,6 +8,7 @@ const plans = [
         name: 'Mensal',
         price: 'R$49,90',
         period: '/mês',
+        anchor: 'Menos de R$1,70 por dia — menos que um café.',
         description: 'Ideal para começar',
         cta: 'Começar agora',
         features: [
@@ -21,14 +22,14 @@ const plans = [
     },
     {
         name: 'Anual',
-        price: 'R$419,16',
-        period: '/ano',
-        monthlyEquivalent: 'equivalente a R$34,93/mês',
+        price: 'R$34,93',
+        period: '/mês',
+        billedAs: 'Pagamento único de R$419,16 a cada 12 meses',
         description: 'Economia máxima durante todo o ano',
-        savings: '30% de desconto • economize R$179,64',
+        savings: '30% de desconto • economize R$179,64 no ano',
         highlight: 'Doze meses com 30% de desconto sobre o valor mensal.',
         popular: true,
-        cta: 'Quero o anual',
+        cta: 'Assinar o plano anual',
         features: [
             'Todos os recursos incluídos',
             'Usuários ilimitados',
@@ -36,7 +37,7 @@ const plans = [
             'Suporte prioritário',
             'Atualizações automáticas',
             'Backup diário',
-            '30% de desconto no pagamento anual',
+            'Sem fidelidade: pague de novo só quando renovar',
         ],
     },
 ];
@@ -78,7 +79,8 @@ export function Pricing() {
 
                                     <div className="mt-1 text-slate-500">{plan.period}</div>
 
-                                    {plan.monthlyEquivalent && <div className="mt-2 text-sm text-slate-500">{plan.monthlyEquivalent}</div>}
+                                    {plan.anchor && <div className="mt-2 text-sm text-slate-500">{plan.anchor}</div>}
+                                    {plan.billedAs && <div className="mt-2 text-sm text-slate-500">{plan.billedAs}</div>}
 
                                     {plan.savings && (
                                         <div className="mt-3">

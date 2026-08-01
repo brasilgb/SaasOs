@@ -5,7 +5,7 @@
         $meta['description'] ??
         'Sistema de ordem de serviço para assistência técnica de celulares, informática e eletrônica. Controle clientes, equipamentos, estoque e atendimentos com aplicativo para técnicos.';
     $metaUrl = $meta['url'] ?? rtrim(config('app.url', url('/')), '/');
-    $metaImage = $meta['image'] ?? rtrim(config('app.url', url('/')), '/') . '/images/banner-social.jpg';
+    $metaImage = $meta['image'] ?? rtrim(config('app.url', url('/')), '/') . '/images/dashboard-vetoros.webp';
     $metaImageAlt = $meta['imageAlt'] ?? 'Banner do VetorOS com destaque para o sistema de ordem de serviço.';
     $metaSiteName = $meta['siteName'] ?? 'VetorOS';
     $metaRobots = $meta['robots'] ?? 'index, follow, max-image-preview:large';
@@ -61,9 +61,9 @@
     <meta property="og:url" content="{{ $metaUrl }}">
 
     <meta property="og:image" content="{{ $metaImage }}">
-    <meta property="og:image:type" content="image/jpeg">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
+    <meta property="og:image:type" content="{{ $meta['imageType'] ?? 'image/webp' }}">
+    <meta property="og:image:width" content="{{ $meta['imageWidth'] ?? 1926 }}">
+    <meta property="og:image:height" content="{{ $meta['imageHeight'] ?? 934 }}">
     <meta property="og:image:alt" content="{{ $metaImageAlt }}">
 
     {{-- Twitter --}}

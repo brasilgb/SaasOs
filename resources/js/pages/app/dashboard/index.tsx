@@ -151,13 +151,13 @@ export default function Dashboard({
                         </div>
                     )}
 
-                    <Tabs defaultValue="account" className="mt-2 w-full">
+                    <Tabs defaultValue="operational" className="mt-2 w-full">
                         {!isTechnician && (
                             <TabsList className="h-auto w-full flex-wrap justify-start gap-2 md:max-w-[34rem]">
-                                <TabsTrigger value="account" className="hover:bg-background hover:text-foreground hover:shadow-sm">
+                                <TabsTrigger value="operational" className="hover:bg-background hover:text-foreground hover:shadow-sm">
                                     Operacional
                                 </TabsTrigger>
-                                <TabsTrigger value="password" className="hover:bg-background hover:text-foreground hover:shadow-sm">
+                                <TabsTrigger value="financial" className="hover:bg-background hover:text-foreground hover:shadow-sm">
                                     Financeiro
                                 </TabsTrigger>
                                 <TabsTrigger value="schedules" className="hover:bg-background hover:text-foreground hover:shadow-sm">
@@ -170,7 +170,7 @@ export default function Dashboard({
                                 )}
                             </TabsList>
                         )}
-                        <TabsContent value="account">
+                        <TabsContent value="operational">
                             <OrderDashboard
                                 timerange={timerangeForRequests}
                                 dateRange={dateRange}
@@ -192,7 +192,7 @@ export default function Dashboard({
                             </TabsContent>
                         )}
                         {!isTechnician && (
-                            <TabsContent value="password">
+                            <TabsContent value="financial">
                                 <FinanceiroOrders timerange={timerangeForRequests} dateRange={dateRange} customRange={hasCustomRange} />
                             </TabsContent>
                         )}

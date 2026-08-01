@@ -1,0 +1,60 @@
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+
+export const faqItems = [
+    {
+        question: 'Preciso de cartão de crédito para testar?',
+        answer: 'Não. O cadastro libera 14 dias de acesso completo sem pedir cartão. Depois do teste, o pagamento é feito via Pix, só quando você decidir continuar.',
+    },
+    {
+        question: 'Posso cancelar quando quiser?',
+        answer: 'Sim. Não há fidelidade nem multa de cancelamento — você paga via Pix apenas quando for renovar o plano mensal ou anual.',
+    },
+    {
+        question: 'O VetorOS emite nota fiscal?',
+        answer: 'O VetorOS não emite a nota fiscal automaticamente. Ele leva você com um clique ao Emissor Nacional da NFS-e ou ao portal da NF-e, já com os dados da ordem ou venda resumidos na tela; depois de emitir lá, você registra o número e o link do documento no VetorOS, mantendo tudo organizado e rastreável junto ao atendimento.',
+    },
+    {
+        question: 'Existe limite de usuários?',
+        answer: 'Não. Todos os planos incluem usuários ilimitados, com controle de papéis e permissões por colaborador, sem cobrança extra por pessoa.',
+    },
+    {
+        question: 'Já uso outro sistema. Dá para importar meus clientes?',
+        answer: 'Sim. O VetorOS importa clientes por CSV, com tratamento tolerante a e-mails repetidos e CPF/CNPJ inconsistente, para você migrar sem travar na base atual.',
+    },
+    {
+        question: 'O sistema funciona pelo celular?',
+        answer: 'Sim. O painel web é responsivo e a operação conta com apps auxiliares: autoatendimento para recepção, técnico para atendimento em campo e um app dedicado ao registro de fotos da ordem.',
+    },
+    {
+        question: 'Meus dados ficam separados de outras empresas que usam o VetorOS?',
+        answer: 'Sim. A plataforma é multi-tenant com isolamento por empresa: cada conta só acessa seus próprios clientes, ordens, financeiro e configurações.',
+    },
+    {
+        question: 'Meu cliente consegue acompanhar a ordem de serviço sem criar login?',
+        answer: 'Sim. Cada ordem tem um link público único para o cliente acompanhar status, aprovar orçamento, ver comprovantes e avaliar o atendimento, sem precisar de senha.',
+    },
+];
+
+export function FAQ() {
+    return (
+        <section id="faq" className="bg-white py-24 text-slate-900 sm:py-32">
+            <div className="mx-auto max-w-3xl px-5 sm:px-8 lg:px-12">
+                <div className="text-center">
+                    <p className="text-sm font-bold text-blue-700">Perguntas frequentes</p>
+                    <h2 className="mt-3 text-4xl font-bold tracking-[-0.04em] text-balance text-slate-950 sm:text-5xl">
+                        Ainda com dúvidas antes de testar?
+                    </h2>
+                </div>
+
+                <Accordion type="single" collapsible className="mt-12">
+                    {faqItems.map((item) => (
+                        <AccordionItem key={item.question} value={item.question}>
+                            <AccordionTrigger className="text-base font-semibold text-slate-950">{item.question}</AccordionTrigger>
+                            <AccordionContent className="text-sm leading-6 text-slate-600">{item.answer}</AccordionContent>
+                        </AccordionItem>
+                    ))}
+                </Accordion>
+            </div>
+        </section>
+    );
+}

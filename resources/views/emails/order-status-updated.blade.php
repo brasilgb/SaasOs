@@ -98,32 +98,6 @@
                                 </a>
                             </p>
                             @endif
-
-                            <table role="presentation" cellspacing="0" cellpadding="0" style="margin:30px 0;">
-                                <tr>
-                                    <td align="center">
-                                        <!--[if mso]>
-<v:roundrect xmlns:v="urn:schemas-microsoft-com:vml"
-href="{{ config('app.url') }}"
-style="height:45px;v-text-anchor:middle;width:220px;"
-arcsize="10%"
-stroke="f"
-fillcolor="#2563eb">
-<w:anchorlock/>
-<center style="color:#ffffff;font-family:Arial;font-size:16px;font-weight:bold;">
-Acessar o sistema
-</center>
-</v:roundrect>
-<![endif]-->
-                                        <!--[if !mso]> -->
-                                        <a href="{{ config('app.url') }}"
-                                            style="background:#2563eb;border-radius:6px;color:#ffffff;display:inline-block;font-size:15px;font-weight:bold;padding:14px 28px;text-decoration:none;">
-                                            Acessar o sistema
-                                        </a>
-                                        <!--<![endif]-->
-                                    </td>
-                                </tr>
-                            </table>
                         </td>
                     </tr>
 

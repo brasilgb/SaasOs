@@ -2,6 +2,16 @@ import { toastSuccess, toastWarning } from '@/components/app-toast-messages';
 import { OrderTimeline } from '@/components/order-timeline';
 import { StatusBadge } from '@/components/StatusBadge';
 import Timeline from '@/components/timeline';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Toaster } from '@/components/ui/sonner';
@@ -68,6 +78,8 @@ interface Order {
     customer_feedback_rating?: number;
     customer_feedback_comment?: string;
     customer_feedback_submitted_at?: string;
+    customer_update_note?: string;
+    customer_update_note_at?: string;
     status_history?: any[];
     logs?: any[];
     images?: OrderImage[];
@@ -213,7 +225,7 @@ function actionChecklist(order: Order, remainingAmount: number) {
 }
 
 function ServiceOrders({ order }: { order: Order }) {
-    const { company } = usePage().props as any;
+    const { company, hasChecklist } = usePage().props as any;
     const [loadingA, setLoadingA] = useState(false);
     const [loadingR, setLoadingR] = useState(false);
     const [loadingAck, setLoadingAck] = useState(false);
@@ -223,6 +235,8 @@ function ServiceOrders({ order }: { order: Order }) {
     const [feedbackComment, setFeedbackComment] = useState(order.customer_feedback_comment ?? '');
     const [selectedImage, setSelectedImage] = useState<{ src: string; alt: string } | null>(null);
     const [budgetModalOpen, setBudgetModalOpen] = useState(false);
+    const [rejectConfirmOpen, setRejectConfirmOpen] = useState(false);
+    const [pickupConfirmOpen, setPickupConfirmOpen] = useState(false);
 
     const financialSummary = useMemo(() => {
         const total = Number(order.service_cost ?? 0);
@@ -286,9 +300,11 @@ function ServiceOrders({ order }: { order: Order }) {
     }
 
     function handleReject() {
-        const confirmed = window.confirm('Deseja realmente recusar o orçamento?');
-        if (!confirmed) return;
+        setRejectConfirmOpen(true);
+    }
 
+    function confirmReject() {
+        setRejectConfirmOpen(false);
         budgetAlter(5);
     }
 
@@ -311,8 +327,11 @@ function ServiceOrders({ order }: { order: Order }) {
     }
 
     function handleAcknowledgePickup() {
-        const confirmed = window.confirm('Confirma que você já retirou o equipamento?');
-        if (!confirmed) return;
+        setPickupConfirmOpen(true);
+    }
+
+    function confirmAcknowledgePickup() {
+        setPickupConfirmOpen(false);
 
         router.post(
             route('orders.pickup.acknowledge', order.tracking_token),
@@ -406,6 +425,15 @@ function ServiceOrders({ order }: { order: Order }) {
                                                 Ordem de serviço #{order.order_number}
                                             </h1>
                                             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-200 md:text-base">{heroNote}</p>
+                                            {order.customer_update_note && (
+                                                <div className="mt-4 max-w-2xl rounded-xl border border-amber-300/30 bg-amber-400/10 px-4 py-3">
+                                                    <p className="text-xs font-semibold tracking-[0.15em] text-amber-200 uppercase">
+                                                        Atualização da assistência
+                                                        {order.customer_update_note_at ? ` • ${formatDateTime(order.customer_update_note_at)}` : ''}
+                                                    </p>
+                                                    <p className="mt-1 text-sm leading-6 text-amber-50">{order.customer_update_note}</p>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
 
@@ -581,6 +609,17 @@ function ServiceOrders({ order }: { order: Order }) {
                                                     >
                                                         <ReceiptText className="h-4 w-4" />
                                                         Recibo de entrega
+                                                    </a>
+                                                )}
+                                                {hasChecklist && (
+                                                    <a
+                                                        href={route('os.receipt', { token: order.tracking_token, type: 'orchecklist', pdf: 1 })}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+                                                    >
+                                                        <FileText className="h-4 w-4" />
+                                                        Checklist de entrada
                                                     </a>
                                                 )}
                                                 {hasFiscalProof && (
@@ -855,6 +894,21 @@ function ServiceOrders({ order }: { order: Order }) {
                                                 </a>
                                             )}
 
+                                            {hasChecklist && (
+                                                <a
+                                                    href={route('os.receipt', { token: order.tracking_token, type: 'orchecklist', pdf: 1 })}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center justify-between gap-3 rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-100"
+                                                >
+                                                    <span className="inline-flex items-center gap-2">
+                                                        <FileText className="h-4 w-4" />
+                                                        Checklist de entrada
+                                                    </span>
+                                                    <ExternalLink className="h-4 w-4 flex-none text-slate-500" />
+                                                </a>
+                                            )}
+
                                             {hasFiscalProof && (
                                                 <a
                                                     href={route('os.fiscal-proof', { token: order.tracking_token })}
@@ -1080,6 +1134,36 @@ function ServiceOrders({ order }: { order: Order }) {
                     </div>
                 </DialogContent>
             </Dialog>
+
+            <AlertDialog open={rejectConfirmOpen} onOpenChange={setRejectConfirmOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Recusar orçamento?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Ao recusar, a assistência será avisada de que você não aprovou o orçamento enviado.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction className="bg-red-600 text-white hover:bg-red-700" onClick={confirmReject}>
+                            Recusar orçamento
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            <AlertDialog open={pickupConfirmOpen} onOpenChange={setPickupConfirmOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Confirmar retirada do equipamento?</AlertDialogTitle>
+                        <AlertDialogDescription>Confirme apenas se você já retirou o equipamento na assistência técnica.</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={confirmAcknowledgePickup}>Confirmar retirada</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </>
     );
 }

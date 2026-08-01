@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\App\Order;
 use App\Models\App\OrderLog;
 use App\Models\App\Other;
+use App\Services\FollowUpTaskService;
 use App\Services\OrderNotificationService;
 use App\Support\OrderStatus;
 use Illuminate\Console\Command;
@@ -16,9 +17,22 @@ class SendPaymentFollowUps extends Command
 
     protected $description = 'Envia lembretes automáticos de cobrança para ordens elegíveis';
 
-    public function __construct(private readonly OrderNotificationService $orderNotificationService)
-    {
+    private const MAX_AUTOMATIC_FOLLOW_UPS = 3;
+
+    public function __construct(
+        private readonly OrderNotificationService $orderNotificationService,
+        private readonly FollowUpTaskService $followUpTaskService,
+    ) {
         parent::__construct();
+    }
+
+    private function automaticFollowUpsSent(Order $order): int
+    {
+        return OrderLog::query()
+            ->where('order_id', $order->id)
+            ->where('action', 'payment_reminder_sent')
+            ->where('data->trigger', 'automatic')
+            ->count();
     }
 
     private function cooldownDays(?int $tenantId): int
@@ -128,6 +142,21 @@ class SendPaymentFollowUps extends Command
 
             if ($this->hasRecentReminder($order)) {
                 $skipped++;
+                continue;
+            }
+
+            if ($this->automaticFollowUpsSent($order) >= self::MAX_AUTOMATIC_FOLLOW_UPS) {
+                $skipped++;
+
+                if (! $dryRun) {
+                    $this->followUpTaskService->pause(
+                        $order,
+                        'payment',
+                        sprintf('Pausado automaticamente após %d tentativas de cobrança sem resposta.', self::MAX_AUTOMATIC_FOLLOW_UPS),
+                        null,
+                    );
+                }
+
                 continue;
             }
 

@@ -28,7 +28,7 @@ const operatingHighlights = [
     'Área pública do cliente com acompanhamento online',
     'Acompanhamentos, garantia, avaliações e métricas comerciais',
     'Financeiro, caixa, despesas, estoque e vendas no mesmo ambiente',
-    'Notas fiscais para sua empresa, com NF-e de produtos e NFS-e de serviços mediante contratação do serviço fiscal',
+    'Acesso rápido ao Emissor Nacional da NFS-e e ao portal da NF-e, com registro do comprovante junto à operação',
 ];
 
 export function OnboardingShowcase() {

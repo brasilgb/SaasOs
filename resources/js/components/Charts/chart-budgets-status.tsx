@@ -96,28 +96,35 @@ export default function ChartBudgetsStatus({
             </CardHeader>
 
             <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-                <div className="grid items-center gap-4 md:grid-cols-[1fr_170px]">
-                    <ChartContainer config={chartConfig} className="aspect-auto h-[200px] w-full">
-                        <PieChart>
-                            <ChartTooltip cursor={false} content={<ChartTooltipContent nameKey="key" hideLabel />} />
-                            <Pie data={pieData} dataKey="value" nameKey="label" innerRadius={45} outerRadius={80} strokeWidth={2} />
-                            <ChartLegend
-                                align="left"
-                                verticalAlign="middle"
-                                layout="vertical"
-                                content={<ChartLegendContent nameKey="key" className="flex-col items-start justify-start pl-2 pt-0" />}
-                            />
-                        </PieChart>
-                    </ChartContainer>
-
-                    <div className="space-y-2 rounded-md border p-3">
-                        <div className="text-sm font-medium">Aproveitamento</div>
-                        <Progress value={approvalRate} />
-                        <div className="text-muted-foreground text-xs">{approvalRate.toFixed(1)}%</div>
-                        <div className="text-muted-foreground text-xs">Gerados: {statusData.generated}</div>
-                        <div className="text-muted-foreground text-xs">Aprovados: {statusData.approved}</div>
+                {pieData.length === 0 ? (
+                    <div className="flex h-[200px] w-full flex-col items-center justify-center rounded-md border border-dashed px-4 text-center">
+                        <p className="text-sm font-medium">Sem orçamentos no período</p>
+                        <p className="text-muted-foreground mt-1 text-xs">Altere o período ou gere um orçamento para acompanhar o aproveitamento.</p>
                     </div>
-                </div>
+                ) : (
+                    <div className="grid items-center gap-4 md:grid-cols-[1fr_170px]">
+                        <ChartContainer config={chartConfig} className="aspect-auto h-[200px] w-full">
+                            <PieChart>
+                                <ChartTooltip cursor={false} content={<ChartTooltipContent nameKey="key" hideLabel />} />
+                                <Pie data={pieData} dataKey="value" nameKey="label" innerRadius={45} outerRadius={80} strokeWidth={2} />
+                                <ChartLegend
+                                    align="left"
+                                    verticalAlign="middle"
+                                    layout="vertical"
+                                    content={<ChartLegendContent nameKey="key" className="flex-col items-start justify-start pl-2 pt-0" />}
+                                />
+                            </PieChart>
+                        </ChartContainer>
+
+                        <div className="space-y-2 rounded-md border p-3">
+                            <div className="text-sm font-medium">Aproveitamento</div>
+                            <Progress value={approvalRate} />
+                            <div className="text-muted-foreground text-xs">{approvalRate.toFixed(1)}%</div>
+                            <div className="text-muted-foreground text-xs">Gerados: {statusData.generated}</div>
+                            <div className="text-muted-foreground text-xs">Aprovados: {statusData.approved}</div>
+                        </div>
+                    </div>
+                )}
             </CardContent>
         </Card>
     );

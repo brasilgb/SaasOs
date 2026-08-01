@@ -1,3 +1,4 @@
+import { toastError } from '@/components/app-toast-messages';
 import { Button } from '@/components/ui/button';
 import { pdf } from '@react-pdf/renderer'; // Importe a função 'pdf'
 import { LoaderIcon, PrinterIcon } from 'lucide-react';
@@ -27,7 +28,7 @@ export function PrintBudget({ company, budget }: any) {
             window.open(url, '_blank');
         } catch (error) {
             console.error('Erro ao gerar ou abrir o PDF:', error);
-            alert('Houve um erro ao gerar o PDF. Tente novamente.');
+            toastError('Houve um erro ao gerar o PDF. Tente novamente.');
         } finally {
             setLoading(false);
         }

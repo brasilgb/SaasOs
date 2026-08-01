@@ -1,3 +1,4 @@
+import { toastSuccess } from '@/components/app-toast-messages';
 import SubscriptionPaymentSuccess from '@/components/Payment/SubscriptionPaymentSuccess';
 import { usePage } from '@inertiajs/react';
 import axios from 'axios';
@@ -172,7 +173,7 @@ export default function SubscriptionModal() {
                                 <button
                                     onClick={() => {
                                         navigator.clipboard.writeText(pixData.qr_code_copy_paste);
-                                        alert('Código Copiado!');
+                                        toastSuccess('Código Pix copiado!');
                                     }}
                                     className="mx-auto mt-2 block text-sm text-blue-600 underline"
                                 >

@@ -1314,6 +1314,46 @@ class OrderController extends Controller
         return back()->with('success', 'Acompanhamento de orçamento enviado com sucesso.');
     }
 
+    public function sendCustomerUpdate(Request $request, Order $order): RedirectResponse
+    {
+        $this->authorize('update', $order);
+
+        if ((int) $order->service_status === OrderStatus::DELIVERED) {
+            return back()->with('error', 'Esta ordem já foi entregue, não é possível enviar uma atualização de andamento.');
+        }
+
+        $validated = $request->validate([
+            'note' => ['required', 'string', 'max:500'],
+        ]);
+
+        $order->load('customer', 'tenant');
+        $customerEmail = trim((string) ($order->customer?->email ?? ''));
+        $note = trim($validated['note']);
+
+        $order->update([
+            'customer_update_note' => $note,
+            'customer_update_note_at' => now(),
+        ]);
+
+        $this->logOrderAction($order, 'customer_update_sent', [
+            'note' => $note,
+        ]);
+
+        if (! $this->shouldSendCustomerMailer($order, $customerEmail)) {
+            return back()->with('success', 'Atualização salva e visível no acompanhamento público da ordem. E-mail não enviado: cliente sem e-mail válido ou SMTP não configurado.');
+        }
+
+        try {
+            event(new OrderStatusUpdated($order->fresh(['customer', 'tenant']), OrderStatus::label((int) $order->service_status), $note));
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->with('success', 'Atualização salva e visível no acompanhamento público da ordem, mas houve falha ao enviar o e-mail.');
+        }
+
+        return back()->with('success', 'Atualização enviada ao cliente por e-mail e publicada no acompanhamento da ordem.');
+    }
+
     public function markFeedback(Order $order)
     {
         $this->authorize('update', $order);

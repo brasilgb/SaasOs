@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\App\Order;
 use App\Models\App\OrderLog;
 use App\Models\App\Other;
+use App\Services\FollowUpTaskService;
 use App\Services\OrderNotificationService;
 use App\Support\OrderStatus;
 use Illuminate\Console\Command;
@@ -15,9 +16,22 @@ class SendBudgetFollowUps extends Command
 
     protected $description = 'Envia acompanhamento automático para orçamentos parados';
 
-    public function __construct(private readonly OrderNotificationService $orderNotificationService)
-    {
+    private const MAX_AUTOMATIC_FOLLOW_UPS = 3;
+
+    public function __construct(
+        private readonly OrderNotificationService $orderNotificationService,
+        private readonly FollowUpTaskService $followUpTaskService,
+    ) {
         parent::__construct();
+    }
+
+    private function automaticFollowUpsSent(Order $order): int
+    {
+        return OrderLog::query()
+            ->where('order_id', $order->id)
+            ->where('action', 'budget_follow_up_sent')
+            ->where('data->trigger', 'automatic')
+            ->count();
     }
 
     private function cooldownDays(?int $tenantId): int
@@ -95,6 +109,21 @@ class SendBudgetFollowUps extends Command
 
             if ($this->hasRecentFollowUp($order)) {
                 $skipped++;
+                continue;
+            }
+
+            if ($this->automaticFollowUpsSent($order) >= self::MAX_AUTOMATIC_FOLLOW_UPS) {
+                $skipped++;
+
+                if (! $dryRun) {
+                    $this->followUpTaskService->pause(
+                        $order,
+                        'budget',
+                        sprintf('Pausado automaticamente após %d tentativas de contato sem resposta.', self::MAX_AUTOMATIC_FOLLOW_UPS),
+                        null,
+                    );
+                }
+
                 continue;
             }
 

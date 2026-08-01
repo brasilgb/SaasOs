@@ -70,6 +70,7 @@ Route::post('orders/{order}/payments', [OrderController::class, 'storePayment'])
 Route::post('orders/{order}/payments/mobile-confirm', [OrderController::class, 'confirmMobilePayment'])->name('orders.payments.mobile-confirm');
 Route::post('orders/{order}/payments/reminder', [OrderController::class, 'sendPaymentReminder'])->name('orders.payments.reminder');
 Route::post('orders/{order}/budget-follow-up', [OrderController::class, 'sendBudgetFollowUp'])->name('orders.budget-follow-up');
+Route::post('orders/{order}/customer-update', [OrderController::class, 'sendCustomerUpdate'])->name('orders.customer-update');
 Route::delete('orders/{order}/payments/{payment}', [OrderController::class, 'destroyPayment'])->name('orders.payments.destroy');
 Route::get('orders/{order}/payments-data', [OrderController::class, 'paymentsData'])->name('orders.payments.data');
 Route::post('orders/{order}/fiscal', [OrderController::class, 'registerFiscal'])->name('orders.fiscal.register');

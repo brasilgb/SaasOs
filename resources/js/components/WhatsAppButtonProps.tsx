@@ -1,4 +1,5 @@
 import React from 'react';
+import { toastWarning } from '@/components/app-toast-messages';
 import { normalizeWhatsappPhone } from '@/Utils/mask';
 
 type WhatsAppButtonProps = {
@@ -276,7 +277,7 @@ export const WhatsAppButton: React.FC<WhatsAppButtonProps> = ({
         const cleanPhone = normalizeWhatsappPhone(phone);
 
         if (cleanPhone.length < 12) {
-            alert('Número de WhatsApp inválido para envio.');
+            toastWarning('Número de WhatsApp inválido para envio.');
             return;
         }
 

@@ -65,33 +65,28 @@ Se o deploy for em HostGator Turbo compartilhado, siga também o guia específic
 
 ## Emissão fiscal e comprovantes
 
-A integração atual com a Focus NFe contempla:
+O fluxo fiscal padrão do VetorOS é manual, com atalho para os emissores oficiais do governo:
 
-- NF-e (modelo 55) para vendas de produtos
-- NFS-e municipal e NFS-e Nacional para prestação de serviços
-- armazenamento, no banco de dados, da referência da emissão e dos links retornados pela Focus, como DANFE/PDF e XML quando disponíveis
+- na ordem ou na venda, o botão "Emitir NFS-e"/"Emitir NF-e" abre um resumo dos dados (cliente, itens, valores) e um link que leva direto ao **Emissor Nacional da NFS-e** (`nfse.gov.br`) ou ao **portal da NF-e** (`nfe.fazenda.gov.br`)
+- a emissão em si acontece no site do governo, fora do VetorOS
+- depois de emitido, o número do documento e o link de consulta são registrados manualmente na ordem/venda, para consulta e auditoria posterior
 
-O passo a passo completo de implantação, campos obrigatórios, modalidades, homologação, sincronização e diagnóstico está em [docs/integracao-fiscal-focus-nfe.md](docs/integracao-fiscal-focus-nfe.md).
+Não há, hoje, integração automática via API com nenhum emissor. A antiga integração com a Focus NFe (`FocusNfeService`, `AdminFocusNfeService`) foi removida do projeto em 2026-07-13: a decisão do produto foi não depender de atravessador para emitir notas, e integrar diretamente com as APIs governamentais. Esse projeto está pausado por enquanto por causa das mudanças em curso na legislação fiscal (Reforma Tributária), com intenção de retomar.
 
-O NCM e o CFOP são configurados individualmente no cadastro de cada peça/produto, pois uma empresa pode comercializar mercadorias com classificações fiscais diferentes. Quando a integração fiscal e a emissão de NF-e estão habilitadas, os dois campos tornam-se obrigatórios no cadastro e na edição do produto. A emissão é bloqueada se algum item da venda estiver sem NCM ou CFOP.
+Como preparo para essa retomada, o cadastro de configurações fiscais (`Outras configurações`) já expõe uma opção "Automática pelas APIs governamentais" (`fiscal_provider = government_api`), liberada por uma flag por tenant (`automatic_fiscal_emission_enabled`, controlada apenas pelo admin da VetorOS em `Admin > Tenants`, não pelo próprio tenant). Hoje essa opção só mostra os campos de configuração — não existe nenhum código que efetivamente chame uma API de emissão. Não habilite essa flag para tenants em produção até a integração ser implementada.
+
+O NCM e o CFOP são configurados individualmente no cadastro de cada peça/produto (não são obrigatórios nem bloqueiam a emissão, já que a emissão não é feita pelo próprio VetorOS):
 
 - NCM: classificação fiscal da mercadoria, informada com 8 dígitos
 - CFOP: natureza fiscal da operação do produto, informada com 4 dígitos
 
 Esses códigos devem ser confirmados na nota fiscal de compra, com a contabilidade ou na legislação aplicável. Serviços de uma ordem não utilizam NCM; na NFS-e, a classificação ocorre pelo item da lista de serviço.
 
-No atendimento, uma impressora térmica pode ser usada para imprimir um comprovante da venda ou do serviço. Esse documento deve ser identificado como `COMPROVANTE NÃO FISCAL — NÃO SUBSTITUI A NOTA FISCAL`. Quando o cliente precisar do documento fiscal, o DANFE da NF-e pode ser aberto pelo link salvo no sistema e impresso em A4 ou enviado em PDF.
+No atendimento, uma impressora térmica pode ser usada para imprimir um comprovante da venda ou do serviço. Esse documento deve ser identificado como `COMPROVANTE NÃO FISCAL — NÃO SUBSTITUI A NOTA FISCAL`. Quando o cliente precisar do documento fiscal, o link registrado manualmente pode ser aberto e impresso em A4 ou enviado em PDF.
 
-### NFC-e, cupom fiscal e CSC
+### NFC-e e cupom fiscal
 
 A NFC-e (modelo 65) é o cupom fiscal eletrônico normalmente impresso em bobina, com QR Code no DANFC-e. Ela não está implementada no fluxo fiscal atual do VetorOS.
-
-O CSC (Código de Segurança do Contribuinte) é uma credencial fornecida pela SEFAZ e usada exclusivamente na geração do QR Code da NFC-e. Ele é diferente do token da API da Focus NFe:
-
-- token da API Focus NFe: autentica as requisições do VetorOS à Focus
-- CSC e ID do CSC: identificam e protegem o QR Code da NFC-e
-
-Como o fluxo atual emite NF-e e NFS-e, não é necessário cadastrar CSC. O CSC somente será necessário se o sistema passar a emitir NFC-e/cupom fiscal. Nesse caso, também será preciso implementar o endpoint de NFC-e, DANFC-e, formas de pagamento e as regras fiscais estaduais aplicáveis à integração com POS/TEF.
 
 ## Configurações gerais
 

@@ -21,9 +21,9 @@ import { maskMoney, maskMoneyDot } from '@/Utils/mask';
 import { ORDER_STATUS, ORDER_STATUSES_READY_FOR_INVOICE } from '@/Utils/order-status';
 import selectStyles from '@/Utils/selectStyles';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, Copy, FileTextIcon, KeyRound, Mail, Printer, Save, Wrench, X } from 'lucide-react';
+import { ArrowLeft, Copy, FileTextIcon, KeyRound, Mail, MessageSquareText, Printer, Save, Wrench, X } from 'lucide-react';
 import moment from 'moment';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import Select from 'react-select';
 import AddPartsModal from './add-parts';
 import EquipmentTypesModal from './equipment-types-modal';
@@ -89,6 +89,19 @@ export default function EditOrder({
     filter,
 }: any) {
     const budgetFollowUpForm = useForm({});
+    const [customerUpdateOpen, setCustomerUpdateOpen] = useState(false);
+    const customerUpdateForm = useForm({ note: '' });
+
+    const handleSendCustomerUpdate = (e: FormEvent) => {
+        e.preventDefault();
+        customerUpdateForm.post(route('app.orders.customer-update', order.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                setCustomerUpdateOpen(false);
+                customerUpdateForm.reset('note');
+            },
+        });
+    };
 
     const communicationLabel = (communication: any) => {
         if (!communication) return '';
@@ -366,6 +379,12 @@ export default function EditOrder({
                         >
                             <Mail className="h-4 w-4" />
                             {budgetFollowUpForm.processing ? 'Enviando...' : 'Cobrar orçamento'}
+                        </Button>
+                    )}
+                    {canManageOrders && Number(order.service_status) !== ORDER_STATUS.DELIVERED && (
+                        <Button type="button" variant="outline" onClick={() => setCustomerUpdateOpen(true)}>
+                            <MessageSquareText className="h-4 w-4" />
+                            Enviar atualização ao cliente
                         </Button>
                     )}
                     {canManagePayments && (
@@ -954,6 +973,33 @@ export default function EditOrder({
                         <Copy className="h-4 w-4" />
                         Copiar chave
                     </Button>
+                </DialogContent>
+            </Dialog>
+            <Dialog open={customerUpdateOpen} onOpenChange={setCustomerUpdateOpen}>
+                <DialogContent className="max-w-md">
+                    <DialogTitle>Enviar atualização ao cliente</DialogTitle>
+                    <p className="text-muted-foreground text-sm">
+                        Essa mensagem fica visível na página pública de acompanhamento da ordem e, se possível, também é enviada por e-mail ao
+                        cliente.
+                    </p>
+                    <form onSubmit={handleSendCustomerUpdate} className="space-y-3">
+                        <Textarea
+                            value={customerUpdateForm.data.note}
+                            onChange={(e) => customerUpdateForm.setData('note', e.target.value)}
+                            placeholder="Ex.: Peça já chegou e o reparo deve ficar pronto até amanhã."
+                            rows={4}
+                            maxLength={500}
+                        />
+                        {customerUpdateForm.errors.note && <p className="text-sm text-red-500">{customerUpdateForm.errors.note}</p>}
+                        <div className="flex justify-end gap-2">
+                            <Button type="button" variant="outline" onClick={() => setCustomerUpdateOpen(false)}>
+                                Cancelar
+                            </Button>
+                            <Button type="submit" disabled={customerUpdateForm.processing || !customerUpdateForm.data.note.trim()}>
+                                {customerUpdateForm.processing ? 'Enviando...' : 'Enviar atualização'}
+                            </Button>
+                        </div>
+                    </form>
                 </DialogContent>
             </Dialog>
         </AppLayout>

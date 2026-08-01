@@ -1,3 +1,4 @@
+import { toastError } from '@/components/app-toast-messages';
 import { Icon } from '@/components/icon';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
@@ -123,7 +124,7 @@ export default function CashierIndex({ currentSession, sessions, openTotals }: a
             window.open(url, '_blank');
         } catch (error) {
             console.error('Erro ao gerar PDF de fechamento diário:', error);
-            alert('Erro ao gerar o PDF de fechamento diário.');
+            toastError('Erro ao gerar o PDF de fechamento diário.');
         } finally {
             setLoadingPdfId(null);
         }

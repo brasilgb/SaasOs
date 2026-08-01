@@ -70,10 +70,15 @@ class OsController extends Controller
         }
 
         $company = $this->tenantScopedFirst(Company::class, (int) $order->tenant_id);
+        $hasChecklist = $order->equipment_id && Checklist::withoutGlobalScopes()
+            ->where('tenant_id', $order->tenant_id)
+            ->where('equipment_id', $order->equipment_id)
+            ->exists();
 
         return Inertia::render('app/serviceorders/index', [
             'order' => $order,
             'company' => $company,
+            'hasChecklist' => $hasChecklist,
         ])->withViewData([
             'meta' => $this->orderMeta($order, $company, $request->fullUrl()),
         ]);
@@ -255,7 +260,7 @@ class OsController extends Controller
 
     public function receipt(Request $request, string $token, string $type)
     {
-        $allowedTypes = ['orentrega', 'ororcamento'];
+        $allowedTypes = ['orentrega', 'ororcamento', 'orchecklist'];
         abort_unless(in_array($type, $allowedTypes, true), 404);
 
         $order = $this->publicOrderByToken($token)
@@ -271,6 +276,10 @@ class OsController extends Controller
             abort(404);
         }
 
+        if ($type === 'orchecklist' && ! $order->equipment_id) {
+            abort(404);
+        }
+
         $company = $this->tenantScopedFirst(Company::class, (int) $order->tenant_id);
         $receipt = Receipt::withoutGlobalScopes()
             ->where('tenant_id', $order->tenant_id)
@@ -280,6 +289,10 @@ class OsController extends Controller
             ->where('tenant_id', $order->tenant_id)
             ->where('equipment_id', $order->equipment_id)
             ->first('checklist');
+
+        if ($type === 'orchecklist' && ! $checklist) {
+            abort(404);
+        }
 
         return Inertia::render('app/receipts/print-receipt', [
             'order' => $order,

@@ -1,9 +1,24 @@
 import { Button } from '@/components/ui/button';
 import { Head, Link } from '@inertiajs/react';
 import { ArrowRight, CheckCircle2, MessageCircle } from 'lucide-react';
+import { FAQ, faqItems } from '../components/faq';
 import { Footer } from '../components/footer';
 import { Header } from '../components/header';
 import { Pricing } from '../components/pricing';
+import { WhatsAppFloat } from '../components/whatsapp-float';
+
+const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((item) => ({
+        '@type': 'Question',
+        name: item.question,
+        acceptedAnswer: {
+            '@type': 'Answer',
+            text: item.answer,
+        },
+    })),
+};
 
 const benefits = [
     'Controle financeiro, vendas e prestação de serviços',
@@ -18,6 +33,7 @@ export default function Plans() {
             <Head title="Planos do VetorOS">
                 <meta name="description" content="Conheça os planos do VetorOS e teste a plataforma gratuitamente por 14 dias." />
                 <meta name="theme-color" content="#ffffff" />
+                <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
             </Head>
             <Header />
 
@@ -56,6 +72,8 @@ export default function Plans() {
 
             <Pricing />
 
+            <FAQ />
+
             <section className="px-5 py-24 text-center sm:px-8">
                 <div className="mx-auto max-w-5xl rounded-3xl bg-blue-700 px-6 py-14 text-white shadow-2xl shadow-blue-700/15 sm:px-12">
                     <h2 className="text-3xl font-bold">Ainda tem dúvidas?</h2>
@@ -79,6 +97,7 @@ export default function Plans() {
             </section>
 
             <Footer />
+            <WhatsAppFloat />
         </main>
     );
 }

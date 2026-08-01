@@ -150,7 +150,7 @@ export function SalesProducts({ parts, customers, iconSize, triggerLabel, trigge
             const quantityInCart = existingItemIndex > -1 ? cartItems[existingItemIndex].selected_quantity : 0;
             // 3. Validação REAL de estoque (Carrinho + O que está tentando adicionar agora)
             if (quantityInCart + quantity > part.quantity) {
-                alert(`Estoque insuficiente. Você já tem ${quantityInCart} no carrinho e o estoque total é ${part.quantity}.`);
+                toastWarning('Estoque insuficiente', `Você já tem ${quantityInCart} no carrinho e o estoque total é ${part.quantity}.`);
                 return;
             }
 
@@ -183,7 +183,7 @@ export function SalesProducts({ parts, customers, iconSize, triggerLabel, trigge
         if (selectedPart && data.quantity > 0) {
             addPartToCart(selectedPart, data.quantity);
         } else if (selectedPart && data.quantity > selectedPart.quantity) {
-            alert('Quantidade maior que o estoque disponível.');
+            toastWarning('Quantidade maior que o estoque disponível.');
         }
     };
 
@@ -219,7 +219,7 @@ export function SalesProducts({ parts, customers, iconSize, triggerLabel, trigge
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (cartItems.length === 0) {
-            alert('Adicione itens ao carrinho antes de finalizar a venda.');
+            toastWarning('Adicione itens ao carrinho antes de finalizar a venda.');
             return;
         }
 
@@ -332,7 +332,7 @@ export function SalesProducts({ parts, customers, iconSize, triggerLabel, trigge
         } catch (error) {
             previewWindow.close();
             console.error('Erro ao gerar PDF:', error);
-            alert('Erro ao gerar o PDF.');
+            toastWarning('Erro ao gerar o PDF.');
         } finally {
             setIsGeneratingPdf(false);
         }
@@ -367,7 +367,7 @@ export function SalesProducts({ parts, customers, iconSize, triggerLabel, trigge
                 </DialogHeader>
                 {!isCashierOpen && (
                     <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-                        O caixa diario precisa estar aberto para registrar vendas.
+                        O caixa diário precisa estar aberto para registrar vendas.
                     </div>
                 )}
                 <SaleInvoiceModal open={openInvoiceModal} onClose={() => setOpenInvoiceModal(false)} sale={dataSalesTotal} />
