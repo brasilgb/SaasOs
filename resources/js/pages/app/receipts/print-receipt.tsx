@@ -173,7 +173,7 @@ function ReceiptCopy({
 
             <div className="mb-3 rounded-md border border-gray-300">
                 <h2 className="border-b border-gray-300 bg-gray-50 px-3 py-1.5 text-[11px] font-bold text-gray-950">Garantias e Observações</h2>
-                <p className="min-h-10 p-3 leading-relaxed whitespace-pre-wrap">{receiptText || '-'}</p>
+                <p className="min-h-10 p-3 text-[10px] leading-snug whitespace-pre-wrap">{receiptText || '-'}</p>
             </div>
 
             {type === 'orchecklist' && (

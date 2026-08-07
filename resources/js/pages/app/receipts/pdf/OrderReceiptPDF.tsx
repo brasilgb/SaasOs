@@ -88,6 +88,11 @@ const styles = StyleSheet.create({
         marginBottom: 3,
         lineHeight: 1.35,
     },
+    warrantyText: {
+        fontSize: 8.5,
+        lineHeight: 1.15,
+        textAlign: 'justify',
+    },
     mutedLabel: {
         color: '#6b7280',
     },
@@ -126,7 +131,7 @@ const styles = StyleSheet.create({
         fontSize: 9,
     },
     footer: {
-        marginTop: 28,
+        marginTop: 14,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'flex-end',
@@ -300,7 +305,7 @@ export default function OrderReceiptPDF({ order, company, type, receipt, checkli
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Garantias e Observações</Text>
                     <View style={styles.sectionBody}>
-                        <Text style={styles.text}>{receiptText || '-'}</Text>
+                        <Text style={styles.warrantyText}>{receiptText || '-'}</Text>
                     </View>
                 </View>
 
