@@ -99,6 +99,7 @@ Route::resource('whatsapp-message', WhatsappMessageController::class)->parameter
 Route::resource('receipts', ReceiptController::class);
 
 Route::get('receipts/{or}/{tp}', [ReceiptController::class, 'printing'])->name('receipts.printing');
+Route::get('receipts/{or}/{tp}/data', [ReceiptController::class, 'printingData'])->name('receipts.printing.data');
 
 Route::resource('label-printing', LabelPrintingController::class);
 Route::get('label-printing-print', [LabelPrintingController::class, 'print'])->name('label-printing.print');

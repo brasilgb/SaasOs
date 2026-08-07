@@ -224,6 +224,9 @@ function partsDescription(orderParts: any[], fallback: any) {
 }
 
 function logoSource(company: any) {
+    // `logo_url` vem resolvido pelo backend (já validando se o arquivo existe),
+    // evitando que o @react-pdf/renderer trave tentando carregar uma imagem quebrada.
+    if (company?.logo_url) return company.logo_url;
     return company?.logo ? `/storage/logos/${company.logo}` : '/images/default.png';
 }
 

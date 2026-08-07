@@ -86,14 +86,70 @@ class ReceiptController extends Controller
     {
         Gate::authorize('receipts.access');
 
+        $data = $this->loadReceiptData($or);
+
+        return Inertia::render('app/receipts/print-receipt', [
+            'order' => $data['order'],
+            'type' => $tp,
+            'company' => $data['company'],
+            'receipt' => $data['receipt'],
+            'checklist' => $data['checklist'],
+        ]);
+    }
+
+    /**
+     * Retorna os dados do recibo em JSON, para geração do PDF no cliente
+     * sem depender de um novo carregamento completo da aplicação (SPA).
+     */
+    public function printingData($or, $tp)
+    {
+        Gate::authorize('receipts.access');
+
+        $data = $this->loadReceiptData($or);
+
+        return response()->json([
+            'order' => $data['order'],
+            'type' => $tp,
+            'company' => $data['company'],
+            'receipt' => $data['receipt'],
+            'checklist' => $data['checklist'],
+        ]);
+    }
+
+    private function loadReceiptData($or): array
+    {
         $order = Order::where('id', $or)->with(['customer', 'equipment', 'orderParts'])->firstOrFail();
         $this->authorize('view', $order);
+
         $company = Company::query()
             ->where('tenant_id', $this->currentTenantId())
             ->first();
+
+        if ($company) {
+            $company->setAttribute('logo_url', $this->resolveCompanyLogoUrl($company));
+        }
+
         $receipt = Receipt::first();
         $checklist = Checklist::where('equipment_id', $order->equipment_id)->first('checklist');
 
-        return Inertia::render('app/receipts/print-receipt', ['order' => $order, 'type' => $tp, 'company' => $company, 'receipt' => $receipt, 'checklist' => $checklist]);
+        return compact('order', 'company', 'receipt', 'checklist');
+    }
+
+    /**
+     * Garante que a URL do logo só é usada se o arquivo realmente existir,
+     * evitando que o PDF (@react-pdf/renderer) trave tentando carregar uma
+     * imagem quebrada/apagada do storage.
+     */
+    private function resolveCompanyLogoUrl(Company $company): string
+    {
+        if ($company->logo) {
+            $logoPath = public_path('storage/logos/'.$company->logo);
+
+            if (file_exists($logoPath)) {
+                return asset('storage/logos/'.$company->logo);
+            }
+        }
+
+        return asset('images/default.png');
     }
 }

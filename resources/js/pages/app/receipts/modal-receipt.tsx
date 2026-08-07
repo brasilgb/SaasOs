@@ -1,7 +1,10 @@
+import { toastError } from '@/components/app-toast-messages';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { pdf } from '@react-pdf/renderer';
 import { Loader2, Printer } from 'lucide-react';
 import { ReactNode, useState } from 'react';
+import OrderReceiptPDF from './pdf/OrderReceiptPDF';
 
 export default function ModalReceipt({
     orderid,
@@ -18,14 +21,49 @@ export default function ModalReceipt({
 }) {
     const [loadingType, setLoadingType] = useState<string | null>(null);
 
-    const handlePrintReceipt = (e: any, type: string) => {
+    const handlePrintReceipt = async (e: any, type: string) => {
         e.preventDefault();
         setLoadingType(type);
 
-        const url = route('app.receipts.printing', { or: orderid, tp: type, pdf: 1 });
-        window.open(url, '_blank');
+        // Abre a aba em branco de forma síncrona, dentro do próprio clique do
+        // usuário: navegadores só liberam window.open sem bloqueio de pop-up
+        // quando ele é chamado diretamente por um gesto do usuário, antes de
+        // qualquer await.
+        const previewWindow = window.open('', '_blank');
 
-        setTimeout(() => setLoadingType(null), 400);
+        if (!previewWindow) {
+            setLoadingType(null);
+            toastError('Não foi possível abrir o recibo. Verifique se o bloqueador de pop-ups do navegador está ativo.');
+            return;
+        }
+
+        previewWindow.document.title = 'Gerando recibo...';
+        previewWindow.document.body.innerHTML = '<p style="font-family: Arial, sans-serif; padding: 16px;">Gerando recibo PDF...</p>';
+
+        try {
+            const response = await fetch(route('app.receipts.printing.data', { or: orderid, tp: type }), {
+                headers: { Accept: 'application/json' },
+                credentials: 'same-origin',
+            });
+
+            if (!response.ok) {
+                throw new Error(`Falha ao carregar dados do recibo (status ${response.status})`);
+            }
+
+            const { order, company, receipt, checklist } = await response.json();
+
+            const blob = await pdf(<OrderReceiptPDF order={order} company={company} type={type} receipt={receipt} checklist={checklist} />).toBlob();
+
+            const url = URL.createObjectURL(blob);
+            previewWindow.location.href = url;
+            setTimeout(() => URL.revokeObjectURL(url), 60_000);
+        } catch (error) {
+            previewWindow.close();
+            console.error('Erro ao gerar recibo em PDF:', error);
+            toastError('Erro ao gerar recibo em PDF.');
+        } finally {
+            setLoadingType(null);
+        }
     };
 
     return (
