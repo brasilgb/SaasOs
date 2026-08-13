@@ -85,6 +85,12 @@ export default function EquipmentTypesModal({
 
     const submitCreate = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+        // Dialog content is rendered via a React Portal: it sits outside the
+        // order form in the DOM, but React still bubbles this submit event
+        // through the component tree. Without stopPropagation() it also
+        // triggers the outer order form's onSubmit, firing two competing
+        // Inertia requests (the equipment save gets cancelled mid-flight).
+        event.stopPropagation();
 
         createForm.post(route('app.register-equipments.store'), {
             only: ['equipments', 'flash'],
@@ -108,6 +114,10 @@ export default function EquipmentTypesModal({
 
     const submitEdit = (event?: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>) => {
         event?.preventDefault();
+        // See submitCreate: this form also lives inside a Dialog portal, so its
+        // submit event (e.g. pressing Enter in the input) would otherwise bubble
+        // through the React tree into the outer order form's onSubmit.
+        event?.stopPropagation();
 
         if (!editingEquipment) {
             return;

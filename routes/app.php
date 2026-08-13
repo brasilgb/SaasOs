@@ -13,6 +13,7 @@ use App\Http\Controllers\App\FiscalDocumentController;
 use App\Http\Controllers\App\FollowUpController;
 use App\Http\Controllers\App\ImageController;
 use App\Http\Controllers\App\LabelPrintingController;
+use App\Http\Controllers\App\ManualAssistantController;
 use App\Http\Controllers\App\MessageController;
 use App\Http\Controllers\App\OrderController;
 use App\Http\Controllers\App\OtherController;
@@ -117,3 +118,5 @@ Route::post('/cashier/{cashSession}/withdrawal', [CashSessionController::class, 
 Route::post('/cashier/{cashSession}/withdrawal/{movement}/cancel', [CashSessionController::class, 'cancelWithdrawal'])->name('cashier.withdrawal.cancel');
 Route::post('/cashier/{cashSession}/close', [CashSessionController::class, 'close'])->name('cashier.close');
 Route::resource('/reports', ReportController::class);
+
+Route::post('/assistente-manual/perguntar', [ManualAssistantController::class, 'ask'])->name('manual-assistant.ask');
