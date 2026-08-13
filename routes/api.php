@@ -4,6 +4,7 @@ use App\Http\Controllers\App\BudgetController;
 use App\Http\Controllers\App\CompanyController;
 use App\Http\Controllers\App\CustomerController;
 use App\Http\Controllers\App\ImageController;
+use App\Http\Controllers\App\N8nController;
 use App\Http\Controllers\App\OrderController;
 use App\Http\Controllers\App\PartController;
 use App\Http\Controllers\App\ReportController;
@@ -64,4 +65,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/upload', [ImageController::class, 'upload'])->name('upload');
     Route::get('/logoutuser', [UserController::class, 'logoutuser'])->name('logoutuser');
     Route::get('/getparts/{reference_number}', [PartController::class, 'getPartsForPartNumber'])->name('getparts');
+    Route::post('/n8n/ordens/{order}/classificar', [N8nController::class, 'classificar'])->name('api.n8n.orders.classify');
 });

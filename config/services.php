@@ -38,4 +38,9 @@ return [
         'token' => env('MP_ACCESS_TOKEN'),
         'webhook_token' => env('MP_WEBHOOK_TOKEN'),
     ],
+
+    'n8n' => [
+        'webhook_ordem_criada' => env('N8N_WEBHOOK_ORDEM_CRIADA'),
+        'webhook_secret' => env('N8N_WEBHOOK_SECRET'),
+    ],
 ];
