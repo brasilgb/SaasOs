@@ -16,7 +16,7 @@ import { Trash2 } from 'lucide-react';
 export default function ActionDelete({ title, url, param }: { title: string; url: string; param: number | Record<string, unknown> }) {
     const { delete: destroy } = useForm();
     const handleDelete = () => {
-        destroy(route(url, param));
+        destroy(route(url, param).toString());
     };
 
     return (

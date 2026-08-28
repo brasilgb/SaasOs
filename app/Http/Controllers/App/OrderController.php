@@ -714,8 +714,6 @@ class OrderController extends Controller
         $data = $request->validated();
         $sourceScheduleId = $data['schedule_id'] ?? null;
         unset($data['schedule_id']);
-        $customerSignature = $data['customer_signature'] ?? null;
-        unset($data['customer_signature']);
 
         Customer::query()->whereKey($data['customer_id'])->firstOrFail();
         $sourceSchedule = null;
@@ -757,9 +755,6 @@ class OrderController extends Controller
         $data['is_warranty_return'] = (bool) $warrantySourceOrder;
         $data['warranty_source_order_id'] = $warrantySourceOrder?->id;
         $order = Order::create($data);
-        if ($customerSignature) {
-            OrderSignature::store($order, $customerSignature);
-        }
         if ($sourceSchedule) {
             $sourceSchedule->update(['order_id' => $order->id]);
         }

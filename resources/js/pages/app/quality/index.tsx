@@ -15,8 +15,10 @@ import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { connectBackend } from '@/Utils/connectApi';
 import { Head, Link, router } from '@inertiajs/react';
+import { isAxiosError } from 'axios';
 import { AlertTriangle, ChevronLeft, ChevronRight, ExternalLink, ShieldAlert, ShieldCheck, ShieldEllipsis, Star } from 'lucide-react';
 import moment from 'moment';
+import type { DateRange } from 'react-day-picker';
 import { useEffect, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -29,11 +31,6 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: route('app.quality.index'),
     },
 ];
-
-type DateRangeValue = {
-    from?: Date | string;
-    to?: Date | string;
-};
 
 type RankingItem = {
     label: string;
@@ -604,8 +601,9 @@ export default function QualityIndicators({
             try {
                 const response = await connectBackend.get(url);
                 setMetrics(response.data);
-            } catch (error: any) {
-                toastError('Não foi possível carregar os indicadores', error?.response?.data?.message ?? 'Tente novamente em instantes.');
+            } catch (error: unknown) {
+                const message = isAxiosError<{ message?: string }>(error) ? error.response?.data?.message : undefined;
+                toastError('Não foi possível carregar os indicadores', message ?? 'Tente novamente em instantes.');
             }
         };
 
@@ -623,12 +621,14 @@ export default function QualityIndicators({
         }
     };
 
-    const onDateRangeChange = (range: DateRangeValue) => {
-        setDateRange(range);
+    const onDateRangeChange = (range: Date | DateRange | undefined) => {
+        const selectedRange: DateRange = range && !(range instanceof Date) ? range : { from: undefined, to: undefined };
+
+        setDateRange(selectedRange);
         setFeedbackPage(1);
         setWarrantyPage(1);
 
-        if (range?.from && range?.to) {
+        if (selectedRange.from && selectedRange.to) {
             setTimeRange('custom');
         } else if (timeRange === 'custom') {
             setTimeRange('7');

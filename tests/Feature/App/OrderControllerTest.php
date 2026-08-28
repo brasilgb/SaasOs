@@ -19,7 +19,6 @@ use App\Support\Ean13;
 use App\Support\OrderStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -107,36 +106,7 @@ class OrderControllerTest extends TestCase
         ]);
     }
 
-    public function test_it_stores_customer_signature_when_provided_on_order_creation(): void
-    {
-        $this->app->usePublicPath(storage_path('framework/testing/public'));
-        File::deleteDirectory(public_path());
-
-        $customer = Customer::factory()->forTenant($this->tenant->id)->create();
-        $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
-        $signature = 'data:image/png;base64,'.base64_encode('fake-png-bytes');
-
-        $response = $this->post(route('app.orders.store'), [
-            'customer_id' => $customer->id,
-            'equipment_id' => $equipment->id,
-            'model' => 'Notebook Dell Inspiron',
-            'defect' => 'Não liga',
-            'service_status' => OrderStatus::OPEN,
-            'user_id' => null,
-            'delivery_forecast' => now()->addDays(7)->toDateString(),
-            'customer_signature' => $signature,
-        ]);
-
-        $response->assertRedirect(route('app.orders.index'));
-
-        $order = Order::query()->firstOrFail();
-
-        $this->assertNotNull($order->customer_signature_captured_at);
-        $this->assertFileExists(public_path('storage/orders/'.$order->order_number.'/signature.png'));
-        $this->assertSame('fake-png-bytes', file_get_contents(public_path('storage/orders/'.$order->order_number.'/signature.png')));
-    }
-
-    public function test_it_creates_order_without_customer_signature(): void
+    public function test_web_order_creation_does_not_store_customer_signature(): void
     {
         $customer = Customer::factory()->forTenant($this->tenant->id)->create();
         $equipment = Equipment::factory()->forTenant($this->tenant->id)->create();
@@ -149,6 +119,7 @@ class OrderControllerTest extends TestCase
             'service_status' => OrderStatus::OPEN,
             'user_id' => null,
             'delivery_forecast' => now()->addDays(7)->toDateString(),
+            'customer_signature' => 'data:image/png;base64,'.base64_encode('ignored-web-signature'),
         ]);
 
         $response->assertRedirect(route('app.orders.index'));
