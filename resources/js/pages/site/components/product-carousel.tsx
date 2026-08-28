@@ -36,7 +36,7 @@ const products: Product[] = [
     {
         id: 5,
         title: 'Fluxo completo de atendimento',
-        description: 'Controle todo o fluxo do atendimento, da entrada do equipamento até a entrega ao cliente.',
+        description: 'Abra a entrada na web, colete a assinatura pelo app e acompanhe todo o atendimento até a entrega ao cliente.',
         image: '/images/slide/5.png',
     },
     {

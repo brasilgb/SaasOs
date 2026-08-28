@@ -1,7 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     BarChart3,
-    Bell,
     CalendarCheck,
     Camera,
     ChartLine,
@@ -14,6 +13,7 @@ import {
     Printer,
     ReceiptText,
     Settings,
+    Signature,
     ShoppingCart,
     Smartphone,
     Users,
@@ -23,8 +23,9 @@ import {
 const appFeatures = [
     {
         icon: Smartphone,
-        title: 'App Autoatendimento',
-        description: 'Cadastro rápido de clientes e consulta de orçamentos para agilizar recepção, balcão e atendimentos simples pelo celular.',
+        title: 'Vetor Atendimento',
+        description:
+            'Cadastre clientes, consulte orçamentos e colete pelo celular a assinatura do cliente em uma ordem de serviço já aberta.',
     },
     {
         icon: Wrench,
@@ -42,7 +43,7 @@ const features = [
     {
         icon: ClipboardList,
         title: 'Ordens de Serviço',
-        description: 'Controle entrada, diagnóstico, execução, status, fotos e histórico completo de cada atendimento.',
+        description: 'Abra a entrada pela plataforma web e controle diagnóstico, execução, status, fotos e histórico completo do atendimento.',
     },
     {
         icon: Users,
@@ -85,10 +86,10 @@ const features = [
         description: 'Envie e-mails, WhatsApp e lembretes de pagamento com mensagens claras para cada etapa da operação.',
     },
     {
-        icon: Bell,
-        title: 'Operação Simples e Produtiva',
+        icon: Signature,
+        title: 'Assinatura Digital no App',
         description:
-            'Execute as tarefas diárias da sua empresa de manutenção com facilidade, desde o atendimento até a entrega, mantendo a equipe organizada e produtiva.',
+            'Colete a assinatura do cliente no Vetor Atendimento, vincule-a à OS existente e exiba o registro no recibo de entrada.',
     },
     {
         icon: CalendarCheck,
@@ -130,7 +131,7 @@ export function Features() {
 
                     <p className="mt-5 text-lg leading-8 text-slate-600">
                         Da entrada do equipamento ao fechamento do caixa, o VetorOS reúne os módulos mais importantes da rotina em uma única
-                        plataforma, com apps auxiliares para atendimento, imagens e equipe técnica.
+                        plataforma, com apps para assinatura no atendimento, imagens da OS e trabalho técnico em campo.
                     </p>
                     <p className="mt-3 text-xs text-slate-400">
                         Os documentos fiscais são emitidos externamente e registrados no VetorOS para consulta e auditoria.

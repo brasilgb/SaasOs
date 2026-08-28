@@ -503,7 +503,12 @@
                 <a class="group-start" href="#emissao-fiscal">24. Emissão fiscal</a>
                 <a class="group-start" href="#botoes">25. Guia rápido dos botões</a>
                 <a href="#boas-praticas">26. Boas práticas</a>
-                <a href="#suporte">27. Suporte</a>
+                <a class="group-start" href="#contratos-manutencao">27. Contratos de manutenção</a>
+                <a href="#contas-pagar">28. Contas a pagar</a>
+                <a href="#comissoes-tecnicos">29. Comissão por técnico</a>
+                <a href="#ajustes-avaliacoes-ajuda">30. Ajustes, avaliações e ajuda</a>
+                <a href="#assinatura-plano">31. Plano e assinatura</a>
+                <a href="#suporte">32. Suporte</a>
             </nav>
         </aside>
 
@@ -756,10 +761,11 @@
                     <h4>5.5 Importação em lote</h4>
                     <p>Quando a empresa já possui uma base anterior, a importação por CSV ajuda a acelerar a
                         implantação e reduzir retrabalho de cadastro manual.</p>
-                    <h4>5.6 App Autoatendimento</h4>
-                    <p>O app de autoatendimento foi pensado para ações rápidas fora da tela principal do sistema, como
-                        cadastrar clientes e consultar orçamentos. Ele usa o mesmo ambiente do VetorOS e ajuda a equipe
-                        de recepção a reduzir tempo em tarefas simples da rotina.</p>
+                    <h4>5.6 Vetor Atendimento</h4>
+                    <p>O Vetor Atendimento foi pensado para ações rápidas fora da tela principal do sistema, como
+                        cadastrar clientes, consultar orçamentos e coletar a assinatura do cliente em uma OS já aberta.
+                        Ele usa o mesmo ambiente do VetorOS e ajuda a equipe de recepção a reduzir tempo em tarefas
+                        simples da rotina.</p>
                 </section>
 
                 <section id="ordens">
@@ -1053,8 +1059,8 @@
                     <p>Usuários com permissão para gerenciar equipamentos também encontram o botão <strong>+</strong>
                         ao lado do campo Equipamento. Ele abre o mesmo cadastro rápido usado nas ordens de serviço. Ao
                         salvar um novo tipo, o equipamento é incluído na lista e selecionado no orçamento.</p>
-                    <h4>8.4 Consulta de orçamentos no app autoatendimento</h4>
-                    <p>Quando a empresa usa o app de autoatendimento, a equipe pode consultar informações de orçamento pelo
+                    <h4>8.4 Consulta de orçamentos no Vetor Atendimento</h4>
+                    <p>Quando a empresa usa o Vetor Atendimento, a equipe pode consultar informações de orçamento pelo
                         celular. Esse recurso ajuda em atendimentos rápidos, principalmente quando o colaborador precisa
                         localizar uma referência sem abrir a tela completa do sistema web.</p>
                 </section>
@@ -1694,6 +1700,11 @@
                     <p>Para selecionar a imagem, arraste o arquivo até a área tracejada ou clique nela para procurar no
                         dispositivo. A prévia aparece antes do salvamento e pode ser removida pelo botão <strong>×</strong>.
                         No cabeçalho do sistema, passe o mouse sobre o avatar para visualizar uma versão ampliada.</p>
+                    <h4>20.5 Percentual de comissão do técnico</h4>
+                    <p>Ao cadastrar ou editar um usuário técnico, o administrador pode informar o percentual de
+                        comissão. Esse percentual será aplicado ao valor do serviço das futuras OS entregues que
+                        estiverem vinculadas ao técnico. Deixe o campo vazio ou igual a zero quando o profissional não
+                        participar desse modelo de remuneração.</p>
                 </section>
 
                 <section id="aplicativos">
@@ -1712,8 +1723,8 @@
                         </div>
                         <div class="card">
                             <strong>Vetor Atendimento</strong>
-                            App de autoatendimento para pré-cadastro de clientes e consulta de orçamentos, agilizando
-                            tarefas rápidas da recepção e do balcão.
+                            App para pré-cadastro de clientes, consulta de orçamentos e coleta de assinatura em uma OS
+                            existente, agilizando tarefas da recepção e do balcão.
                         </div>
                         <div class="card">
                             <strong>Vetor Técnico</strong>
@@ -1736,7 +1747,7 @@
                     </ol>
                     <h4>21.2 Quando usar cada app</h4>
                     <ul>
-                        <li><strong>Recepção ou balcão:</strong> usar Vetor Atendimento para cadastro rápido e consulta de orçamento.</li>
+                        <li><strong>Recepção ou balcão:</strong> usar Vetor Atendimento para cadastro rápido, consulta de orçamento e assinatura da OS.</li>
                         <li><strong>Bancada ou conferência:</strong> usar Vetor Imagem quando a principal necessidade for documentar a OS com fotos.</li>
                         <li><strong>Atendimento externo:</strong> usar Vetor Técnico para agenda, deslocamento, execução e encerramento em campo.</li>
                     </ul>
@@ -1946,15 +1957,183 @@
                         <li>Usar relatórios para acompanhar desempenho, faturamento e pendências.</li>
                         <li>Revisar diariamente Acompanhamentos, Tarefas e Garantia/Avaliações.</li>
                         <li>Validar o portal do cliente com alguns atendimentos antes de divulgar em massa.</li>
-                        <li>Orientar a equipe sobre o papel de cada app: Autoatendimento para cadastros rápidos e orçamentos,
-                            Técnico para agenda em campo e Imagens para documentação visual da OS.</li>
+                        <li>Orientar a equipe sobre o papel de cada app: Vetor Atendimento para cadastros rápidos,
+                            orçamentos e assinatura, Vetor Técnico para agenda em campo e Vetor Imagem para documentação visual da OS.</li>
                         <li>Quando aparecer uma mensagem amigável de falha, repetir a ação apenas depois de conferir
                             conexão, sessão e dados informados.</li>
                     </ul>
                 </section>
 
+                <section id="contratos-manutencao">
+                    <h3>27. Contratos De Manutenção</h3>
+                    <p>O módulo de contratos organiza serviços recorrentes de manutenção por cliente. Cada contrato
+                        recebe uma numeração própria e pode controlar mensalidade, vencimento, vigência e visitas
+                        técnicas periódicas.</p>
+                    <h4>27.1 Como cadastrar</h4>
+                    <ol>
+                        <li>Acesse <strong>Contratos de manutenção</strong> no menu principal e clique em <strong>Novo contrato</strong>.</li>
+                        <li>Selecione o cliente e descreva claramente o serviço recorrente.</li>
+                        <li>Informe o valor mensal, o dia de cobrança entre 1 e 28 e a data de início.</li>
+                        <li>Se houver prazo definido, informe a duração em meses; sem duração, a vigência será indeterminada.</li>
+                        <li>Para visitas automáticas, informe a frequência em dias e, opcionalmente, o técnico preferencial.</li>
+                        <li>Salve e use a ação de impressão para gerar o documento do contrato.</li>
+                    </ol>
+                    <h4>27.2 Cobranças e visitas automáticas</h4>
+                    <ul>
+                        <li>Contratos ativos geram uma conta a receber mensal no dia configurado para cobrança.</li>
+                        <li>Quando há frequência de visita, o sistema gera uma OS de serviço externo e um agendamento com um dia de antecedência.</li>
+                        <li>A OS e o agendamento usam o técnico preferencial quando ele foi informado no contrato.</li>
+                        <li>O processamento automático ocorre diariamente; por isso, o agendador do Laravel precisa estar ativo no servidor.</li>
+                    </ul>
+                    <h4>27.3 Status e ações</h4>
+                    <ul>
+                        <li><strong>Ativo:</strong> participa da geração automática de cobranças e visitas.</li>
+                        <li><strong>Suspenso:</strong> interrompe temporariamente o processamento e pode ser reativado.</li>
+                        <li><strong>Expirado:</strong> indica que a vigência definida chegou ao fim e permite renovação.</li>
+                        <li><strong>Cancelado:</strong> encerra o contrato sem geração de novos ciclos.</li>
+                        <li><strong>Renovar:</strong> amplia a vigência e volta o contrato para o status ativo.</li>
+                    </ul>
+                    <div class="callout">
+                        Alterar, suspender ou cancelar um contrato não apaga cobranças, ordens ou agendamentos que já
+                        foram gerados. Revise esses registros separadamente quando houver mudança no acordo com o cliente.
+                    </div>
+                    <h4>27.4 Acesso e modelo de impressão</h4>
+                    <p>O módulo exige o financeiro habilitado e permissão financeira para administrador, operador ou
+                        usuário root. O texto usado na impressão pode ser ajustado em <strong>Impressões → Contrato de
+                        manutenção</strong>, utilizando as variáveis disponibilizadas pelo sistema.</p>
+                </section>
+
+                <section id="contas-pagar">
+                    <h3>28. Contas A Pagar</h3>
+                    <p>Contas a pagar centraliza compromissos financeiros da empresa, como fornecedores, compras,
+                        serviços e comissões de técnicos. A tela mostra o saldo total em aberto e destaca a quantidade
+                        de contas vencidas.</p>
+                    <h4>28.1 Cadastro e consulta</h4>
+                    <ol>
+                        <li>Clique em <strong>Nova conta</strong>.</li>
+                        <li>Informe descrição e valor total; fornecedor, categoria, vencimento e observações são complementares.</li>
+                        <li>Use a busca por número, fornecedor ou descrição e filtre pelo status desejado.</li>
+                        <li>Revise vencimento e saldo antes de registrar qualquer pagamento.</li>
+                    </ol>
+                    <h4>28.2 Pagamentos e status</h4>
+                    <ul>
+                        <li><strong>Pendente:</strong> nenhum pagamento foi registrado.</li>
+                        <li><strong>Parcial:</strong> parte do valor foi paga e o saldo continua em aberto.</li>
+                        <li><strong>Pago:</strong> o valor acumulado atingiu o total da conta.</li>
+                        <li><strong>Cancelado:</strong> lançamento desconsiderado da operação.</li>
+                    </ul>
+                    <p>Ao clicar em <strong>Pagar</strong>, informe um valor maior que zero e nunca superior ao saldo,
+                        além da forma e da data do pagamento. O sistema atualiza automaticamente valor pago, saldo e
+                        status, mantendo log da operação.</p>
+                    <h4>28.3 Contas geradas por comissão</h4>
+                    <p>Quando uma OS entregue gera comissão, o VetorOS cria automaticamente uma conta a pagar vinculada
+                        ao técnico. Esse lançamento aparece junto das contas manuais e também pode ser quitado pela tela
+                        de Comissão de técnicos.</p>
+                    <div class="callout">
+                        Antes de editar ou excluir uma conta automática, confira sua origem. Mudanças manuais em uma
+                        conta vinculada a comissão podem deixar a conferência diferente dos dados da OS.
+                    </div>
+                    <h4>28.4 Acesso</h4>
+                    <p>Contas a pagar exige o módulo financeiro habilitado e permissão financeira para administrador,
+                        operador ou usuário root. Os registros permanecem isolados por empresa.</p>
+                </section>
+
+                <section id="comissoes-tecnicos">
+                    <h3>29. Comissão Por Técnico</h3>
+                    <p>O módulo calcula a comissão do técnico sobre o valor de serviço das ordens entregues e cria o
+                        compromisso correspondente em Contas a pagar.</p>
+                    <h4>29.1 Configuração</h4>
+                    <ol>
+                        <li>Acesse o cadastro do usuário técnico.</li>
+                        <li>Informe o percentual no campo <strong>Comissão (%)</strong>.</li>
+                        <li>Vincule o técnico responsável à OS e informe corretamente o valor do serviço.</li>
+                        <li>Altere a ordem para <strong>Entregue ao cliente</strong> para gerar a comissão.</li>
+                    </ol>
+                    <h4>29.2 Regra de cálculo</h4>
+                    <p>A base é somente o <strong>valor do serviço</strong> da OS. Peças e outros valores não entram no
+                        cálculo. A fórmula usada é: valor do serviço × percentual do técnico ÷ 100.</p>
+                    <p>A comissão não é gerada quando a OS não está entregue, não possui técnico, o percentual é zero
+                        ou o valor do serviço não é maior que zero.</p>
+                    <h4>29.3 Consulta e pagamento</h4>
+                    <ul>
+                        <li>Filtre por técnico, período ou situação financeira.</li>
+                        <li>Consulte a OS, o cliente, a base, o percentual e o valor calculado.</li>
+                        <li>Use os totais para conferir comissão gerada, valor pago e saldo pendente.</li>
+                        <li><strong>Marcar como pago</strong> quita o saldo da conta a pagar associada à comissão.</li>
+                    </ul>
+                    <div class="callout">
+                        Se a OS deixar de atender às regras antes do pagamento, a comissão e sua conta pendente podem
+                        ser removidas pelo sistema. Uma conta de comissão já paga não é excluída automaticamente, para
+                        preservar o histórico financeiro.
+                    </div>
+                    <h4>29.4 Acesso</h4>
+                    <p>A consulta e o pagamento das comissões seguem as mesmas permissões de Contas a pagar: financeiro
+                        habilitado, permissão financeira e perfil administrador, operador ou root.</p>
+                </section>
+
+                <section id="ajustes-avaliacoes-ajuda">
+                    <h3>30. Ajustes, Avaliações E Ajuda</h3>
+                    <p>O tenant possui canais internos para sugerir melhorias, pedir ajustes, avaliar a plataforma e
+                        consultar o manual sem sair do VetorOS.</p>
+                    <h4>30.1 Solicitar ajuste ou melhoria</h4>
+                    <ol>
+                        <li>Acesse <strong>Configurações → Ajustes e avaliações</strong>.</li>
+                        <li>Escolha <strong>Melhoria</strong> para uma nova ideia ou <strong>Ajuste</strong> para uma mudança na rotina existente.</li>
+                        <li>Informe um título objetivo e descreva o cenário, a necessidade e o resultado esperado.</li>
+                        <li>Envie e acompanhe a solicitação na mesma página.</li>
+                    </ol>
+                    <p>Os status <strong>Novo</strong>, <strong>Em análise</strong>, <strong>Ajustando</strong> e
+                        <strong>Concluído</strong> mostram o andamento. A previsão exibida é uma referência de nova
+                        atualização, não uma garantia de entrega da funcionalidade.</p>
+                    <h4>30.2 Avaliar o VetorOS</h4>
+                    <p>A empresa pode registrar nota de 1 a 5 e comentário sobre a experiência. Em avaliações positivas,
+                        também pode autorizar que o conteúdo seja analisado para possível uso como depoimento público,
+                        escolhendo o nome e o cargo que poderão aparecer. A autorização não significa publicação
+                        automática: o depoimento ainda passa por análise.</p>
+                    <h4>30.3 Busca de ajuda</h4>
+                    <p>A busca de ajuda permite localizar tópicos do manual por palavras como “garantia”, “caixa”,
+                        “comissão” ou “contrato”. Abra o resultado para consultar as instruções dentro do sistema. O
+                        conteúdo disponível depende da versão do manual importada pelo administrador do VetorOS.</p>
+                    <h4>30.4 Quando usar suporte em vez de melhoria</h4>
+                    <ul>
+                        <li>Use <strong>Ajustes e avaliações</strong> para sugestões, mudanças de fluxo e evolução do produto.</li>
+                        <li>Use o manual para dúvidas de operação e configuração já documentadas.</li>
+                        <li>Use o suporte quando houver bloqueio, falha inesperada, indisponibilidade ou risco para dados da operação.</li>
+                    </ul>
+                </section>
+
+                <section id="assinatura-plano">
+                    <h3>31. Plano E Assinatura Do VetorOS</h3>
+                    <p>O acesso da empresa depende da vigência da assinatura do VetorOS. Quando o vencimento se
+                        aproxima ou já passou, o sistema apresenta avisos para que o responsável regularize o plano sem
+                        interromper a operação.</p>
+                    <h4>31.1 Aviso e período de cortesia</h4>
+                    <p>Após o vencimento, o sistema pode manter um período curto de cortesia e mostrar um banner ou uma
+                        janela de assinatura pendente. Use esse período para confirmar os dados do plano e providenciar
+                        o pagamento. Depois do limite informado na própria tela, o acesso pode ser bloqueado até a
+                        regularização.</p>
+                    <h4>31.2 Pagamento por Pix</h4>
+                    <ol>
+                        <li>Abra o aviso de assinatura pendente.</li>
+                        <li>Selecione um dos planos disponíveis para a empresa.</li>
+                        <li>Clique em <strong>Gerar Pix</strong>.</li>
+                        <li>Escaneie o QR Code ou copie o código Pix para o aplicativo do banco.</li>
+                        <li>Mantenha a tela aberta enquanto o VetorOS consulta a confirmação do pagamento.</li>
+                    </ol>
+                    <p>Quando o provedor confirma o pagamento, o sistema atualiza a assinatura e exibe a confirmação
+                        para continuar. A compensação depende da comunicação com o banco e pode não ser instantânea em
+                        situações de indisponibilidade externa.</p>
+                    <h4>31.3 Cuidados</h4>
+                    <ul>
+                        <li>Confirme o nome e o valor do plano antes de pagar.</li>
+                        <li>Não pague novamente enquanto uma cobrança válida estiver aguardando confirmação.</li>
+                        <li>Guarde o comprovante bancário até o acesso ser liberado.</li>
+                        <li>Se o Pix foi pago e a assinatura não atualizou, envie ao suporte o horário, valor e comprovante, sem compartilhar senhas.</li>
+                    </ul>
+                </section>
+
                 <section id="suporte">
-                    <h3>27. Suporte</h3>
+                    <h3>32. Suporte</h3>
                     <p>Em caso de dúvidas de uso, configuração ou melhoria, mantenha este manual atualizado junto da
                         versão instalada do sistema e utilize o canal de suporte definido pela empresa.</p>
                     <div class="footer-note">
@@ -1962,7 +2141,7 @@
                         que o sistema receber novos fluxos, telas ou automações, o ideal é atualizar também esta página
                         para que o time continue operando com segurança.
                     </div>
-                    <h4>27.1 Informações úteis ao solicitar suporte</h4>
+                    <h4>32.1 Informações úteis ao solicitar suporte</h4>
                     <ul>
                         <li>Informe a tela e a ação que estava executando.</li>
                         <li>Anote a mensagem exibida e o horário aproximado da ocorrência.</li>
