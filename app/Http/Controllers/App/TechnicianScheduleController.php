@@ -208,9 +208,12 @@ class TechnicianScheduleController extends Controller
             ->orderBy('schedules')
             ->orderBy('id');
 
+        $tenant = Tenant::query()->find($technician->tenant_id);
+
         $schedules = $query
+            ->withCount('images')
             ->paginate((int) ($data['per_page'] ?? 50))
-            ->through(fn (Schedule $schedule) => $this->schedulePayload($schedule));
+            ->through(fn (Schedule $schedule) => $this->schedulePayload($schedule, $tenant));
 
         return response()->json([
             'success' => true,
@@ -222,8 +225,10 @@ class TechnicianScheduleController extends Controller
     {
         $technician = $this->technician($request);
         $baseQuery = $this->schedulesQuery($technician);
+        $tenant = Tenant::query()->find($technician->tenant_id);
 
         $nextSchedule = (clone $baseQuery)
+            ->withCount('images')
             ->where('status', 1)
             ->where('schedules', '>=', now()->startOfDay())
             ->orderBy('schedules')
@@ -231,6 +236,7 @@ class TechnicianScheduleController extends Controller
             ->first();
 
         $currentSchedule = (clone $baseQuery)
+            ->withCount('images')
             ->where('status', 2)
             ->orderBy('schedules')
             ->orderBy('id')
@@ -246,8 +252,8 @@ class TechnicianScheduleController extends Controller
                     'overdue' => (clone $baseQuery)->whereIn('status', [1, 2])->where('schedules', '<', now()->startOfDay())->count(),
                     'completed' => (clone $baseQuery)->where('status', 3)->count(),
                 ],
-                'current_schedule' => $currentSchedule ? $this->schedulePayload($currentSchedule) : null,
-                'next_schedule' => $nextSchedule ? $this->schedulePayload($nextSchedule) : null,
+                'current_schedule' => $currentSchedule ? $this->schedulePayload($currentSchedule, $tenant) : null,
+                'next_schedule' => $nextSchedule ? $this->schedulePayload($nextSchedule, $tenant) : null,
             ],
         ]);
     }
@@ -256,12 +262,13 @@ class TechnicianScheduleController extends Controller
     {
         $technician = $this->technician($request);
         $schedule = $this->schedulesQuery($technician)
+            ->withCount('images')
             ->whereKey($schedule->id)
             ->firstOrFail();
 
         return response()->json([
             'success' => true,
-            'result' => $this->schedulePayload($schedule),
+            'result' => $this->schedulePayload($schedule, Tenant::query()->find($technician->tenant_id)),
         ]);
     }
 
@@ -675,7 +682,7 @@ class TechnicianScheduleController extends Controller
         ]);
     }
 
-    private function freshSchedulePayload(Schedule $schedule): array
+    private function freshSchedulePayload(Schedule $schedule, ?Tenant $tenant = null): array
     {
         return $this->schedulePayload($schedule->refresh()->loadMissing([
             'customer',
@@ -684,10 +691,14 @@ class TechnicianScheduleController extends Controller
             'order.equipment',
             'order.equipment.checklists',
             'user',
-        ]));
+        ])->loadCount('images'), $tenant);
     }
 
-    private function schedulePayload(Schedule $schedule): array
+    /**
+     * @param  Tenant|null  $tenant  Passe o tenant já resolvido quando processar várias schedules na
+     *                               mesma requisição (evita buscar o mesmo tenant de novo por linha).
+     */
+    private function schedulePayload(Schedule $schedule, ?Tenant $tenant = null): array
     {
         $customer = $schedule->customer;
         $order = $schedule->order;
@@ -702,11 +713,11 @@ class TechnicianScheduleController extends Controller
         $phoneDigits = $customer ? preg_replace('/\D+/', '', (string) $customer->phone) : '';
         $whatsappDigits = $customer ? preg_replace('/\D+/', '', (string) $customer->whatsapp) : '';
         $whatsappNumber = $whatsappDigits && strlen($whatsappDigits) <= 11 ? '55'.$whatsappDigits : $whatsappDigits;
-        $imagesCount = ScheduleImage::query()
+        $imagesCount = $schedule->images_count ?? ScheduleImage::query()
             ->where('tenant_id', $schedule->tenant_id)
             ->where('schedule_id', $schedule->id)
             ->count();
-        $tenant = Tenant::query()->find($schedule->tenant_id);
+        $tenant ??= Tenant::query()->find($schedule->tenant_id);
         $officeWhatsapp = preg_replace('/\D+/', '', (string) $tenant?->whatsapp);
         $officeWhatsapp = $officeWhatsapp && strlen($officeWhatsapp) <= 11 ? '55'.$officeWhatsapp : $officeWhatsapp;
         $closurePriced = $schedule->service_closure_status === 'priced' && (float) $schedule->service_closure_amount > 0;

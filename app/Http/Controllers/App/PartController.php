@@ -81,6 +81,36 @@ class PartController extends Controller
     }
 
     /**
+     * Busca leve usada por selects com autocomplete (PDV, ordens, orçamentos).
+     * Retorna só os campos necessários pra exibir/selecionar, sem carregar a tabela inteira.
+     */
+    public function search(Request $request)
+    {
+        Gate::authorize('parts.access');
+
+        $search = trim((string) $request->get('q', ''));
+        $sellableOnly = $request->boolean('sellable');
+
+        $parts = Part::query()
+            ->select(['id', 'name', 'quantity', 'sale_price', 'part_number', 'reference_number'])
+            ->when($sellableOnly, fn ($query) => $query->where('is_sellable', true))
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($inner) use ($search) {
+                    $inner->where('name', 'like', '%'.$search.'%')
+                        ->orWhere('reference_number', 'like', '%'.$search.'%')
+                        ->orWhere('part_number', 'like', '%'.$search.'%');
+
+                    $this->applyBarcodeSearch($inner, $search);
+                });
+            })
+            ->orderBy('name')
+            ->limit(20)
+            ->get();
+
+        return response()->json($parts);
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
     public function create()

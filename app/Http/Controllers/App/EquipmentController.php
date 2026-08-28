@@ -31,6 +31,26 @@ class EquipmentController extends Controller
     }
 
     /**
+     * Busca leve usada por selects com autocomplete (ordens, orçamentos).
+     * Retorna só os campos necessários pra exibir/selecionar, sem carregar a tabela inteira.
+     */
+    public function search(Request $request)
+    {
+        Gate::authorize('equipments.access');
+
+        $search = trim((string) $request->get('q', ''));
+
+        $equipments = Equipment::query()
+            ->select(['id', 'equipment'])
+            ->when($search !== '', fn ($query) => $query->where('equipment', 'like', '%'.$search.'%'))
+            ->orderBy('equipment')
+            ->limit(20)
+            ->get();
+
+        return response()->json($equipments);
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
     public function create()

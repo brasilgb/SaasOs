@@ -1,3 +1,4 @@
+import AsyncResourceSelect from '@/components/async-resource-select';
 import { DatePicker } from '@/components/date-picker';
 import { Icon } from '@/components/icon';
 import InputError from '@/components/input-error';
@@ -13,7 +14,7 @@ import { maskMoney, maskMoneyDot } from '@/Utils/mask';
 import selectStyles from '@/Utils/selectStyles';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { AlertTriangle, ArrowLeft, Printer, Save, Wrench } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Select from 'react-select';
 import EquipmentTypesModal from './equipment-types-modal';
 
@@ -33,13 +34,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function CreateOrder({
-    customers,
     equipments,
     sourceSchedule,
     warrantySourceOrders,
     activeOrders,
 }: {
-    customers: { id: number; name: string }[];
     equipments: { id: number; equipment: string }[];
     sourceSchedule?: { id: number; customer_id: number; user_id?: number | null; schedules?: string | null; customer?: { name: string } } | null;
     warrantySourceOrders: Array<{
@@ -63,10 +62,11 @@ export default function CreateOrder({
     const { flash, auth } = usePage().props as any;
     const canManageEquipments = auth?.permissions?.includes('register_equipments');
 
-    const optionsCustomer: OptionType[] = customers.map((customer) => ({
-        value: customer.id,
-        label: customer.name,
-    }));
+    const [selectedCustomer, setSelectedCustomer] = useState<OptionType | null>(
+        sourceSchedule?.customer_id
+            ? { value: sourceSchedule.customer_id, label: sourceSchedule.customer?.name ?? `Cliente #${sourceSchedule.customer_id}` }
+            : null,
+    );
 
     const optionsEquipment: OptionType[] = equipments.map((equipment) => ({
         value: equipment.id,
@@ -114,6 +114,7 @@ export default function CreateOrder({
 
     const changeCustomer = (selected: OptionType | null) => {
         setData('customer_id', String(selected?.value ?? ''));
+        setSelectedCustomer(selected);
     };
 
     const changeEquipment = (selected: OptionType | null) => {
@@ -124,7 +125,6 @@ export default function CreateOrder({
         setData('service_status', String(selected?.value ?? ''));
     };
 
-    const defaultCustomer = optionsCustomer.find((option) => String(option.value) === String(data.customer_id)) ?? null;
     const selectedEquipment = optionsEquipment.find((option) => String(option.value) === String(data.equipment_id)) ?? null;
     const eligibleWarrantyOrders = warrantySourceOrders.filter(
         (item) => String(item.customer_id) === String(data.customer_id) && String(item.equipment_id) === String(data.equipment_id),
@@ -188,13 +188,13 @@ export default function CreateOrder({
                         <div className="mt-4 grid gap-4 md:grid-cols-8">
                             <div className="grid gap-2 md:col-span-2">
                                 <Label htmlFor="customer_id">Cliente</Label>
-                                <Select<OptionType, false>
-                                    value={defaultCustomer}
-                                    options={optionsCustomer}
+                                <AsyncResourceSelect
+                                    inputId="customer_id"
+                                    searchUrl={route('app.customers.search')}
+                                    value={selectedCustomer}
                                     onChange={changeCustomer}
-                                    placeholder="Selecione o cliente"
+                                    placeholder="Digite o nome do cliente..."
                                     className="text-gray-500"
-                                    styles={selectStyles}
                                 />
                                 <InputError className="mt-2" message={errors.customer_id} />
                             </div>

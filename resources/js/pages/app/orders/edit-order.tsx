@@ -1,4 +1,5 @@
 import { toastSuccess } from '@/components/app-toast-messages';
+import AsyncResourceSelect from '@/components/async-resource-select';
 import { DatePicker } from '@/components/date-picker';
 import FormFieldHelp from '@/components/form-field-help';
 import { Icon } from '@/components/icon';
@@ -72,7 +73,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function EditOrder({
-    customers,
     order,
     technicals,
     equipments,
@@ -91,6 +91,9 @@ export default function EditOrder({
     const budgetFollowUpForm = useForm({});
     const [customerUpdateOpen, setCustomerUpdateOpen] = useState(false);
     const customerUpdateForm = useForm({ note: '' });
+    const [selectedCustomer, setSelectedCustomer] = useState<OptionType | null>(
+        order?.customer ? { value: order.customer.id, label: order.customer.name } : null,
+    );
 
     const handleSendCustomerUpdate = (e: FormEvent) => {
         e.preventDefault();
@@ -133,10 +136,6 @@ export default function EditOrder({
     const canIssueServiceInvoice = canManageOrders && Boolean(fiscalSetting?.enabled) && Boolean(fiscalSetting?.nfse_enabled);
     const [partsData, setPartsData] = useState<any>([]);
 
-    const optionsCustomer = customers.map((customer: any) => ({
-        value: customer.id,
-        label: customer.name,
-    }));
 
     const optionsTechnical = technicals.map((technical: any) => ({
         value: technical.id,
@@ -254,6 +253,7 @@ export default function EditOrder({
 
     const changeCustomer = (selected: any) => {
         setData('customer_id', selected?.value || '');
+        setSelectedCustomer(selected ?? null);
     };
 
     const changeEquipment = (selected: any) => {
@@ -279,7 +279,6 @@ export default function EditOrder({
         setData('user_id', selected?.value);
     };
 
-    const defaultCustomer = optionsCustomer?.find((o: any) => o.value == order?.customer_id) ?? null;
     const selectedEquipment = optionsEquipment?.find((o: any) => String(o.value) === String(data.equipment_id)) ?? null;
     const statusDefault = statusServico
         ?.filter((o: any) => o.value == order?.service_status)
@@ -447,14 +446,13 @@ export default function EditOrder({
                                             <div className="grid gap-2 md:col-span-2">
                                                 <Label htmlFor="customer_id">Cliente</Label>
                                                 <div className="flex min-w-0 items-center gap-2">
-                                                    <Select<OptionType, false>
-                                                        menuPosition="fixed"
-                                                        defaultValue={defaultCustomer}
-                                                        options={optionsCustomer}
+                                                    <AsyncResourceSelect
+                                                        inputId="customer_id"
+                                                        searchUrl={route('app.customers.search')}
+                                                        value={selectedCustomer}
                                                         onChange={changeCustomer}
-                                                        placeholder="Selecione o cliente"
+                                                        placeholder="Digite o nome do cliente..."
                                                         className="min-w-0 flex-1"
-                                                        styles={selectStyles}
                                                     />
                                                     {publicAccessKey && (
                                                         <Button

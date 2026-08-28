@@ -18,10 +18,31 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
 class ReportController extends Controller
 {
+    /**
+     * Teto de dias por relatório: evita que um período gigantesco (selecionado sem querer)
+     * carregue e serialize dezenas de milhares de linhas de uma vez.
+     */
+    private const MAX_REPORT_RANGE_DAYS = 400;
+
+    private function guardReportRange(Carbon $from, Carbon $to): void
+    {
+        if ($from->diffInDays($to) <= self::MAX_REPORT_RANGE_DAYS) {
+            return;
+        }
+
+        // ValidationException (em vez de abort_if) garante que o Inertia trate isso como
+        // erro de formulário normal — a tela recebe a mensagem em `errors`, não uma página de erro.
+        throw ValidationException::withMessages([
+            'to' => 'O período selecionado é muito longo para gerar este relatório de uma vez. Escolha um intervalo de até '
+                .self::MAX_REPORT_RANGE_DAYS.' dias.',
+        ]);
+    }
+
     private function buildWarrantyReturnMeta(iterable $orders): array
     {
         $collection = collect($orders);
@@ -205,6 +226,7 @@ class ReportController extends Controller
         $type = $request->input('type');
         $from = Carbon::parse($request->input('from'))->startOfDay();
         $to = Carbon::parse($request->input('to'))->endOfDay();
+        $this->guardReportRange($from, $to);
         $reportMeta = [];
 
         switch ($type) {

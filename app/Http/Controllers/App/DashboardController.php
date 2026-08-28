@@ -125,7 +125,6 @@ class DashboardController extends Controller
         ];
         $listSchedules = $this->scopeSchedulesQuery(Schedule::with('user', 'customer'))->get();
         $parts = Part::where('is_sellable', true)->get();
-        $customers = Customer::get();
         $others = Other::query()
             ->where('tenant_id', auth()->user()?->tenant_id)
             ->first();
@@ -141,7 +140,6 @@ class DashboardController extends Controller
             'feedbackDelay' => $feedbackDelay,
             'acount' => $acount,
             'parts' => $parts,
-            'customers' => $customers,
             'others' => $others,
             'cashier' => [
                 'isOpen' => (bool) $openCashSession,

@@ -31,7 +31,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Sales({ sales, parts, customers, search, financial_status, financial_counts }: any) {
+export default function Sales({ sales, parts, search, financial_status, financial_counts }: any) {
     const { auth, fiscalSetting } = usePage().props as any;
     const companyData = auth?.user?.tenant;
     const acessDenied = auth?.user?.roles === 9 || auth?.user?.roles === 1 ? true : false;
@@ -179,7 +179,6 @@ export default function Sales({ sales, parts, customers, search, financial_statu
                 <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap lg:w-auto lg:shrink-0 lg:justify-end">
                     <SalesProducts
                         parts={parts ?? []}
-                        customers={customers ?? []}
                         iconSize={18}
                         triggerLabel="Abrir PDV"
                         triggerClassName="border-input bg-background hover:bg-accent hover:text-accent-foreground inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors sm:w-auto"

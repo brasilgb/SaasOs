@@ -34,7 +34,6 @@ export default function Dashboard({
     orders,
     acount,
     parts,
-    customers,
     others,
     listSchedules,
     cashier,
@@ -176,7 +175,6 @@ export default function Dashboard({
                                 dateRange={dateRange}
                                 customRange={hasCustomRange}
                                 parts={parts}
-                                customers={customers}
                                 others={others}
                                 cashier={cashier}
                                 orders={orders}

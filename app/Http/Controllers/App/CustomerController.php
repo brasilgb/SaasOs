@@ -421,6 +421,33 @@ class CustomerController extends Controller
     }
 
     /**
+     * Busca leve usada por selects com autocomplete (ordens, orçamentos, agendamentos, PDV).
+     * Retorna só os campos necessários pra exibir/selecionar, sem carregar a tabela inteira.
+     */
+    public function search(Request $request)
+    {
+        Gate::authorize('customers.access');
+
+        $search = trim((string) $request->get('q', ''));
+
+        $customers = Customer::query()
+            ->select(['id', 'name', 'cpfcnpj'])
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($inner) use ($search) {
+                    $inner->where('name', 'like', '%'.$search.'%')
+                        ->orWhere('cpfcnpj', 'like', '%'.$search.'%')
+                        ->orWhere('phone', 'like', '%'.$search.'%')
+                        ->orWhere('whatsapp', 'like', '%'.$search.'%');
+                });
+            })
+            ->orderBy('name')
+            ->limit(20)
+            ->get();
+
+        return response()->json($customers);
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
     public function create()

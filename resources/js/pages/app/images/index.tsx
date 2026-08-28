@@ -83,7 +83,6 @@ const ImageUpload = ({ savedimages, orderid, ordernumber, errors }: ImageUploadP
 
         if (total > MAX_IMAGES) {
             toastWarning('Erro', `Esta ordem pode ter no máximo ${MAX_IMAGES} imagens no total.`);
-            e.target.value = '';
             return;
         }
 

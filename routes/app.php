@@ -11,9 +11,9 @@ use App\Http\Controllers\App\EquipmentController;
 use App\Http\Controllers\App\ExpenseController;
 use App\Http\Controllers\App\FiscalDocumentController;
 use App\Http\Controllers\App\FollowUpController;
+use App\Http\Controllers\App\HelpTopicController;
 use App\Http\Controllers\App\ImageController;
 use App\Http\Controllers\App\LabelPrintingController;
-use App\Http\Controllers\App\ManualAssistantController;
 use App\Http\Controllers\App\MessageController;
 use App\Http\Controllers\App\OrderController;
 use App\Http\Controllers\App\OtherController;
@@ -61,6 +61,7 @@ Route::post('/follow-ups/{order}/assign-task', [FollowUpController::class, 'assi
 Route::post('/follow-ups/assign-selected', [FollowUpController::class, 'assignSelectedTasks'])->name('follow-ups.assign-selected');
 
 Route::get('customers-duplicate-check', [CustomerController::class, 'duplicateCheck'])->name('customers.duplicate-check');
+Route::get('customers/search', [CustomerController::class, 'search'])->name('customers.search');
 Route::resource('customers', CustomerController::class);
 Route::post('customers/import-customer', [CustomerController::class, 'ImportCustomer'])->name('import.customer');
 Route::resource('messages', MessageController::class);
@@ -83,6 +84,7 @@ Route::resource('users', UserController::class);
 Route::resource('budgets', BudgetController::class);
 Route::resource('whatsapp-messages', WhatsappMessageController::class);
 Route::get('fiscal-documents', [FiscalDocumentController::class, 'index'])->name('fiscal-documents.index');
+Route::get('register-equipments/search', [EquipmentController::class, 'search'])->name('register-equipments.search');
 Route::resource('register-equipments', EquipmentController::class)->parameters(['register-equipments' => 'equipment']);
 Route::resource('register-services', ServiceController::class)->parameters(['register-services' => 'service']);
 Route::resource('register-checklists', ChecklistController::class)->parameters(['register-checklists' => 'checklist']);
@@ -105,6 +107,7 @@ Route::get('receipts/{or}/{tp}/data', [ReceiptController::class, 'printingData']
 Route::resource('label-printing', LabelPrintingController::class);
 Route::get('label-printing-print', [LabelPrintingController::class, 'print'])->name('label-printing.print');
 Route::put('label-printing-settings', [LabelPrintingController::class, 'updateSettings'])->name('label-printing.settings');
+Route::get('/parts/search', [PartController::class, 'search'])->name('parts.search');
 Route::resource('/parts', PartController::class);
 Route::get('/parts/{part}/print-label', [PartController::class, 'printLabel'])->name('parts.print-label');
 Route::post('/orders/remove-part', [OrderController::class, 'removePart'])->name('orders.removePart');
@@ -119,4 +122,5 @@ Route::post('/cashier/{cashSession}/withdrawal/{movement}/cancel', [CashSessionC
 Route::post('/cashier/{cashSession}/close', [CashSessionController::class, 'close'])->name('cashier.close');
 Route::resource('/reports', ReportController::class);
 
-Route::post('/assistente-manual/perguntar', [ManualAssistantController::class, 'ask'])->name('manual-assistant.ask');
+Route::get('/ajuda', [HelpTopicController::class, 'index'])->name('help-topics.index');
+Route::get('/ajuda/{slug}', [HelpTopicController::class, 'show'])->name('help-topics.show');

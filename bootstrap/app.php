@@ -9,10 +9,17 @@ use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Foundation\Support\Providers\EventServiceProvider;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpFoundation\Response;
+
+// O app já mapeia todos os eventos/listeners explicitamente em App\Providers\EventServiceProvider.
+// Sem isto, o Laravel também auto-descobre os mesmos listeners em app/Listeners e registra cada um
+// DUAS vezes (uma via o array $listen, outra via auto-discovery), disparando toda notificação,
+// e-mail, webhook e log de auditoria duas vezes por evento.
+EventServiceProvider::disableEventDiscovery();
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(

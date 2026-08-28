@@ -308,6 +308,12 @@ const mainAdminItems = [
         icon: Cog,
         active: 'admin.settings.*',
     },
+    {
+        title: 'Manual de ajuda',
+        href: route('admin.help-topics.index'),
+        icon: BookOpenText,
+        active: 'admin.help-topics.*',
+    },
 ];
 
 const mainAdminAdjustmentItems: NavItem[] = [

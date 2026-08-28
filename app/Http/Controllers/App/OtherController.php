@@ -49,7 +49,6 @@ class OtherController extends Controller
             ->where('tenant_id', $tenantId)
             ->first();
         $tenant = $tenantId ? Tenant::query()->find($tenantId) : null;
-        $automaticFiscalEmissionEnabled = (bool) ($tenant?->automatic_fiscal_emission_enabled ?? false);
         $fiscalSetting = $tenantId ? FiscalSetting::query()->firstOrCreate([
             'tenant_id' => $tenantId,
         ], [
@@ -107,26 +106,8 @@ class OtherController extends Controller
             'businessMetrics' => $businessMetrics,
             'fiscalSetting' => $fiscalSetting ? [
                 'enabled' => (bool) $fiscalSetting->enabled,
-                'automatic_emission_enabled' => $automaticFiscalEmissionEnabled,
-                'provider' => $automaticFiscalEmissionEnabled
-                    ? ($fiscalSetting->provider ?? FiscalSetting::PROVIDER_MANUAL)
-                    : FiscalSetting::PROVIDER_MANUAL,
-                'environment' => $fiscalSetting->environment ?? 'production',
                 'nfe_enabled' => (bool) $fiscalSetting->nfe_enabled,
                 'nfse_enabled' => (bool) $fiscalSetting->nfse_enabled,
-                'nfse_mode' => $fiscalSetting->nfse_mode ?? 'national',
-                'company_tax_regime' => $fiscalSetting->company_tax_regime,
-                'state_registration' => $fiscalSetting->state_registration,
-                'municipal_registration' => $fiscalSetting->municipal_registration,
-                'service_city_code' => $fiscalSetting->service_city_code,
-                'service_list_item' => $fiscalSetting->service_list_item,
-                'default_iss_rate' => $fiscalSetting->default_iss_rate,
-                'default_nfe_series' => $fiscalSetting->default_nfe_series,
-                'default_nfse_series' => $fiscalSetting->default_nfse_series,
-                'nfse_simple_option' => $fiscalSetting->nfse_simple_option,
-                'nfse_special_tax_regime' => $fiscalSetting->nfse_special_tax_regime,
-                'nfse_ibs_cbs_situation' => $fiscalSetting->nfse_ibs_cbs_situation,
-                'nfse_ibs_cbs_classification' => $fiscalSetting->nfse_ibs_cbs_classification,
             ] : null,
         ]);
     }
@@ -139,14 +120,6 @@ class OtherController extends Controller
         Gate::authorize('other-settings.access');
 
         abort_if((int) $other->tenant_id !== (int) $this->currentTenantId(), 403);
-
-        $automaticFiscalEmissionEnabled = (bool) Tenant::query()
-            ->whereKey($this->currentTenantId())
-            ->value('automatic_fiscal_emission_enabled');
-
-        $allowedFiscalProviders = $automaticFiscalEmissionEnabled
-            ? [FiscalSetting::PROVIDER_MANUAL, FiscalSetting::PROVIDER_GOVERNMENT_API]
-            : [FiscalSetting::PROVIDER_MANUAL];
 
         $data = $request->validate([
             'navigation' => 'sometimes|boolean',
@@ -179,21 +152,6 @@ class OtherController extends Controller
             'fiscal_enabled' => 'sometimes|boolean',
             'fiscal_nfe_enabled' => 'sometimes|boolean',
             'fiscal_nfse_enabled' => 'sometimes|boolean',
-            'fiscal_provider' => ['nullable', 'string', Rule::in($allowedFiscalProviders)],
-            'fiscal_environment' => ['nullable', 'string', Rule::in(['production', 'sandbox'])],
-            'fiscal_nfse_mode' => ['nullable', 'string', Rule::in(['national', 'municipal'])],
-            'fiscal_company_tax_regime' => 'nullable|string|max:50',
-            'fiscal_state_registration' => 'nullable|string|max:50',
-            'fiscal_municipal_registration' => 'nullable|string|max:50',
-            'fiscal_service_city_code' => 'nullable|string|max:20',
-            'fiscal_service_list_item' => 'nullable|string|max:30',
-            'fiscal_default_iss_rate' => 'nullable|numeric|min:0|max:100',
-            'fiscal_default_nfe_series' => 'nullable|string|max:20',
-            'fiscal_default_nfse_series' => 'nullable|string|max:20',
-            'fiscal_nfse_simple_option' => 'nullable|integer|min:1|max:3',
-            'fiscal_nfse_special_tax_regime' => 'nullable|integer|min:0|max:99',
-            'fiscal_nfse_ibs_cbs_situation' => 'nullable|string|max:3',
-            'fiscal_nfse_ibs_cbs_classification' => 'nullable|string|max:6',
         ]);
 
         $data['mail_mailer'] = isset($data['mail_mailer']) ? trim((string) $data['mail_mailer']) : null;
@@ -227,34 +185,12 @@ class OtherController extends Controller
 
         $fiscalPayload = [
             'enabled' => (bool) ($data['fiscal_enabled'] ?? false),
-            'provider' => $automaticFiscalEmissionEnabled
-                ? ($data['fiscal_provider'] ?? FiscalSetting::PROVIDER_MANUAL)
-                : FiscalSetting::PROVIDER_MANUAL,
-            'environment' => $data['fiscal_environment'] ?? 'production',
             'nfe_enabled' => (bool) ($data['fiscal_nfe_enabled'] ?? false),
             'nfse_enabled' => (bool) ($data['fiscal_nfse_enabled'] ?? false),
-            'nfse_mode' => $data['fiscal_nfse_mode'] ?? 'national',
-            'company_tax_regime' => $data['fiscal_company_tax_regime'] ?? null,
-            'state_registration' => $data['fiscal_state_registration'] ?? null,
-            'municipal_registration' => $data['fiscal_municipal_registration'] ?? null,
-            'service_city_code' => $data['fiscal_service_city_code'] ?? null,
-            'service_list_item' => $data['fiscal_service_list_item'] ?? null,
-            'default_iss_rate' => isset($data['fiscal_default_iss_rate']) ? round((float) $data['fiscal_default_iss_rate'], 4) : null,
-            'default_nfe_series' => $data['fiscal_default_nfe_series'] ?? null,
-            'default_nfse_series' => $data['fiscal_default_nfse_series'] ?? null,
-            'nfse_simple_option' => $data['fiscal_nfse_simple_option'] ?? null,
-            'nfse_special_tax_regime' => $data['fiscal_nfse_special_tax_regime'] ?? 0,
-            'nfse_ibs_cbs_situation' => $data['fiscal_nfse_ibs_cbs_situation'] ?? null,
-            'nfse_ibs_cbs_classification' => $data['fiscal_nfse_ibs_cbs_classification'] ?? null,
         ];
 
         foreach (array_keys($fiscalPayload) as $key) {
             unset($data['fiscal_'.$key]);
-        }
-        foreach (array_keys($data) as $key) {
-            if (str_starts_with($key, 'fiscal_')) {
-                unset($data[$key]);
-            }
         }
 
         $other->update($data);

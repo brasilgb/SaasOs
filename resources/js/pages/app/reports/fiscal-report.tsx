@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { toastError } from '@/components/app-toast-messages';
 import { router } from '@inertiajs/react';
 import { pdf } from '@react-pdf/renderer';
 import { FileText, Loader2 } from 'lucide-react';
@@ -45,7 +46,7 @@ export default function FiscalReport({ dateRange, company }: { dateRange?: DateR
                     previewWindow.location.href = url;
                 },
                 onError: (errors) => {
-                    console.error('Erro ao gerar relatório:', errors);
+                    toastError('Não foi possível gerar o relatório', Object.values(errors)[0] as string);
                     previewWindow.close();
                 },
                 onFinish: () => setLoading(false),

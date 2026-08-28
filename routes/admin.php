@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\FeatureController;
 use App\Http\Controllers\Admin\FiscalDocumentController;
+use App\Http\Controllers\Admin\HelpTopicController;
 use App\Http\Controllers\Admin\PeriodController;
 use App\Http\Controllers\Admin\PlanController;
 use App\Http\Controllers\Admin\ReportController;
@@ -31,6 +32,8 @@ Route::get('/tenant-improvement-requests/{tenantImprovementRequest}/preview/cust
     ->name('tenant-improvement-requests.preview-customer-email');
 Route::patch('/tenant-improvement-requests/{tenantImprovementRequest}', [TenantImprovementRequestController::class, 'update'])->name('tenant-improvement-requests.update');
 Route::get('/fiscal-documents', [FiscalDocumentController::class, 'index'])->name('fiscal-documents.index');
+Route::get('/help-topics', [HelpTopicController::class, 'index'])->name('help-topics.index');
+Route::post('/help-topics/import', [HelpTopicController::class, 'import'])->name('help-topics.import');
 Route::resource('/tenants', TenantController::class);
 Route::resource('/branches', BranchController::class);
 Route::resource('/plans', PlanController::class);

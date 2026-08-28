@@ -591,7 +591,12 @@ class OrderController extends Controller
         }
 
         $orders = $query
-            ->with('equipment', 'customer')
+            ->with([
+                'equipment',
+                'customer',
+                'orderPayments:id,order_id,amount',
+                'logs' => fn ($logsQuery) => $logsQuery->whereIn('action', ['payment_reminder_sent', 'budget_follow_up_sent']),
+            ])
             ->withMax('statusHistory as status_changed_at', 'created_at')
             ->withCount('images')
             ->withSum('orderPayments as total_paid', 'amount')
@@ -634,7 +639,6 @@ class OrderController extends Controller
         $this->authorize('create', Order::class);
 
         $equipments = Equipment::get();
-        $customers = Customer::get();
         $models = Order::distinct()->pluck('model');
         $sourceSchedule = null;
 
@@ -646,7 +650,6 @@ class OrderController extends Controller
         }
 
         return Inertia::render('app/orders/create-order', [
-            'customers' => $customers,
             'equipments' => $equipments,
             'models' => $models,
             'sourceSchedule' => $sourceSchedule,
@@ -781,7 +784,6 @@ class OrderController extends Controller
         ]);
 
         $equipments = Equipment::get();
-        $customers = Customer::get();
         $parts = Part::where('type', 'part')->get();
 
         $technicals = User::whereIn('roles', [User::ROLE_TECHNICIAN, User::ROLE_ADMIN])
@@ -823,7 +825,6 @@ class OrderController extends Controller
             'orderparts' => $order->orderParts,
             'orderPayments' => $order->orderPayments,
             'paymentSummary' => $paymentSummary,
-            'customers' => $customers,
             'technicals' => $technicals,
             'equipments' => $equipments,
             'parts' => $parts,

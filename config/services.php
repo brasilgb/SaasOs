@@ -41,7 +41,6 @@ return [
 
     'n8n' => [
         'webhook_ordem_criada' => env('N8N_WEBHOOK_ORDEM_CRIADA'),
-        'webhook_assistente_manual' => env('N8N_WEBHOOK_ASSISTENTE_MANUAL'),
         'webhook_secret' => env('N8N_WEBHOOK_SECRET'),
     ],
 ];

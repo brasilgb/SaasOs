@@ -187,7 +187,22 @@ class FollowUpController extends Controller
                     $query->where('user_id', $userId);
                 }
             })
-            ->with(['order']);
+            ->with(['order.orderPayments:id,order_id,amount']);
+    }
+
+    /**
+     * Busca uma única vez os logs de acompanhamento (orçamento e cobrança) do período,
+     * já com a ordem e os pagamentos carregados. Reaproveitado por todos os cálculos
+     * de resumo/ranking dentro da mesma requisição, evitando refazer a mesma consulta.
+     *
+     * @return array{budget: Collection<int, OrderLog>, payment: Collection<int, OrderLog>}
+     */
+    private function loadPeriodLogs(Carbon $from, Carbon $to): array
+    {
+        return [
+            'budget' => $this->baseLogQuery('budget_follow_up_sent', $from, $to)->get(),
+            'payment' => $this->baseLogQuery('payment_reminder_sent', $from, $to)->get(),
+        ];
     }
 
     private function recoveredFromLogs(Collection $logs, string $scope): int
@@ -208,7 +223,7 @@ class FollowUpController extends Controller
             }
 
             $serviceCost = (float) ($order->service_cost ?? 0);
-            $paid = (float) $order->orderPayments()->sum('amount');
+            $paid = (float) $order->orderPayments->sum('amount');
 
             return ($serviceCost - $paid) <= 0.009;
         })->count();
@@ -488,10 +503,10 @@ class FollowUpController extends Controller
         return round(($part / $total) * 100, 1);
     }
 
-    private function recoverySummary(Carbon $from, Carbon $to): array
+    private function recoverySummary(array $periodLogs): array
     {
-        $budgetLogs = $this->baseLogQuery('budget_follow_up_sent', $from, $to)->get();
-        $paymentLogs = $this->baseLogQuery('payment_reminder_sent', $from, $to)->get();
+        $budgetLogs = $periodLogs['budget'];
+        $paymentLogs = $periodLogs['payment'];
 
         $budgetContacted = $budgetLogs->count();
         $budgetRecovered = $this->recoveredFromLogs($budgetLogs, 'budget');
@@ -512,15 +527,15 @@ class FollowUpController extends Controller
         ];
     }
 
-    private function triggerPerformanceSummary(Carbon $from, Carbon $to): array
+    private function triggerPerformanceSummary(array $periodLogs): array
     {
-        $build = function (string $action, string $scope) use ($from, $to): array {
+        $build = function (Collection $logs, string $scope): array {
             $result = [];
 
             foreach (['manual', 'automatic'] as $trigger) {
-                $logs = $this->baseLogQuery($action, $from, $to, $trigger)->get();
-                $contacted = $logs->count();
-                $recovered = $this->recoveredFromLogs($logs, $scope);
+                $triggerLogs = $logs->filter(fn (OrderLog $log) => ($log->data['trigger'] ?? null) === $trigger)->values();
+                $contacted = $triggerLogs->count();
+                $recovered = $this->recoveredFromLogs($triggerLogs, $scope);
 
                 $result[$trigger] = [
                     'contacted' => $contacted,
@@ -533,8 +548,8 @@ class FollowUpController extends Controller
         };
 
         return [
-            'budget' => $build('budget_follow_up_sent', 'budget'),
-            'payment' => $build('payment_reminder_sent', 'payment'),
+            'budget' => $build($periodLogs['budget'], 'budget'),
+            'payment' => $build($periodLogs['payment'], 'payment'),
         ];
     }
 
@@ -580,16 +595,16 @@ class FollowUpController extends Controller
             ->all();
     }
 
-    private function technicianRanking(Carbon $from, Carbon $to): array
+    private function technicianRanking(array $periodLogs): array
     {
         return User::query()
             ->where('tenant_id', $this->currentUser()?->tenant_id)
             ->whereIn('roles', [User::ROLE_ADMIN, User::ROLE_TECHNICIAN])
             ->where('status', 1)
             ->get(['id', 'name'])
-            ->map(function (User $user) use ($from, $to) {
-                $budgetLogs = $this->baseLogQuery('budget_follow_up_sent', $from, $to, null, $user->id)->get();
-                $paymentLogs = $this->baseLogQuery('payment_reminder_sent', $from, $to, null, $user->id)->get();
+            ->map(function (User $user) use ($periodLogs) {
+                $budgetLogs = $periodLogs['budget']->filter(fn (OrderLog $log) => $log->order?->user_id === $user->id)->values();
+                $paymentLogs = $periodLogs['payment']->filter(fn (OrderLog $log) => $log->order?->user_id === $user->id)->values();
 
                 $budgetContacted = $budgetLogs->count();
                 $budgetRecovered = $this->recoveredFromLogs($budgetLogs, 'budget');
@@ -617,9 +632,9 @@ class FollowUpController extends Controller
             ->all();
     }
 
-    private function commercialDashboard(Carbon $from, Carbon $to): array
+    private function commercialDashboard(array $periodLogs): array
     {
-        $budgetLogs = $this->baseLogQuery('budget_follow_up_sent', $from, $to)->get();
+        $budgetLogs = $periodLogs['budget'];
         $budgetOrders = $budgetLogs->pluck('order')->filter();
         $budgetContacted = $budgetLogs->count();
         $budgetApproved = $budgetOrders->filter(fn (Order $order) => ! in_array((int) $order->service_status, [
@@ -630,7 +645,7 @@ class FollowUpController extends Controller
         $budgetRejected = $budgetOrders->filter(fn (Order $order) => (int) $order->service_status === OrderStatus::BUDGET_REJECTED)->count();
         $budgetPending = max(0, $budgetContacted - $budgetApproved - $budgetRejected);
 
-        $paymentLogs = $this->baseLogQuery('payment_reminder_sent', $from, $to)->get();
+        $paymentLogs = $periodLogs['payment'];
         $paymentContacted = $paymentLogs->count();
         $paymentRecovered = $this->recoveredFromLogs($paymentLogs, 'payment');
         $paymentOpen = max(0, $paymentContacted - $paymentRecovered);
@@ -640,8 +655,8 @@ class FollowUpController extends Controller
             ->whereIn('roles', [User::ROLE_ADMIN, User::ROLE_TECHNICIAN])
             ->where('status', 1)
             ->get(['id', 'name'])
-            ->map(function (User $user) use ($from, $to) {
-                $budgetLogs = $this->baseLogQuery('budget_follow_up_sent', $from, $to, null, $user->id)->get();
+            ->map(function (User $user) use ($periodLogs) {
+                $budgetLogs = $periodLogs['budget']->filter(fn (OrderLog $log) => $log->order?->user_id === $user->id)->values();
                 $budgetOrders = $budgetLogs->pluck('order')->filter();
                 $budgetContacted = $budgetLogs->count();
                 $budgetApproved = $budgetOrders->filter(fn (Order $order) => ! in_array((int) $order->service_status, [
@@ -650,7 +665,7 @@ class FollowUpController extends Controller
                     OrderStatus::CANCELLED,
                 ], true))->count();
 
-                $paymentLogs = $this->baseLogQuery('payment_reminder_sent', $from, $to, null, $user->id)->get();
+                $paymentLogs = $periodLogs['payment']->filter(fn (OrderLog $log) => $log->order?->user_id === $user->id)->values();
                 $paymentContacted = $paymentLogs->count();
                 $paymentRecovered = $this->recoveredFromLogs($paymentLogs, 'payment');
 
@@ -687,14 +702,14 @@ class FollowUpController extends Controller
         ];
     }
 
-    private function comparisonSummary(Carbon $from, Carbon $to): array
+    private function comparisonSummary(array $currentPeriodLogs, Carbon $from, Carbon $to): array
     {
         $days = max(1, $from->diffInDays($to) + 1);
         $previousTo = $from->copy()->subDay()->endOfDay();
         $previousFrom = $previousTo->copy()->subDays($days - 1)->startOfDay();
 
-        $currentRecovery = $this->recoverySummary($from, $to);
-        $previousRecovery = $this->recoverySummary($previousFrom, $previousTo);
+        $currentRecovery = $this->recoverySummary($currentPeriodLogs);
+        $previousRecovery = $this->recoverySummary($this->loadPeriodLogs($previousFrom, $previousTo));
 
         $build = function (float $current, float $previous): array {
             $delta = round($current - $previous, 1);
@@ -741,6 +756,7 @@ class FollowUpController extends Controller
         $thresholdDays = $this->communicationThresholdDays();
         $type = $request->get('type', 'all');
         [$metricsFrom, $metricsTo] = $this->metricsPeriod($request);
+        $periodLogs = $this->loadPeriodLogs($metricsFrom, $metricsTo);
 
         $budgetQuery = (clone $this->baseQuery($request))
             ->withCount([
@@ -826,9 +842,9 @@ class FollowUpController extends Controller
                 'threshold_days' => $thresholdDays,
                 'cooldown_days' => $thresholdDays,
                 'automatic_follow_ups_enabled' => Other::automaticFollowUpsEnabled($this->currentUser()?->tenant_id),
-                'recovery' => $this->recoverySummary($metricsFrom, $metricsTo),
-                'trigger_performance' => $this->triggerPerformanceSummary($metricsFrom, $metricsTo),
-                'commercial' => $this->commercialDashboard($metricsFrom, $metricsTo),
+                'recovery' => $this->recoverySummary($periodLogs),
+                'trigger_performance' => $this->triggerPerformanceSummary($periodLogs),
+                'commercial' => $this->commercialDashboard($periodLogs),
                 'metrics_period' => [
                     'from' => $metricsFrom->toDateString(),
                     'to' => $metricsTo->toDateString(),
@@ -839,11 +855,11 @@ class FollowUpController extends Controller
             'paymentOrders' => $paymentOrders,
             'technicians' => $technicians,
             'technicianSummary' => $this->technicianSummary($budgetSummaryOrders, $paymentSummaryOrders),
-            'technicianRanking' => $this->technicianRanking($metricsFrom, $metricsTo),
+            'technicianRanking' => $this->technicianRanking($periodLogs),
             'dailyAgenda' => $this->dailyAgenda($budgetSummaryOrders, $paymentSummaryOrders, $feedbackSummaryOrders),
             'trends' => [
-                'budget' => $this->buildTrend($this->baseLogQuery('budget_follow_up_sent', $metricsFrom, $metricsTo)->get(), $metricsFrom, $metricsTo, 'budget'),
-                'payment' => $this->buildTrend($this->baseLogQuery('payment_reminder_sent', $metricsFrom, $metricsTo)->get(), $metricsFrom, $metricsTo, 'payment'),
+                'budget' => $this->buildTrend($periodLogs['budget'], $metricsFrom, $metricsTo, 'budget'),
+                'payment' => $this->buildTrend($periodLogs['payment'], $metricsFrom, $metricsTo, 'payment'),
             ],
         ]);
     }
@@ -853,7 +869,8 @@ class FollowUpController extends Controller
         $this->authorize('viewAny', Order::class);
 
         [$metricsFrom, $metricsTo] = $this->metricsPeriod($request);
-        $commercial = $this->commercialDashboard($metricsFrom, $metricsTo);
+        $periodLogs = $this->loadPeriodLogs($metricsFrom, $metricsTo);
+        $commercial = $this->commercialDashboard($periodLogs);
 
         return Inertia::render('app/follow-ups/performance', [
             'filters' => [
@@ -861,10 +878,10 @@ class FollowUpController extends Controller
                 'to' => $metricsTo->toDateString(),
             ],
             'summary' => [
-                'recovery' => $this->recoverySummary($metricsFrom, $metricsTo),
-                'trigger_performance' => $this->triggerPerformanceSummary($metricsFrom, $metricsTo),
+                'recovery' => $this->recoverySummary($periodLogs),
+                'trigger_performance' => $this->triggerPerformanceSummary($periodLogs),
                 'commercial' => $commercial,
-                'comparison' => $this->comparisonSummary($metricsFrom, $metricsTo),
+                'comparison' => $this->comparisonSummary($periodLogs, $metricsFrom, $metricsTo),
                 'targets' => [
                     'budget' => $this->targetStatus(
                         (float) ($commercial['budget']['rate'] ?? 0),
@@ -880,10 +897,10 @@ class FollowUpController extends Controller
                     'to' => $metricsTo->toDateString(),
                 ],
             ],
-            'technicianRanking' => $this->technicianRanking($metricsFrom, $metricsTo),
+            'technicianRanking' => $this->technicianRanking($periodLogs),
             'trends' => [
-                'budget' => $this->buildTrend($this->baseLogQuery('budget_follow_up_sent', $metricsFrom, $metricsTo)->get(), $metricsFrom, $metricsTo, 'budget'),
-                'payment' => $this->buildTrend($this->baseLogQuery('payment_reminder_sent', $metricsFrom, $metricsTo)->get(), $metricsFrom, $metricsTo, 'payment'),
+                'budget' => $this->buildTrend($periodLogs['budget'], $metricsFrom, $metricsTo, 'budget'),
+                'payment' => $this->buildTrend($periodLogs['payment'], $metricsFrom, $metricsTo, 'payment'),
             ],
         ]);
     }

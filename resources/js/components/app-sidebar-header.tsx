@@ -1,4 +1,5 @@
 import { Breadcrumbs } from '@/components/breadcrumbs';
+import HelpSearch from '@/components/help-search';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useInitials } from '@/hooks/use-initials';
 import { SharedData, type BreadcrumbItem as BreadcrumbItemType } from '@/types';
@@ -68,8 +69,6 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
         const refreshInterval = window.setInterval(() => {
             router.reload({
                 only: ['notifications'],
-                preserveScroll: true,
-                preserveState: true,
             });
         }, 60000);
 
@@ -87,6 +86,8 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                 )}
             </div>
             <div className="flex min-w-0 shrink-0 items-center gap-2">
+                {auth.user.tenant_id !== null && <HelpSearch />}
+
                 {auth.user.tenant_id !== null && auth.role !== 'technician' && orderStatus.length > 0 ? <BudgetsApproved count={orderStatus.length} /> : ''}
 
                 {auth.user.tenant_id !== null && (

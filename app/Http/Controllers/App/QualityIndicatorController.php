@@ -19,6 +19,12 @@ class QualityIndicatorController extends Controller
 {
     private const FEEDBACK_RECOVERY_SLA_DAYS = 3;
 
+    /**
+     * Teto de dias por consulta: evita carregar milhares de ordens (com relacionamentos)
+     * na memória de uma vez quando o período selecionado for muito grande.
+     */
+    private const MAX_METRICS_RANGE_DAYS = 400;
+
     private const FEEDBACK_RECOVERY_STATUSES = [
         'pending',
         'in_progress',
@@ -412,6 +418,14 @@ class QualityIndicatorController extends Controller
         Gate::authorize('quality.view');
 
         [$start, $end] = $this->getRange($timerange);
+
+        if ($start->diffInDays($end) > self::MAX_METRICS_RANGE_DAYS) {
+            return response()->json([
+                'message' => 'O período selecionado é muito longo. Escolha um intervalo de até '
+                    .self::MAX_METRICS_RANGE_DAYS.' dias.',
+            ], 422);
+        }
+
         $recoveryStatus = $request->query('recovery_status');
         $assignedTo = $request->query('assigned_to');
 

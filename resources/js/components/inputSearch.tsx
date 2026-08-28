@@ -1,6 +1,7 @@
 import { cn } from '@/lib/utils';
 import { router, useForm, usePage } from '@inertiajs/react';
 import { Search, X } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 
@@ -11,6 +12,8 @@ interface SearchProps {
     className?: string;
 }
 
+const SEARCH_DEBOUNCE_MS = 400;
+
 export default function InputSearch({ placeholder, url, date, className }: SearchProps) {
     const { ziggy } = usePage<{ ziggy?: { query?: Record<string, string> } }>().props;
     const currentQuery = ziggy?.query ?? {};
@@ -19,9 +22,17 @@ export default function InputSearch({ placeholder, url, date, className }: Searc
         search: currentQuery.search ?? '',
     });
 
-    function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-        e.preventDefault();
-        const search = String(data.search ?? '').trim();
+    const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    // Evita disparar uma busca pendente depois que a tela já foi trocada.
+    useEffect(() => {
+        return () => {
+            if (debounceRef.current) clearTimeout(debounceRef.current);
+        };
+    }, []);
+
+    function performSearch(value: string) {
+        const search = value.trim();
 
         router.get(
             route(url),
@@ -37,20 +48,24 @@ export default function InputSearch({ placeholder, url, date, className }: Searc
         );
     }
 
+    function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const value = e.target.value;
+        setData('search', value);
+
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        debounceRef.current = setTimeout(() => performSearch(value), SEARCH_DEBOUNCE_MS);
+    }
+
+    function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault();
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        performSearch(data.search ?? '');
+    }
+
     function handleClearSearch() {
+        if (debounceRef.current) clearTimeout(debounceRef.current);
         setData('search', '');
-        router.get(
-            route(url),
-            {
-                ...currentQuery,
-                page: undefined,
-                search: undefined,
-            },
-            {
-                preserveState: true,
-                replace: true,
-            },
-        );
+        performSearch('');
     }
 
     return (
@@ -60,7 +75,7 @@ export default function InputSearch({ placeholder, url, date, className }: Searc
                     className="pr-16"
                     name="search"
                     value={data.search}
-                    onChange={(e) => setData('search', e.target.value)}
+                    onChange={handleChange}
                     type={date ? 'date' : 'search'}
                     placeholder={placeholder}
                     autoComplete="off"
@@ -79,7 +94,15 @@ export default function InputSearch({ placeholder, url, date, className }: Searc
                             <X className="h-4 w-4" />
                         </Button>
                     )}
-                    <Button type="submit" variant="default" size="icon" disabled={processing} className="h-full rounded-l-none" aria-label="Buscar">
+                    <Button
+                        type="submit"
+                        variant="default"
+                        size="icon"
+                        disabled={processing}
+                        className="h-full rounded-l-none"
+                        aria-label="Buscar"
+                        title="Buscar agora"
+                    >
                         <Search className="h-4 w-4" />
                     </Button>
                 </div>

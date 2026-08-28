@@ -51,7 +51,6 @@ export default function OrderDashboard({
     dateRange,
     customRange,
     parts,
-    customers,
     others,
     cashier,
     orders,
@@ -418,7 +417,7 @@ export default function OrderDashboard({
                                         )}
                                     </div>
                                 )}
-                                {showPdvShortcut && <SalesProducts parts={parts} customers={customers} iconSize={60} />}
+                                {showPdvShortcut && <SalesProducts parts={parts} iconSize={60} />}
                             </Card>
                             <Card className="flex h-full items-center justify-center p-4">
                                 <ScheduleCalendarModal schedules={listSchedules} iconSize={60} />

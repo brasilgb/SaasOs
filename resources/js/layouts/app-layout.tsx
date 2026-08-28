@@ -1,5 +1,4 @@
 import { FlashToastMessages } from '@/components/flash-toast-messages';
-import ManualAssistantWidget from '@/components/manual-assistant-widget';
 import { useAppearance } from '@/hooks/use-appearance';
 import AppLayoutTemplate from '@/layouts/app/app-sidebar-layout';
 import { type BreadcrumbItem } from '@/types';
@@ -19,7 +18,6 @@ export default ({ breadcrumbs = [], children }: AppLayoutProps) => {
             {children}
             <FlashToastMessages />
             <Toaster theme={appearance} />
-            <ManualAssistantWidget />
         </AppLayoutTemplate>
     );
 };

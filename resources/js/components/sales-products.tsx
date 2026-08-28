@@ -1,6 +1,7 @@
 import { apios } from '@/Utils/connectApi';
 import { maskMoney } from '@/Utils/mask';
 import selectStyles from '@/Utils/selectStyles';
+import AsyncResourceSelect from '@/components/async-resource-select';
 import { normalizeScannedEan13 } from '@/components/ean13-barcode';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -81,15 +82,24 @@ interface AxiosErrorLike {
     };
 }
 
+interface CustomerOption extends OptionType {
+    cpfcnpj?: string;
+}
+
+const mapCustomerOption = (customer: Customer): CustomerOption => ({
+    value: customer.id,
+    label: customer.name,
+    cpfcnpj: customer.cpfcnpj,
+});
+
 interface SalesProductsProps {
     parts: Part[];
-    customers: Customer[];
     iconSize?: number;
     triggerLabel?: string;
     triggerClassName?: string;
 }
 
-export function SalesProducts({ parts, customers, iconSize, triggerLabel, triggerClassName }: SalesProductsProps) {
+export function SalesProducts({ parts, iconSize, triggerLabel, triggerClassName }: SalesProductsProps) {
     const { auth, cashier } = usePage<PageProps<{ auth: { user: User & { tenant?: CompanyData } }; cashier?: { isOpen?: boolean } }>>().props;
     const companyData = auth?.user?.tenant;
     const isCashierOpen = Boolean(cashier?.isOpen);
@@ -105,6 +115,7 @@ export function SalesProducts({ parts, customers, iconSize, triggerLabel, trigge
     const [isPrintingThermal, setIsPrintingThermal] = useState(false);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
     const [openInvoiceModal, setOpenInvoiceModal] = useState(false);
+    const [selectedCustomer, setSelectedCustomer] = useState<CustomerOption | null>(null);
 
     const receiptRef = useRef<HTMLDivElement>(null);
 
@@ -126,10 +137,6 @@ export function SalesProducts({ parts, customers, iconSize, triggerLabel, trigge
     const optionsParts: OptionType[] = parts.map((part) => ({
         value: part.id,
         label: part.reference_number ? `${part.name} - ${part.reference_number}` : part.name,
-    }));
-    const optionsCustomers: OptionType[] = customers.map((customer) => ({
-        value: customer.id,
-        label: customer.name,
     }));
 
     useEffect(() => {
@@ -252,9 +259,10 @@ export function SalesProducts({ parts, customers, iconSize, triggerLabel, trigge
         setData('quantity', 1); // Reset quantity when part changes
     };
 
-    const changeCustomers = (selected: SingleValue<OptionType>) => {
+    const changeCustomers = (selected: SingleValue<CustomerOption>) => {
         const selectedValue = typeof selected?.value === 'number' ? selected.value : '';
         setData('customer_id', selectedValue);
+        setSelectedCustomer(selected ?? null);
     };
 
     const handleClose = () => {
@@ -262,6 +270,7 @@ export function SalesProducts({ parts, customers, iconSize, triggerLabel, trigge
         setSuccessMessage('');
         reset();
         setSelectedPart(null);
+        setSelectedCustomer(null);
         setBarcode('');
         setCartItems([]); // Clear cart on dialog close
         setSaleCompleted(false); // Reseta o estado da venda // Limpa o nome do cliente para a próxima venda
@@ -271,14 +280,17 @@ export function SalesProducts({ parts, customers, iconSize, triggerLabel, trigge
         setSuccessMessage('');
         reset();
         setSelectedPart(null);
+        setSelectedCustomer(null);
         setBarcode('');
         setCartItems([]);
         setSaleCompleted(false);
     };
 
     const selectedOptionParts = optionsParts.find((option) => option.value === data.part_id) || null;
-    const selectedOptionCustomers = optionsCustomers.find((option) => option.value === data.customer_id) || null;
-    const nfCustomer = customers.filter((customer) => customer.id === data.customer_id);
+    const selectedOptionCustomers = selectedCustomer;
+    const nfCustomer = selectedCustomer
+        ? [{ id: Number(selectedCustomer.value), name: selectedCustomer.label, cpfcnpj: selectedCustomer.cpfcnpj }]
+        : [];
 
     const cartTotal = cartItems.reduce((sum, item) => sum + Number(item.sale_price) * item.selected_quantity, 0);
 
@@ -378,14 +390,14 @@ export function SalesProducts({ parts, customers, iconSize, triggerLabel, trigge
                             <Label htmlFor="customer_id" className="mb-1 text-right">
                                 Selecione o cliente
                             </Label>
-                            <Select
-                                isSearchable
+                            <AsyncResourceSelect<CustomerOption>
+                                inputId="customer_id"
+                                searchUrl={route('app.customers.search')}
                                 value={selectedOptionCustomers}
-                                options={optionsCustomers}
                                 onChange={changeCustomers}
-                                placeholder="Selecione o cliente"
+                                mapOption={mapCustomerOption}
+                                placeholder="Digite o nome do cliente..."
                                 className="w-full"
-                                styles={selectStyles}
                             />
                             {errors.customer_id && <p className="col-span-4 text-right text-xs text-red-500">{errors.customer_id}</p>}
                         </div>

@@ -1,4 +1,5 @@
 import { ChartQualityTrend } from '@/components/Charts/chart-quality-trend';
+import { toastError } from '@/components/app-toast-messages';
 import { DatePicker } from '@/components/date-picker';
 import { Icon } from '@/components/icon';
 import { SlaTooltip } from '@/components/sla-tooltip';
@@ -599,8 +600,13 @@ export default function QualityIndicators({
             query.set('warranty_page', String(warrantyPage));
 
             const url = `quality-indicators/metrics/${timerangeForRequests}${query.toString() ? `?${query.toString()}` : ''}`;
-            const response = await connectBackend.get(url);
-            setMetrics(response.data);
+
+            try {
+                const response = await connectBackend.get(url);
+                setMetrics(response.data);
+            } catch (error: any) {
+                toastError('Não foi possível carregar os indicadores', error?.response?.data?.message ?? 'Tente novamente em instantes.');
+            }
         };
 
         void loadMetrics();
