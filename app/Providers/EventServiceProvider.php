@@ -54,7 +54,6 @@ use App\Listeners\RecordSaleDeletedLifecycle;
 use App\Listeners\RecordWhatsappMessageSettingsUpdatedAudit;
 use App\Listeners\SendOrderBudgetFollowUpNotification;
 use App\Listeners\SendOrderCreatedNotification;
-use App\Listeners\NotifyN8nOrderCreated;
 use App\Listeners\SendOrderPaymentReminderNotification;
 use App\Listeners\SendOrderStatusUpdatedNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -64,7 +63,6 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         OrderCreated::class => [
             SendOrderCreatedNotification::class,
-            NotifyN8nOrderCreated::class,
         ],
         OrderLifecycleCreated::class => [
             RecordOrderCreatedLifecycle::class,

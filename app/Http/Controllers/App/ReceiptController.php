@@ -8,6 +8,7 @@ use App\Models\App\Company;
 use App\Models\App\Equipment;
 use App\Models\App\Order;
 use App\Models\App\Receipt;
+use App\Support\OrderSignature;
 use App\Support\Pagination;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -23,6 +24,7 @@ class ReceiptController extends Controller
             'receivingequipment' => 'Eu {{ cliente }}, inscrito(a) sob CPF/CNPJ numero {{ cpf_cnpj }}, me responsabilizo por eventuais perdas e/ou danos de arquivos, fotos, agenda, ou quaisquer outros dados armazenados no HD, SSD, cartao de memoria ou memoria interna do meu equipamento, inclusive peliculas ou adesivos, capas e demais acessorios, ficando a Mega System Informatica isenta de qualquer responsabilidade. E obrigatoria a apresentacao desta Ordem de Servico (O.S.) no ato da retirada para que o equipamento seja liberado pela empresa. Caso o aparelho nao seja retirado em ate 90 dias, a contar da presente data, tal fato sera considerado como abandono, estando a empresa apta a descarta-lo. O(A) cliente declara e reconhece que todas as informacoes aqui fornecidas sao verdadeiras e que entendeu e aceitou todos os termos desta Ordem de Servico.',
             'equipmentdelivery' => 'Eu {{ cliente }}, inscrito(a) sob CPF/CNPJ numero {{ cpf_cnpj }}, declaro estar ciente de que, de acordo com o Codigo de Defesa do Consumidor (Lei n. 8.078/90, secao IV, Art. 26), tenho o direito de solicitar a garantia pelo servico executado em 30 (trinta) dias, tratando-se de servicos e de produtos nao duraveis (relacionado a sistema); e em 90 (noventa) dias, tratando-se de fornecimento de servico e de produtos duraveis (relacionado a pecas).',
             'budgetissuance' => 'Equipamento analisado preliminarmente. Segue orcamento inicial para reparo conforme diagnostico tecnico apresentado nesta O.S. O servico sera executado somente mediante aprovacao do cliente. Valores e prazo podem sofrer alteracoes caso sejam identificadas necessidades adicionais durante o reparo.',
+            'maintenance_contract_template' => "Pelo presente instrumento, {{ empresa }}, inscrita no CNPJ sob o numero {{ cnpj_empresa }}, doravante denominada CONTRATADA, e {{ cliente }}, inscrito(a) sob CPF/CNPJ numero {{ cpf_cnpj }}, doravante denominado(a) CONTRATANTE, firmam o presente contrato de prestacao de servicos de manutencao recorrente, mediante as seguintes condicoes:\n\n1. OBJETO: A CONTRATADA se compromete a prestar os servicos de manutencao descritos como \"{{ descricao }}\".\n\n2. VALOR E PAGAMENTO: O CONTRATANTE pagara a mensalidade de {{ valor_mensalidade }}, com vencimento todo dia {{ dia_cobranca }} de cada mes.\n\n3. VIGENCIA: O presente contrato tem inicio em {{ data_inicio }} e vigencia de {{ vigencia }}, podendo ser renovado mediante acordo entre as partes.\n\n4. RESCISAO: Qualquer das partes podera rescindir o presente contrato mediante aviso previo por escrito.\n\nE, por estarem assim justas e contratadas, as partes assinam o presente instrumento.",
         ];
     }
 
@@ -54,7 +56,7 @@ class ReceiptController extends Controller
         $checklists = $checklistsQuery->paginate(Pagination::perPage())->withQueryString();
         $equipments = Equipment::get();
 
-        $activeTab = in_array($request->query('tab'), ['receipts', 'checklists'], true)
+        $activeTab = in_array($request->query('tab'), ['receipts', 'checklists', 'maintenance_contracts'], true)
             ? $request->query('tab')
             : 'receipts';
 
@@ -75,6 +77,7 @@ class ReceiptController extends Controller
             'receivingequipment' => ['nullable', 'string', 'max:3000'],
             'equipmentdelivery' => ['nullable', 'string', 'max:3000'],
             'budgetissuance' => ['nullable', 'string', 'max:3000'],
+            'maintenance_contract_template' => ['nullable', 'string', 'max:5000'],
         ]);
 
         $receipt->update($data);
@@ -120,6 +123,7 @@ class ReceiptController extends Controller
     {
         $order = Order::where('id', $or)->with(['customer', 'equipment', 'orderParts'])->firstOrFail();
         $this->authorize('view', $order);
+        $order->setAttribute('customer_signature_url', OrderSignature::url($order));
 
         $company = Company::query()
             ->where('tenant_id', $this->currentTenantId())

@@ -290,6 +290,7 @@ class HandleInertiaRequests extends Middleware
             'equipment_saved',
             'equipment_updated',
             'equipment_deleted',
+            'contract_print',
         ])->contains(fn (string $key): bool => $request->session()->has($key));
         $flashId = $hasFlashMessage ? (string) Str::uuid() : null;
 
@@ -366,6 +367,7 @@ class HandleInertiaRequests extends Middleware
                 'equipment_updated' => fn () => $request->session()->get('equipment_updated'),
                 'equipment_deleted' => fn () => $request->session()->get('equipment_deleted'),
                 'label_print' => fn () => $request->session()->get('label_print'),
+                'contract_print' => fn () => $request->session()->get('contract_print'),
             ],
             'subscription' => $subscription,
 

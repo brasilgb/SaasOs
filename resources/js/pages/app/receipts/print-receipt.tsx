@@ -252,7 +252,15 @@ function ReceiptCopy({
                         {company?.city}, {new Date().toLocaleDateString(locale, option)}
                     </div>
                     <div className="text-center">
-                        <div className="mb-1 border-t border-black"></div>
+                        {type === 'oraberta' && order?.customer_signature_url ? (
+                            <img
+                                src={order.customer_signature_url}
+                                alt="Assinatura do cliente"
+                                className="mx-auto h-14 object-contain"
+                            />
+                        ) : (
+                            <div className="mb-1 border-t border-black"></div>
+                        )}
                         <p>Assinatura do Cliente</p>
                     </div>
                 </div>

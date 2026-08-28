@@ -29,6 +29,7 @@ class UserRequest extends FormRequest
             'tenant_id' => ! is_null(session('tenant_id')) ? 'required' : 'nullable',
             'roles' => ! is_null(session('tenant_id')) ? 'required' : 'nullable',
             'can_view_all_orders' => 'sometimes|boolean',
+            'commission_percentage' => 'nullable|numeric|min:0|max:100',
             'avatar' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'password' => ($this->getMethod() == 'POST') ? ['required', 'min:8', 'confirmed', Rules\Password::defaults()] : ['nullable', 'min:8', 'confirmed', Rules\Password::defaults()],
             'password_confirmation' => ($this->getMethod() == 'POST') ? ['required', 'min:8'] : ['nullable', 'min:8'],
@@ -44,6 +45,7 @@ class UserRequest extends FormRequest
             'avatar' => 'imagem do perfil',
             'roles' => 'função',
             'can_view_all_orders' => 'técnico master',
+            'commission_percentage' => 'comissão',
             'password' => 'senha',
             'password_confirmation' => 'confirmar senha',
         ];

@@ -52,6 +52,7 @@ export default function AsyncResourceSelect<TOption extends OptionType = OptionT
             isClearable
             isDisabled={isDisabled}
             menuPosition="fixed"
+            menuPortalTarget={typeof document !== 'undefined' ? document.body : undefined}
             cacheOptions
             defaultOptions={loadInitialOptions}
             loadOptions={loadOptions}

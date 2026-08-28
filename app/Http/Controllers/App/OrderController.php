@@ -23,6 +23,7 @@ use App\Models\App\Schedule;
 use App\Models\App\WhatsappMessage;
 use App\Models\User;
 use App\Services\FinancialReceivableService;
+use App\Services\TechnicianCommissionService;
 use App\Services\FiscalDocumentService;
 use App\Services\OperationalAuditService;
 use App\Services\OrderItemSyncService;
@@ -30,6 +31,7 @@ use App\Services\OrderNotificationService;
 use App\Services\OrderPaymentService;
 use App\Services\OrderStatusService;
 use App\Support\Ean13;
+use App\Support\OrderSignature;
 use App\Support\OrderStatus;
 use App\Support\Pagination;
 use App\Support\TenantSequence;
@@ -50,6 +52,7 @@ class OrderController extends Controller
         private readonly OrderPaymentService $orderPaymentService,
         private readonly OrderStatusService $orderStatusService,
         private readonly FinancialReceivableService $financialReceivableService,
+        private readonly TechnicianCommissionService $technicianCommissionService,
         private readonly OrderItemSyncService $orderItemSyncService,
         private readonly FiscalDocumentService $fiscalDocumentService,
         private readonly OrderNotificationService $orderNotificationService,
@@ -479,7 +482,7 @@ class OrderController extends Controller
 
         return [
             'success' => true,
-            'result' => $query,
+            'result' => $this->withSignatureStatus($query),
         ];
     }
 
@@ -492,7 +495,50 @@ class OrderController extends Controller
 
         return [
             'success' => true,
-            'result' => $query,
+            'result' => $this->withSignatureStatus($query),
+        ];
+    }
+
+    /**
+     * @param  \Illuminate\Support\Collection<int, Order>  $orders
+     */
+    private function withSignatureStatus($orders)
+    {
+        return $orders->map(function (Order $order) {
+            $order->setAttribute('has_customer_signature', OrderSignature::exists($order));
+            $order->setAttribute('customer_signature_url', OrderSignature::url($order));
+
+            return $order;
+        });
+    }
+
+    /**
+     * Recebe a assinatura digital do cliente (PNG em base64) e vincula a uma OS já existente.
+     * Usada pelo app vetor-atendimento: o técnico seleciona o cliente e a ordem, e o cliente
+     * assina na tela do tablet/celular.
+     */
+    public function storeSignature(Request $request, $order): array
+    {
+        $order = $this->scopeOrdersQuery(Order::where('order_number', $order))->firstOrFail();
+        $this->authorize('update', $order);
+
+        $validated = $request->validate([
+            'customer_signature' => ['required', 'string'],
+        ]);
+
+        if (! OrderSignature::store($order, $validated['customer_signature'])) {
+            throw ValidationException::withMessages([
+                'customer_signature' => 'Assinatura inválida.',
+            ]);
+        }
+
+        return [
+            'success' => true,
+            'message' => 'Assinatura registrada com sucesso.',
+            'result' => [
+                'order_number' => $order->order_number,
+                'customer_signature_url' => OrderSignature::url($order),
+            ],
         ];
     }
 
@@ -668,6 +714,8 @@ class OrderController extends Controller
         $data = $request->validated();
         $sourceScheduleId = $data['schedule_id'] ?? null;
         unset($data['schedule_id']);
+        $customerSignature = $data['customer_signature'] ?? null;
+        unset($data['customer_signature']);
 
         Customer::query()->whereKey($data['customer_id'])->firstOrFail();
         $sourceSchedule = null;
@@ -709,6 +757,9 @@ class OrderController extends Controller
         $data['is_warranty_return'] = (bool) $warrantySourceOrder;
         $data['warranty_source_order_id'] = $warrantySourceOrder?->id;
         $order = Order::create($data);
+        if ($customerSignature) {
+            OrderSignature::store($order, $customerSignature);
+        }
         if ($sourceSchedule) {
             $sourceSchedule->update(['order_id' => $order->id]);
         }
@@ -1006,6 +1057,7 @@ class OrderController extends Controller
         $order = $order->fresh(['orderPayments']);
         $this->orderItemSyncService->sync($order);
         $this->financialReceivableService->syncOrder($order);
+        $this->technicianCommissionService->syncOrder($order);
 
         $currentUser = $this->currentUser();
         if (
@@ -1035,6 +1087,7 @@ class OrderController extends Controller
         $this->authorize('delete', $order);
 
         $this->financialReceivableService->deleteSource('order', (int) $order->id, (int) $order->tenant_id);
+        $this->technicianCommissionService->deleteForOrder($order);
         $order->delete();
         $order->orderParts()->detach();
 

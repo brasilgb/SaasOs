@@ -20,6 +20,10 @@ Schedule::command('vetoros:send-subscription-status-notifications')
     ->dailyAt('08:00')
     ->withoutOverlapping();
 
+Schedule::command('vetoros:process-maintenance-contracts')
+    ->dailyAt('07:30')
+    ->withoutOverlapping();
+
 Schedule::command('vetoros:send-tenant-feedback-requests')
     ->dailyAt('11:00')
     ->withoutOverlapping();

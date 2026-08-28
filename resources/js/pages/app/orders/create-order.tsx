@@ -2,6 +2,7 @@ import AsyncResourceSelect from '@/components/async-resource-select';
 import { DatePicker } from '@/components/date-picker';
 import { Icon } from '@/components/icon';
 import InputError from '@/components/input-error';
+import SignaturePad from '@/components/signature-pad';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -95,6 +96,7 @@ export default function CreateOrder({
         service_status: '1',
         delivery_forecast: '', // previsao de entrega
         observations: '',
+        customer_signature: '', // assinatura do cliente no recebimento do equipamento (base64 PNG)
     });
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -396,6 +398,20 @@ export default function CreateOrder({
                             <Label htmlFor="observations">Observações</Label>
                             <Textarea id="observations" value={data.observations} onChange={(e) => setData('observations', e.target.value)} />
                             {errors.observations && <div className="text-sm text-red-500">{errors.observations}</div>}
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label>Assinatura do cliente (recebimento do equipamento)</Label>
+                            <p className="text-muted-foreground text-sm">
+                                Opcional. Peça para o cliente assinar na tela antes de finalizar a abertura da OS — a assinatura é gravada junto
+                                com a ordem e aparece no recibo de recebimento.
+                            </p>
+                            <SignaturePad
+                                value={data.customer_signature}
+                                onChange={(base64) => setData('customer_signature', base64)}
+                                className="max-w-xl"
+                            />
+                            {errors.customer_signature && <div className="text-sm text-red-500">{errors.customer_signature}</div>}
                         </div>
 
                         <div className="flex justify-end">

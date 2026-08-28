@@ -59,7 +59,11 @@ const selectStyles: StylesConfig<any, false> = {
     }),
     menuPortal: (base) => ({
         ...base,
-        zIndex: 50,
+        zIndex: 60,
+        // Radix Dialog (modal) desabilita pointer-events no <body> inteiro enquanto está aberto,
+        // liberando só o próprio nó do modal. Como este menu é portalizado pro body, ele herda
+        // esse bloqueio e fica inclicável sem essa reafirmação explícita.
+        pointerEvents: 'auto',
     }),
     option: (base, state) => ({
         ...base,

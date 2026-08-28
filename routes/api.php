@@ -4,7 +4,6 @@ use App\Http\Controllers\App\BudgetController;
 use App\Http\Controllers\App\CompanyController;
 use App\Http\Controllers\App\CustomerController;
 use App\Http\Controllers\App\ImageController;
-use App\Http\Controllers\App\N8nController;
 use App\Http\Controllers\App\OrderController;
 use App\Http\Controllers\App\PartController;
 use App\Http\Controllers\App\ReportController;
@@ -33,6 +32,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/ordercli/{customer}', [OrderController::class, 'getOrderCli'])->name('ordercli');
     Route::get('/allorder', [OrderController::class, 'allOrder'])->name('allorder');
     Route::get('/order/{order}', [OrderController::class, 'getOrder'])->name('order');
+    Route::post('/order/{order}/assinatura', [OrderController::class, 'storeSignature'])->name('api.orders.signature');
     Route::get('/clientes', [CustomerController::class, 'getClientes']);
     Route::post('/clientes/pre-cadastro', [CustomerController::class, 'preRegister'])->name('api.customers.pre-register');
     Route::get('/relatorios/equipamentos/filtros', [ReportController::class, 'equipmentFilters'])->name('api.reports.equipment-filters');
@@ -65,5 +65,4 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/upload', [ImageController::class, 'upload'])->name('upload');
     Route::get('/logoutuser', [UserController::class, 'logoutuser'])->name('logoutuser');
     Route::get('/getparts/{reference_number}', [PartController::class, 'getPartsForPartNumber'])->name('getparts');
-    Route::post('/n8n/ordens/{order}/classificar', [N8nController::class, 'classificar'])->name('api.n8n.orders.classify');
 });

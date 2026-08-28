@@ -37,6 +37,17 @@ class UserController extends Controller
         return (bool) ($data['can_view_all_orders'] ?? false);
     }
 
+    private function resolveCommissionPercentage(array $data): ?float
+    {
+        if ((int) ($data['roles'] ?? 0) !== User::ROLE_TECHNICIAN) {
+            return null;
+        }
+
+        $value = $data['commission_percentage'] ?? null;
+
+        return $value === null || $value === '' ? null : max(0, min(100, (float) $value));
+    }
+
     private function storeAvatar(UserRequest $request, ?User $target = null): ?string
     {
         if (! $request->hasFile('avatar')) {
@@ -131,6 +142,7 @@ class UserController extends Controller
         $data['password'] = Hash::make($request->password);
         $data['tenant_id'] = Auth::user()->tenant_id;
         $data['can_view_all_orders'] = $this->resolveTechnicianMasterFlag(Auth::user(), $data);
+        $data['commission_percentage'] = $this->resolveCommissionPercentage($data);
         $data['avatar'] = $this->storeAvatar($request);
         $data['user_number'] = TenantSequence::next(User::class, 'user_number');
         Model::reguard();
@@ -183,6 +195,7 @@ class UserController extends Controller
         $data['password'] = $request->password ? Hash::make($request->password) : $user->password;
         $data['tenant_id'] = $user->tenant_id;
         $data['can_view_all_orders'] = $this->resolveTechnicianMasterFlag(Auth::user(), $data, $user);
+        $data['commission_percentage'] = $this->resolveCommissionPercentage($data);
         $data['avatar'] = $this->storeAvatar($request, $user);
         Model::reguard();
         $user->update($data);

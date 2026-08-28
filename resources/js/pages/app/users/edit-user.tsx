@@ -46,6 +46,7 @@ export default function CreateUser({ user, page, search }: any) {
         avatar: null,
         roles: user?.roles,
         can_view_all_orders: Boolean(user?.can_view_all_orders),
+        commission_percentage: user?.commission_percentage ?? '',
         status: user?.status,
         password: '',
         password_confirmation: '',
@@ -65,6 +66,7 @@ export default function CreateUser({ user, page, search }: any) {
         setData('roles', selected?.value);
         if (selected?.value !== '3') {
             setData('can_view_all_orders', false);
+            setData('commission_percentage', '');
         }
     };
     const optionsRolesUser = rolesUser
@@ -76,7 +78,8 @@ export default function CreateUser({ user, page, search }: any) {
         }));
     const defaultStatus = rolesUser?.filter((o: any) => o.value == user?.roles).map((opt: any) => ({ value: opt.label, label: opt.label }));
     const canManageTechnicianMaster = ['root_system', 'root_app', 'administrator'].includes(auth?.role);
-    const showTechnicianMasterSwitch = canManageTechnicianMaster && String(data.roles) === '3';
+    const isTechnicianRole = String(data.roles) === '3';
+    const showTechnicianMasterSwitch = canManageTechnicianMaster && isTechnicianRole;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -233,6 +236,26 @@ export default function CreateUser({ user, page, search }: any) {
                                                 : 'Visualiza apenas ordens atribuídas a ele'}
                                         </span>
                                     </div>
+                                </div>
+                            )}
+
+                            {isTechnicianRole && (
+                                <div className="grid gap-2">
+                                    <Label htmlFor="commission_percentage">Comissão (%)</Label>
+                                    <Input
+                                        id="commission_percentage"
+                                        type="number"
+                                        min="0"
+                                        max="100"
+                                        step="0.01"
+                                        placeholder="Ex.: 10"
+                                        value={data.commission_percentage}
+                                        onChange={(e) => setData('commission_percentage', e.target.value)}
+                                    />
+                                    <p className="text-muted-foreground text-sm">
+                                        Percentual sobre o valor do serviço das OS entregues atribuídas a este técnico.
+                                    </p>
+                                    <InputError message={errors.commission_percentage} />
                                 </div>
                             )}
                         </div>

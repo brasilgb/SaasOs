@@ -103,6 +103,7 @@ class OrderRequest extends FormRequest
             'delivery_date' => 'nullable|date',
             'delivery_forecast' => 'required|date',
             'observations' => 'nullable|string|max:500',
+            'customer_signature' => 'nullable|string',
         ];
     }
 
@@ -131,6 +132,7 @@ class OrderRequest extends FormRequest
             'warranty_source_order_id' => 'ordem de serviço de origem da garantia',
             'delivery_forecast' => 'previsão de entrega',
             'observations' => 'observações',
+            'customer_signature' => 'assinatura do cliente',
         ];
     }
 }

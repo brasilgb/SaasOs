@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
-import { ClipboardCheck, Printer, Save } from 'lucide-react';
+import { ClipboardCheck, FileText, Printer, Save } from 'lucide-react';
 import moment from 'moment';
 import type { FormEvent } from 'react';
 import CreateChecklist from '../checklists/create-checklist';
@@ -38,6 +38,13 @@ const previewValues = {
     defeito: 'Não liga',
     valor_orcamento: 'R$ 350,00',
     prazo: '3 dias úteis',
+    empresa: 'Minha Empresa LTDA',
+    cnpj_empresa: '00.000.000/0001-00',
+    descricao: 'Manutenção preventiva mensal - Ar-condicionado',
+    valor_mensalidade: 'R$ 150,00',
+    dia_cobranca: '5',
+    data_inicio: '01/01/2026',
+    vigencia: '12 meses',
 };
 
 const normalizePlaceholderKey = (key: string) =>
@@ -78,6 +85,7 @@ export default function Receipts({ receipt, equipments, checklists, activeTab = 
         receivingequipment: receipt?.receivingequipment ?? defaultReceiptMessages?.receivingequipment ?? '',
         equipmentdelivery: receipt?.equipmentdelivery ?? defaultReceiptMessages?.equipmentdelivery ?? '',
         budgetissuance: receipt?.budgetissuance ?? defaultReceiptMessages?.budgetissuance ?? '',
+        maintenance_contract_template: receipt?.maintenance_contract_template ?? defaultReceiptMessages?.maintenance_contract_template ?? '',
     });
 
     const handleSubmit = (e: FormEvent) => {
@@ -93,6 +101,10 @@ export default function Receipts({ receipt, equipments, checklists, activeTab = 
         setData('receivingequipment', defaultReceiptMessages?.receivingequipment ?? '');
         setData('equipmentdelivery', defaultReceiptMessages?.equipmentdelivery ?? '');
         setData('budgetissuance', defaultReceiptMessages?.budgetissuance ?? '');
+    };
+
+    const handleResetContractTemplate = () => {
+        setData('maintenance_contract_template', defaultReceiptMessages?.maintenance_contract_template ?? '');
     };
 
     return (
@@ -127,6 +139,7 @@ export default function Receipts({ receipt, equipments, checklists, activeTab = 
                     <TabsList>
                         <TabsTrigger value="receipts">Recibos</TabsTrigger>
                         <TabsTrigger value="checklists">Checklists</TabsTrigger>
+                        <TabsTrigger value="maintenance_contracts">Contrato de manutenção</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="receipts">
@@ -207,6 +220,69 @@ export default function Receipts({ receipt, equipments, checklists, activeTab = 
                                 <div className="flex justify-end gap-2">
                                     <Button type="button" variant="outline" onClick={handleResetDefaults} disabled={processing}>
                                         Restaurar modelos
+                                    </Button>
+                                    <Button type="submit" disabled={processing}>
+                                        <Save />
+                                        Salvar
+                                    </Button>
+                                </div>
+                            </form>
+                        </div>
+                    </TabsContent>
+
+                    <TabsContent value="maintenance_contracts">
+                        <div className="rounded-lg border p-4">
+                            <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
+                                <div className="grid gap-5">
+                                    <div className="flex flex-col gap-3 border-b pb-4 lg:flex-row lg:items-start lg:justify-between">
+                                        <div className="flex items-start gap-3">
+                                            <FileText className="mt-0.5 h-5 w-5" />
+                                            <div>
+                                                <h3 className="text-base font-semibold">Modelo de contrato de manutenção</h3>
+                                                <p className="text-muted-foreground mt-1 text-sm">
+                                                    Texto usado ao gerar o contrato para impressão a partir de um contrato de manutenção
+                                                    recorrente cadastrado.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="text-muted-foreground flex flex-wrap gap-1 text-xs">
+                                            {[
+                                                '{{ empresa }}',
+                                                '{{ cnpj_empresa }}',
+                                                '{{ cliente }}',
+                                                '{{ cpf_cnpj }}',
+                                                '{{ descricao }}',
+                                                '{{ valor_mensalidade }}',
+                                                '{{ dia_cobranca }}',
+                                                '{{ data_inicio }}',
+                                                '{{ vigencia }}',
+                                            ].map((placeholder) => (
+                                                <Badge key={placeholder} variant="outline" className="font-mono">
+                                                    {placeholder}
+                                                </Badge>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="grid gap-2 rounded-md border p-3">
+                                        <Label htmlFor="maintenance_contract_template" className="font-semibold">
+                                            Cláusulas do contrato
+                                        </Label>
+                                        <Textarea
+                                            id="maintenance_contract_template"
+                                            value={data.maintenance_contract_template}
+                                            onChange={(e) => setData('maintenance_contract_template', e.target.value)}
+                                            className="min-h-56"
+                                        />
+                                        <div className="text-muted-foreground bg-muted/40 rounded-md p-2 text-xs whitespace-pre-wrap">
+                                            Prévia: {renderPreview(data.maintenance_contract_template)}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-end gap-2">
+                                    <Button type="button" variant="outline" onClick={handleResetContractTemplate} disabled={processing}>
+                                        Restaurar modelo
                                     </Button>
                                     <Button type="submit" disabled={processing}>
                                         <Save />

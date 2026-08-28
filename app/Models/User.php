@@ -6,6 +6,7 @@ namespace App\Models;
 use App\Models\App\Expense;
 use App\Models\App\Message;
 use App\Models\App\Order;
+use App\Models\App\OrderCommission;
 use App\Models\App\Schedule;
 use App\Tenantable;
 use Database\Factories\UserFactory;
@@ -47,6 +48,7 @@ class User extends Authenticatable
         'password',
         'roles',
         'can_view_all_orders',
+        'commission_percentage',
         'status',
         'last_login_at',
     ];
@@ -72,6 +74,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'can_view_all_orders' => 'boolean',
+            'commission_percentage' => 'decimal:2',
             'last_login_at' => 'datetime',
         ];
     }
@@ -94,6 +97,11 @@ class User extends Authenticatable
     public function expenses(): HasMany
     {
         return $this->hasMany(Expense::class, 'created_by');
+    }
+
+    public function orderCommissions(): HasMany
+    {
+        return $this->hasMany(OrderCommission::class, 'user_id');
     }
 
     public function tenant(): BelongsTo

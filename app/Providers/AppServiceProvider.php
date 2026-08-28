@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Listeners\SetTenantIdInSession;
+use App\Models\App\AccountPayable;
 use App\Models\App\CashSession;
 use App\Models\App\Expense;
 use App\Models\App\Message;
@@ -10,6 +11,7 @@ use App\Models\App\Order;
 use App\Models\App\Sale;
 use App\Models\App\Schedule;
 use App\Models\User;
+use App\Policies\AccountPayablePolicy;
 use App\Policies\CashSessionPolicy;
 use App\Policies\ExpensePolicy;
 use App\Policies\MessagePolicy;
@@ -47,6 +49,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Sale::class, SalePolicy::class);
         Gate::policy(CashSession::class, CashSessionPolicy::class);
         Gate::policy(Expense::class, ExpensePolicy::class);
+        Gate::policy(AccountPayable::class, AccountPayablePolicy::class);
         Gate::policy(User::class, UserPolicy::class);
         Gate::define('quality.view', fn ($user) => $user->hasPermission('reports'));
         Gate::define('quality.manage', fn ($user) => $user->hasPermission('reports'));

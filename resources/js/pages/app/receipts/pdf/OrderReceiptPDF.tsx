@@ -151,6 +151,18 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontSize: 9,
     },
+    signatureSigned: {
+        flex: 1,
+        textAlign: 'center',
+        fontSize: 9,
+    },
+    signatureImage: {
+        height: 34,
+        width: 110,
+        objectFit: 'contain',
+        alignSelf: 'center',
+        marginBottom: 2,
+    },
 });
 
 function titleByType(type: string) {
@@ -363,7 +375,14 @@ export default function OrderReceiptPDF({ order, company, type, receipt, checkli
                     <Text style={styles.footerDate}>
                         {company?.city ?? '-'}, {new Date().toLocaleDateString('pt-BR')}
                     </Text>
-                    <Text style={styles.signature}>Assinatura do Cliente</Text>
+                    {type === 'oraberta' && order?.customer_signature_url ? (
+                        <View style={styles.signatureSigned}>
+                            <Image style={styles.signatureImage} source={order.customer_signature_url} />
+                            <Text>Assinatura do Cliente</Text>
+                        </View>
+                    ) : (
+                        <Text style={styles.signature}>Assinatura do Cliente</Text>
+                    )}
                 </View>
             </Page>
         </Document>
