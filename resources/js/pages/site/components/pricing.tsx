@@ -1,16 +1,14 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Link } from '@inertiajs/react';
-import { Check } from 'lucide-react';
+import { Check, MessageCircle } from 'lucide-react';
+
+const whatsappNumber = '5551998931325';
 
 const plans = [
     {
         name: 'Mensal',
-        price: 'R$49,90',
-        period: '/mês',
-        anchor: 'Menos de R$1,70 por dia — menos que um café.',
-        description: 'Ideal para começar',
-        cta: 'Começar agora',
+        description: 'Plano com contratação mensal',
+        whatsappMessage: 'Olá! Quero consultar as condições do plano mensal do VetorOS.',
         features: [
             'Todos os recursos incluídos',
             'Usuários ilimitados',
@@ -22,14 +20,9 @@ const plans = [
     },
     {
         name: 'Anual',
-        price: 'R$34,93',
-        period: '/mês',
-        billedAs: 'Pagamento único de R$419,16 a cada 12 meses',
-        description: 'Economia máxima durante todo o ano',
-        savings: '30% de desconto • economize R$179,64 no ano',
-        highlight: 'Doze meses com 30% de desconto sobre o valor mensal.',
+        description: 'Plano com contratação anual',
+        whatsappMessage: 'Olá! Quero consultar as condições do plano anual do VetorOS.',
         popular: true,
-        cta: 'Assinar o plano anual',
         features: [
             'Todos os recursos incluídos',
             'Usuários ilimitados',
@@ -37,7 +30,6 @@ const plans = [
             'Suporte prioritário',
             'Atualizações automáticas',
             'Backup diário',
-            'Sem fidelidade: pague de novo só quando renovar',
         ],
     },
 ];
@@ -47,12 +39,13 @@ export function Pricing() {
         <section id="precos" className="border-y border-slate-200 bg-slate-50 py-24 text-slate-900 sm:py-32">
             <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-12">
                 <div className="mx-auto mb-16 max-w-2xl text-center">
-                    <p className="text-sm font-bold text-blue-700">Planos transparentes</p>
+                    <p className="text-sm font-bold text-blue-700">Planos VetorOS</p>
 
-                    <h2 className="mt-3 text-4xl font-bold tracking-[-0.04em] text-slate-950 sm:text-5xl">Preços simples e transparentes</h2>
+                    <h2 className="mt-3 text-4xl font-bold tracking-[-0.04em] text-slate-950 sm:text-5xl">Escolha seu plano</h2>
 
-                    <p className="mt-5 text-lg leading-8 text-slate-600">Teste grátis por 14 dias, sem cartão de crédito e com ativação imediata.</p>
-                    <p className="mt-2 text-sm text-slate-500">Depois do período de teste, você paga via Pix e pode cancelar sem burocracia.</p>
+                    <p className="mt-5 text-lg leading-8 text-slate-600">
+                        Consulte nossa equipe pelo WhatsApp para conhecer as condições dos planos mensal e anual.
+                    </p>
                 </div>
 
                 <div className="mx-auto grid max-w-4xl gap-8 md:grid-cols-2">
@@ -75,26 +68,13 @@ export function Pricing() {
                                 <CardDescription className="mt-2 text-slate-500">{plan.description}</CardDescription>
 
                                 <div className="mt-6">
-                                    <div className="text-5xl font-bold">{plan.price}</div>
-
-                                    <div className="mt-1 text-slate-500">{plan.period}</div>
-
-                                    {plan.anchor && <div className="mt-2 text-sm text-slate-500">{plan.anchor}</div>}
-                                    {plan.billedAs && <div className="mt-2 text-sm text-slate-500">{plan.billedAs}</div>}
-
-                                    {plan.savings && (
-                                        <div className="mt-3">
-                                            <span className="rounded-md border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700">
-                                                {plan.savings}
-                                            </span>
-                                        </div>
-                                    )}
+                                    <div className="text-4xl font-bold">Consultar</div>
                                 </div>
                             </CardHeader>
 
                             <CardContent className="space-y-4">
                                 <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-2 text-center text-xs text-slate-500">
-                                    {plan.highlight ?? 'Todos os módulos liberados desde o primeiro dia.'}
+                                    Todos os módulos liberados desde o primeiro dia.
                                 </div>
                                 {plan.features.map((feature, featureIndex) => (
                                     <div key={featureIndex} className="flex items-start gap-3">
@@ -106,11 +86,17 @@ export function Pricing() {
                             </CardContent>
 
                             <CardFooter className="flex flex-col gap-3 pt-6">
-                                <Link href={route('register')} className="w-full">
+                                <a
+                                    href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(plan.whatsappMessage)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="w-full"
+                                >
                                     <Button size="lg" className="w-full rounded-lg bg-blue-700 font-bold text-white hover:bg-blue-800">
-                                        {plan.cta}
+                                        <MessageCircle className="mr-2 h-5 w-5" />
+                                        Consultar no WhatsApp
                                     </Button>
-                                </Link>
+                                </a>
 
                                 <span className="text-xs text-slate-400">14 dias grátis para testar tudo</span>
                             </CardFooter>
