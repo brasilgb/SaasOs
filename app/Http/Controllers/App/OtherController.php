@@ -35,6 +35,7 @@ class OtherController extends Controller
         ], [
             'enable_finance' => false,
             'enablesales' => false,
+            'enable_purchases' => false,
             'show_follow_ups_menu' => false,
             'show_tasks_menu' => false,
             'show_commercial_performance_menu' => false,
@@ -127,9 +128,8 @@ class OtherController extends Controller
             'enableparts' => 'sometimes|boolean',
             'enable_finance' => 'sometimes|boolean',
             'enablesales' => 'sometimes|boolean',
+            'enable_purchases' => 'sometimes|boolean',
             'show_follow_ups_menu' => 'sometimes|boolean',
-            'show_tasks_menu' => 'sometimes|boolean',
-            'show_commercial_performance_menu' => 'sometimes|boolean',
             'show_quality_menu' => 'sometimes|boolean',
             'print_label_button_after_order_create' => 'sometimes|boolean',
             'public_order_access_key_required' => 'sometimes|boolean',

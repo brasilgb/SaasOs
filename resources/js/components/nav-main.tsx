@@ -20,9 +20,8 @@ type NavMainPageProps = {
     othersetting?: {
         enable_finance?: boolean;
         enablesales?: boolean;
+        enable_purchases?: boolean;
         show_follow_ups_menu?: boolean;
-        show_tasks_menu?: boolean;
-        show_commercial_performance_menu?: boolean;
         show_quality_menu?: boolean;
         enable_technician_schedule_notifications?: boolean;
     };

@@ -36,9 +36,8 @@ export default function Others({ othersettings, company, time_remaining, mailSet
         enableparts: othersettings?.enableparts,
         enable_finance: othersettings?.enable_finance ?? false,
         enablesales: othersettings?.enablesales ?? false,
+        enable_purchases: othersettings?.enable_purchases ?? false,
         show_follow_ups_menu: othersettings?.show_follow_ups_menu ?? false,
-        show_tasks_menu: othersettings?.show_tasks_menu ?? false,
-        show_commercial_performance_menu: othersettings?.show_commercial_performance_menu ?? false,
         show_quality_menu: othersettings?.show_quality_menu ?? false,
         public_order_access_key_required: othersettings?.public_order_access_key_required ?? false,
         mail_mailer: mailSettings?.mail_mailer ?? 'smtp',
@@ -212,6 +211,26 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                                 />
                                                 <span className="text-muted-foreground text-sm">
                                                     {data.enablesales ? 'Habilitado' : 'Desabilitado'}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-card text-card-foreground flex items-center justify-between gap-4 rounded-2xl border p-4 shadow-sm">
+                                            <div>
+                                                <p className="font-medium">Compras / Fornecedores</p>
+                                                <p className="text-muted-foreground text-sm">
+                                                    Habilita o cadastro de fornecedores e ordens de compra conectadas ao estoque.
+                                                </p>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <Switch
+                                                    id="enable_purchases"
+                                                    checked={data.enable_purchases}
+                                                    disabled={!canManageOtherSettings}
+                                                    onCheckedChange={(checked) => setData('enable_purchases', checked)}
+                                                />
+                                                <span className="text-muted-foreground text-sm">
+                                                    {data.enable_purchases ? 'Habilitado' : 'Desabilitado'}
                                                 </span>
                                             </div>
                                         </div>
@@ -396,9 +415,9 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                     <div className="grid w-full gap-4 xl:grid-cols-2">
                                         <div className="bg-card text-card-foreground flex items-center justify-between rounded-2xl border p-4 shadow-sm">
                                             <div>
-                                                <p className="font-medium">Retornos ao cliente</p>
+                                                <p className="font-medium">Follow-up de clientes</p>
                                                 <p className="text-muted-foreground text-sm">
-                                                    Lista ordens que precisam de retorno sobre orçamento ou cobrança.
+                                                    Lista, fila de pendências e resultados de contato sobre orçamento ou cobrança.
                                                 </p>
                                             </div>
                                             <Switch
@@ -406,36 +425,6 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                                 checked={data.show_follow_ups_menu}
                                                 disabled={!canManageOtherSettings}
                                                 onCheckedChange={(checked) => setData('show_follow_ups_menu', checked)}
-                                            />
-                                        </div>
-
-                                        <div className="bg-card text-card-foreground flex items-center justify-between rounded-2xl border p-4 shadow-sm">
-                                            <div>
-                                                <p className="font-medium">Central de pendências</p>
-                                                <p className="text-muted-foreground text-sm">
-                                                    Organiza quem deve fazer cada contato ou tratativa do dia.
-                                                </p>
-                                            </div>
-                                            <Switch
-                                                id="show_tasks_menu"
-                                                checked={data.show_tasks_menu}
-                                                disabled={!canManageOtherSettings}
-                                                onCheckedChange={(checked) => setData('show_tasks_menu', checked)}
-                                            />
-                                        </div>
-
-                                        <div className="bg-card text-card-foreground flex items-center justify-between rounded-2xl border p-4 shadow-sm">
-                                            <div>
-                                                <p className="font-medium">Resultados dos contatos</p>
-                                                <p className="text-muted-foreground text-sm">
-                                                    Mostra aprovação de orçamentos e pagamentos recuperados pela operação.
-                                                </p>
-                                            </div>
-                                            <Switch
-                                                id="show_commercial_performance_menu"
-                                                checked={data.show_commercial_performance_menu}
-                                                disabled={!canManageOtherSettings}
-                                                onCheckedChange={(checked) => setData('show_commercial_performance_menu', checked)}
                                             />
                                         </div>
 

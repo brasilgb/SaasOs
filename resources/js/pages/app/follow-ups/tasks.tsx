@@ -10,6 +10,7 @@ import { BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { CircleCheckBig, ClipboardList, Clock3, Star, UserPlus, Wrench } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import FollowUpTabs from './follow-up-tabs';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Painel', href: route('app.dashboard') },
@@ -149,6 +150,8 @@ export default function FollowUpTasks({ filters, summary, dailyAgenda, technicia
                     </div>
                 </div>
             </div>
+
+            <FollowUpTabs />
 
             <div className="space-y-4 p-4">
                 <div className="rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-blue-950 dark:border-blue-500/30 dark:bg-blue-950/20 dark:text-blue-100">

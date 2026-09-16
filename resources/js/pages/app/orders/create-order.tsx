@@ -4,19 +4,21 @@ import { Icon } from '@/components/icon';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem, OptionType, SharedData } from '@/types';
 import { statusOrcamento } from '@/Utils/dataSelect';
-import { maskMoney, maskMoneyDot } from '@/Utils/mask';
+import { maskMoneyDot } from '@/Utils/mask';
 import selectStyles from '@/Utils/selectStyles';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { AlertTriangle, ArrowLeft, Printer, Save, Wrench } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Select from 'react-select';
 import EquipmentTypesModal from './equipment-types-modal';
+import OrderPreBudgetFields from './order-pre-budget-fields';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -315,28 +317,14 @@ export default function CreateOrder({
                             </div>
                         </div>
 
+                        <Card className="mt-4">
+                            <CardTitle className="border-b px-6 pb-4">Orçamento</CardTitle>
+                            <CardContent className="grid gap-4 pt-6 md:grid-cols-4">
+                                <OrderPreBudgetFields data={data} setData={setData} errors={errors} />
+                            </CardContent>
+                        </Card>
+
                         <div className="mt-4 grid gap-4 md:grid-cols-4">
-                            <div className="grid gap-2 md:col-span-2">
-                                <Label htmlFor="budget_description">Descrição pré-orcamento</Label>
-                                <Textarea
-                                    id="budget_description"
-                                    value={data.budget_description}
-                                    onChange={(e) => setData('budget_description', e.target.value)}
-                                />
-                                {errors.budget_description && <div className="text-sm text-red-500">{errors.budget_description}</div>}
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="budget_value">Valor pré-orçamento</Label>
-                                <Input
-                                    type="text"
-                                    id="budget_value"
-                                    value={maskMoney(data.budget_value)}
-                                    onChange={(e) => setData('budget_value', maskMoneyDot(e.target.value))}
-                                />
-                                {errors.budget_value && <div className="text-sm text-red-500">{errors.budget_value}</div>}
-                            </div>
-
                             <div className="grid gap-2">
                                 <Label htmlFor="warranty_days">Garantia em dias</Label>
                                 <Input

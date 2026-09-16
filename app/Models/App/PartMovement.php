@@ -18,6 +18,8 @@ class PartMovement extends Model
     public const TYPE_RETURN = 'devolucao';
     public const TYPE_WARRANTY = 'garantia';
 
+    public const TYPE_PURCHASE = 'compra';
+
     protected $guarded = [];
 
     public function part()
@@ -28,6 +30,11 @@ class PartMovement extends Model
     public function order()
     {
         return $this->belongsTo(Order::class);
+    }
+
+    public function purchaseOrder()
+    {
+        return $this->belongsTo(PurchaseOrder::class);
     }
 
     public function user()

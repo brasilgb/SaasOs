@@ -19,6 +19,7 @@ class Other extends Model
         'enableparts' => 'boolean',
         'enable_finance' => 'boolean',
         'enablesales' => 'boolean',
+        'enable_purchases' => 'boolean',
         'show_follow_ups_menu' => 'boolean',
         'show_tasks_menu' => 'boolean',
         'show_commercial_performance_menu' => 'boolean',
@@ -115,6 +116,17 @@ class Other extends Model
         }
 
         return (bool) ($query->value('enable_finance') ?? false);
+    }
+
+    public static function purchasesEnabled(?int $tenantId = null): bool
+    {
+        $query = static::query();
+
+        if ($tenantId) {
+            $query->where('tenant_id', $tenantId);
+        }
+
+        return (bool) ($query->value('enable_purchases') ?? false);
     }
 
     public static function budgetConversionTarget(?int $tenantId = null): float

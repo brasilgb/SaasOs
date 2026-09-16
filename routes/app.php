@@ -22,12 +22,14 @@ use App\Http\Controllers\App\OrderController;
 use App\Http\Controllers\App\OtherController;
 use App\Http\Controllers\App\PartController;
 use App\Http\Controllers\App\ProfileController;
+use App\Http\Controllers\App\PurchaseOrderController;
 use App\Http\Controllers\App\QualityIndicatorController;
 use App\Http\Controllers\App\ReceiptController;
 use App\Http\Controllers\App\ReportController;
 use App\Http\Controllers\App\SaleController;
 use App\Http\Controllers\App\ScheduleController;
 use App\Http\Controllers\App\ServiceController;
+use App\Http\Controllers\App\SupplierController;
 use App\Http\Controllers\App\TenantImprovementRequestController;
 use App\Http\Controllers\App\UserController;
 use App\Http\Controllers\App\WhatsappMessageController;
@@ -114,6 +116,13 @@ Route::get('/parts/search', [PartController::class, 'search'])->name('parts.sear
 Route::resource('/parts', PartController::class);
 Route::get('/parts/{part}/print-label', [PartController::class, 'printLabel'])->name('parts.print-label');
 Route::post('/orders/remove-part', [OrderController::class, 'removePart'])->name('orders.removePart');
+
+Route::resource('suppliers', SupplierController::class)->except(['show', 'create', 'edit']);
+
+Route::resource('purchase-orders', PurchaseOrderController::class)->except(['show']);
+Route::post('purchase-orders/{purchase_order}/send', [PurchaseOrderController::class, 'send'])->name('purchase-orders.send');
+Route::post('purchase-orders/{purchase_order}/receive', [PurchaseOrderController::class, 'receive'])->name('purchase-orders.receive');
+Route::post('purchase-orders/{purchase_order}/cancel', [PurchaseOrderController::class, 'cancel'])->name('purchase-orders.cancel');
 Route::resource('/sales', SaleController::class);
 Route::post('/sales/{sale}/cancel', [SaleController::class, 'cancel'])->name('sales.cancel');
 Route::post('/sales/{sale}/fiscal', [SaleController::class, 'registerFiscal'])->name('sales.fiscal.register');

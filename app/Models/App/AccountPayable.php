@@ -19,6 +19,8 @@ class AccountPayable extends Model
 
     public const SOURCE_TECHNICIAN_COMMISSION = 'technician_commission';
 
+    public const SOURCE_PURCHASE_ORDER = 'purchase_order';
+
     public const STATUS_PENDING = 'pending';
 
     public const STATUS_PARTIAL = 'partial';

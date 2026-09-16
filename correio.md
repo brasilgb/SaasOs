@@ -1,717 +1,422 @@
-# VetorOS 2 — Etapa de Arquitetura: Modelo Multiempresa e Escopos de Dados
+# VetorOS 2 — CRM-02 Customer Equipment
 
-Realize uma análise arquitetural completa do modelo multiempresa/multitenant do VetorOS 2 antes de qualquer implementação.
+## Objetivo
 
-## Contexto já aprovado
+Implementar o cadastro de equipamentos pertencentes aos clientes, integrado à arquitetura já aprovada em DB-01, AUTH-01, CORE-01 e CRM-01.
 
-O VetorOS 2 será um SaaS reescrito com:
+Esta fase deve permanecer estritamente dentro do domínio de equipamentos de clientes. Não iniciar Orçamento, Ordem de Serviço, Estoque, Financeiro ou Fiscal.
 
-* Backend Node.js;
-* Frontend Next.js;
-* PostgreSQL;
-* arquitetura multiempresa/multitenant;
-* segurança e isolamento de dados como requisitos arquiteturais;
-* fiscal nativo no domínio do sistema;
-* transmissão fiscal desacoplada através de providers;
-* Orçamento como módulo separado da Ordem de Serviço;
-* preservação das regras de negócio maduras do sistema legado, evitando uma simples reescrita de CRUDs.
+## Fonte de verdade
 
-## Hierarquia obrigatória
+Respeitar integralmente a arquitetura já existente no repositório `vetoros2`.
 
-A estrutura conceitual inicial é:
-
-Tenant
-→ Empresa
-→ Filial
-→ Usuários
-→ Dados operacionais
-
-Considere:
-
-### Tenant
-
-Representa a conta SaaS/cliente comercial do VetorOS.
-
-Um Tenant poderá possuir:
-
-* uma empresa;
-* várias empresas/CNPJs;
-* uma ou várias filiais por empresa.
-
-O `tenant_id` é a principal fronteira de isolamento de segurança do SaaS.
-
-Nenhum dado de um tenant poderá ser acessado por outro tenant.
-
-### Empresa
-
-Representa uma entidade jurídica/CNPJ pertencente ao tenant.
-
-Uma empresa poderá possuir:
-
-* dados cadastrais próprios;
-* certificados digitais;
-* configurações fiscais;
-* séries fiscais;
-* parâmetros tributários;
-* contas financeiras;
-* filiais.
-
-### Filial
-
-Representa a unidade operacional.
-
-Uma filial poderá possuir, conforme decisão de domínio:
-
-* estoque próprio;
-* caixa próprio;
-* usuários vinculados;
-* ordens de serviço;
-* vendas;
-* agenda;
-* técnicos;
-* numeração operacional;
-* configurações locais.
-
-## Objetivo desta etapa
-
-Criar um documento de arquitetura definindo claramente o ownership e o escopo de todos os principais dados do VetorOS.
-
-Para cada entidade ou módulo, determinar se pertence a:
-
-* Tenant;
-* Empresa;
-* Filial;
-* ou combinação desses níveis.
-
-Não implementar código nesta etapa.
-
-## Módulos a analisar
-
-No mínimo:
-
-* Tenant;
-* empresas;
-* filiais;
-* usuários;
-* roles;
-* permissions;
-* clientes;
-* contatos;
-* endereços;
-* equipamentos;
-* marcas;
-* modelos;
-* categorias;
-* técnicos;
-* fornecedores;
-* produtos;
-* peças;
-* serviços;
-* tabelas de preço;
-* estoque;
-* movimentações de estoque;
-* estoque por filial;
-* estoque em posse de técnico;
-* orçamentos;
-* itens de orçamento;
-* aprovação/reprovação de orçamento;
-* ordens de serviço;
-* itens da OS;
-* checklist;
-* diagnósticos;
-* laudos;
-* fotos/anexos;
-* agenda;
-* visitas externas;
-* vendas/PDV;
-* itens de venda;
-* caixa;
-* abertura/fechamento de caixa;
-* recebimentos;
-* formas de pagamento;
-* contas a pagar;
-* contas a receber;
-* comissões;
-* despesas;
-* financeiro;
-* NF-e;
-* NFC-e;
-* NFS-e;
-* documentos fiscais;
-* certificados digitais;
-* séries fiscais;
-* configurações tributárias;
-* mensagens;
-* WhatsApp;
-* notificações;
-* templates;
-* auditoria;
-* logs;
-* configurações;
-* integrações;
-* API keys;
-* webhooks;
-* planos SaaS;
-* assinatura;
-* limites de uso.
-
-## Questões obrigatórias
-
-Para cada domínio, responder:
-
-1. Qual entidade é proprietária do dado?
-2. O registro deve conter `tenant_id`?
-3. Deve possuir `company_id`?
-4. Deve possuir `branch_id`?
-5. O dado pode ser compartilhado entre empresas do mesmo tenant?
-6. O dado pode ser compartilhado entre filiais?
-7. Como deve funcionar a autorização?
-8. Existem riscos de vazamento entre empresas ou filiais?
-9. Qual deve ser a estratégia de índices e constraints para garantir isolamento?
-10. Quais entidades precisam de identificadores sequenciais próprios por empresa ou filial?
-
-## Clientes
-
-Avaliar especificamente se um cliente deve poder:
-
-* existir uma única vez no Tenant;
-* ser utilizado por múltiplas empresas;
-* possuir relacionamento específico com cada empresa;
-* possuir histórico separado por empresa/filial.
-
-Evitar duplicação desnecessária de CPF/CNPJ, mas sem permitir vazamento de informações entre empresas que eventualmente precisem operar de forma isolada.
-
-Propor o modelo mais adequado.
-
-## Produtos e catálogo
-
-Avaliar separadamente:
-
-* produto mestre;
-* SKU;
-* preço;
-* custo;
-* tributação;
-* estoque.
-
-Considerar a possibilidade de:
-
-* catálogo compartilhado no Tenant;
-* preços diferentes por empresa ou filial;
-* estoques obrigatoriamente separados por filial;
-* configurações fiscais por empresa.
-
-## Ordem de Serviço
-
-A OS deverá estar associada pelo menos ao Tenant e à unidade operacional responsável.
-
-Definir corretamente o relacionamento com:
-
-* empresa;
-* filial;
-* cliente;
-* equipamento;
-* técnico;
-* orçamento;
-* peças;
-* serviços;
-* estoque;
-* caixa;
-* financeiro;
-* fiscal.
-
-## Orçamento
-
-Orçamento é uma entidade independente.
-
-O fluxo padrão esperado é:
-
-Orçamento
-→ análise/aprovação pelo cliente
-→ aprovado
-→ geração de Ordem de Serviço
-
-Entretanto, o sistema também poderá permitir criação direta de OS em cenários onde orçamento prévio não seja necessário.
-
-A relação não deve obrigar toda OS a nascer de orçamento.
-
-Definir contratos e invariantes para esse processo.
-
-## Fiscal
-
-Considerar desde a arquitetura:
-
-Empresa
-→ configuração fiscal
-→ certificado
-→ séries
-→ documentos fiscais
-
-A transmissão deverá ser feita posteriormente através de uma abstração de provider.
-
-Não acoplar o domínio fiscal a Focus NFe, PlugNotas, TecnoSpeed ou qualquer fornecedor específico.
-
-Prever contratos como:
-
-`FiscalProvider`
-
-capaz de suportar futuramente APIs oficiais ou terceiros.
-
-Nesta etapa, apenas modelar o domínio; não escolher definitivamente o fornecedor.
-
-## Segurança
-
-Segurança é requisito arquitetural.
-
-Definir como garantir que:
-
-* toda consulta operacional tenha escopo de Tenant;
-* autorização nunca dependa apenas do frontend;
-* IDs enviados pelo cliente não permitam acesso cruzado;
-* relacionamentos sejam validados no backend;
-* operações entre empresas e filiais respeitem permissões;
-* usuários só possam operar nos escopos autorizados.
-
-Evitar depender exclusivamente de filtros manuais espalhados pelos repositories.
-
-Propor uma estratégia estrutural para impedir consultas sem `tenant_id`.
-
-## Usuários
-
-Avaliar um modelo no qual um usuário possa:
-
-* pertencer ao Tenant;
-* ter acesso a uma ou várias empresas;
-* ter acesso a uma ou várias filiais;
-* possuir papéis/permissões distintos dependendo do escopo.
+Não alterar migrations aprovadas anteriormente.
+
+Não copiar arquitetura, migrations ou regras do VetorOS legado. O legado pode ser consultado apenas como referência funcional.
+
+A cadeia de segurança permanece obrigatória:
+
+Identity
+→ Session
+→ TenantMembership
+→ TenantContext
+→ Authorization
+→ PostgreSQL RLS
+
+Missing tenant context = deny.
+
+---
+
+# 1. Modelo de equipamento
+
+Criar entidade multitenant para equipamentos pertencentes a clientes.
+
+Sugestão conceitual:
+
+`customer_equipments`
+
+Campos mínimos:
+
+* `id`
+* `tenant_id`
+* `customer_id`
+* `equipment_number`
+* `category`
+* `brand`
+* `model`
+* `serial_number`
+* `imei`
+* `color`
+* `accessories`
+* `notes`
+* `status`
+* `created_at`
+* `updated_at`
+
+Avaliar os tipos PostgreSQL adequados conforme os padrões já existentes no projeto.
+
+Não usar enums PostgreSQL se o projeto estiver adotando vocabulários controlados na aplicação/check constraints.
+
+---
+
+# 2. Número do equipamento
+
+`equipment_number` deve ser:
+
+* sequencial por tenant;
+* gerado exclusivamente pelo backend/banco;
+* transacional;
+* seguro sob concorrência;
+* independente do `customer_number`;
+* nunca baseado em `MAX()+1`.
+
+Reutilizar o padrão já aprovado em CRM-01 para counters, se aplicável.
+
+Garantir unicidade:
+
+`tenant_id + equipment_number`
+
+---
+
+# 3. Ownership
+
+Todo equipamento deve pertencer obrigatoriamente a:
+
+`Tenant → Customer → Equipment`
+
+`tenant_id` nunca pode ser aceito do frontend como fonte de autoridade.
+
+O tenant deve ser derivado exclusivamente da sessão/TenantContext.
+
+O `customer_id` informado deve pertencer ao tenant ativo.
+
+Criar constraints/FKs compostas quando necessárias para impedir referências cross-tenant também no banco.
+
+Não confiar apenas na aplicação.
+
+---
+
+# 4. Identificadores
+
+### Serial number
+
+Permitir serial opcional.
+
+Normalizar espaços e valores vazios.
+
+### IMEI
+
+IMEI deve ser opcional.
+
+Quando informado:
+
+* remover caracteres de formatação;
+* aceitar somente dígitos;
+* validar tamanho compatível;
+* armazenar normalizado.
+
+Não assumir que todo equipamento possui IMEI.
+
+Evitar uma regra global de unicidade que impeça casos legítimos sem comprovação funcional.
+
+Caso seja implementada unicidade, deve ser tenant-aware e justificada.
+
+---
+
+# 5. Categoria
+
+Permitir categorias de equipamentos sem engessar o sistema somente para informática ou celulares.
+
+O VetorOS precisa atender múltiplos segmentos de assistência técnica.
+
+Exemplos:
+
+* smartphone;
+* tablet;
+* notebook;
+* desktop;
+* monitor;
+* impressora;
+* eletroeletrônico;
+* ferramenta;
+* equipamento industrial;
+* outro.
+
+Projetar de forma extensível.
+
+Não criar ainda um módulo completo de catálogo de categorias se isso extrapolar CRM-02.
+
+---
+
+# 6. Status
+
+Definir um vocabulário mínimo para o cadastro do equipamento.
 
 Exemplo:
 
-Usuário A:
+* `active`
+* `inactive`
 
-* Empresa 1 → administrador;
-* Empresa 2 → financeiro;
-* Filial 3 → somente leitura.
+Não misturar status do cadastro do equipamento com lifecycle de Ordem de Serviço.
 
-Propor uma arquitetura que permita esse nível de controle sem transformar o sistema de permissões em algo excessivamente complexo.
+Status como:
 
-## Numerações
+* aguardando orçamento;
+* em manutenção;
+* pronto;
+* entregue;
 
-Analisar as sequências de:
+pertencem futuramente à OS e não ao cadastro base do equipamento.
 
-* cliente;
+---
+
+# 7. Segurança e RLS
+
+A nova tabela deve seguir exatamente o modelo de isolamento das fases anteriores.
+
+Obrigatório:
+
+* RLS habilitado;
+* `FORCE ROW LEVEL SECURITY`;
+* policies tenant-aware;
+* runtime role sem `BYPASSRLS`;
+* ausência de TenantContext deve negar acesso;
+* usuário de Tenant Alpha não pode observar dados de Tenant Beta.
+
+Não criar bypass administrativo informal.
+
+---
+
+# 8. Permissions
+
+Adicionar permissions compatíveis com AUTH-01:
+
+* `customer_equipments.read`
+* `customer_equipments.create`
+* `customer_equipments.update`
+
+Adicionar `delete` somente se houver necessidade arquitetural real.
+
+Preferir desativação/status a exclusão destrutiva caso isso seja consistente com CRM-01 e com auditoria futura de OS.
+
+Integrar às roles/seeds atuais sem duplicar mecanismos de autorização.
+
+---
+
+# 9. Auditoria
+
+Toda criação e alteração deve gerar auditoria append-only reutilizando o mecanismo já existente.
+
+Registrar pelo menos:
+
+* tenant;
+* actor;
+* entidade;
+* entity id;
+* ação;
+* before/after quando aplicável;
+* timestamp.
+
+Não criar segundo sistema de auditoria.
+
+---
+
+# 10. API
+
+Implementar endpoints REST seguindo o padrão existente.
+
+Mínimo:
+
+`GET /customers/:customerId/equipments`
+
+`POST /customers/:customerId/equipments`
+
+`GET /customer-equipments/:id`
+
+`PATCH /customer-equipments/:id`
+
+A listagem deve suportar:
+
+* busca;
+* paginação;
+* ordenação;
+* filtro por status;
+* filtro por categoria.
+
+Busca deve considerar quando aplicável:
+
+* número do equipamento;
+* marca;
+* modelo;
+* serial;
+* IMEI.
+
+Evitar `%termo%` indiscriminado se o projeto já possui estratégia mais eficiente de busca.
+
+---
+
+# 11. Frontend
+
+Integrar ao cadastro de cliente já criado em CRM-01.
+
+Na tela:
+
+`/app/customers/:id`
+
+adicionar seção/aba de equipamentos.
+
+Permitir:
+
+* listar equipamentos;
+* cadastrar;
+* visualizar;
+* editar;
+* ativar/desativar conforme status definido.
+
+Criar também uma rota adequada para detalhes/edição se isso estiver alinhado ao padrão atual.
+
+Exemplo:
+
+`/app/customer-equipments/:id`
+
+ou equivalente coerente com a arquitetura existente.
+
+Não criar ainda botão funcional de "Abrir OS" ou "Criar orçamento" além de eventual placeholder visual claramente não operacional.
+
+---
+
+# 12. UX
+
+O formulário deve ser rápido para uso em balcão.
+
+Campos essenciais devem aparecer primeiro.
+
+Sugestão:
+
+* categoria;
+* marca;
+* modelo;
+* serial/IMEI;
+* cor;
+* acessórios;
+* observações.
+
+Não tornar campos opcionais obrigatórios apenas para preencher cadastro.
+
+O usuário deve conseguir cadastrar equipamentos genéricos sem serial ou IMEI.
+
+---
+
+# 13. Dados de teste / seed
+
+Adicionar dados idempotentes para tenants Alpha/Beta já utilizados nos testes.
+
+Criar equipamentos vinculados aos clientes existentes.
+
+Garantir que os seeds não produzam duplicidade em execuções subsequentes.
+
+---
+
+# 14. Testes obrigatórios
+
+Cobrir no mínimo:
+
+1. criação de equipamento no tenant correto;
+2. geração sequencial de `equipment_number`;
+3. concorrência na geração do número;
+4. listagem somente do tenant ativo;
+5. Tenant Alpha não lê equipamento de Tenant Beta;
+6. Tenant Alpha não altera equipamento de Tenant Beta;
+7. tentativa de vincular customer de outro tenant falha;
+8. missing TenantContext = deny;
+9. usuário sem permission de leitura recebe resposta adequada;
+10. usuário sem permission de criação não cria;
+11. usuário sem permission de update não altera;
+12. IMEI inválido é rejeitado;
+13. equipamento sem IMEI é permitido;
+14. equipamento sem serial é permitido;
+15. auditoria é criada;
+16. busca/paginação funcionam;
+17. RLS permanece efetiva mesmo diante de acesso runtime direto inadequado.
+
+Executar também toda a suíte existente para garantir ausência de regressão.
+
+---
+
+# 15. Validação
+
+Executar os comandos oficiais existentes no repositório para:
+
+* typecheck;
+* lint;
+* testes;
+* build;
+* migrations;
+* testes de integração;
+* testes de isolamento/RLS.
+
+Não alterar código apenas para ocultar falhas preexistentes.
+
+Qualquer falha encontrada deve ser classificada claramente entre:
+
+* regressão da CRM-02;
+* falha preexistente;
+* problema de ambiente.
+
+---
+
+# 16. Restrições
+
+Não implementar nesta rodada:
+
 * orçamento;
 * ordem de serviço;
+* checklist técnico;
+* diagnóstico;
+* peças;
+* estoque;
 * venda;
-* recibo;
-* movimentação financeira;
-* documentos internos.
+* financeiro;
+* emissão fiscal;
+* garantia;
+* upload de fotos;
+* assinatura do cliente.
 
-Determinar quais numerações devem ser:
-
-* globais do Tenant;
-* por Empresa;
-* por Filial.
-
-Documentos fiscais devem respeitar suas próprias regras e séries fiscais.
-
-Evitar utilizar `MAX(numero) + 1`.
-
-Propor mecanismo concorrente seguro.
-
-## Resultado esperado
-
-Produzir um documento:
-
-`docs/architecture/MULTITENANCY_AND_DATA_OWNERSHIP.md`
-
-O documento deve conter:
-
-1. visão geral;
-2. hierarquia Tenant → Empresa → Filial;
-3. princípios de isolamento;
-4. matriz de ownership dos módulos;
-5. modelo de usuários e permissões;
-6. estratégia de clientes;
-7. estratégia de produtos;
-8. estratégia de estoque;
-9. modelo Orçamento → OS;
-10. impactos financeiros;
-11. impactos fiscais;
-12. estratégia de numeração;
-13. constraints e integridade;
-14. índices;
-15. auditoria;
-16. riscos arquiteturais;
-17. decisões recomendadas;
-18. pontos que ainda precisam de decisão do proprietário do produto.
-
-Não alterar migrations nem escrever código de produção nesta etapa.
-
-O objetivo é transformar a arquitetura multiempresa em uma especificação suficientemente clara para que o schema PostgreSQL possa ser desenhado posteriormente sem ambiguidades.
-# Prompt de Execução — VetorOS 2 — Ciclo 1: Baseline + Fundação Multitenant DB-01
-
-Você é o CTO/engenheiro principal responsável pela implementação do VetorOS 2.
-
-## Missão
-
-Executar **somente** o primeiro ciclo aprovado:
-
-```text
-FASE 0 — Descoberta/Baseline
-+
-FASE DB-01 — Fundação Multitenant e Segurança
-```
-
-Não avance para clientes, produtos, estoque, orçamento, OS, caixa, financeiro ou fiscal nesta rodada.
-
-## Documentos normativos
-
-Considere como fonte de verdade arquitetural, nesta ordem:
-
-1. `VETOROS_2_ARQUITETURA_MULTITENANCY_ADRS_APROVADOS.md`
-2. `VETOROS_2_SCHEMA_LOGICO_POSTGRESQL_V1_1.md`
-3. `VETOROS_2_PLANO_FINAL_IMPLEMENTACAO.md`
-4. `VETOROS_2_REVISAO_CRITICA_SCHEMA_V1.md`
-5. `MULTITENANCY_AND_DATA_OWNERSHIP.md`
-
-Se o repositório divergir, não descarte código silenciosamente: relate a divergência e adapte preservando comportamento útil quando compatível com a nova arquitetura.
+Esses módulos terão fases próprias.
 
 ---
 
-# PARTE A — Baseline obrigatório
-
-Antes de alterar código:
-
-1. identifique estrutura do monorepo;
-2. identifique package manager e versões reais;
-3. mostre versões de Node/Fastify/Next/Drizzle/Postgres relevantes;
-4. localize:
-   - schema Drizzle;
-   - migrations;
-   - auth;
-   - users/roles;
-   - Docker;
-   - tests;
-5. liste tabelas/migrations atuais;
-6. identifique assumptions single-tenant;
-7. execute:
-   - install (somente se necessário);
-   - typecheck;
-   - lint;
-   - tests;
-   - build;
-8. registre falhas preexistentes.
-
-Crie:
-
-```text
-docs/architecture/VETOROS_2_BASELINE_REPOSITORIO.md
-```
-
-ou localização documental equivalente já usada pelo projeto.
-
-Não use falha preexistente como justificativa para esconder nova regressão.
-
----
-
-# PARTE B — Fundação DB-01
-
-Implementar, respeitando convenções reais do projeto:
-
-```text
-identities
-tenants
-tenant_memberships
-tenant_user_profiles
-companies
-branches
-
-permissions
-system_role_templates
-system_role_template_permissions
-tenant_roles
-tenant_role_permissions
-access_grants
-branch_memberships
-
-audit_events
-```
-
-## PK
-
-Use UUID conforme padrões do projeto, preferindo UUIDv7 se a stack/infra já suportar de modo limpo. Não introduza biblioteca desnecessária apenas para cumprir estética; documente a solução.
-
-## FKs
-
-Crie chaves candidatas/uniques necessárias para FKs compostas.
-
-Obrigatório impedir fisicamente cross-tenant/cross-company onde a invariância já está definida.
-
-## Role model
-
-Não misture role template global diretamente com tenant role efetiva.
-
-```text
-system_role_templates
-tenant_roles
-```
-
-`access_grants` deve referenciar tenant role com FK que carregue `tenant_id`, impedindo role de outro Tenant.
-
-## Membership model
-
-Cardinalidade:
-
-```text
-Identity
-→ many TenantMemberships
-
-TenantMembership
-→ one TenantUserProfile
-```
-
----
-
-# PARTE C — TenantContext
-
-Implemente uma única abstraction tenant-aware para acesso ao banco, por exemplo:
-
-```ts
-withTenantTransaction(context, callback)
-```
-
-O nome pode seguir convenção do projeto.
-
-Requisitos:
-
-- transação obrigatória;
-- `SET LOCAL app.tenant_id`;
-- actor identity;
-- effective user profile;
-- rollback/cleanup automático;
-- repositories tenant-owned não devem usar conexão global sem contexto.
-
-Nunca aceite `tenant_id` do body/query como autoridade.
-
----
-
-# PARTE D — RLS
-
-Implemente PostgreSQL RLS nas tabelas tenant-owned desta fase.
-
-Requisitos:
-
-```text
-missing context = deny
-wrong tenant = deny
-correct tenant = pass RLS
-```
-
-O runtime comum:
-
-```text
-NO BYPASSRLS
-```
-
-Avalie/implemente `FORCE ROW LEVEL SECURITY` onde apropriado.
-
-Não use usuário owner/superuser como conexão normal da API.
-
-Se Docker/local exigir criação de database roles, ajuste bootstrap/migrations de forma reproduzível.
-
-Papéis conceituais:
-
-```text
-vetoros_runtime
-vetoros_worker
-vetoros_migration
-vetoros_control_plane
-```
-
-Nesta rodada implemente o necessário para runtime/migration e deixe os demais preparados/documentados se ainda não houver worker/control plane.
-
----
-
-# PARTE E — Permissions e Seeds
-
-Criar catálogo inicial idempotente.
-
-Roles templates iniciais:
-
-```text
-owner
-administrator
-attendance
-technician
-inventory
-cashier
-finance
-fiscal
-read_only
-```
-
-Não invente permissões de módulos ainda inexistentes além do necessário para formar o catálogo; use naming estável e documente.
-
-Templates de sistema devem ser imutáveis pelo runtime.
-
----
-
-# PARTE F — Auditoria
-
-Implementar estrutura `audit_events` append-only para eventos desta fase, incluindo:
-
-- membership;
-- role/grant;
-- mudança de escopo relevante;
-- login/context switch se integração com auth já for viável.
-
-Nunca registrar:
-
-- password;
-- token;
-- secret.
-
----
-
-# PARTE G — Testes obrigatórios
-
-Crie testes automatizados que provem, não apenas simulem:
-
-## RLS
-
-1. Tenant A não lê linha de B.
-2. Tenant A não cria linha como B.
-3. Tenant A não altera B.
-4. Tenant A não apaga B.
-5. contexto ausente não ganha acesso.
-6. contexto reutilizado no pool não vaza Tenant anterior.
-
-## FKs
-
-7. Branch A não aponta Company de outro Tenant.
-8. AccessGrant A não aponta tenant_role B.
-9. tenant_user_profile não aponta membership de outro Tenant.
-10. grant Branch não aponta Branch de Company incompatível.
-
-## Runtime permissions
-
-11. runtime não altera `system_role_templates`.
-12. runtime não possui BYPASSRLS.
-
-## TenantContext
-
-13. erro dentro do callback causa rollback.
-14. contexto correto permanece somente durante transaction.
-
-Não marque esses testes como skip.
-
----
-
-# PARTE H — Compatibilidade
-
-Se já existir login/user model:
-
-- não faça substituição destrutiva sem analisar;
-- crie migração/adapter compatível quando necessário;
-- documente o que ficou legado e qual será a estratégia de migração.
-
-Não implemente ainda migração completa de dados legados, salvo backfill mínimo estritamente necessário à integridade da DB-01.
-
----
-
-# PARTE I — Qualidade
-
-Ao final rode a suíte completa disponível:
-
-```text
-typecheck
-lint
-tests
-build
-```
-
-Também valide Docker/migrations em:
-
-1. banco limpo;
-2. execução das migrations do zero;
-3. se houver mecanismo existente, rollback/recreate ou restore test.
-
-Não afirme sucesso sem executar os comandos relevantes.
-
----
-
-# PARTE J — Relatório obrigatório
-
-Entregue ao final:
-
-## 1. Resumo
-O que foi implementado.
-
-## 2. Baseline
-Estado encontrado antes das alterações.
-
-## 3. Arquivos criados
-Lista.
-
-## 4. Arquivos alterados
-Lista + propósito.
-
-## 5. Migrations
-Número/nome + tabelas/constraints/RLS.
-
-## 6. TenantContext
-Como funciona.
-
-## 7. RLS
-Policies e database roles.
-
-## 8. Testes
-Tabela:
-
-```text
-comando | resultado | quantidade | duração aproximada se disponível
-```
-
-## 9. Testes de isolamento
-Descreva cada cenário e resultado.
-
-## 10. Compatibilidade
-Impactos no código antigo.
-
-## 11. Pendências
-Somente pendências reais; não esconda erros.
-
-## 12. Riscos
-Qualquer risco arquitetural observado.
-
-## 13. Gate
-Declare uma das opções:
-
-```text
-DB-01 APROVÁVEL
-```
+# 17. Gate
+
+Ao final gerar relatório contendo:
+
+* resumo;
+* arquitetura;
+* migration criada;
+* tabelas/constraints/índices;
+* permissions;
+* RLS;
+* auditoria;
+* endpoints;
+* frontend;
+* seeds;
+* testes executados;
+* resultado da suíte completa;
+* riscos;
+* pendências;
+* arquivos criados;
+* arquivos alterados.
+
+Finalizar obrigatoriamente com um dos gates:
+
+**CRM-02 APROVÁVEL**
 
 ou
 
-```text
-DB-01 NÃO APROVÁVEL
-```
+**CRM-02 NÃO APROVÁVEL**
 
-com motivo objetivo.
+Não fazer commit.
 
----
+Não iniciar a próxima fase.
 
-# STOP CONDITION
-
-Após concluir DB-01:
-
-**PARE.**
-
-Não implemente DB-02.
-
-Não crie clientes/produtos/estoque/orçamentos/OS novos nesta rodada.
-
-A fundação será revisada pelo Diretor/COO antes da autorização da próxima fase.
-
-A prioridade é qualidade e isolamento comprovado, não velocidade de quantidade de módulos.
+Parar para revisão.

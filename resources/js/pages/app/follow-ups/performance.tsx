@@ -9,6 +9,7 @@ import { Head, router } from '@inertiajs/react';
 import { FileChartColumn } from 'lucide-react';
 import moment from 'moment';
 import { useState } from 'react';
+import FollowUpTabs from './follow-up-tabs';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Painel', href: route('app.dashboard') },
@@ -75,6 +76,8 @@ export default function FollowUpPerformance({ filters, summary, trends }: any) {
                     </div>
                 </div>
             </div>
+
+            <FollowUpTabs />
 
             <div className="p-4">
                 <div className="mb-4 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">

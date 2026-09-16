@@ -28,6 +28,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import Select from 'react-select';
 import AddPartsModal from './add-parts';
 import EquipmentTypesModal from './equipment-types-modal';
+import OrderPreBudgetFields from './order-pre-budget-fields';
 import OrderPaymentsModal from './order-payments-modal';
 
 function formatRelativeTimePtBr(value?: string | Date | null) {
@@ -573,26 +574,13 @@ export default function EditOrder({
                                     <CardTitle className="border-b px-6 pb-4">Orçamento</CardTitle>
                                     <CardContent className="space-y-4 pt-6">
                                         <div className="grid gap-4 md:grid-cols-3">
-                                            <div className="grid gap-2 md:col-span-2">
-                                                <Label htmlFor="budget_description">Descrição do orcamento</Label>
-                                                <Textarea
-                                                    id="budget_description"
-                                                    value={data.budget_description}
-                                                    onChange={(e) => setData('budget_description', e.target.value)}
-                                                />
-                                                {errors.budget_description && <div className="text-sm text-red-500">{errors.budget_description}</div>}
-                                            </div>
-
-                                            <div className="grid gap-2">
-                                                <Label htmlFor="budget_value">Valor orçamento</Label>
-                                                <Input
-                                                    type="text"
-                                                    id="budget_value"
-                                                    value={maskMoney(String(data.budget_value ?? '0'))}
-                                                    onChange={(e) => setData('budget_value', maskMoneyDot(e.target.value))}
-                                                />
-                                                {errors.budget_value && <div className="text-sm text-red-500">{errors.budget_value}</div>}
-                                            </div>
+                                            <OrderPreBudgetFields
+                                                data={data}
+                                                setData={setData}
+                                                errors={errors}
+                                                descriptionLabel="Descrição do orcamento"
+                                                valueLabel="Valor orçamento"
+                                            />
                                         </div>
 
                                         <div className="mt-4 grid gap-2">

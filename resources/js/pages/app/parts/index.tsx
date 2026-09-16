@@ -11,7 +11,7 @@ import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { maskMoney } from '@/Utils/mask';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
-import { Barcode, Camera, Edit, PackageCheck, Plus, Printer } from 'lucide-react';
+import { Barcode, Camera, Edit, PackageCheck, Plus, Printer, ShoppingCart } from 'lucide-react';
 import moment from 'moment';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -37,6 +37,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Parts({ parts, search, filter }: any) {
     const { auth } = usePage<{ auth?: { permissions?: string[] } }>().props;
     const canManageParts = auth?.permissions?.includes('parts');
+    const canPurchase = auth?.permissions?.includes('purchase_orders');
     const barcodeForm = useForm({
         barcode: '',
     });
@@ -319,6 +320,21 @@ export default function Parts({ parts, search, filter }: any) {
 
                                         <TableCell className="min-w-[140px]">
                                             <div className="flex flex-wrap justify-end gap-2">
+                                                {canPurchase && part.quantity <= part.minimum_stock_level && (
+                                                    <Button
+                                                        asChild
+                                                        size="icon"
+                                                        className="bg-amber-500 text-white hover:bg-amber-600"
+                                                        title="Comprar esta peça (estoque baixo)"
+                                                    >
+                                                        <Link
+                                                            href={route('app.purchase-orders.create', { part_id: part.id })}
+                                                            aria-label={`Comprar ${part.name}`}
+                                                        >
+                                                            <ShoppingCart className="h-4 w-4" />
+                                                        </Link>
+                                                    </Button>
+                                                )}
                                                 {canManageParts && (
                                                     <Button asChild size="icon" variant="outline" title="Imprimir etiqueta do produto">
                                                         <a
