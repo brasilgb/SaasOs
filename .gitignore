@@ -18,7 +18,7 @@ compose.yaml
 /vendor/
 /node_modules/
 /public/hot
-#/public/build
+/public/build
 /public/storage
 /public/apk/
 /storage/*.key
@@ -37,3 +37,4 @@ backup/
 vetor-atendimento
 vetor-tecnico
 vetor-imagem
+.DS_Store
