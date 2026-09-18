@@ -8,7 +8,7 @@ const TABS = [
 ] as const;
 
 /**
- * Navegação em abas entre as 3 telas de follow-up, que antes eram 3 itens
+ * Navegação em abas entre as 3 telas de retorno ao cliente, que antes eram 3 itens
  * separados no menu principal. Cada aba é uma página/rota Inertia diferente
  * (dados e filtros distintos), não uma troca de conteúdo no client — por
  * isso usa <Link> em vez do componente Tabs baseado em Radix.

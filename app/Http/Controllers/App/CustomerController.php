@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\App;
 
+use App\Exceptions\WhatsAppException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CustomerRequest;
 use App\Models\App\AccountReceivable;
 use App\Models\App\Customer;
+use App\Models\App\Equipment;
+use App\Services\WhatsAppService;
 use App\Support\TenantSequence;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -458,13 +461,30 @@ class CustomerController extends Controller
     }
 
     /**
+     * O form de edição é alimentado com o model `Customer` inteiro (`initialData`
+     * do useForm) para não duplicar a definição dos campos no frontend. Isso
+     * significa que qualquer relação que algum dia seja anexada ao `$customer`
+     * antes de ser enviado pro Inertia (ex.: `equipments`) vaza pro payload do
+     * PUT/POST e quebra o `update()`/`create()` com "Column not found" — já
+     * aconteceu com `equipments`. Filtra explicitamente pra colunas reais da
+     * tabela em vez de confiar em `$request->all()` cru.
+     */
+    private function customerColumnsFromRequest(Request $request): array
+    {
+        return $request->except([
+            'id', 'tenant_id', 'customer_number', 'created_at', 'updated_at',
+            'orders', 'sales', 'schedules', 'maintenanceContracts', 'equipments',
+        ]);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(CustomerRequest $request): RedirectResponse
     {
         Gate::authorize('customers.access');
 
-        $data = $request->all();
+        $data = $this->customerColumnsFromRequest($request);
         $request->validated();
         $data['customer_number'] = TenantSequence::next(Customer::class, 'customer_number');
         Customer::create($data);
@@ -481,6 +501,8 @@ class CustomerController extends Controller
 
         return Inertia::render('app/customers/edit-customer', [
             'customer' => $customer,
+            'equipments' => $customer->equipments()->latest()->get(),
+            'equipmentTypes' => Equipment::orderBy('equipment')->get(['id', 'equipment']),
             'page' => $request->page,
             'search' => $request->search,
         ]);
@@ -507,7 +529,7 @@ class CustomerController extends Controller
     {
         Gate::authorize('customers.access');
 
-        $data = $request->all();
+        $data = $this->customerColumnsFromRequest($request);
         $request->validated();
         $customer->update($data);
 
@@ -521,15 +543,35 @@ class CustomerController extends Controller
     {
         Gate::authorize('customers.access');
 
-        if ($customer->orders()->exists() || $customer->sales()->exists() || $customer->schedules()->exists()) {
+        if ($customer->orders()->exists() || $customer->sales()->exists() || $customer->schedules()->exists() || $customer->maintenanceContracts()->exists() || $customer->equipments()->exists()) {
             return redirect()->route('app.customers.index')->with(
                 'error',
-                'Não é possível excluir este cliente porque existem ordens, vendas ou agendamentos vinculados.'
+                'Não é possível excluir este cliente porque existem ordens, vendas, agendamentos, contratos de manutenção ou equipamentos vinculados.'
             );
         }
 
         $customer->delete();
 
         return redirect()->route('app.customers.index')->with('success', 'Cliente excluido com sucesso!');
+    }
+
+    /**
+     * Envia, via WAHA, uma mensagem de WhatsApp para o telefone cadastrado do cliente.
+     */
+    public function sendWhatsapp(Request $request, Customer $customer, WhatsAppService $whatsAppService): RedirectResponse
+    {
+        Gate::authorize('customers.access');
+
+        $validated = $request->validate([
+            'message' => ['required', 'string', 'max:2000'],
+        ]);
+
+        try {
+            $whatsAppService->sendText((int) $customer->tenant_id, $customer->whatsapp, $validated['message']);
+        } catch (WhatsAppException $exception) {
+            return back()->with('error', $exception->getMessage());
+        }
+
+        return back()->with('success', 'Mensagem enviada pelo WhatsApp com sucesso.');
     }
 }

@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\PartRequest;
 use App\Models\App\Part;
 use App\Models\App\PartMovement;
+use App\Models\App\PurchaseOrderItem;
+use App\Models\App\SaleItem;
 use App\Support\Ean13;
 use App\Support\Pagination;
 use App\Support\TenantSequence;
@@ -272,6 +274,17 @@ class PartController extends Controller
     public function destroy(Part $part)
     {
         Gate::authorize('parts.access');
+
+        $hasUsage = $part->orders()->exists()
+            || SaleItem::where('part_id', $part->id)->exists()
+            || PurchaseOrderItem::where('part_id', $part->id)->exists();
+
+        if ($hasUsage) {
+            return back()->with(
+                'error',
+                'Esta peça já foi usada em ordens de serviço, vendas ou compras e não pode ser excluída. Desative-a em vez de excluir.'
+            );
+        }
 
         DB::transaction(function () use ($part) {
             PartMovement::create([

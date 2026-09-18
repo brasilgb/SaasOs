@@ -5,6 +5,7 @@ namespace App\Http\Controllers\App;
 use App\Events\WhatsappMessageSettingsUpdated;
 use App\Http\Controllers\Controller;
 use App\Models\App\WhatsappMessage;
+use App\Services\WhatsAppService;
 use App\Services\WhatsappMessageTemplateService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,6 +17,7 @@ class WhatsappMessageController extends Controller
 {
     public function __construct(
         private readonly WhatsappMessageTemplateService $whatsappMessageTemplateService,
+        private readonly WhatsAppService $whatsAppService,
     ) {}
 
     /**
@@ -26,8 +28,15 @@ class WhatsappMessageController extends Controller
         Gate::authorize('whatsapp-messages.access');
 
         $whatsappmessage = $this->whatsappMessageTemplateService->current();
+        $connection = $this->whatsAppService->connectionFor((int) Auth::user()->tenant_id);
 
-        return Inertia::render('app/whatsapp-message/index', ['whatsappmessage' => $whatsappmessage]);
+        return Inertia::render('app/whatsapp-message/index', [
+            'whatsappmessage' => $whatsappmessage,
+            'connection' => [
+                'status' => $connection->status,
+                'phone_number' => $connection->phone_number,
+            ],
+        ]);
     }
 
     public function update(Request $request, WhatsappMessage $whatsappmessage): RedirectResponse

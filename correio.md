@@ -1,422 +1,592 @@
-# VetorOS 2 — CRM-02 Customer Equipment
+# VetorOS 1 — Substituição da integração atual de WhatsApp por WAHA
 
-## Objetivo
+Trabalhe **somente no projeto VetorOS 1**.
 
-Implementar o cadastro de equipamentos pertencentes aos clientes, integrado à arquitetura já aprovada em DB-01, AUTH-01, CORE-01 e CRM-01.
+Não aplicar arquitetura, migrations, conceitos ou estruturas do VetorOS 2.
 
-Esta fase deve permanecer estritamente dentro do domínio de equipamentos de clientes. Não iniciar Orçamento, Ordem de Serviço, Estoque, Financeiro ou Fiscal.
+O objetivo é analisar como o WhatsApp funciona atualmente no VetorOS 1 e **substituir o método antigo por uma integração com WAHA**, mantendo as funcionalidades já existentes e melhorando a estrutura apenas onde for necessário.
 
-## Fonte de verdade
+## Objetivo principal
 
-Respeitar integralmente a arquitetura já existente no repositório `vetoros2`.
+Cada cliente/empresa que utiliza o VetorOS deve conectar **o seu próprio número de WhatsApp** através de QR Code.
 
-Não alterar migrations aprovadas anteriormente.
+O VetorOS não utilizará um número central.
 
-Não copiar arquitetura, migrations ou regras do VetorOS legado. O legado pode ser consultado apenas como referência funcional.
+Fluxo esperado:
 
-A cadeia de segurança permanece obrigatória:
-
-Identity
-→ Session
-→ TenantMembership
-→ TenantContext
-→ Authorization
-→ PostgreSQL RLS
-
-Missing tenant context = deny.
-
----
-
-# 1. Modelo de equipamento
-
-Criar entidade multitenant para equipamentos pertencentes a clientes.
-
-Sugestão conceitual:
-
-`customer_equipments`
-
-Campos mínimos:
-
-* `id`
-* `tenant_id`
-* `customer_id`
-* `equipment_number`
-* `category`
-* `brand`
-* `model`
-* `serial_number`
-* `imei`
-* `color`
-* `accessories`
-* `notes`
-* `status`
-* `created_at`
-* `updated_at`
-
-Avaliar os tipos PostgreSQL adequados conforme os padrões já existentes no projeto.
-
-Não usar enums PostgreSQL se o projeto estiver adotando vocabulários controlados na aplicação/check constraints.
+```text
+Empresa cliente
+   ↓
+Configurações do WhatsApp
+   ↓
+Conectar WhatsApp
+   ↓
+WAHA gera QR Code
+   ↓
+Cliente escaneia com seu próprio telefone
+   ↓
+Sessão fica conectada
+   ↓
+Mensagens do VetorOS saem pelo WhatsApp desse cliente
+```
 
 ---
 
-# 2. Número do equipamento
+## 1. Auditar primeiro o que já existe
 
-`equipment_number` deve ser:
+Antes de alterar código, faça uma auditoria completa de tudo relacionado a WhatsApp no VetorOS 1.
 
-* sequencial por tenant;
-* gerado exclusivamente pelo backend/banco;
-* transacional;
-* seguro sob concorrência;
-* independente do `customer_number`;
-* nunca baseado em `MAX()+1`.
+Localize:
 
-Reutilizar o padrão já aprovado em CRM-01 para counters, se aplicável.
+* serviços;
+* controllers;
+* rotas;
+* componentes React;
+* configurações;
+* migrations;
+* tabelas;
+* modelos;
+* envio por `wa.me`;
+* APIs anteriores;
+* mensagens predefinidas;
+* mensagens de Ordem de Serviço;
+* mensagens de orçamento;
+* envio de recibos;
+* envio de PDF;
+* mensagens para clientes;
+* telas de configuração;
+* jobs/queues, se existirem.
 
-Garantir unicidade:
+Identifique:
 
-`tenant_id + equipment_number`
+* o que deve ser removido;
+* o que pode ser reaproveitado;
+* o que precisa ser adaptado.
 
----
-
-# 3. Ownership
-
-Todo equipamento deve pertencer obrigatoriamente a:
-
-`Tenant → Customer → Equipment`
-
-`tenant_id` nunca pode ser aceito do frontend como fonte de autoridade.
-
-O tenant deve ser derivado exclusivamente da sessão/TenantContext.
-
-O `customer_id` informado deve pertencer ao tenant ativo.
-
-Criar constraints/FKs compostas quando necessárias para impedir referências cross-tenant também no banco.
-
-Não confiar apenas na aplicação.
+Não mantenha implementações duplicadas sem necessidade.
 
 ---
 
-# 4. Identificadores
+## 2. Não reestruturar o VetorOS 1 inteiro
 
-### Serial number
+Esta tarefa é de integração com WhatsApp.
 
-Permitir serial opcional.
+Não aproveitar para:
 
-Normalizar espaços e valores vazios.
+* converter arquitetura;
+* refazer multitenancy;
+* alterar módulos que não têm relação;
+* trazer estruturas do VetorOS 2;
+* criar refatorações extensas sem necessidade.
 
-### IMEI
-
-IMEI deve ser opcional.
-
-Quando informado:
-
-* remover caracteres de formatação;
-* aceitar somente dígitos;
-* validar tamanho compatível;
-* armazenar normalizado.
-
-Não assumir que todo equipamento possui IMEI.
-
-Evitar uma regra global de unicidade que impeça casos legítimos sem comprovação funcional.
-
-Caso seja implementada unicidade, deve ser tenant-aware e justificada.
+Preservar o funcionamento atual do VetorOS 1.
 
 ---
 
-# 5. Categoria
+## 3. Implementar WAHA como serviço separado
 
-Permitir categorias de equipamentos sem engessar o sistema somente para informática ou celulares.
+Criar uma camada central para comunicação com WAHA.
 
-O VetorOS precisa atender múltiplos segmentos de assistência técnica.
+Exemplo conceitual:
+
+```text
+VetorOS 1
+   ↓
+WhatsAppService
+   ↓
+WahaService
+   ↓
+WAHA
+   ↓
+WhatsApp do cliente
+```
+
+Evitar chamadas HTTP para WAHA espalhadas em controllers e componentes.
+
+Centralizar operações como:
+
+```php
+sendText()
+sendImage()
+sendDocument()
+createSession()
+getSessionStatus()
+getQrCode()
+disconnect()
+```
+
+---
+
+## 4. Configuração
+
+Utilizar `.env` para dados globais do serviço WAHA.
+
+Exemplo:
+
+```env
+WAHA_BASE_URL=http://waha:3000
+WAHA_API_KEY=
+```
+
+Não armazenar API key global no banco.
+
+---
+
+## 5. Sessão por cliente do VetorOS
+
+Cada empresa/tenant do VetorOS 1 deve possuir sua própria sessão no WAHA.
+
+A sessão deve ter identificação segura.
+
+Exemplo conceitual:
+
+```text
+vetoros-{tenant_id}
+```
+
+ou outra identificação baseada na estrutura real existente no VetorOS 1.
+
+Antes de implementar, descubra qual entidade atualmente identifica corretamente cada cliente/empresa do SaaS.
+
+Não assumir nomes de tabela.
+
+---
+
+## 6. Persistência da conexão
+
+Reutilize estrutura existente caso já exista algo adequado.
+
+Caso não exista, criar uma tabela específica, por exemplo:
+
+```text
+whatsapp_connections
+```
+
+Campos mínimos conceituais:
+
+```text
+id
+tenant/client/company identifier
+provider
+session_name
+phone_number
+status
+connected_at
+disconnected_at
+created_at
+updated_at
+```
+
+Adapte os nomes para a arquitetura real do VetorOS 1.
+
+---
+
+## 7. Tela de conexão
+
+Criar ou adaptar a tela existente de configuração do WhatsApp.
+
+Estado desconectado:
+
+```text
+WhatsApp
+
+Status: Não conectado
+
+[ Conectar WhatsApp ]
+```
+
+Ao clicar:
+
+```text
+Conectando...
+
+QR CODE
+
+Abra o WhatsApp no celular:
+Configurações
+→ Aparelhos conectados
+→ Conectar aparelho
+```
+
+Depois de escanear:
+
+```text
+Status: Conectado
+
+Número: (51) 99999-9999
+
+[ Desconectar ]
+```
+
+A atualização do status deve ocorrer automaticamente ou por polling controlado.
+
+---
+
+## 8. Manter as funcionalidades já existentes
+
+O VetorOS 1 já possui funcionalidades de mensagens de WhatsApp.
+
+Não remover recursos úteis.
+
+Adaptar o mecanismo de envio existente para utilizar WAHA.
+
+Verifique especialmente:
+
+```text
+Clientes
+Ordens de Serviço
+Orçamentos
+Checklist
+Contrato de manutenção
+Recibos
+Mensagens
+```
+
+Se atualmente existir envio de texto, imagem, PDF ou documento, preservar essa capacidade quando tecnicamente suportada.
+
+---
+
+## 9. Ordem de Serviço
+
+Os botões existentes de WhatsApp dentro da OS devem continuar funcionando.
+
+Mas, em vez do mecanismo antigo, devem chamar o novo serviço WAHA.
 
 Exemplos:
 
-* smartphone;
-* tablet;
-* notebook;
-* desktop;
-* monitor;
-* impressora;
-* eletroeletrônico;
-* ferramenta;
-* equipamento industrial;
-* outro.
+```text
+Avisar recebimento
+Enviar orçamento
+Avisar equipamento pronto
+Avisar retirada
+Enviar recibo
+Enviar documento
+```
 
-Projetar de forma extensível.
-
-Não criar ainda um módulo completo de catálogo de categorias se isso extrapolar CRM-02.
+Não alterar o fluxo operacional da OS desnecessariamente.
 
 ---
 
-# 6. Status
+## 10. Clientes
 
-Definir um vocabulário mínimo para o cadastro do equipamento.
+Na tela de cliente, preservar ou melhorar a ação:
 
-Exemplo:
+```text
+Enviar WhatsApp
+```
 
-* `active`
-* `inactive`
+O número deve vir do cadastro do cliente.
 
-Não misturar status do cadastro do equipamento com lifecycle de Ordem de Serviço.
+Centralize a normalização do telefone.
 
-Status como:
+Para números brasileiros, enviar no formato internacional exigido pelo WhatsApp, por exemplo:
 
-* aguardando orçamento;
-* em manutenção;
-* pronto;
-* entregue;
+```text
+5551999999999
+```
 
-pertencem futuramente à OS e não ao cadastro base do equipamento.
-
----
-
-# 7. Segurança e RLS
-
-A nova tabela deve seguir exatamente o modelo de isolamento das fases anteriores.
-
-Obrigatório:
-
-* RLS habilitado;
-* `FORCE ROW LEVEL SECURITY`;
-* policies tenant-aware;
-* runtime role sem `BYPASSRLS`;
-* ausência de TenantContext deve negar acesso;
-* usuário de Tenant Alpha não pode observar dados de Tenant Beta.
-
-Não criar bypass administrativo informal.
+Não espalhar essa lógica em vários arquivos.
 
 ---
 
-# 8. Permissions
+## 11. Mensagens predefinidas
 
-Adicionar permissions compatíveis com AUTH-01:
+O VetorOS 1 já possui conceitos de mensagens utilizadas no atendimento.
 
-* `customer_equipments.read`
-* `customer_equipments.create`
-* `customer_equipments.update`
+Analise antes de criar estrutura nova.
 
-Adicionar `delete` somente se houver necessidade arquitetural real.
+Se as mensagens já estiverem armazenadas e funcionando, reaproveite.
 
-Preferir desativação/status a exclusão destrutiva caso isso seja consistente com CRM-01 e com auditoria futura de OS.
+Exemplos de conteúdo:
 
-Integrar às roles/seeds atuais sem duplicar mecanismos de autorização.
+```text
+Olá {cliente}, seu equipamento foi recebido.
+```
 
----
+```text
+Olá {cliente}, o orçamento da OS {numero_os} está disponível.
+```
 
-# 9. Auditoria
+```text
+Olá {cliente}, seu equipamento está pronto para retirada.
+```
 
-Toda criação e alteração deve gerar auditoria append-only reutilizando o mecanismo já existente.
-
-Registrar pelo menos:
-
-* tenant;
-* actor;
-* entidade;
-* entity id;
-* ação;
-* before/after quando aplicável;
-* timestamp.
-
-Não criar segundo sistema de auditoria.
+Não duplicar tabelas ou funcionalidades se o VetorOS 1 já tiver algo equivalente.
 
 ---
 
-# 10. API
+## 12. PDFs e documentos
 
-Implementar endpoints REST seguindo o padrão existente.
-
-Mínimo:
-
-`GET /customers/:customerId/equipments`
-
-`POST /customers/:customerId/equipments`
-
-`GET /customer-equipments/:id`
-
-`PATCH /customer-equipments/:id`
-
-A listagem deve suportar:
-
-* busca;
-* paginação;
-* ordenação;
-* filtro por status;
-* filtro por categoria.
-
-Busca deve considerar quando aplicável:
-
-* número do equipamento;
-* marca;
-* modelo;
-* serial;
-* IMEI.
-
-Evitar `%termo%` indiscriminado se o projeto já possui estratégia mais eficiente de busca.
-
----
-
-# 11. Frontend
-
-Integrar ao cadastro de cliente já criado em CRM-01.
-
-Na tela:
-
-`/app/customers/:id`
-
-adicionar seção/aba de equipamentos.
-
-Permitir:
-
-* listar equipamentos;
-* cadastrar;
-* visualizar;
-* editar;
-* ativar/desativar conforme status definido.
-
-Criar também uma rota adequada para detalhes/edição se isso estiver alinhado ao padrão atual.
-
-Exemplo:
-
-`/app/customer-equipments/:id`
-
-ou equivalente coerente com a arquitetura existente.
-
-Não criar ainda botão funcional de "Abrir OS" ou "Criar orçamento" além de eventual placeholder visual claramente não operacional.
-
----
-
-# 12. UX
-
-O formulário deve ser rápido para uso em balcão.
-
-Campos essenciais devem aparecer primeiro.
-
-Sugestão:
-
-* categoria;
-* marca;
-* modelo;
-* serial/IMEI;
-* cor;
-* acessórios;
-* observações.
-
-Não tornar campos opcionais obrigatórios apenas para preencher cadastro.
-
-O usuário deve conseguir cadastrar equipamentos genéricos sem serial ou IMEI.
-
----
-
-# 13. Dados de teste / seed
-
-Adicionar dados idempotentes para tenants Alpha/Beta já utilizados nos testes.
-
-Criar equipamentos vinculados aos clientes existentes.
-
-Garantir que os seeds não produzam duplicidade em execuções subsequentes.
-
----
-
-# 14. Testes obrigatórios
-
-Cobrir no mínimo:
-
-1. criação de equipamento no tenant correto;
-2. geração sequencial de `equipment_number`;
-3. concorrência na geração do número;
-4. listagem somente do tenant ativo;
-5. Tenant Alpha não lê equipamento de Tenant Beta;
-6. Tenant Alpha não altera equipamento de Tenant Beta;
-7. tentativa de vincular customer de outro tenant falha;
-8. missing TenantContext = deny;
-9. usuário sem permission de leitura recebe resposta adequada;
-10. usuário sem permission de criação não cria;
-11. usuário sem permission de update não altera;
-12. IMEI inválido é rejeitado;
-13. equipamento sem IMEI é permitido;
-14. equipamento sem serial é permitido;
-15. auditoria é criada;
-16. busca/paginação funcionam;
-17. RLS permanece efetiva mesmo diante de acesso runtime direto inadequado.
-
-Executar também toda a suíte existente para garantir ausência de regressão.
-
----
-
-# 15. Validação
-
-Executar os comandos oficiais existentes no repositório para:
-
-* typecheck;
-* lint;
-* testes;
-* build;
-* migrations;
-* testes de integração;
-* testes de isolamento/RLS.
-
-Não alterar código apenas para ocultar falhas preexistentes.
-
-Qualquer falha encontrada deve ser classificada claramente entre:
-
-* regressão da CRM-02;
-* falha preexistente;
-* problema de ambiente.
-
----
-
-# 16. Restrições
-
-Não implementar nesta rodada:
+Analise como o VetorOS 1 atualmente gera:
 
 * orçamento;
-* ordem de serviço;
-* checklist técnico;
-* diagnóstico;
-* peças;
-* estoque;
-* venda;
-* financeiro;
-* emissão fiscal;
-* garantia;
-* upload de fotos;
-* assinatura do cliente.
+* recibo;
+* checklist;
+* contrato;
+* documentos da OS.
 
-Esses módulos terão fases próprias.
+Se houver ação de compartilhamento via WhatsApp, adapte para enviar o documento utilizando WAHA.
+
+Não reescrever o sistema de geração dos PDFs.
 
 ---
 
-# 17. Gate
+## 13. Envio por fila
 
-Ao final gerar relatório contendo:
+Verifique se o VetorOS 1 já utiliza queue/jobs.
 
-* resumo;
-* arquitetura;
-* migration criada;
-* tabelas/constraints/índices;
-* permissions;
-* RLS;
-* auditoria;
-* endpoints;
-* frontend;
-* seeds;
-* testes executados;
-* resultado da suíte completa;
-* riscos;
-* pendências;
+Se utilizar, prefira colocar os envios de WhatsApp em fila.
+
+Fluxo:
+
+```text
+Ação do usuário
+   ↓
+Job
+   ↓
+WhatsAppService
+   ↓
+WAHA
+```
+
+Se o projeto não utilizar filas atualmente, avalie o impacto antes de introduzir complexidade desnecessária.
+
+Não transformar esta implementação em uma reestruturação geral do projeto.
+
+---
+
+## 14. Tratamento de falhas
+
+Tratar adequadamente situações como:
+
+```text
+WAHA indisponível
+sessão desconectada
+timeout
+telefone inválido
+falha de envio
+```
+
+Não retornar erro técnico cru para o usuário.
+
+Exemplo:
+
+```text
+O WhatsApp desta empresa está desconectado.
+Reconecte-o nas configurações.
+```
+
+---
+
+## 15. Segurança
+
+Um cliente do VetorOS nunca pode:
+
+* visualizar QR Code de outro cliente;
+* utilizar sessão de outro cliente;
+* desconectar sessão de outro cliente;
+* enviar mensagem pelo número de outro cliente.
+
+Todas as operações devem respeitar o isolamento já existente no VetorOS 1.
+
+Não alterar a arquitetura de segurança sem necessidade.
+
+---
+
+## 16. Não implementar marketing em massa
+
+O WAHA será utilizado para comunicação operacional.
+
+Não adicionar:
+
+* disparo em massa;
+* listas frias;
+* campanhas;
+* scraping;
+* spam;
+* automações agressivas.
+
+Prioridade:
+
+```text
+OS
+Clientes
+Orçamentos
+Recibos
+Atendimento
+```
+
+---
+
+## 17. Docker / infraestrutura
+
+Verifique como o VetorOS 1 é executado atualmente.
+
+Se existir ambiente Docker local, adicionar WAHA de forma compatível.
+
+Se produção estiver em hospedagem que não suporte container, **não quebre o deploy atual**.
+
+Nesse caso, deixar WAHA preparado para rodar em servidor separado e configurar o VetorOS via:
+
+```env
+WAHA_BASE_URL=https://...
+```
+
+A integração do Laravel não deve depender de WAHA estar no mesmo servidor.
+
+---
+
+## 18. Persistência da sessão WAHA
+
+A sessão do WhatsApp não pode ser perdida toda vez que WAHA reiniciar.
+
+Verifique a forma recomendada de persistência da versão instalada do WAHA e configure corretamente.
+
+Não armazenar QR Code ou credenciais sensíveis no banco do VetorOS sem necessidade.
+
+---
+
+## 19. Compatibilidade futura
+
+Mesmo trabalhando no VetorOS 1, evitar acoplar todos os módulos diretamente ao WAHA.
+
+Ideal:
+
+```text
+Controller
+   ↓
+WhatsAppService
+   ↓
+WahaService
+```
+
+Assim, se futuramente trocarmos WAHA por API oficial, o impacto ficará concentrado nesta camada.
+
+Não é necessário criar arquitetura excessivamente sofisticada.
+
+---
+
+## 20. Testes
+
+Criar testes para a integração sem depender de um número real de WhatsApp.
+
+Mockar as respostas HTTP do WAHA.
+
+Testar pelo menos:
+
+```text
+criação de sessão
+consulta de status
+obtenção do QR Code
+envio de texto
+envio de documento
+sessão desconectada
+falha do WAHA
+isolamento entre clientes
+```
+
+Não exigir WhatsApp real para executar a suíte automatizada.
+
+---
+
+## 21. Teste manual
+
+Ao finalizar, entregue um roteiro para teste real.
+
+Exemplo:
+
+```text
+1. Subir WAHA
+2. Acessar VetorOS
+3. Entrar com cliente teste
+4. Abrir Configurações → WhatsApp
+5. Clicar Conectar
+6. Escanear QR Code
+7. Confirmar status conectado
+8. Abrir cliente
+9. Enviar mensagem
+10. Abrir OS
+11. Enviar mensagem da OS
+12. Enviar PDF
+13. Reiniciar WAHA
+14. Confirmar persistência da sessão
+```
+
+Entregue também os comandos necessários.
+
+---
+
+## 22. Remover método antigo
+
+Depois que WAHA estiver funcionando corretamente, remover o mecanismo antigo.
+
+Eliminar:
+
+* services obsoletos;
+* chamadas antigas;
+* configurações não utilizadas;
+* variáveis `.env` antigas;
+* endpoints antigos;
+* código morto.
+
+Antes de remover, certifique-se de que nenhuma funcionalidade atual dependa dele.
+
+---
+
+## 23. Não mexer no VetorOS 2
+
+Reforço:
+
+Esta implementação é exclusivamente para o:
+
+```text
+vetoros1
+```
+
+Não utilizar como base:
+
+```text
+vetoros2
+```
+
+Não criar código, migrations ou conceitos pensando no VetorOS 2.
+
+Caso exista mais de um projeto no diretório raiz, confirme pelos arquivos e estrutura que está operando no VetorOS 1 antes de fazer alterações.
+
+---
+
+## 24. Entrega
+
+Antes de implementar, apresente resumidamente:
+
+1. como o WhatsApp funciona hoje no VetorOS 1;
+2. quais arquivos participam;
+3. qual integração antiga será substituída;
+4. o que será reaproveitado;
+5. mudanças de banco necessárias;
+6. mudanças de frontend necessárias;
+7. mudanças de backend necessárias.
+
+Depois implemente.
+
+Não pare apenas na análise.
+
+Ao terminar, entregue:
+
 * arquivos criados;
-* arquivos alterados.
+* arquivos alterados;
+* migrations;
+* services;
+* controllers;
+* rotas;
+* componentes;
+* configurações;
+* alterações Docker/infra;
+* testes;
+* código antigo removido;
+* comandos de teste manual;
+* pendências, se existirem.
 
-Finalizar obrigatoriamente com um dos gates:
+Compile e valide o que for possível no ambiente atual.
 
-**CRM-02 APROVÁVEL**
-
-ou
-
-**CRM-02 NÃO APROVÁVEL**
-
-Não fazer commit.
-
-Não iniciar a próxima fase.
-
-Parar para revisão.
+O objetivo final é **preservar o VetorOS 1 como está funcionalmente e apenas substituir de forma limpa e segura o mecanismo atual de WhatsApp pelo WAHA**.

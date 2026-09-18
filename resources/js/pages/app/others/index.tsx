@@ -415,7 +415,7 @@ export default function Others({ othersettings, company, time_remaining, mailSet
                                     <div className="grid w-full gap-4 xl:grid-cols-2">
                                         <div className="bg-card text-card-foreground flex items-center justify-between rounded-2xl border p-4 shadow-sm">
                                             <div>
-                                                <p className="font-medium">Follow-up de clientes</p>
+                                                <p className="font-medium">Retornos ao cliente</p>
                                                 <p className="text-muted-foreground text-sm">
                                                     Lista, fila de pendências e resultados de contato sobre orçamento ou cobrança.
                                                 </p>

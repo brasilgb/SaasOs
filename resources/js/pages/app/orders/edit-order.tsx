@@ -27,7 +27,7 @@ import moment from 'moment';
 import { useEffect, useState, type FormEvent } from 'react';
 import Select from 'react-select';
 import AddPartsModal from './add-parts';
-import EquipmentTypesModal from './equipment-types-modal';
+import CustomerEquipmentField from './customer-equipment-field';
 import OrderPreBudgetFields from './order-pre-budget-fields';
 import OrderPaymentsModal from './order-payments-modal';
 
@@ -130,7 +130,6 @@ export default function EditOrder({
 
     const { othersetting, auth, fiscalSetting } = usePage().props as any;
     const canManageOrders = auth?.role !== 'technician' && auth?.permissions?.includes('orders');
-    const canManageEquipments = auth?.permissions?.includes('register_equipments');
     const canAccessSalesModules =
         auth?.role === 'administrator' || auth?.role === 'operator' || auth?.role === 'root_app' || auth?.role === 'root_system';
     const canManagePayments = canManageOrders && canAccessSalesModules && Boolean(othersetting?.enable_finance) && Boolean(auth?.permissions?.includes('finance'));
@@ -152,6 +151,7 @@ export default function EditOrder({
         order_type: 'equipment',
         customer_id: order?.customer_id,
         equipment_id: order?.equipment_id, // equipamento
+        customer_equipment_id: order?.customer_equipment_id ? String(order.customer_equipment_id) : '',
         user_id: order?.user_id,
         model: order?.model,
         password: order?.password,
@@ -253,12 +253,14 @@ export default function EditOrder({
     }, [data.service_status]);
 
     const changeCustomer = (selected: any) => {
-        setData('customer_id', selected?.value || '');
+        setData((current) => ({
+            ...current,
+            customer_id: selected?.value || '',
+            customer_equipment_id: '',
+            equipment_id: '',
+            model: '',
+        }));
         setSelectedCustomer(selected ?? null);
-    };
-
-    const changeEquipment = (selected: any) => {
-        setData('equipment_id', selected?.value ?? '');
     };
 
     const changeServiceStatus = (selected: any) => {
@@ -443,7 +445,7 @@ export default function EditOrder({
                                 <Card>
                                     <CardTitle className="border-b px-6 pb-4">Cliente e equipamento</CardTitle>
                                     <CardContent className="space-y-4 pt-6">
-                                        <div className="grid gap-4 md:grid-cols-8">
+                                        <div className="grid gap-4 md:grid-cols-10">
                                             <div className="grid gap-2 md:col-span-2">
                                                 <Label htmlFor="customer_id">Cliente</Label>
                                                 <div className="flex min-w-0 items-center gap-2">
@@ -472,25 +474,30 @@ export default function EditOrder({
                                             </div>
 
                                             <div className="grid gap-2 md:col-span-2">
-                                                <Label htmlFor="equipment">Equipamento</Label>
-                                                <div className="flex min-w-0 items-center gap-2">
-                                                    <Select
-                                                        menuPosition="fixed"
-                                                        value={selectedEquipment}
-                                                        options={optionsEquipment}
-                                                        onChange={changeEquipment}
-                                                        placeholder="Selecione o equipamento"
-                                                        className="min-w-0 flex-1"
-                                                        styles={selectStyles}
-                                                    />
-                                                    {canManageEquipments && (
-                                                        <EquipmentTypesModal
-                                                            equipments={equipments}
-                                                            selectedEquipmentId={data.equipment_id}
-                                                            onSelectEquipment={(equipmentId) => setData('equipment_id', equipmentId)}
-                                                        />
-                                                    )}
-                                                </div>
+                                                <Label htmlFor="customer_equipment_id">Equipamento do cliente *</Label>
+                                                <CustomerEquipmentField
+                                                    customerId={data.customer_id}
+                                                    equipmentTypes={equipments}
+                                                    initialDevice={order?.customer_equipment ?? null}
+                                                    onChange={(customerEquipmentId, device) => {
+                                                        setData('customer_equipment_id', customerEquipmentId);
+                                                        if (device) {
+                                                            setData('equipment_id', String(device.equipment_id ?? ''));
+                                                            setData('model', [device.brand, device.model].filter(Boolean).join(' '));
+                                                        }
+                                                    }}
+                                                />
+                                                <InputError message={errors.customer_equipment_id} />
+                                            </div>
+
+                                            <div className="grid gap-2 md:col-span-2">
+                                                <Label htmlFor="equipment">Tipo de equipamento</Label>
+                                                <Input
+                                                    id="equipment"
+                                                    value={selectedEquipment?.label ?? ''}
+                                                    placeholder="Selecione o equipamento do cliente"
+                                                    disabled
+                                                />
                                                 {errors.equipment_id && <div className="text-sm text-red-500">{errors.equipment_id}</div>}
                                             </div>
 
@@ -506,7 +513,7 @@ export default function EditOrder({
                                                 <InputError message={errors.model} />
                                             </div>
 
-                                            <div className="grid gap-2">
+                                            <div className="grid gap-2 md:col-span-2">
                                                 <Label htmlFor="password">Senha</Label>
                                                 <Input
                                                     type="text"
@@ -515,29 +522,6 @@ export default function EditOrder({
                                                     onChange={(e) => setData('password', e.target.value)}
                                                 />
                                                 {errors.password && <div className="text-sm text-red-500">{errors.password}</div>}
-                                            </div>
-
-                                            <div className="grid gap-2">
-                                                <Label htmlFor="delivery_forecast">Previsão de entrega *</Label>
-                                                <DatePicker
-                                                    mode="single"
-                                                    date={data.delivery_forecast}
-                                                    setDate={(value) => {
-                                                        if (!value) {
-                                                            setData('delivery_forecast', '');
-                                                            return;
-                                                        }
-                                                        const d = value as Date;
-                                                        const formatted = [
-                                                            d.getFullYear(),
-                                                            String(d.getMonth() + 1).padStart(2, '0'),
-                                                            String(d.getDate()).padStart(2, '0'),
-                                                        ].join('-');
-
-                                                        setData('delivery_forecast', formatted);
-                                                    }}
-                                                />
-                                                <InputError className="mt-2" message={errors.delivery_forecast} />
                                             </div>
                                         </div>
 
@@ -767,6 +751,29 @@ export default function EditOrder({
                                                 )}
                                                 {errors.delivery_date && <div className="text-sm text-red-500">{errors.delivery_date}</div>}
                                             </div>
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="delivery_forecast">Previsão de entrega *</Label>
+                                                <DatePicker
+                                                    mode="single"
+                                                    date={data.delivery_forecast}
+                                                    setDate={(value) => {
+                                                        if (!value) {
+                                                            setData('delivery_forecast', '');
+                                                            return;
+                                                        }
+                                                        const d = value as Date;
+                                                        const formatted = [
+                                                            d.getFullYear(),
+                                                            String(d.getMonth() + 1).padStart(2, '0'),
+                                                            String(d.getDate()).padStart(2, '0'),
+                                                        ].join('-');
+
+                                                        setData('delivery_forecast', formatted);
+                                                    }}
+                                                />
+                                                <InputError className="mt-2" message={errors.delivery_forecast} />
+                                            </div>
+
                                             <div className="grid gap-2">
                                                 <FormFieldHelp
                                                     label="Garantia em dias"

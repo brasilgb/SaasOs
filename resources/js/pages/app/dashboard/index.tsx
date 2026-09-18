@@ -13,6 +13,7 @@ import moment from 'moment';
 import FinanceiroOrders from './fin-order/ordens';
 import FinanceiroSales from './fin-order/sales';
 import OrderDashboard from './ope-order';
+import PurchasesDashboard from './purchases';
 import ScheduleDashboard from './schedules';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -45,6 +46,7 @@ export default function Dashboard({
     const { timeRange, dateRange, setTimeRange, setDateRange, clearDateRange } = usePersistedPeriodFilter('dashboard-period-filter');
     const isTechnician = auth?.role === 'technician';
     const canUseSales = Boolean(auth?.permissions?.includes('sales') && others?.enablesales && !isTechnician);
+    const canUsePurchases = Boolean(auth?.permissions?.includes('purchase_orders') && others?.enable_purchases && !isTechnician);
 
     const customRangeFrom = dateRange.from;
     const customRangeTo = dateRange.to;
@@ -167,6 +169,11 @@ export default function Dashboard({
                                         Vendas
                                     </TabsTrigger>
                                 )}
+                                {canUsePurchases && (
+                                    <TabsTrigger value="purchases" className="hover:bg-background hover:text-foreground hover:shadow-sm">
+                                        Compras
+                                    </TabsTrigger>
+                                )}
                             </TabsList>
                         )}
                         <TabsContent value="operational">
@@ -197,6 +204,11 @@ export default function Dashboard({
                         {canUseSales && (
                             <TabsContent value="sales">
                                 <FinanceiroSales timerange={timerangeForRequests} dateRange={dateRange} customRange={hasCustomRange} />
+                            </TabsContent>
+                        )}
+                        {canUsePurchases && (
+                            <TabsContent value="purchases">
+                                <PurchasesDashboard timerange={timerangeForRequests} dateRange={dateRange} customRange={hasCustomRange} />
                             </TabsContent>
                         )}
                     </Tabs>

@@ -481,14 +481,7 @@ export default function FinanceiroSales({
                 </Card>
             </div>
 
-            <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                <InsightCard
-                    title="Resultado do período"
-                    value={formatCurrency(kpisSales?.range_profit)}
-                    description="Vendas concluídas menos despesas lançadas"
-                    icon={<WalletCards size={18} />}
-                    tone={Number(kpisSales?.range_profit || 0) >= 0 ? 'positive' : 'warning'}
-                />
+            <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 <InsightCard
                     title="Pendente em vendas"
                     value={formatCurrency(kpisSales?.pending_sales_amount)}

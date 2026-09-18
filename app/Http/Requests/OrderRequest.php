@@ -50,6 +50,10 @@ class OrderRequest extends FormRequest
                 'nullable',
                 'exists:equipment,id',
             ],
+            'customer_equipment_id' => [
+                'nullable',
+                Rule::exists('customer_equipments', 'id')->where('customer_id', $this->input('customer_id')),
+            ],
             'model' => 'nullable|string|max:50',
             'password' => 'nullable|string|max:50',
             'defect' => [
@@ -115,6 +119,7 @@ class OrderRequest extends FormRequest
             'budget_value' => 'valor do orçamento',
             'budget_link' => 'link orçamento de peças',
             'equipment_id' => 'equipamento',
+            'customer_equipment_id' => 'equipamento do cliente',
             'model' => 'marca e modelo',
             'password' => 'senha',
             'defect' => 'defeito',

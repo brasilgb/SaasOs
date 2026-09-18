@@ -1,0 +1,33 @@
+# Ambiente local apenas para o serviço de WhatsApp (WAHA).
+#
+# O VetorOS 1 em si não roda via docker-compose neste projeto (Dockerfile é
+# usado isoladamente pelo pipeline de deploy); este compose existe só para
+# levantar o WAHA localmente durante o desenvolvimento.
+#
+# Uso:
+#   docker compose up -d waha
+#   # depois, no .env do Laravel:
+#   WAHA_BASE_URL=http://localhost:3000
+#   WAHA_API_KEY=<mesmo valor de WHATSAPP_API_KEY abaixo, se definido>
+#
+# Em produção, aponte WAHA_BASE_URL para onde quer que o WAHA esteja rodando
+# (pode ser um servidor totalmente separado do Laravel) — a integração não
+# assume que os dois processos compartilham o mesmo host.
+services:
+  waha:
+    image: devlikeapro/waha:latest
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    environment:
+      # Engine NOWEB não depende de Chromium/Puppeteer, mais leve para self-host.
+      WHATSAPP_DEFAULT_ENGINE: NOWEB
+      # Defina para exigir o header X-Api-Key em todas as chamadas ao WAHA
+      # (deve bater com WAHA_API_KEY no .env do Laravel).
+      WHATSAPP_API_KEY: ${WAHA_API_KEY:-}
+    volumes:
+      # Sessões (credenciais do WhatsApp conectado) persistem entre restarts.
+      - waha_sessions:/app/.sessions
+
+volumes:
+  waha_sessions:

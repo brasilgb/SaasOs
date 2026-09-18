@@ -1,9 +1,12 @@
 import { Icon } from '@/components/icon';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/layouts/app-layout';
-import { BreadcrumbItem } from '@/types';
+import { BreadcrumbItem, Customer } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 import { ArrowLeft, Users2 } from 'lucide-react';
+import { CustomerEquipment } from './customer-equipment-form';
+import CustomerEquipmentsTab from './customer-equipments-tab';
 import CustomerForm from './customer-form';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -21,7 +24,19 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function EditCustomer({ customer, page, search }: any) {
+export default function EditCustomer({
+    customer,
+    equipments,
+    equipmentTypes,
+    page,
+    search,
+}: {
+    customer: Customer;
+    equipments?: CustomerEquipment[];
+    equipmentTypes: { id: number; equipment: string }[];
+    page?: string;
+    search?: string;
+}) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Clientes" />
@@ -45,9 +60,24 @@ export default function EditCustomer({ customer, page, search }: any) {
             </div>
 
             <div className="p-4">
-                <div className="rounded-lg border p-2">
-                    <CustomerForm initialData={customer} />
-                </div>
+                <Tabs defaultValue="details" className="space-y-4">
+                    <TabsList>
+                        <TabsTrigger value="details">Dados</TabsTrigger>
+                        <TabsTrigger value="equipments">Equipamentos</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="details">
+                        <div className="rounded-lg border p-2">
+                            <CustomerForm initialData={customer} />
+                        </div>
+                    </TabsContent>
+                    <TabsContent value="equipments">
+                        <CustomerEquipmentsTab
+                            customerId={customer.id}
+                            equipments={equipments ?? []}
+                            equipmentTypes={equipmentTypes}
+                        />
+                    </TabsContent>
+                </Tabs>
             </div>
         </AppLayout>
     );

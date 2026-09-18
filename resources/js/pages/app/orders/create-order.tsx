@@ -17,7 +17,7 @@ import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { AlertTriangle, ArrowLeft, Printer, Save, Wrench } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Select from 'react-select';
-import EquipmentTypesModal from './equipment-types-modal';
+import CustomerEquipmentField from './customer-equipment-field';
 import OrderPreBudgetFields from './order-pre-budget-fields';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -61,7 +61,7 @@ export default function CreateOrder({
         updated_at: string;
     }>;
 }) {
-    const { flash, auth } = usePage<
+    const { flash } = usePage<
         SharedData & {
             flash?: {
                 id?: string;
@@ -70,7 +70,6 @@ export default function CreateOrder({
             };
         }
     >().props;
-    const canManageEquipments = auth?.permissions?.includes('register_equipments');
 
     const [selectedCustomer, setSelectedCustomer] = useState<OptionType | null>(
         sourceSchedule?.customer_id
@@ -88,6 +87,7 @@ export default function CreateOrder({
         schedule_id: sourceSchedule?.id ?? '',
         customer_id: sourceSchedule?.customer_id ? String(sourceSchedule.customer_id) : '',
         equipment_id: '', // equipamento
+        customer_equipment_id: '', // equipamento cadastrado do cliente
         user_id: sourceSchedule?.user_id ? String(sourceSchedule.user_id) : '',
         model: '',
         password: '',
@@ -123,12 +123,14 @@ export default function CreateOrder({
     }, [flash?.id, flash?.success, reset]);
 
     const changeCustomer = (selected: OptionType | null) => {
-        setData('customer_id', String(selected?.value ?? ''));
+        setData((current) => ({
+            ...current,
+            customer_id: String(selected?.value ?? ''),
+            customer_equipment_id: '',
+            equipment_id: '',
+            model: '',
+        }));
         setSelectedCustomer(selected);
-    };
-
-    const changeEquipment = (selected: OptionType | null) => {
-        setData('equipment_id', String(selected?.value ?? ''));
     };
 
     const changeServiceStatus = (selected: OptionType | null) => {
@@ -195,7 +197,7 @@ export default function CreateOrder({
                             </div>
                         )}
 
-                        <div className="mt-4 grid gap-4 md:grid-cols-8">
+                        <div className="mt-4 grid gap-4 md:grid-cols-10">
                             <div className="grid gap-2 md:col-span-2">
                                 <Label htmlFor="customer_id">Cliente</Label>
                                 <AsyncResourceSelect
@@ -210,25 +212,29 @@ export default function CreateOrder({
                             </div>
 
                             <div className="grid gap-2 md:col-span-2">
-                                <Label htmlFor="equipment">Equipamento</Label>
-                                <div className="flex min-w-0 items-center gap-2">
-                                    <Select<OptionType, false>
-                                        menuPosition="fixed"
-                                        value={selectedEquipment}
-                                        options={optionsEquipment}
-                                        onChange={changeEquipment}
-                                        placeholder="Selecione o equipamento"
-                                        className="min-w-0 flex-1 text-gray-700"
-                                        styles={selectStyles}
-                                    />
-                                    {canManageEquipments && (
-                                        <EquipmentTypesModal
-                                            equipments={equipments}
-                                            selectedEquipmentId={data.equipment_id}
-                                            onSelectEquipment={(equipmentId) => setData('equipment_id', equipmentId)}
-                                        />
-                                    )}
-                                </div>
+                                <Label htmlFor="customer_equipment_id">Equipamento do cliente *</Label>
+                                <CustomerEquipmentField
+                                    customerId={data.customer_id}
+                                    equipmentTypes={equipments}
+                                    onChange={(customerEquipmentId, device) => {
+                                        setData('customer_equipment_id', customerEquipmentId);
+                                        if (device) {
+                                            setData('equipment_id', String(device.equipment_id ?? ''));
+                                            setData('model', [device.brand, device.model].filter(Boolean).join(' '));
+                                        }
+                                    }}
+                                />
+                                <InputError message={errors.customer_equipment_id} />
+                            </div>
+
+                            <div className="grid gap-2 md:col-span-2">
+                                <Label htmlFor="equipment">Tipo de equipamento</Label>
+                                <Input
+                                    id="equipment"
+                                    value={selectedEquipment?.label ?? ''}
+                                    placeholder="Selecione o equipamento do cliente"
+                                    disabled
+                                />
                                 {errors.equipment_id && <div className="text-sm text-red-500">{errors.equipment_id}</div>}
                             </div>
 
@@ -244,33 +250,10 @@ export default function CreateOrder({
                                 <InputError message={errors.model} />
                             </div>
 
-                            <div className="grid gap-2">
+                            <div className="grid gap-2 md:col-span-2">
                                 <Label htmlFor="password">Senha</Label>
                                 <Input type="text" id="password" value={data.password} onChange={(e) => setData('password', e.target.value)} />
                                 {errors.password && <div className="text-sm text-red-500">{errors.password}</div>}
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="delivery_forecast">Previsão de entrega *</Label>
-                                <DatePicker
-                                    mode="single"
-                                    date={data.delivery_forecast}
-                                    setDate={(value) => {
-                                        if (!value) {
-                                            setData('delivery_forecast', '');
-                                            return;
-                                        }
-                                        const d = value as Date;
-                                        const formatted = [
-                                            d.getFullYear(),
-                                            String(d.getMonth() + 1).padStart(2, '0'),
-                                            String(d.getDate()).padStart(2, '0'),
-                                        ].join('-');
-
-                                        setData('delivery_forecast', formatted);
-                                    }}
-                                />
-                                <InputError className="mt-2" message={errors.delivery_forecast} />
                             </div>
                         </div>
 
@@ -324,7 +307,30 @@ export default function CreateOrder({
                             </CardContent>
                         </Card>
 
-                        <div className="mt-4 grid gap-4 md:grid-cols-4">
+                        <div className="mt-4 grid gap-4 md:grid-cols-5">
+                            <div className="grid gap-2">
+                                <Label htmlFor="delivery_forecast">Previsão de entrega *</Label>
+                                <DatePicker
+                                    mode="single"
+                                    date={data.delivery_forecast}
+                                    setDate={(value) => {
+                                        if (!value) {
+                                            setData('delivery_forecast', '');
+                                            return;
+                                        }
+                                        const d = value as Date;
+                                        const formatted = [
+                                            d.getFullYear(),
+                                            String(d.getMonth() + 1).padStart(2, '0'),
+                                            String(d.getDate()).padStart(2, '0'),
+                                        ].join('-');
+
+                                        setData('delivery_forecast', formatted);
+                                    }}
+                                />
+                                <InputError className="mt-2" message={errors.delivery_forecast} />
+                            </div>
+
                             <div className="grid gap-2">
                                 <Label htmlFor="warranty_days">Garantia em dias</Label>
                                 <Input

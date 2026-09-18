@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\App;
 
 use App\Events\OrderCreated;
+use App\Exceptions\WhatsAppException;
 use App\Events\OrderLifecycleCreated;
 use App\Events\OrderLifecycleStatusChanged;
 use App\Events\OrderPaymentRegistered;
@@ -30,6 +31,7 @@ use App\Services\OrderItemSyncService;
 use App\Services\OrderNotificationService;
 use App\Services\OrderPaymentService;
 use App\Services\OrderStatusService;
+use App\Services\WhatsAppService;
 use App\Support\Ean13;
 use App\Support\OrderSignature;
 use App\Support\OrderStatus;
@@ -56,6 +58,7 @@ class OrderController extends Controller
         private readonly OrderItemSyncService $orderItemSyncService,
         private readonly FiscalDocumentService $fiscalDocumentService,
         private readonly OrderNotificationService $orderNotificationService,
+        private readonly WhatsAppService $whatsAppService,
     ) {}
 
     private function shouldSendCustomerMailer(Order $order, ?string $customerEmail): bool
@@ -741,6 +744,7 @@ class OrderController extends Controller
         $isEquipmentOrder = ($data['order_type'] ?? Order::TYPE_EQUIPMENT) === Order::TYPE_EQUIPMENT;
         $warrantySourceOrder = $isEquipmentOrder ? $this->warrantySourceOrder($data) : null;
         $data['equipment_id'] = $isEquipmentOrder ? ($data['equipment_id'] ?? null) : null;
+        $data['customer_equipment_id'] = $isEquipmentOrder ? ($data['customer_equipment_id'] ?? null) : null;
         $data['model'] = $isEquipmentOrder ? ($data['model'] ?? null) : null;
         $data['password'] = $isEquipmentOrder ? ($data['password'] ?? null) : null;
         $data['state_conservation'] = $isEquipmentOrder ? ($data['state_conservation'] ?? null) : null;
@@ -822,6 +826,7 @@ class OrderController extends Controller
 
         $order->load([
             'customer',
+            'customerEquipment',
             'orderParts',
             'orderItems',
             'orderPayments',
@@ -839,14 +844,24 @@ class OrderController extends Controller
         $paymentSummary = $this->buildPaymentSummary($order);
         $order = $this->appendPaymentReminderAvailability($order);
         $warrantySourceOrder = $order->warrantySourceOrder()->first(['id', 'order_number', 'warranty_expires_at']);
-        $historyQuery = Order::query()
-            ->where('customer_id', $order->customer_id)
-            ->where('equipment_id', $order->equipment_id)
-            ->whereKeyNot($order->id)
-            ->whereNotNull('delivery_date');
 
-        if (! empty($order->model)) {
-            $historyQuery->where('model', $order->model);
+        if ($order->customer_equipment_id) {
+            // Equipamento cadastrado: identidade real do aparelho, sem depender de heurística por texto.
+            $historyQuery = Order::query()
+                ->where('customer_equipment_id', $order->customer_equipment_id)
+                ->whereKeyNot($order->id)
+                ->whereNotNull('delivery_date');
+        } else {
+            // Fallback para OS antigas/avulsas sem equipamento cadastrado: casamento por cliente+tipo+modelo.
+            $historyQuery = Order::query()
+                ->where('customer_id', $order->customer_id)
+                ->where('equipment_id', $order->equipment_id)
+                ->whereKeyNot($order->id)
+                ->whereNotNull('delivery_date');
+
+            if (! empty($order->model)) {
+                $historyQuery->where('model', $order->model);
+            }
         }
 
         $equipmentHistory = $historyQuery
@@ -967,6 +982,7 @@ class OrderController extends Controller
                 'order_type' => $data['order_type'] ?? Order::TYPE_EQUIPMENT,
                 'customer_id' => $data['customer_id'],
                 'equipment_id' => $isEquipmentOrder ? $data['equipment_id'] : null, // equipamento
+                'customer_equipment_id' => $isEquipmentOrder ? ($data['customer_equipment_id'] ?? null) : null,
                 'user_id' => $data['user_id'] ?? null, // técnico responsável
                 'model' => $isEquipmentOrder ? $data['model'] : null,
                 'password' => $isEquipmentOrder ? $data['password'] : null,
@@ -1080,6 +1096,16 @@ class OrderController extends Controller
     public function destroy(Order $order)
     {
         $this->authorize('delete', $order);
+
+        $hasPayments = $order->orderPayments()->exists();
+        $isSafeStatus = in_array((int) $order->service_status, [OrderStatus::OPEN, OrderStatus::CANCELLED], true);
+
+        if ($hasPayments || ! $isSafeStatus) {
+            return back()->with(
+                'error',
+                'Não é possível excluir uma ordem que já teve orçamento gerado, pagamento registrado ou andamento no atendimento. Cancele a ordem em vez de excluí-la.'
+            );
+        }
 
         $this->financialReceivableService->deleteSource('order', (int) $order->id, (int) $order->tenant_id);
         $this->technicianCommissionService->deleteForOrder($order);
@@ -1401,6 +1427,36 @@ class OrderController extends Controller
         }
 
         return back()->with('success', 'Atualização enviada ao cliente por e-mail e publicada no acompanhamento da ordem.');
+    }
+
+    /**
+     * Envia, via WAHA, uma mensagem de WhatsApp já composta pelo frontend (a partir dos
+     * templates configurados pelo tenant) para o telefone cadastrado do cliente da OS.
+     */
+    public function sendWhatsapp(Request $request, Order $order): RedirectResponse
+    {
+        $this->authorize('update', $order);
+
+        $validated = $request->validate([
+            'message' => ['required', 'string', 'max:2000'],
+        ]);
+
+        $order->loadMissing('customer');
+        $phone = $order->customer?->whatsapp;
+
+        try {
+            $this->whatsAppService->sendText((int) $order->tenant_id, $phone, $validated['message']);
+        } catch (WhatsAppException $exception) {
+            return back()->with('error', $exception->getMessage());
+        }
+
+        $this->logOrderAction($order, 'whatsapp_sent', [
+            'channel' => 'whatsapp',
+            'recipient' => $phone,
+            'trigger' => 'manual',
+        ]);
+
+        return back()->with('success', 'Mensagem enviada pelo WhatsApp com sucesso.');
     }
 
     public function markFeedback(Order $order)

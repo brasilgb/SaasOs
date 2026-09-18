@@ -10,6 +10,7 @@ import { Monitor } from 'lucide-react';
 import moment from 'moment';
 import CreateEquipment from './create-equipment';
 import EditEquipment from './edit-equipment';
+import { equipmentKindLabel } from './equipment-kinds';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -53,6 +54,7 @@ export default function Equipment({ equipments, search }: any) {
                             <TableRow>
                                 <TableHead className="w-[100px]">#</TableHead>
                                 <TableHead>Equipamento</TableHead>
+                                <TableHead>Tipo</TableHead>
                                 <TableHead>Cadastro</TableHead>
                                 <TableHead className="min-w-[120px]"></TableHead>
                             </TableRow>
@@ -63,6 +65,7 @@ export default function Equipment({ equipments, search }: any) {
                                     <TableRow key={equipment.id}>
                                         <TableCell>{equipment.equipment_number}</TableCell>
                                         <TableCell className="font-medium">{equipment.equipment}</TableCell>
+                                        <TableCell>{equipmentKindLabel(equipment.kind)}</TableCell>
                                         <TableCell>{moment(equipment.created_at).format('DD/MM/YYYY')}</TableCell>
                                         <TableCell className="min-w-[120px]">
                                             <div className="flex flex-wrap justify-end gap-2">
@@ -80,7 +83,7 @@ export default function Equipment({ equipments, search }: any) {
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={4} className="flex h-16 w-full items-center justify-center">
+                                    <TableCell colSpan={5} className="flex h-16 w-full items-center justify-center">
                                         Não há dados a serem mostrados no momento.
                                     </TableCell>
                                 </TableRow>
@@ -88,7 +91,7 @@ export default function Equipment({ equipments, search }: any) {
                         </TableBody>
                         <TableFooter>
                             <TableRow>
-                                <TableCell colSpan={4}>
+                                <TableCell colSpan={5}>
                                     <AppPagination data={equipments} />
                                 </TableCell>
                             </TableRow>

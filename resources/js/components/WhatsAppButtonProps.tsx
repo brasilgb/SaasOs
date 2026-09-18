@@ -1,10 +1,12 @@
-import React from 'react';
 import { toastWarning } from '@/components/app-toast-messages';
 import { normalizeWhatsappPhone } from '@/Utils/mask';
+import { router } from '@inertiajs/react';
+import React from 'react';
 
 type WhatsAppButtonProps = {
     phone: string;
     customerName: string;
+    orderId: number;
     orderNumber?: string;
     status?: string | number;
     feedback?: boolean;
@@ -181,7 +183,7 @@ const buildMessage = ({
     amountDue,
     daysPending,
     whats,
-}: Omit<WhatsAppButtonProps, 'phone' | 'className'>) => {
+}: Omit<WhatsAppButtonProps, 'phone' | 'className' | 'orderId'>) => {
     const currentStatus = normalizeStatus(status);
     const greeting = getGreeting();
     const trackingUrl = buildTrackingUrl(whats?.tracking_token);
@@ -199,17 +201,17 @@ const buildMessage = ({
     const selectedTemplate = getTemplateForContext({ status, feedback, context, whats });
     if (!selectedTemplate) return '';
 
-    const message = normalizeWhatsAppLineBreaks(formatTemplateMessage({
-        template: selectedTemplate,
-        greeting,
-        customerName,
-        values: templateValues,
-        status,
-    }));
+    const message = normalizeWhatsAppLineBreaks(
+        formatTemplateMessage({
+            template: selectedTemplate,
+            greeting,
+            customerName,
+            values: templateValues,
+            status,
+        }),
+    );
 
-    return whats?.public_access_key_required && whats.public_access_key
-        ? `${message}\nChave de acesso: ${whats.public_access_key}`
-        : message;
+    return whats?.public_access_key_required && whats.public_access_key ? `${message}\nChave de acesso: ${whats.public_access_key}` : message;
 };
 
 const canSendWhatsAppMessage = ({ status, feedback, context, whats }: Pick<WhatsAppButtonProps, 'status' | 'feedback' | 'context' | 'whats'>) => {
@@ -258,6 +260,7 @@ const getWhatsAppDisabledReason = ({
 export const WhatsAppButton: React.FC<WhatsAppButtonProps> = ({
     phone,
     customerName,
+    orderId,
     orderNumber,
     status,
     feedback,
@@ -294,9 +297,8 @@ export const WhatsAppButton: React.FC<WhatsAppButtonProps> = ({
 
         if (!message.trim()) return;
 
-        const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
-
-        window.open(url, '_blank');
+        // Envia pelo WhatsApp conectado do tenant (via WAHA), não mais por link wa.me manual.
+        router.post(route('app.orders.whatsapp.send', orderId), { message }, { preserveScroll: true, preserveState: true });
     };
 
     return (

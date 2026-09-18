@@ -22,7 +22,7 @@ class WebhookController extends Controller
     public function handle(Request $request, $token)
     {
         // 1ª CAMADA: Validação do Token da URL
-        if ($token !== config('services.mercadopago.webhook_token')) {
+        if (! hash_equals((string) config('services.mercadopago.webhook_token'), (string) $token)) {
             Log::warning('Tentativa de acesso não autorizado ao Webhook.', ['token' => $token]);
 
             return response()->json(['error' => 'Unauthorized'], 403);

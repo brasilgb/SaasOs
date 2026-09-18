@@ -25,4 +25,14 @@ class Customer extends Model
     {
         return $this->hasMany(Schedule::class);
     }
+
+    public function maintenanceContracts(): HasMany
+    {
+        return $this->hasMany(MaintenanceContract::class);
+    }
+
+    public function equipments(): HasMany
+    {
+        return $this->hasMany(CustomerEquipment::class);
+    }
 }

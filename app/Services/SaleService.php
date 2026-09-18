@@ -92,11 +92,10 @@ class SaleService
 
         return DB::transaction(function () use ($sale, $reason, $user) {
             foreach ($sale->items as $item) {
-                $part = Part::find($item->part_id);
+                $part = Part::query()->whereKey($item->part_id)->lockForUpdate()->first();
 
                 if ($part) {
-                    $part->quantity += $item->quantity;
-                    $part->save();
+                    $part->increment('quantity', $item->quantity);
                     PartMovement::create([
                         'part_id' => $part->id,
                         'user_id' => $user?->id,

@@ -583,6 +583,7 @@ export default function Orders({ orders, whats, feedback, search, status, filter
                                                         <WhatsAppButton
                                                             phone={customer?.whatsapp ?? ''}
                                                             customerName={customerName}
+                                                            orderId={order.id}
                                                             orderNumber={order.order_number}
                                                             status={order.service_status}
                                                             feedback={isFeedbackWindowOpen && !hasCustomerFeedback}

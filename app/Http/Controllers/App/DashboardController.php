@@ -11,8 +11,8 @@ use App\Models\App\Message;
 use App\Models\App\Order;
 use App\Models\App\Other;
 use App\Models\App\Part;
+use App\Models\App\PurchaseOrder;
 use App\Models\App\Sale;
-use App\Models\App\SaleItem;
 use App\Models\App\Schedule;
 use App\Models\User;
 use App\Support\OrderStatus;
@@ -808,8 +808,8 @@ class DashboardController extends Controller
             ->whereBetween('created_at', [$startDate, $endDate])
             ->count();
 
-        $topProducts = SaleItem::query()
-            ->join('sales', 'sales.id', '=', 'sale_items.sale_id')
+        $topProducts = Sale::query()
+            ->join('sale_items', 'sale_items.sale_id', '=', 'sales.id')
             ->join('parts', 'parts.id', '=', 'sale_items.part_id')
             ->where('sales.status', 'completed')
             ->whereBetween('sales.created_at', [$startDate, $endDate])
@@ -978,5 +978,89 @@ class DashboardController extends Controller
         }
 
         return response()->json($data);
+    }
+
+    public function kpisPurchases($timeRange)
+    {
+        $user = auth()->user();
+        abort_unless($user && $user->hasPermission('purchase_orders') && Other::purchasesEnabled($user->tenant_id), 403);
+
+        [$startDate, $endDate] = $this->getRange($timeRange);
+
+        $receivedInRange = fn () => PurchaseOrder::query()
+            ->where('status', PurchaseOrder::STATUS_RECEIVED)
+            ->whereBetween('received_at', [$startDate, $endDate]);
+
+        $totalSpent = (float) $receivedInRange()->sum('total_amount');
+        $receivedCount = $receivedInRange()->count();
+        $averageTicket = $receivedCount > 0 ? round($totalSpent / $receivedCount, 2) : 0.0;
+
+        $pending = PurchaseOrder::query()
+            ->whereIn('status', [PurchaseOrder::STATUS_DRAFT, PurchaseOrder::STATUS_SENT])
+            ->selectRaw('count(*) as count, coalesce(sum(total_amount), 0) as total')
+            ->first();
+
+        $topSuppliers = PurchaseOrder::query()
+            ->join('suppliers', 'suppliers.id', '=', 'purchase_orders.supplier_id')
+            ->where('purchase_orders.status', PurchaseOrder::STATUS_RECEIVED)
+            ->whereBetween('purchase_orders.received_at', [$startDate, $endDate])
+            ->groupBy('suppliers.id', 'suppliers.name')
+            ->orderByDesc('total')
+            ->limit(5)
+            ->get([
+                'suppliers.id as id',
+                'suppliers.name as name',
+                DB::raw('sum(purchase_orders.total_amount) as total'),
+                DB::raw('count(*) as orders_count'),
+            ]);
+
+        $topParts = PurchaseOrder::query()
+            ->join('purchase_order_items', 'purchase_order_items.purchase_order_id', '=', 'purchase_orders.id')
+            ->join('parts', 'parts.id', '=', 'purchase_order_items.part_id')
+            ->where('purchase_orders.status', PurchaseOrder::STATUS_RECEIVED)
+            ->whereBetween('purchase_orders.received_at', [$startDate, $endDate])
+            ->groupBy('parts.id', 'parts.name')
+            ->orderByDesc('quantity')
+            ->limit(5)
+            ->get([
+                'parts.id as id',
+                'parts.name as name',
+                DB::raw('sum(purchase_order_items.quantity) as quantity'),
+                DB::raw('sum(purchase_order_items.quantity * purchase_order_items.unit_cost) as total'),
+            ]);
+
+        $lowStockCount = Part::query()->whereColumn('quantity', '<=', 'minimum_stock_level')->count();
+
+        $monthsWindow = 6;
+        $trendStart = now()->copy()->subMonths($monthsWindow - 1)->startOfMonth();
+        $monthlyOrders = PurchaseOrder::query()
+            ->where('status', PurchaseOrder::STATUS_RECEIVED)
+            ->where('received_at', '>=', $trendStart)
+            ->get(['received_at', 'total_amount']);
+
+        $trend = [];
+        for ($i = $monthsWindow - 1; $i >= 0; $i--) {
+            $month = now()->copy()->subMonths($i)->startOfMonth();
+            $total = $monthlyOrders->filter(fn ($po) => $po->received_at?->isSameMonth($month))->sum('total_amount');
+
+            $trend[] = [
+                'date' => $month->toDateString(),
+                'total' => (float) $total,
+            ];
+        }
+
+        return response()->json([
+            'kpis' => [
+                'total_spent' => $totalSpent,
+                'received_count' => $receivedCount,
+                'average_ticket' => $averageTicket,
+                'pending_count' => (int) $pending->count,
+                'pending_value' => (float) $pending->total,
+                'low_stock_count' => $lowStockCount,
+            ],
+            'topSuppliers' => $topSuppliers,
+            'topParts' => $topParts,
+            'trend' => $trend,
+        ]);
     }
 }

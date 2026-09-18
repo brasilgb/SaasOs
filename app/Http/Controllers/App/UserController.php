@@ -211,6 +211,13 @@ class UserController extends Controller
     {
         $this->authorize('delete', $user);
 
+        if ($user->orders()->exists() || $user->schedules()->exists()) {
+            return redirect()->route('app.users.index')->with(
+                'error',
+                'Não é possível excluir este usuário porque existem ordens ou agendamentos vinculados a ele. Desative-o em vez de excluir.'
+            );
+        }
+
         $user->delete();
 
         return redirect()->route('app.users.index')->with('success', 'Usuário excluido com sucesso!');

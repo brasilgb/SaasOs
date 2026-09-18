@@ -2,12 +2,14 @@ import { toastSuccess } from '@/components/app-toast-messages';
 import { Icon } from '@/components/icon';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import { MessageCircleCode, Save } from 'lucide-react';
 import type { FormEvent } from 'react';
+import WhatsappConnectionPanel from './connection-panel';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -78,7 +80,18 @@ const renderPreview = (template?: string) => {
     });
 };
 
-export default function WhatsappMessage({ whatsappmessage }: { whatsappmessage: WhatsappMessageSettings }) {
+type ConnectionSettings = {
+    status: 'disconnected' | 'starting' | 'qr_required' | 'connected' | 'failed';
+    phone_number?: string | null;
+};
+
+export default function WhatsappMessage({
+    whatsappmessage,
+    connection,
+}: {
+    whatsappmessage: WhatsappMessageSettings;
+    connection: ConnectionSettings;
+}) {
     const { data, setData, patch, processing } = useForm({
         generatedbudget: whatsappmessage?.generatedbudget,
         servicecompleted: whatsappmessage?.servicecompleted,
@@ -121,96 +134,109 @@ export default function WhatsappMessage({ whatsappmessage }: { whatsappmessage: 
             </div>
 
             <div className="p-4">
-                <div className="rounded-lg border p-2">
-                    <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
-                        <div className="mt-4 grid gap-4">
-                            <div className="text-muted-foreground rounded-md border border-dashed p-3 text-sm">
-                                Para usar as mensagens padrão, basta clicar em salvar. Se precisar, altere os textos conforme a necessidade. Os
-                                templates inserem automaticamente informações do cliente e da O.S. pelos placeholders: <code>{'{{ cliente }}'}</code>,{' '}
-                                <code>{'{{ ordem }}'}</code>, <code>{'{{ link_os }}'}</code>, <code>{'{{ saudacao }}'}</code>,{' '}
-                                <code>{'{{ saldo }}'}</code> e <code>{'{{ dias_pendentes }}'}</code>.
-                            </div>
+                <Tabs defaultValue="connection" className="space-y-4">
+                    <TabsList>
+                        <TabsTrigger value="connection">Conexão</TabsTrigger>
+                        <TabsTrigger value="templates">Templates de mensagem</TabsTrigger>
+                    </TabsList>
 
-                            <div className="grid gap-2 md:col-span-2">
-                                <Label htmlFor="generatedbudget">Orçamento gerado</Label>
-                                <Textarea
-                                    id="generatedbudget"
-                                    value={data.generatedbudget}
-                                    onChange={(e) => setData('generatedbudget', e.target.value)}
-                                />
-                                <div className="text-muted-foreground bg-muted/40 rounded-md p-2 text-xs whitespace-pre-wrap">
-                                    Prévia: {renderPreview(data.generatedbudget)}
-                                </div>
-                            </div>
+                    <TabsContent value="connection">
+                        <WhatsappConnectionPanel connection={connection} />
+                    </TabsContent>
 
-                            <div className="grid gap-2 md:col-span-2">
-                                <Label htmlFor="servicecompleted">Serviço concluído</Label>
-                                <Textarea
-                                    id="servicecompleted"
-                                    value={data.servicecompleted}
-                                    onChange={(e) => setData('servicecompleted', e.target.value)}
-                                />
-                                <div className="text-muted-foreground bg-muted/40 rounded-md p-2 text-xs whitespace-pre-wrap">
-                                    Prévia: {renderPreview(data.servicecompleted)}
-                                </div>
-                            </div>
+                    <TabsContent value="templates">
+                        <div className="rounded-lg border p-2">
+                            <form onSubmit={handleSubmit} autoComplete="off" className="space-y-8">
+                                <div className="mt-4 grid gap-4">
+                                    <div className="text-muted-foreground rounded-md border border-dashed p-3 text-sm">
+                                        Para usar as mensagens padrão, basta clicar em salvar. Se precisar, altere os textos conforme a necessidade.
+                                        Os templates inserem automaticamente informações do cliente e da O.S. pelos placeholders:{' '}
+                                        <code>{'{{ cliente }}'}</code>, <code>{'{{ ordem }}'}</code>, <code>{'{{ link_os }}'}</code>,{' '}
+                                        <code>{'{{ saudacao }}'}</code>, <code>{'{{ saldo }}'}</code> e <code>{'{{ dias_pendentes }}'}</code>.
+                                    </div>
 
-                            <div className="grid gap-2 md:col-span-2">
-                                <Label htmlFor="feedback">Feedback ao cliente</Label>
-                                <Textarea id="feedback" value={data.feedback} onChange={(e) => setData('feedback', e.target.value)} />
-                                <div className="text-muted-foreground bg-muted/40 rounded-md p-2 text-xs whitespace-pre-wrap">
-                                    Prévia: {renderPreview(data.feedback)}
-                                </div>
-                            </div>
+                                    <div className="grid gap-2 md:col-span-2">
+                                        <Label htmlFor="generatedbudget">Orçamento gerado</Label>
+                                        <Textarea
+                                            id="generatedbudget"
+                                            value={data.generatedbudget}
+                                            onChange={(e) => setData('generatedbudget', e.target.value)}
+                                        />
+                                        <div className="text-muted-foreground bg-muted/40 rounded-md p-2 text-xs whitespace-pre-wrap">
+                                            Prévia: {renderPreview(data.generatedbudget)}
+                                        </div>
+                                    </div>
 
-                            <div className="grid gap-2 md:col-span-2">
-                                <Label htmlFor="defaultmessage">Mensagem padrão (demais status)</Label>
-                                <Textarea
-                                    id="defaultmessage"
-                                    value={data.defaultmessage}
-                                    onChange={(e) => setData('defaultmessage', e.target.value)}
-                                />
-                                <div className="text-muted-foreground bg-muted/40 rounded-md p-2 text-xs whitespace-pre-wrap">
-                                    Prévia: {renderPreview(data.defaultmessage)}
-                                </div>
-                            </div>
+                                    <div className="grid gap-2 md:col-span-2">
+                                        <Label htmlFor="servicecompleted">Serviço concluído</Label>
+                                        <Textarea
+                                            id="servicecompleted"
+                                            value={data.servicecompleted}
+                                            onChange={(e) => setData('servicecompleted', e.target.value)}
+                                        />
+                                        <div className="text-muted-foreground bg-muted/40 rounded-md p-2 text-xs whitespace-pre-wrap">
+                                            Prévia: {renderPreview(data.servicecompleted)}
+                                        </div>
+                                    </div>
 
-                            <div className="grid gap-2 md:col-span-2">
-                                <Label htmlFor="budgetfollowup">Orçamento parado</Label>
-                                <Textarea
-                                    id="budgetfollowup"
-                                    value={data.budgetfollowup}
-                                    onChange={(e) => setData('budgetfollowup', e.target.value)}
-                                />
-                                <div className="text-muted-foreground bg-muted/40 rounded-md p-2 text-xs whitespace-pre-wrap">
-                                    Prévia: {renderPreview(data.budgetfollowup)}
-                                </div>
-                            </div>
+                                    <div className="grid gap-2 md:col-span-2">
+                                        <Label htmlFor="feedback">Feedback ao cliente</Label>
+                                        <Textarea id="feedback" value={data.feedback} onChange={(e) => setData('feedback', e.target.value)} />
+                                        <div className="text-muted-foreground bg-muted/40 rounded-md p-2 text-xs whitespace-pre-wrap">
+                                            Prévia: {renderPreview(data.feedback)}
+                                        </div>
+                                    </div>
 
-                            <div className="grid gap-2 md:col-span-2">
-                                <Label htmlFor="pendingpayment">Cobrança pendente</Label>
-                                <Textarea
-                                    id="pendingpayment"
-                                    value={data.pendingpayment}
-                                    onChange={(e) => setData('pendingpayment', e.target.value)}
-                                />
-                                <div className="text-muted-foreground bg-muted/40 rounded-md p-2 text-xs whitespace-pre-wrap">
-                                    Prévia: {renderPreview(data.pendingpayment)}
+                                    <div className="grid gap-2 md:col-span-2">
+                                        <Label htmlFor="defaultmessage">Mensagem padrão (demais status)</Label>
+                                        <Textarea
+                                            id="defaultmessage"
+                                            value={data.defaultmessage}
+                                            onChange={(e) => setData('defaultmessage', e.target.value)}
+                                        />
+                                        <div className="text-muted-foreground bg-muted/40 rounded-md p-2 text-xs whitespace-pre-wrap">
+                                            Prévia: {renderPreview(data.defaultmessage)}
+                                        </div>
+                                    </div>
+
+                                    <div className="grid gap-2 md:col-span-2">
+                                        <Label htmlFor="budgetfollowup">Orçamento parado</Label>
+                                        <Textarea
+                                            id="budgetfollowup"
+                                            value={data.budgetfollowup}
+                                            onChange={(e) => setData('budgetfollowup', e.target.value)}
+                                        />
+                                        <div className="text-muted-foreground bg-muted/40 rounded-md p-2 text-xs whitespace-pre-wrap">
+                                            Prévia: {renderPreview(data.budgetfollowup)}
+                                        </div>
+                                    </div>
+
+                                    <div className="grid gap-2 md:col-span-2">
+                                        <Label htmlFor="pendingpayment">Cobrança pendente</Label>
+                                        <Textarea
+                                            id="pendingpayment"
+                                            value={data.pendingpayment}
+                                            onChange={(e) => setData('pendingpayment', e.target.value)}
+                                        />
+                                        <div className="text-muted-foreground bg-muted/40 rounded-md p-2 text-xs whitespace-pre-wrap">
+                                            Prévia: {renderPreview(data.pendingpayment)}
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
+
+                                <div className="flex justify-end gap-2">
+                                    <Button type="button" variant="outline" onClick={handleResetDefaults} disabled={processing}>
+                                        Restaurar modelos
+                                    </Button>
+                                    <Button type="submit" disabled={processing}>
+                                        <Save />
+                                        Salvar
+                                    </Button>
+                                </div>
+                            </form>
                         </div>
-
-                        <div className="flex justify-end gap-2">
-                            <Button type="button" variant="outline" onClick={handleResetDefaults} disabled={processing}>
-                                Restaurar modelos
-                            </Button>
-                            <Button type="submit" disabled={processing}>
-                                <Save />
-                                Salvar
-                            </Button>
-                        </div>
-                    </form>
-                </div>
+                    </TabsContent>
+                </Tabs>
             </div>
         </AppLayout>
     );

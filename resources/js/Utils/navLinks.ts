@@ -143,7 +143,7 @@ const mainNavGroups: NavGroup[] = [
         icon: MessageCircle,
         items: [
             {
-                title: 'Follow-up de clientes',
+                title: 'Retornos ao cliente',
                 href: route('app.follow-ups.index'),
                 icon: MessageCircle,
                 active: 'app.follow-ups.*',

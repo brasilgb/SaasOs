@@ -38,4 +38,11 @@ return [
         'token' => env('MP_ACCESS_TOKEN'),
         'webhook_token' => env('MP_WEBHOOK_TOKEN'),
     ],
+
+    'waha' => [
+        'base_url' => env('WAHA_BASE_URL'),
+        'api_key' => env('WAHA_API_KEY'),
+        'webhook_url' => env('WAHA_WEBHOOK_URL'),
+        'webhook_secret' => env('WAHA_WEBHOOK_SECRET'),
+    ],
 ];

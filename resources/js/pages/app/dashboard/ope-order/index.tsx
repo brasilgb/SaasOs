@@ -2,7 +2,6 @@ import { ChartAreaDashboard } from '@/components/Charts/chart-area-dashboard';
 import ChartBudgetsStatus from '@/components/Charts/chart-budgets-status';
 import ChartFluxoOrders from '@/components/Charts/chart-fluxo-orders';
 import { KpiDashboard } from '@/components/kpi-dashboard';
-import { KpiOverdueOrders } from '@/components/kpi-overdue-orders';
 import { SalesProducts } from '@/components/sales-products';
 import ScheduleCalendarModal from '@/components/Schedules/ScheduleCalendarModal';
 import { Badge } from '@/components/ui/badge';
@@ -186,6 +185,18 @@ export default function OrderDashboard({
             urgent: true,
         },
         {
+            label: 'Vencendo hoje',
+            value: Number(acount?.numorde_due_today ?? 0),
+            href: route('app.orders.index', { filter: 'due_48h' }),
+            icon: Clock,
+        },
+        {
+            label: 'Vencendo amanhã',
+            value: Number(acount?.numorde_due_tomorrow ?? 0),
+            href: route('app.orders.index', { filter: 'due_48h' }),
+            icon: Clock,
+        },
+        {
             label: 'Aguardando aprovação',
             value: Number(acount?.numorde_awaiting_approval ?? 0),
             href: route('app.orders.index', { status: 3 }),
@@ -276,7 +287,7 @@ export default function OrderDashboard({
                                 </div>
                             </div>
                         </div>
-                        <div className="grid flex-1 grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-5">
+                        <div className="grid flex-1 grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-7">
                             {todayPriorities.map((priority) => {
                                 const PriorityIcon = priority.icon;
 
@@ -307,20 +318,6 @@ export default function OrderDashboard({
                 </Card>
                 <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                     <KpiDashboard
-                        link={route('app.customers.index')}
-                        title="Clientes"
-                        value={acount?.numcust ?? 0}
-                        icon={<Users className="h-10 w-10" />}
-                        description={periodKpiDescription(metrics?.customers ?? 0)}
-                    />
-                    <KpiDashboard
-                        link={route('app.orders.index')}
-                        title="Ordens"
-                        value={acount?.numorde ?? 0}
-                        icon={<Wrench className="h-10 w-10" />}
-                        description={periodKpiDescription(metrics?.orders ?? 0)}
-                    />
-                    <KpiDashboard
                         link={route('app.schedules.index')}
                         title="Agenda"
                         value={acount?.numshed ?? 0}
@@ -338,13 +335,6 @@ export default function OrderDashboard({
                                 </span>
                             </span>
                         }
-                    />
-                    <KpiDashboard
-                        link={route('app.messages.index')}
-                        title="Mensagens"
-                        value={acount?.nummess ?? 0}
-                        icon={<MessageSquareMore className="h-10 w-10" />}
-                        description={periodKpiDescription(metrics?.messages ?? 0)}
                     />
                     <KpiDashboard
                         link={route('app.orders.index', { filter: 'budget_follow_up' })}
@@ -374,23 +364,49 @@ export default function OrderDashboard({
                         icon={<Star className="h-10 w-10" />}
                         description={`Nota média ${metrics?.feedback_average_rating ?? 0} • ${metrics?.feedback_response_rate ?? 0}% retorno`}
                     />
-                    <KpiDashboard
-                        link={route('app.parts.index')}
-                        title="Peças"
-                        value={acount?.numparts ?? 0}
-                        icon={<MemoryStickIcon className="h-10 w-10" />}
-                        description={periodKpiDescription(metrics?.parts ?? 0)}
-                    />
-                    <KpiDashboard
-                        link={route('app.parts.index')}
-                        title="Produtos"
-                        value={acount?.numproducts ?? 0}
-                        icon={<MemoryStickIcon className="h-10 w-10" />}
-                        description={periodKpiDescription(metrics?.products ?? 0)}
-                    />
+                </div>
+                <div>
+                    <div className="text-muted-foreground mb-2 text-xs font-medium">Totais gerais</div>
+                    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+                        <KpiDashboard
+                            link={route('app.customers.index')}
+                            title="Clientes"
+                            value={acount?.numcust ?? 0}
+                            icon={<Users className="h-10 w-10" />}
+                            description={periodKpiDescription(metrics?.customers ?? 0)}
+                        />
+                        <KpiDashboard
+                            link={route('app.orders.index')}
+                            title="Ordens"
+                            value={acount?.numorde ?? 0}
+                            icon={<Wrench className="h-10 w-10" />}
+                            description={periodKpiDescription(metrics?.orders ?? 0)}
+                        />
+                        <KpiDashboard
+                            link={route('app.messages.index')}
+                            title="Mensagens"
+                            value={acount?.nummess ?? 0}
+                            icon={<MessageSquareMore className="h-10 w-10" />}
+                            description={periodKpiDescription(metrics?.messages ?? 0)}
+                        />
+                        <KpiDashboard
+                            link={route('app.parts.index')}
+                            title="Peças"
+                            value={acount?.numparts ?? 0}
+                            icon={<MemoryStickIcon className="h-10 w-10" />}
+                            description={periodKpiDescription(metrics?.parts ?? 0)}
+                        />
+                        <KpiDashboard
+                            link={route('app.parts.index')}
+                            title="Produtos"
+                            value={acount?.numproducts ?? 0}
+                            icon={<MemoryStickIcon className="h-10 w-10" />}
+                            description={periodKpiDescription(metrics?.products ?? 0)}
+                        />
+                    </div>
                 </div>
             </div>
-            <div className="mt-3 grid min-h-[210px] gap-3 2xl:grid-cols-7">
+            <div className="mt-3 grid min-h-[210px] gap-3 xl:grid-cols-3">
                 <div className="h-full min-w-0">
                     {showFinanceShortcut || showPdvShortcut ? (
                         <div className="flex h-full flex-col gap-3">
@@ -429,14 +445,7 @@ export default function OrderDashboard({
                         </Card>
                     )}
                 </div>
-                <KpiOverdueOrders
-                    link={route('app.orders.index', { filter: 'due_48h' })}
-                    icon={<Wrench className="h-10 w-10" />}
-                    title="Ordens Vencendo"
-                    ordersToday={acount?.numorde_due_today}
-                    ordersTomorrow={acount?.numorde_due_tomorrow}
-                />
-                <div className="h-full min-w-0 2xl:col-span-5">
+                <div className="h-full min-w-0 xl:col-span-2">
                     <Card className="@container/card h-full flex-1 gap-4 overflow-hidden">
                         <CardHeader className="border-b pb-4">
                             <div className="flex items-start justify-between gap-4">

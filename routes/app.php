@@ -6,6 +6,7 @@ use App\Http\Controllers\App\CashSessionController;
 use App\Http\Controllers\App\ChecklistController;
 use App\Http\Controllers\App\CompanyController;
 use App\Http\Controllers\App\CustomerController;
+use App\Http\Controllers\App\CustomerEquipmentController;
 use App\Http\Controllers\App\DashboardController;
 use App\Http\Controllers\App\EquipmentController;
 use App\Http\Controllers\App\AccountPayableController;
@@ -32,6 +33,7 @@ use App\Http\Controllers\App\ServiceController;
 use App\Http\Controllers\App\SupplierController;
 use App\Http\Controllers\App\TenantImprovementRequestController;
 use App\Http\Controllers\App\UserController;
+use App\Http\Controllers\App\WhatsappConnectionController;
 use App\Http\Controllers\App\WhatsappMessageController;
 use Illuminate\Support\Facades\Route;
 
@@ -46,6 +48,7 @@ Route::get('/kpisSchedules/{timerange}', [DashboardController::class, 'kpisSched
 Route::get('/schedulesStatusChart/{timerange}', [DashboardController::class, 'schedulesStatusChart'])->name('schedulesStatusChart');
 Route::get('/kpisFinancialSales/{timerange}', [DashboardController::class, 'kpisFinancialSales'])->name('kpisFinancialSales');
 Route::get('/financialSalesRevenueChart/{timerange}', [DashboardController::class, 'financialSalesRevenueChart'])->name('financialSalesRevenueChart');
+Route::get('/kpisPurchases/{timerange}', [DashboardController::class, 'kpisPurchases'])->name('kpisPurchases');
 Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
 Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
 Route::get('/quality-indicators', [QualityIndicatorController::class, 'index'])->name('quality.index');
@@ -69,6 +72,11 @@ Route::get('customers-duplicate-check', [CustomerController::class, 'duplicateCh
 Route::get('customers/search', [CustomerController::class, 'search'])->name('customers.search');
 Route::resource('customers', CustomerController::class);
 Route::post('customers/import-customer', [CustomerController::class, 'ImportCustomer'])->name('import.customer');
+Route::post('customers/{customer}/equipments', [CustomerEquipmentController::class, 'store'])->name('customers.equipments.store');
+Route::post('customers/{customer}/whatsapp', [CustomerController::class, 'sendWhatsapp'])->name('customers.whatsapp.send');
+Route::get('customer-equipments/search', [CustomerEquipmentController::class, 'search'])->name('customer-equipments.search');
+Route::patch('customer-equipments/{customerEquipment}', [CustomerEquipmentController::class, 'update'])->name('customer-equipments.update');
+Route::delete('customer-equipments/{customerEquipment}', [CustomerEquipmentController::class, 'destroy'])->name('customer-equipments.destroy');
 Route::resource('messages', MessageController::class);
 Route::patch('messages/{message}/read', [MessageController::class, 'read'])->name('messages.read');
 Route::patch('orders/{order}/feedback', [OrderController::class, 'markFeedback'])->name('orders.feedback');
@@ -81,13 +89,13 @@ Route::post('orders/{order}/customer-update', [OrderController::class, 'sendCust
 Route::delete('orders/{order}/payments/{payment}', [OrderController::class, 'destroyPayment'])->name('orders.payments.destroy');
 Route::get('orders/{order}/payments-data', [OrderController::class, 'paymentsData'])->name('orders.payments.data');
 Route::post('orders/{order}/fiscal', [OrderController::class, 'registerFiscal'])->name('orders.fiscal.register');
+Route::post('orders/{order}/whatsapp', [OrderController::class, 'sendWhatsapp'])->name('orders.whatsapp.send');
 Route::post('schedules/{schedule}/local-payment-cashier', [ScheduleController::class, 'registerLocalPaymentCashier'])->name('schedules.local-payment-cashier');
 Route::patch('schedules/{schedule}/service-closure-price', [ScheduleController::class, 'defineServiceClosurePrice'])->name('schedules.service-closure-price');
 Route::resource('schedules', ScheduleController::class);
 Route::resource('services', ServiceController::class);
 Route::resource('users', UserController::class);
 Route::resource('budgets', BudgetController::class);
-Route::resource('whatsapp-messages', WhatsappMessageController::class);
 Route::get('fiscal-documents', [FiscalDocumentController::class, 'index'])->name('fiscal-documents.index');
 Route::get('register-equipments/search', [EquipmentController::class, 'search'])->name('register-equipments.search');
 Route::resource('register-equipments', EquipmentController::class)->parameters(['register-equipments' => 'equipment']);
@@ -104,6 +112,10 @@ Route::get('auxiliary-apps', [AuxiliaryAppController::class, 'index'])->name('au
 
 Route::resource('company', CompanyController::class);
 Route::resource('whatsapp-message', WhatsappMessageController::class)->parameters(['whatsapp-message' => 'whatsappmessage']);
+Route::get('whatsapp-connection/status', [WhatsappConnectionController::class, 'status'])->name('whatsapp-connection.status');
+Route::get('whatsapp-connection/qr', [WhatsappConnectionController::class, 'qrCode'])->name('whatsapp-connection.qr');
+Route::post('whatsapp-connection/connect', [WhatsappConnectionController::class, 'connect'])->name('whatsapp-connection.connect');
+Route::post('whatsapp-connection/disconnect', [WhatsappConnectionController::class, 'disconnect'])->name('whatsapp-connection.disconnect');
 Route::resource('receipts', ReceiptController::class);
 
 Route::get('receipts/{or}/{tp}', [ReceiptController::class, 'printing'])->name('receipts.printing');

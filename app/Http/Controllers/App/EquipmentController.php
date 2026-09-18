@@ -66,7 +66,7 @@ class EquipmentController extends Controller
         Gate::authorize('equipments.access');
 
         $request->validated();
-        $data = $request->only(['equipment', 'chart']);
+        $data = $request->only(['equipment', 'chart', 'kind']);
         $data['chart'] = $request->boolean('chart');
         $data['equipment_number'] = TenantSequence::next(Equipment::class, 'equipment_number');
         $equipment = Equipment::create($data);
@@ -105,7 +105,7 @@ class EquipmentController extends Controller
         Gate::authorize('equipments.access');
 
         $request->validated();
-        $data = $request->only(['equipment', 'chart']);
+        $data = $request->only(['equipment', 'chart', 'kind']);
         $data['chart'] = $request->boolean('chart');
         $equipment->update($data);
 
@@ -125,6 +125,13 @@ class EquipmentController extends Controller
     public function destroy(Request $request, Equipment $equipment)
     {
         Gate::authorize('equipments.access');
+
+        if ($equipment->orders()->exists() || $equipment->budgets()->exists() || $equipment->checklists()->exists()) {
+            return redirect()->route('app.register-equipments.index')->with(
+                'error',
+                'Não é possível excluir este tipo de equipamento porque existem ordens, orçamentos ou checklists vinculados.'
+            );
+        }
 
         $equipmentId = $equipment->id;
         $equipment->delete();

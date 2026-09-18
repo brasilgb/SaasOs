@@ -261,10 +261,6 @@ export default function ScheduleDashboard({
                             <div className="text-2xl font-bold tabular-nums">{kpis?.in_progress ?? 0}</div>
                             <div className="text-muted-foreground text-sm">Atendimentos em execução</div>
                         </div>
-                        <div className="rounded-lg border p-3">
-                            <div className="text-2xl font-bold tabular-nums">{formatPercent(completionRate)}</div>
-                            <div className="text-muted-foreground text-sm">Conclusão no período</div>
-                        </div>
                     </CardContent>
                 </Card>
             </div>

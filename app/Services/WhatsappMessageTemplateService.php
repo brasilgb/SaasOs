@@ -31,4 +31,46 @@ class WhatsappMessageTemplateService
 
         return $whatsappMessage->refresh();
     }
+
+    /**
+     * Substitui os placeholders `{{ chave }}` de um template pelos valores informados.
+     *
+     * Espelha (em PHP, do lado servidor) a mesma normalização de chave usada
+     * historicamente no frontend (resources/js/components/WhatsAppButtonProps.tsx
+     * e resources/js/pages/app/whatsapp-message/index.tsx): minúsculas, sem
+     * acentos, espaços/traços viram "_". Isso garante que o envio real via WAHA
+     * (que precisa montar o texto no backend) produza exatamente a mesma
+     * mensagem que a prévia já mostrava ao usuário.
+     *
+     * @param  array<string, string>  $variables
+     */
+    public function render(?string $template, array $variables): string
+    {
+        if (! $template) {
+            return '';
+        }
+
+        $normalized = [];
+        foreach ($variables as $key => $value) {
+            $normalized[$this->normalizeKey($key)] = (string) $value;
+        }
+
+        return trim(preg_replace_callback('/\{\{\s*([^}]+?)\s*\}\}/', function (array $matches) use ($normalized) {
+            $key = $this->normalizeKey($matches[1]);
+
+            return $normalized[$key] ?? '';
+        }, $template));
+    }
+
+    private function normalizeKey(string $key): string
+    {
+        $key = mb_strtolower(trim($key));
+        $key = str_replace(
+            ['á', 'à', 'â', 'ã', 'ä', 'é', 'è', 'ê', 'ë', 'í', 'ì', 'î', 'ï', 'ó', 'ò', 'ô', 'õ', 'ö', 'ú', 'ù', 'û', 'ü', 'ç'],
+            ['a', 'a', 'a', 'a', 'a', 'e', 'e', 'e', 'e', 'i', 'i', 'i', 'i', 'o', 'o', 'o', 'o', 'o', 'u', 'u', 'u', 'u', 'c'],
+            $key
+        );
+
+        return preg_replace('/[\s-]+/', '_', $key);
+    }
 }

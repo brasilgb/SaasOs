@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
             'messages' => (int) env('SEED_TEST_MESSAGES', 60),
             'sales' => (int) env('SEED_TEST_SALES', 50),
             'expenses' => (int) env('SEED_TEST_EXPENSES', 24),
+            'customer_equipments' => (int) env('SEED_TEST_CUSTOMER_EQUIPMENTS', 40),
         ];
 
         DB::transaction(function (): void {
@@ -78,6 +79,7 @@ class DatabaseSeeder extends Seeder
         $this->seedSettings($tenantId, $now);
         $this->seedEquipmentAndChecklists($tenantId, $now);
         $this->seedCustomers($tenantId, $now);
+        $this->seedCustomerEquipments($tenantId, $now);
         $this->seedBudgets($tenantId, $now);
         $this->seedParts($tenantId, $now);
 
@@ -323,6 +325,38 @@ class DatabaseSeeder extends Seeder
             ];
         }
         $this->insertChunks('customers', $rows);
+    }
+
+    private function seedCustomerEquipments(int $tenantId, Carbon $now): void
+    {
+        $customerIds = DB::table('customers')->where('tenant_id', $tenantId)->pluck('id')->all();
+        $equipmentIds = DB::table('equipment')->where('tenant_id', $tenantId)->pluck('id')->all();
+
+        if (empty($customerIds) || empty($equipmentIds)) {
+            return;
+        }
+
+        $rows = [];
+        $number = 1;
+        for ($i = 1; $i <= $this->counts['customer_equipments']; $i++) {
+            $rows[] = [
+                'tenant_id' => $tenantId,
+                'customer_id' => $customerIds[$i % count($customerIds)],
+                'equipment_id' => $equipmentIds[$i % count($equipmentIds)],
+                'customer_equipment_number' => $number++,
+                'brand' => 'Marca Teste '.($i % 5 + 1),
+                'model' => 'Modelo Teste '.$i,
+                'serial_number' => $i % 3 === 0 ? null : 'SN'.$this->pad($i, 8),
+                'imei' => $i % 2 === 0 ? $this->digits(15, ($tenantId * 100000) + $i) : null,
+                'color' => null,
+                'accessories' => null,
+                'notes' => null,
+                'status' => 'active',
+                'created_at' => $now->copy()->subDays($i % 90),
+                'updated_at' => $now,
+            ];
+        }
+        $this->insertChunks('customer_equipments', $rows);
     }
 
     private function seedBudgets(int $tenantId, Carbon $now): void
@@ -897,6 +931,7 @@ class DatabaseSeeder extends Seeder
             'schedules',
             'images',
             'orders',
+            'customer_equipments',
             'budgets',
             'checklists',
             'equipment',
