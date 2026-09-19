@@ -28,6 +28,7 @@ use App\Services\TechnicianCommissionService;
 use App\Services\FiscalDocumentService;
 use App\Services\OperationalAuditService;
 use App\Services\OrderItemSyncService;
+use App\Services\OrderCommunicationContextService;
 use App\Services\OrderNotificationService;
 use App\Services\OrderPaymentService;
 use App\Services\OrderStatusService;
@@ -59,6 +60,7 @@ class OrderController extends Controller
         private readonly FiscalDocumentService $fiscalDocumentService,
         private readonly OrderNotificationService $orderNotificationService,
         private readonly WhatsAppService $whatsAppService,
+        private readonly OrderCommunicationContextService $orderCommunicationContextService,
     ) {}
 
     private function shouldSendCustomerMailer(Order $order, ?string $customerEmail): bool
@@ -143,59 +145,36 @@ class OrderController extends Controller
 
     private function communicationThresholdDays(): int
     {
-        return Other::communicationFollowUpCooldownDays($this->currentUser()?->tenant_id);
+        return $this->orderCommunicationContextService->communicationThresholdDays($this->currentUser()?->tenant_id);
     }
 
     private function customerFeedbackRequestThreshold(): Carbon
     {
-        $delay = Other::customerFeedbackRequestDelayDays($this->currentUser()?->tenant_id);
-
-        return Carbon::now()->subDays($delay)->endOfDay();
+        return $this->orderCommunicationContextService->customerFeedbackRequestThreshold($this->currentUser()?->tenant_id);
     }
 
     private function customerFeedbackExpirationThreshold(): Carbon
     {
-        $delay = Other::customerFeedbackRequestDelayDays($this->currentUser()?->tenant_id);
-
-        return Carbon::now()->subDays($delay + 7);
+        return $this->orderCommunicationContextService->customerFeedbackExpirationThreshold($this->currentUser()?->tenant_id);
     }
 
     private function isBudgetFollowUpOrder(Order $order): bool
     {
-        if ((int) $order->service_status !== OrderStatus::BUDGET_GENERATED) {
-            return false;
-        }
-
-        return $order->updated_at?->lte(now()->subDays($this->communicationThresholdDays())) ?? false;
+        return $this->orderCommunicationContextService->isBudgetFollowUp($order, $this->currentUser()?->tenant_id);
     }
 
     private function isPendingPaymentOrder(Order $order, ?array $paymentSummary = null): bool
     {
         $paymentSummary ??= $this->buildPaymentSummary($order);
         $remaining = (float) ($paymentSummary['remaining'] ?? 0);
+        $tenantId = $order->tenant_id ? (int) $order->tenant_id : $this->currentUser()?->tenant_id;
 
-        if ($remaining <= 0.009) {
-            return false;
-        }
-
-        if (! Other::financeEnabled($order->tenant_id ? (int) $order->tenant_id : $this->currentUser()?->tenant_id)) {
-            return false;
-        }
-
-        if ((int) $order->service_status !== OrderStatus::DELIVERED) {
-            return false;
-        }
-
-        $referenceDate = $order->delivery_date;
-
-        return $referenceDate?->lte(now()->subDays($this->communicationThresholdDays())) ?? false;
+        return $this->orderCommunicationContextService->isPendingPayment($order, $tenantId, $remaining);
     }
 
     private function communicationDaysPending(Order $order): int
     {
-        $referenceDate = $order->delivery_date ?? $order->updated_at ?? $order->created_at;
-
-        return $referenceDate ? max(0, $referenceDate->diffInDays(now())) : 0;
+        return $this->orderCommunicationContextService->communicationDaysPending($order);
     }
 
     private function appendCommunicationFlags(Order $order): Order

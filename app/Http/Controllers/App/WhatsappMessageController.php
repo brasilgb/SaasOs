@@ -50,6 +50,7 @@ class WhatsappMessageController extends Controller
             'defaultmessage' => 'nullable|string|max:500',
             'budgetfollowup' => 'nullable|string|max:500',
             'pendingpayment' => 'nullable|string|max:500',
+            'technicianschedule' => 'nullable|string|max:500',
         ]);
 
         $whatsappmessage = $this->whatsappMessageTemplateService->update($whatsappmessage, $data);

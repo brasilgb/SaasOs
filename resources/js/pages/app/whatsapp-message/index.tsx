@@ -30,6 +30,7 @@ type WhatsappMessageSettings = {
     defaultmessage?: string;
     budgetfollowup?: string;
     pendingpayment?: string;
+    technicianschedule?: string;
 };
 
 const DEFAULT_MESSAGES = {
@@ -45,6 +46,8 @@ const DEFAULT_MESSAGES = {
         '{{ saudacao }}, {{ cliente }}!\n\nSeu orçamento da OS {{ ordem }} segue aguardando retorno há {{ dias_pendentes }} dias.\n\nVocê pode aprovar ou acompanhar pelo link: {{ link_os }}\n\nSe precisar de ajuda, estamos à disposição.',
     pendingpayment:
         '{{ saudacao }}, {{ cliente }}!\n\nA OS {{ ordem }} segue com saldo pendente de {{ saldo }}.\n\nVocê pode acompanhar pelo link: {{ link_os }}\n\nSe já realizou o pagamento, desconsidere esta mensagem.',
+    technicianschedule:
+        '{{ saudacao }}, {{ tecnico }}!\nVisita agendada para {{ data_visita }}.\nServiço: {{ servico }}.\nMateriais: {{ materiais }}.\nCliente: {{ cliente }}.\nEndereço: {{ endereco }}.',
 };
 
 const previewValues = {
@@ -55,6 +58,11 @@ const previewValues = {
     saudação: 'Boa tarde',
     saldo: 'R$ 185,00',
     dias_pendentes: '3',
+    tecnico: 'Carlos Pereira',
+    data_visita: '20/09/2026 14:00',
+    servico: 'Manutenção preventiva',
+    materiais: '1x Filtro de óleo, 2x Correia',
+    endereco: 'Rua das Flores, 123 - Centro, São Paulo',
 };
 
 const normalizePlaceholderKey = (key: string) =>
@@ -99,6 +107,7 @@ export default function WhatsappMessage({
         defaultmessage: whatsappmessage?.defaultmessage,
         budgetfollowup: whatsappmessage?.budgetfollowup,
         pendingpayment: whatsappmessage?.pendingpayment,
+        technicianschedule: whatsappmessage?.technicianschedule,
     });
 
     const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -117,6 +126,7 @@ export default function WhatsappMessage({
         setData('defaultmessage', DEFAULT_MESSAGES.defaultmessage);
         setData('budgetfollowup', DEFAULT_MESSAGES.budgetfollowup);
         setData('pendingpayment', DEFAULT_MESSAGES.pendingpayment);
+        setData('technicianschedule', DEFAULT_MESSAGES.technicianschedule);
     };
 
     return (
@@ -152,7 +162,9 @@ export default function WhatsappMessage({
                                         Para usar as mensagens padrão, basta clicar em salvar. Se precisar, altere os textos conforme a necessidade.
                                         Os templates inserem automaticamente informações do cliente e da O.S. pelos placeholders:{' '}
                                         <code>{'{{ cliente }}'}</code>, <code>{'{{ ordem }}'}</code>, <code>{'{{ link_os }}'}</code>,{' '}
-                                        <code>{'{{ saudacao }}'}</code>, <code>{'{{ saldo }}'}</code> e <code>{'{{ dias_pendentes }}'}</code>.
+                                        <code>{'{{ saudacao }}'}</code>, <code>{'{{ saldo }}'}</code> e <code>{'{{ dias_pendentes }}'}</code>. O
+                                        aviso de agendamento ao técnico usa também <code>{'{{ tecnico }}'}</code>, <code>{'{{ data_visita }}'}</code>
+                                        , <code>{'{{ servico }}'}</code>, <code>{'{{ materiais }}'}</code> e <code>{'{{ endereco }}'}</code>.
                                     </div>
 
                                     <div className="grid gap-2 md:col-span-2">
@@ -220,6 +232,18 @@ export default function WhatsappMessage({
                                         />
                                         <div className="text-muted-foreground bg-muted/40 rounded-md p-2 text-xs whitespace-pre-wrap">
                                             Prévia: {renderPreview(data.pendingpayment)}
+                                        </div>
+                                    </div>
+
+                                    <div className="grid gap-2 md:col-span-2">
+                                        <Label htmlFor="technicianschedule">Aviso de agendamento ao técnico</Label>
+                                        <Textarea
+                                            id="technicianschedule"
+                                            value={data.technicianschedule}
+                                            onChange={(e) => setData('technicianschedule', e.target.value)}
+                                        />
+                                        <div className="text-muted-foreground bg-muted/40 rounded-md p-2 text-xs whitespace-pre-wrap">
+                                            Prévia: {renderPreview(data.technicianschedule)}
                                         </div>
                                     </div>
                                 </div>

@@ -14,12 +14,15 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { buildMessage } from '@/components/WhatsAppButtonProps';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { maskCpfCnpj, maskPhone, normalizeWhatsappPhone, unMask } from '@/Utils/mask';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Calendar, Edit, MoreHorizontal, Plus, Trash2, Upload, Users2, Wrench } from 'lucide-react';
+import { Calendar, Edit, Loader2, MoreHorizontal, Plus, Send, Trash2, Upload, Users2, Wrench } from 'lucide-react';
 import moment from 'moment';
 import { useState } from 'react';
 import ImportCustomersModal from './import-customers-modal';
@@ -35,20 +38,61 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-function getWhatsappGreeting(name: string) {
-    const now = new Date();
-    const hour = now.getHours();
-    const weekday = now.toLocaleDateString('pt-BR', { weekday: 'long' });
-    const greetingByHour = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
+type CustomerWhatsappOption = {
+    key: string;
+    label: string;
+    order_id?: number;
+    order_number?: string;
+    context?: 'default' | 'budget_follow_up' | 'pending_payment';
+    status?: number;
+    feedback?: boolean;
+    amount_due?: number;
+    days_pending?: number;
+};
 
-    return `${greetingByHour}, ${name}, como está?`;
-}
+const DEFAULT_WHATSAPP_OPTION: CustomerWhatsappOption = { key: 'default', label: 'Mensagem padrão', context: 'default' };
 
-export default function Customers({ customers, search, pending }: any) {
+export default function Customers({ customers, search, pending, whats }: any) {
     const { auth } = usePage().props as any;
     const [modalAberto, setModalAberto] = useState(false);
     const [deleteCustomer, setDeleteCustomer] = useState<{ id: number; name: string } | null>(null);
+    const [sendingWhatsappId, setSendingWhatsappId] = useState<number | null>(null);
+    const [selectedWhatsappOption, setSelectedWhatsappOption] = useState<Record<number, string>>({});
     const canManageCustomers = auth?.permissions?.includes('customers');
+
+    const whatsappOptionsFor = (customer: any): CustomerWhatsappOption[] => [
+        DEFAULT_WHATSAPP_OPTION,
+        ...((customer.whatsapp_options as CustomerWhatsappOption[] | undefined) ?? []),
+    ];
+
+    const handleSendWhatsapp = (customer: any) => {
+        const options = whatsappOptionsFor(customer);
+        const option = options.find((o) => o.key === (selectedWhatsappOption[customer.id] ?? 'default')) ?? DEFAULT_WHATSAPP_OPTION;
+
+        const message = buildMessage({
+            customerName: customer.name,
+            orderNumber: option.order_number,
+            status: option.status,
+            feedback: option.feedback,
+            context: option.context,
+            amountDue: option.amount_due,
+            daysPending: option.days_pending,
+            whats,
+        });
+
+        if (!message.trim()) return;
+
+        router.post(
+            route('app.customers.whatsapp.send', customer.id),
+            { message },
+            {
+                preserveScroll: true,
+                preserveState: true,
+                onStart: () => setSendingWhatsappId(customer.id),
+                onFinish: () => setSendingWhatsappId(null),
+            },
+        );
+    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -135,32 +179,69 @@ export default function Customers({ customers, search, pending }: any) {
                                         <TableCell>{moment(customer.created_at).format('DD/MM/YYYY')}</TableCell>
                                         <TableCell className="min-w-[140px]">
                                             <div className="flex flex-wrap justify-end gap-2">
-                                                <Button
-                                                    type="button"
-                                                    size="icon"
-                                                    className="bg-green-500 text-white hover:bg-green-500 disabled:cursor-not-allowed disabled:opacity-40"
-                                                    title="Enviar WhatsApp"
-                                                    aria-label={`Enviar WhatsApp para ${customer.name}`}
-                                                    disabled={!normalizeWhatsappPhone(customer.whatsapp)}
-                                                    onClick={() =>
-                                                        router.post(
-                                                            route('app.customers.whatsapp.send', customer.id),
-                                                            { message: getWhatsappGreeting(customer.name) },
-                                                            { preserveScroll: true, preserveState: true },
-                                                        )
-                                                    }
-                                                >
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="16"
-                                                        height="16"
-                                                        fill="currentColor"
-                                                        className="bi bi-whatsapp"
-                                                        viewBox="0 0 16 16"
-                                                    >
-                                                        <path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.71 1.916.81 2.049c.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232" />
-                                                    </svg>
-                                                </Button>
+                                                <Popover>
+                                                    <PopoverTrigger asChild>
+                                                        <Button
+                                                            type="button"
+                                                            size="icon"
+                                                            className="bg-green-500 text-white hover:bg-green-500 disabled:cursor-not-allowed disabled:opacity-40"
+                                                            title="Enviar WhatsApp"
+                                                            aria-label={`Enviar WhatsApp para ${customer.name}`}
+                                                            disabled={!normalizeWhatsappPhone(customer.whatsapp) || sendingWhatsappId === customer.id}
+                                                        >
+                                                            {sendingWhatsappId === customer.id ? (
+                                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                            ) : (
+                                                                <svg
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    width="16"
+                                                                    height="16"
+                                                                    fill="currentColor"
+                                                                    className="bi bi-whatsapp"
+                                                                    viewBox="0 0 16 16"
+                                                                >
+                                                                    <path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.71 1.916.81 2.049c.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232" />
+                                                                </svg>
+                                                            )}
+                                                        </Button>
+                                                    </PopoverTrigger>
+                                                    <PopoverContent align="end" className="w-72 space-y-3">
+                                                        <div className="space-y-1">
+                                                            <p className="text-sm font-medium">Enviar WhatsApp</p>
+                                                            <p className="text-muted-foreground text-xs">Escolha a mensagem para {customer.name}.</p>
+                                                        </div>
+                                                        <Select
+                                                            value={selectedWhatsappOption[customer.id] ?? 'default'}
+                                                            onValueChange={(value) =>
+                                                                setSelectedWhatsappOption((prev) => ({ ...prev, [customer.id]: value }))
+                                                            }
+                                                        >
+                                                            <SelectTrigger className="w-full">
+                                                                <SelectValue />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                {whatsappOptionsFor(customer).map((option) => (
+                                                                    <SelectItem key={option.key} value={option.key}>
+                                                                        {option.label}
+                                                                    </SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                        <Button
+                                                            type="button"
+                                                            className="w-full"
+                                                            disabled={sendingWhatsappId === customer.id}
+                                                            onClick={() => handleSendWhatsapp(customer)}
+                                                        >
+                                                            {sendingWhatsappId === customer.id ? (
+                                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                            ) : (
+                                                                <Send className="h-4 w-4" />
+                                                            )}
+                                                            Enviar
+                                                        </Button>
+                                                    </PopoverContent>
+                                                </Popover>
                                                 {canManageCustomers && (
                                                     <Button
                                                         asChild

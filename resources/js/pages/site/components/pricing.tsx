@@ -1,38 +1,9 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check, MessageCircle } from 'lucide-react';
+import { plans } from './pricing-data';
 
 const whatsappNumber = '5551998931325';
-
-const plans = [
-    {
-        name: 'Mensal',
-        description: 'Plano com contratação mensal',
-        whatsappMessage: 'Olá! Quero consultar as condições do plano mensal do VetorOS.',
-        features: [
-            'Todos os recursos incluídos',
-            'Usuários ilimitados',
-            'Aplicativo Android',
-            'Suporte prioritário',
-            'Atualizações automáticas',
-            'Backup diário',
-        ],
-    },
-    {
-        name: 'Anual',
-        description: 'Plano com contratação anual',
-        whatsappMessage: 'Olá! Quero consultar as condições do plano anual do VetorOS.',
-        popular: true,
-        features: [
-            'Todos os recursos incluídos',
-            'Usuários ilimitados',
-            'Aplicativo Android',
-            'Suporte prioritário',
-            'Atualizações automáticas',
-            'Backup diário',
-        ],
-    },
-];
 
 export function Pricing() {
     return (
@@ -44,11 +15,11 @@ export function Pricing() {
                     <h2 className="mt-3 text-4xl font-bold tracking-[-0.04em] text-slate-950 sm:text-5xl">Escolha seu plano</h2>
 
                     <p className="mt-5 text-lg leading-8 text-slate-600">
-                        Consulte nossa equipe pelo WhatsApp para conhecer as condições dos planos mensal e anual.
+                        Todos os planos têm acesso completo aos recursos. Fale com a gente pelo WhatsApp para contratar.
                     </p>
                 </div>
 
-                <div className="mx-auto grid max-w-4xl gap-8 md:grid-cols-2">
+                <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
                     {plans.map((plan, index) => (
                         <Card
                             key={index}
@@ -68,7 +39,15 @@ export function Pricing() {
                                 <CardDescription className="mt-2 text-slate-500">{plan.description}</CardDescription>
 
                                 <div className="mt-6">
-                                    <div className="text-4xl font-bold">Consultar</div>
+                                    <div className="flex items-center justify-center gap-2">
+                                        <div className="text-4xl font-bold">{plan.price}</div>
+                                        {plan.discountPercent > 0 && (
+                                            <span className="rounded-full bg-emerald-100 px-2 py-1 text-xs font-bold text-emerald-700">
+                                                -{plan.discountPercent}%
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className="mt-1 text-sm text-slate-500">{plan.priceNote}</div>
                                 </div>
                             </CardHeader>
 

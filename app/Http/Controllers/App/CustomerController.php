@@ -8,7 +8,10 @@ use App\Http\Requests\CustomerRequest;
 use App\Models\App\AccountReceivable;
 use App\Models\App\Customer;
 use App\Models\App\Equipment;
+use App\Models\App\WhatsappMessage;
+use App\Services\OrderCommunicationContextService;
 use App\Services\WhatsAppService;
+use App\Support\OrderStatus;
 use App\Support\TenantSequence;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -371,7 +374,7 @@ class CustomerController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(Request $request, OrderCommunicationContextService $orderCommunicationContextService)
     {
         Gate::authorize('customers.access');
 
@@ -412,7 +415,27 @@ class CustomerController extends Controller
             $query->whereRaw('COALESCE(receivable_totals.pending_amount, 0) > 0.009');
         }
 
+        $query->with(['orders' => function ($ordersQuery) {
+            $ordersQuery
+                ->whereIn('service_status', [OrderStatus::BUDGET_GENERATED, OrderStatus::SERVICE_COMPLETED, OrderStatus::DELIVERED])
+                ->with('orderPayments:id,order_id,amount')
+                ->orderBy('id', 'DESC');
+        }]);
+
         $customers = $query->paginate(\App\Support\Pagination::perPage())->withQueryString();
+        $tenantId = (int) Auth::user()?->tenant_id;
+
+        $customers->setCollection(
+            $customers->getCollection()->map(function (Customer $customer) use ($orderCommunicationContextService, $tenantId) {
+                $customer->setAttribute(
+                    'whatsapp_options',
+                    $this->buildCustomerWhatsappOptions($customer, $orderCommunicationContextService, $tenantId)
+                );
+
+                return $customer;
+            })
+        );
+
         $customerlast = Customer::orderBy('id', 'DESC')->first();
 
         return Inertia::render('app/customers/index', [
@@ -420,7 +443,63 @@ class CustomerController extends Controller
             'customerlast' => $customerlast,
             'search' => $search,
             'pending' => $pending,
+            'whats' => WhatsappMessage::first(),
         ]);
+    }
+
+    /**
+     * Monta, por cliente, uma opção de envio de WhatsApp para cada ordem que tenha um
+     * contexto de comunicação relevante no momento (cobrança pendente, orçamento parado,
+     * aguardando feedback, orçamento recém-gerado ou serviço concluído). Usa exatamente
+     * as mesmas regras da listagem de Ordens (OrderCommunicationContextService), então o
+     * que aparece aqui é consistente com o que o operador já vê lá.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function buildCustomerWhatsappOptions(Customer $customer, OrderCommunicationContextService $service, ?int $tenantId): array
+    {
+        $options = [];
+
+        foreach ($customer->orders as $order) {
+            $remaining = round(max(0, (float) ($order->service_cost ?? 0) - (float) $order->orderPayments->sum('amount')), 2);
+
+            $isPendingPayment = $service->isPendingPayment($order, $tenantId, $remaining);
+            $isBudgetFollowUp = $service->isBudgetFollowUp($order, $tenantId);
+            $isFeedbackOpen = $service->isFeedbackWindowOpen($order, $tenantId) && ! $order->customer_feedback_submitted_at;
+
+            if ($isPendingPayment) {
+                $context = 'pending_payment';
+                $label = 'Cobrança pendente';
+            } elseif ($isBudgetFollowUp) {
+                $context = 'budget_follow_up';
+                $label = 'Orçamento parado';
+            } elseif ($isFeedbackOpen) {
+                $context = 'default';
+                $label = 'Pedido de feedback';
+            } elseif ((int) $order->service_status === OrderStatus::BUDGET_GENERATED) {
+                $context = 'default';
+                $label = 'Orçamento gerado';
+            } elseif ((int) $order->service_status === OrderStatus::SERVICE_COMPLETED) {
+                $context = 'default';
+                $label = 'Serviço concluído';
+            } else {
+                continue;
+            }
+
+            $options[] = [
+                'key' => "order-{$order->id}",
+                'label' => "{$label} — OS #{$order->order_number}",
+                'order_id' => $order->id,
+                'order_number' => $order->order_number,
+                'context' => $context,
+                'status' => (int) $order->service_status,
+                'feedback' => $isFeedbackOpen,
+                'amount_due' => $remaining,
+                'days_pending' => $service->communicationDaysPending($order),
+            ];
+        }
+
+        return $options;
     }
 
     /**

@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Head, Link } from '@inertiajs/react';
 import { ArrowRight, CheckCircle2, MessageCircle } from 'lucide-react';
+import { CookieConsent } from '../components/cookie-consent';
 import { FAQ, faqItems } from '../components/faq';
 import { Footer } from '../components/footer';
 import { Header } from '../components/header';
@@ -98,6 +99,7 @@ export default function Plans() {
 
             <Footer />
             <WhatsAppFloat />
+            <CookieConsent />
         </main>
     );
 }

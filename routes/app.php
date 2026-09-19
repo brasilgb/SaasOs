@@ -92,6 +92,7 @@ Route::post('orders/{order}/fiscal', [OrderController::class, 'registerFiscal'])
 Route::post('orders/{order}/whatsapp', [OrderController::class, 'sendWhatsapp'])->name('orders.whatsapp.send');
 Route::post('schedules/{schedule}/local-payment-cashier', [ScheduleController::class, 'registerLocalPaymentCashier'])->name('schedules.local-payment-cashier');
 Route::patch('schedules/{schedule}/service-closure-price', [ScheduleController::class, 'defineServiceClosurePrice'])->name('schedules.service-closure-price');
+Route::post('schedules/{schedule}/whatsapp', [ScheduleController::class, 'sendWhatsapp'])->name('schedules.whatsapp.send');
 Route::resource('schedules', ScheduleController::class);
 Route::resource('services', ServiceController::class);
 Route::resource('users', UserController::class);

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\App;
 
+use App\Exceptions\WhatsAppException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ScheduleRequest;
 use App\Models\App\CashSession;
@@ -10,9 +11,11 @@ use App\Models\App\Order;
 use App\Models\App\Other;
 use App\Models\App\Part;
 use App\Models\App\Schedule;
+use App\Models\App\WhatsappMessage;
 use App\Models\User;
 use App\Services\CashSessionService;
 use App\Services\TechnicianPushNotificationService;
+use App\Services\WhatsAppService;
 use App\Support\TenantSequence;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -165,6 +168,7 @@ class ScheduleController extends Controller
             'search' => $search,
             'status' => $status,
             'tab' => $request->tab,
+            'whats' => WhatsappMessage::first(['technicianschedule']),
         ]);
     }
 
@@ -247,6 +251,25 @@ class ScheduleController extends Controller
         ]);
 
         return back()->with('success', 'Valor do atendimento definido e liberado para o técnico.');
+    }
+
+    public function sendWhatsapp(Request $request, Schedule $schedule, WhatsAppService $whatsAppService): RedirectResponse
+    {
+        $this->authorize('update', $schedule);
+
+        $validated = $request->validate([
+            'message' => ['required', 'string', 'max:2000'],
+        ]);
+
+        $schedule->loadMissing('user');
+
+        try {
+            $whatsAppService->sendText((int) $schedule->tenant_id, $schedule->user?->whatsapp, $validated['message']);
+        } catch (WhatsAppException $exception) {
+            return back()->with('error', $exception->getMessage());
+        }
+
+        return back()->with('success', 'Mensagem enviada pelo WhatsApp com sucesso.');
     }
 
     /**

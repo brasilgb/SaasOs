@@ -1,4 +1,5 @@
 import { BrandHorizontalLogo } from '@/components/brand-logo';
+import { CookieConsent } from '@/pages/site/components/cookie-consent';
 import { Link } from '@inertiajs/react';
 
 export default function LegalLayout({ children }: { children: React.ReactNode }) {
@@ -30,6 +31,8 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
                     </div>
                 </div>
             </footer>
+
+            <CookieConsent />
         </div>
     );
 }

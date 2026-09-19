@@ -1,8 +1,8 @@
 import { Icon } from '@/components/icon';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { Calendar, Camera, ClipboardCheck, CreditCard, Edit, Eye, FileText, MapPin, Plus, Smartphone, Timer, X } from 'lucide-react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import { Calendar, Camera, ClipboardCheck, CreditCard, Edit, Eye, FileText, Loader2, MapPin, Plus, Smartphone, Timer, X } from 'lucide-react';
 import moment from 'moment';
 import { useState } from 'react';
 
@@ -55,7 +55,24 @@ function formatCurrency(value: any) {
     });
 }
 
-function getTechnicianWhatsappMessage(schedule: any) {
+const DEFAULT_TECHNICIAN_SCHEDULE_TEMPLATE =
+    '{{ saudacao }}, {{ tecnico }}!\nVisita agendada para {{ data_visita }}.\nServiço: {{ servico }}.\nMateriais: {{ materiais }}.\nCliente: {{ cliente }}.\nEndereço: {{ endereco }}.';
+
+function normalizePlaceholderKey(key: string) {
+    return key
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .replace(/\s+/g, '_')
+        .replace(/-/g, '_');
+}
+
+function applyTemplate(template: string, values: Record<string, string>) {
+    return template.replace(/\{\{\s*([^}]+?)\s*\}\}/g, (_, rawKey) => values[normalizePlaceholderKey(rawKey)] ?? '');
+}
+
+function getTechnicianWhatsappMessage(schedule: any, template?: string) {
     const visitDate = moment(schedule.schedules).format('DD/MM/YYYY HH:mm');
     const greetingHour = new Date().getHours();
     const greeting = greetingHour < 12 ? 'Bom dia' : greetingHour < 18 ? 'Boa tarde' : 'Boa noite';
@@ -70,16 +87,19 @@ function getTechnicianWhatsappMessage(schedule: any) {
 
     const materialChecklist = formatMaterialChecklist(schedule.material_checklist);
 
-    return [
-        `${greeting}, ${schedule.user?.name}!`,
-        `Visita agendada para ${visitDate}.`,
-        schedule.service ? `Serviço: ${schedule.service}.` : 'Serviço ainda não informado.',
-        materialChecklist ? `Materiais: ${materialChecklist}.` : null,
-        `Cliente: ${schedule.customer?.name}.`,
-        `Endereço: ${addressParts.join(', ')}.`,
-    ]
-        .filter(Boolean)
-        .join('\n');
+    const values = {
+        saudacao: greeting,
+        tecnico: schedule.user?.name ?? '',
+        data_visita: visitDate,
+        servico: schedule.service || 'ainda não informado',
+        materiais: materialChecklist || 'nenhum material informado',
+        cliente: schedule.customer?.name ?? '',
+        endereco: addressParts.join(', '),
+    };
+
+    return applyTemplate(template || DEFAULT_TECHNICIAN_SCHEDULE_TEMPLATE, values)
+        .replace(/\n{2,}/g, '\n')
+        .trim();
 }
 
 function getMobileStage(schedule: any) {
@@ -418,12 +438,13 @@ function TechnicianMobileTable({ schedules, pagination, canManageSchedules }: { 
     );
 }
 
-export default function Schedules({ schedules, search, status, tab }: any) {
+export default function Schedules({ schedules, search, status, tab, whats }: any) {
     const { auth } = usePage<{ auth?: { role?: string; permissions?: string[] } }>().props;
     const hasActiveFilters = Boolean(search || status);
     const isTechnician = auth?.role === 'technician';
     const canManageSchedules = auth?.role !== 'technician' && auth?.permissions?.includes('schedules');
     const defaultTab = tab === 'technician' || isTechnician ? 'technician' : 'list';
+    const [sendingWhatsappId, setSendingWhatsappId] = useState<number | null>(null);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -561,17 +582,31 @@ export default function Schedules({ schedules, search, status, tab }: any) {
                                                         <div className="flex flex-wrap justify-end gap-2">
                                                             {canManageSchedules && (
                                                                 <Button
-                                                                    asChild
+                                                                    type="button"
                                                                     size="icon"
-                                                                    className="bg-green-500 text-white hover:bg-green-500"
-                                                                    title="Enviar WhatsApp"
+                                                                    className="bg-green-500 text-white hover:bg-green-500 disabled:cursor-not-allowed disabled:opacity-40"
+                                                                    title={sendingWhatsappId === schedule.id ? 'Enviando mensagem...' : 'Enviar WhatsApp'}
+                                                                    aria-label={`Enviar WhatsApp para ${schedule.user?.name}`}
+                                                                    disabled={
+                                                                        !normalizeWhatsappPhone(schedule.user?.whatsapp) ||
+                                                                        sendingWhatsappId === schedule.id
+                                                                    }
+                                                                    onClick={() =>
+                                                                        router.post(
+                                                                            route('app.schedules.whatsapp.send', schedule.id),
+                                                                            { message: getTechnicianWhatsappMessage(schedule, whats?.technicianschedule) },
+                                                                            {
+                                                                                preserveScroll: true,
+                                                                                preserveState: true,
+                                                                                onStart: () => setSendingWhatsappId(schedule.id),
+                                                                                onFinish: () => setSendingWhatsappId(null),
+                                                                            },
+                                                                        )
+                                                                    }
                                                                 >
-                                                                    <a
-                                                                        target="_blank"
-                                                                        rel="noopener noreferrer"
-                                                                        href={`https://wa.me/${normalizeWhatsappPhone(schedule.user?.whatsapp)}?text=${encodeURIComponent(getTechnicianWhatsappMessage(schedule))}`}
-                                                                        aria-label={`Enviar WhatsApp para ${schedule.user?.name}`}
-                                                                    >
+                                                                    {sendingWhatsappId === schedule.id ? (
+                                                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                                                    ) : (
                                                                         <svg
                                                                             xmlns="http://www.w3.org/2000/svg"
                                                                             width="16"
@@ -582,7 +617,7 @@ export default function Schedules({ schedules, search, status, tab }: any) {
                                                                         >
                                                                             <path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.240-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.330.065-.134.034-.248-.015-.347-.050-.099-.445-1.076-.612-1.47-.160-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.710 1.916.810 2.049c.098.133 1.394 2.132 3.383 2.992.470.205.840.326 1.129.418.475.152.904.129 1.246.080.38-.058 1.171-.480 1.338-.943.164-.464.164-.860.114-.943-.049-.084-.182-.133-.38-.232" />
                                                                         </svg>
-                                                                    </a>
+                                                                    )}
                                                                 </Button>
                                                             )}
 

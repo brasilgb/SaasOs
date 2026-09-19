@@ -1,4 +1,6 @@
+import { Head } from '@inertiajs/react';
 import { AudienceStrip } from '../components/audience-strip';
+import { CookieConsent } from '../components/cookie-consent';
 import { CTA } from '../components/cta';
 import { Features } from '../components/features';
 import { Footer } from '../components/footer';
@@ -6,7 +8,6 @@ import { Header } from '../components/header';
 import { Hero } from '../components/hero';
 import { Testimonials, type TestimonialItem } from '../components/testimonials';
 import { WhatsAppFloat } from '../components/whatsapp-float';
-import { Head } from '@inertiajs/react';
 
 export default function Home({ testimonials = [] }: { testimonials?: TestimonialItem[] }) {
     return (
@@ -23,6 +24,7 @@ export default function Home({ testimonials = [] }: { testimonials?: Testimonial
             <CTA />
             <Footer />
             <WhatsAppFloat />
+            <CookieConsent />
         </main>
     );
 }
