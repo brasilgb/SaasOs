@@ -21,6 +21,7 @@ export interface NavGroup {
     title: string;
     icon?: LucideIcon | null;
     items: NavItem[];
+    collapsible?: boolean;
 }
 
 export interface NavItem {

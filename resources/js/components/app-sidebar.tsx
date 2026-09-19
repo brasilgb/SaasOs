@@ -16,8 +16,6 @@ import AppLogo from './app-logo';
 import NavMainCollapsible from './nav-main-collapsible';
 
 export function AppSidebar() {
-    const collapsibleGroups = ['Relacionamento', 'Financeiro'];
-
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -33,13 +31,13 @@ export function AppSidebar() {
             </SidebarHeader>
             <SidebarContent className="gap-0">
                 <SidebarGroup className="gap-0 p-2 [&_[data-slot=sidebar-menu]]:gap-0 [&_[data-slot=sidebar-menu-item]]:my-0.5 [&_[data-slot=sidebar-menu-sub]]:gap-0 [&_[data-slot=sidebar-menu-sub]]:py-0 [&_[data-slot=sidebar-menu-sub-item]]:my-0.5">
-                    {mainNavGroups.map((group, index) => (
+                    {mainNavGroups.map((group) => (
                         <div key={group.title}>
                             <NavMain
-                                label={collapsibleGroups.includes(group.title) ? group.title : undefined}
+                                label={group.collapsible ? group.title : undefined}
                                 groupIcon={group.icon}
                                 items={group.items}
-                                collapsible={collapsibleGroups.includes(group.title)}
+                                collapsible={Boolean(group.collapsible)}
                             />
                         </div>
                     ))}

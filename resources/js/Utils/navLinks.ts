@@ -69,14 +69,6 @@ const mainNavGroups: NavGroup[] = [
                 permission: 'orders',
             },
             {
-                title: 'Orçamentos',
-                href: route('app.budgets.index'),
-                icon: ScrollText,
-                active: 'app.budgets.*',
-                enabled: 'budgets',
-                permission: 'budgets',
-            },
-            {
                 title: 'Agendamentos',
                 href: route('app.schedules.index'),
                 icon: Calendar,
@@ -84,6 +76,21 @@ const mainNavGroups: NavGroup[] = [
                 enabled: 'schedules',
                 permission: 'schedules',
             },
+            {
+                title: 'Mensagens',
+                href: route('app.messages.index'),
+                icon: MessageSquareMore,
+                active: 'app.messages.*',
+                enabled: 'messages',
+                permission: 'messages',
+            },
+        ],
+    },
+    {
+        title: 'Contratos/orçamentos',
+        icon: CalendarClock,
+        collapsible: true,
+        items: [
             {
                 title: 'Contratos de manutenção',
                 href: route('app.maintenance-contracts.index'),
@@ -93,12 +100,12 @@ const mainNavGroups: NavGroup[] = [
                 permission: 'finance',
             },
             {
-                title: 'Mensagens',
-                href: route('app.messages.index'),
-                icon: MessageSquareMore,
-                active: 'app.messages.*',
-                enabled: 'messages',
-                permission: 'messages',
+                title: 'Orçamentos',
+                href: route('app.budgets.index'),
+                icon: ScrollText,
+                active: 'app.budgets.*',
+                enabled: 'budgets',
+                permission: 'budgets',
             },
         ],
     },
@@ -119,6 +126,7 @@ const mainNavGroups: NavGroup[] = [
     {
         title: 'Compras',
         icon: Truck,
+        collapsible: true,
         items: [
             {
                 title: 'Ordens de compra',
@@ -141,6 +149,7 @@ const mainNavGroups: NavGroup[] = [
     {
         title: 'Relacionamento',
         icon: MessageCircle,
+        collapsible: true,
         items: [
             {
                 title: 'Retornos ao cliente',
@@ -165,6 +174,7 @@ const mainNavGroups: NavGroup[] = [
     {
         title: 'Financeiro',
         icon: WalletCards,
+        collapsible: true,
         items: [
             {
                 title: 'Caixa',
