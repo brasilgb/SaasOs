@@ -27,6 +27,11 @@ class WhatsAppException extends RuntimeException
         return new self('Número de WhatsApp inválido.');
     }
 
+    public static function notOnWhatsapp(): self
+    {
+        return new self('Este número não possui WhatsApp ativo. Confira o número e tente novamente.');
+    }
+
     public static function sendFailed(): self
     {
         return new self('Falha ao enviar a mensagem pelo WhatsApp. Tente novamente.');

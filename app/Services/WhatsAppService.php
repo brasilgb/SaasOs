@@ -148,7 +148,13 @@ class WhatsAppService
             throw WhatsAppException::sendFailed();
         }
 
-        $this->waha->sendText($connection->session_name, WhatsAppPhone::normalize($phone), $message);
+        $chatId = $this->waha->resolveChatId($connection->session_name, WhatsAppPhone::normalize($phone));
+
+        if (! $chatId) {
+            throw WhatsAppException::notOnWhatsapp();
+        }
+
+        $this->waha->sendText($connection->session_name, $chatId, $message);
     }
 
     public function sendDocument(int $tenantId, ?string $phone, string $url, ?string $filename = null, ?string $caption = null): void
@@ -163,7 +169,13 @@ class WhatsAppService
             throw WhatsAppException::invalidPhone();
         }
 
-        $this->waha->sendFile($connection->session_name, WhatsAppPhone::normalize($phone), $url, $filename, $caption);
+        $chatId = $this->waha->resolveChatId($connection->session_name, WhatsAppPhone::normalize($phone));
+
+        if (! $chatId) {
+            throw WhatsAppException::notOnWhatsapp();
+        }
+
+        $this->waha->sendFile($connection->session_name, $chatId, $url, $filename, $caption);
     }
 
     /**
